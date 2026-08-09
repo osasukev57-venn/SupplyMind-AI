@@ -114,7 +114,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D1-T05 PBOC双币raw闭环冒烟门禁
 
-- **优先级/状态：** P0-最高 / `NOT_STARTED`。
+- **优先级/状态：** P0-最高 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=REAL_PBOC_DUAL_CURRENCY_RAW_SMOKE_GATE_EVIDENCE_RESUBMITTED_AFTER_REVIEW_FIX_20260809`。Sol Review BLOCKER（重启读取未真实启动第二个Spring Context）已修复并重新运行门禁；等待技术负责人重新Review；执行人不得自行改为`DONE`。
 - **任务目标：** 在Day1结束前证明两个币种真实获取、raw可检查、重复执行幂等和失败可诊断。
 - **对应需求：** SUP-01、SUP-02、F03、F07。
 - **输入：** D1-T03、D1-T04和独立data目录。

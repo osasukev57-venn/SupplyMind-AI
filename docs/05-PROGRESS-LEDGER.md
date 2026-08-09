@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 1（D1-T02字段事实与Windows原生重放证据已通过技术负责人Code Review并为`DONE`；D1-T03最终二次Review=`PASS`、`AT-FILE-000=PASS`并为`DONE`；D1-T04经Sol技术负责人和OpenCode独立Review均确认`PASS`并为`DONE`；D1-T05尚未领取，保持`NOT_STARTED`）  
+> 当前阶段：Day 1（D1-T02字段事实与Windows原生重放证据已通过技术负责人Code Review并为`DONE`；D1-T03最终二次Review=`PASS`、`AT-FILE-000=PASS`并为`DONE`；D1-T04经Sol技术负责人和OpenCode独立Review均确认`PASS`并为`DONE`；D1-T05真实PBOC双币raw闭环冒烟门禁已实施并提交证据，`TaskExecutionStatus=REVIEW_PENDING`）  
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -56,20 +56,20 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 1 |
-| 当前任务编号 | 无活动开发任务；下一候选为D1-T05 PBOC双币raw闭环冒烟门禁（`TaskExecutionStatus=NOT_STARTED`，尚未领取）。 |
-| 当前任务状态 | D1-T02、D1-T03、D1-T04均为`TaskExecutionStatus=DONE`。D1-T04：`statusReason=REVIEW_PASS_SOL_AND_OPENCODE_APPROVED_20260809`。D1-T05保持`NOT_STARTED`。 |
+| 当前任务编号 | D1-T05 PBOC双币raw闭环冒烟门禁（`TaskExecutionStatus=REVIEW_PENDING`，Review BLOCKER已修复并重新提交）。 |
+| 当前任务状态 | D1-T02、D1-T03、D1-T04均为`TaskExecutionStatus=DONE`。D1-T04：`statusReason=REVIEW_PASS_SOL_AND_OPENCODE_APPROVED_20260809`。D1-T05=`REVIEW_PENDING`，`statusReason=REAL_PBOC_DUAL_CURRENCY_RAW_SMOKE_GATE_EVIDENCE_RESUBMITTED_AFTER_REVIEW_FIX_20260809`。 |
 | 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；最终任务/AT/需求/依赖引用扫描通过 |
 | 已完成任务 | BASELINE-DOCS；D1-T01；D1-T02 PBOC双币数据契约与连通性验证（Code Review通过）；D1-T03 最小Spring Boot、data/raw与BigDecimal文件基础（Sol最终二次Review通过）；D1-T04 OfficialWebDataProvider真实PBOC获取与raw落盘（Sol + OpenCode Review通过）。 |
-| 正在进行任务 | 无；D1-T05的直接依赖D1-T03、D1-T04均已`DONE`，但D1-T05仍为`NOT_STARTED`，等待项目方确认领取。 |
-| 阻塞项 | D1-T04 Review门禁已解除。D1-T05尚未领取；AT-SRC-002、Day 1/Day 2总门禁仍未运行或通过。 |
-| 最近验收结果 | D1-T02=`PASS/DONE`；D1-T03 Sol最终二次Review=`PASS`、`AT-FILE-000=PASS`、任务=`DONE`；D1-T04 Sol + OpenCode Review=`PASS`、任务=`DONE`。AT-SRC-002、Day 1真实raw闭环及Day 2总门禁仍均为`NOT_RUN`。 |
+| 正在进行任务 | 无；D1-T05已实施完毕并提交Code Review，等待正式裁决。 |
+| 阻塞项 | D1-T05 Review门禁待裁决。AT-SRC-002、Day 1/Day 2总门禁仍未运行或通过（不得写PASS）。 |
+| 最近验收结果 | D1-T02=`PASS/DONE`；D1-T03 Sol最终二次Review=`PASS`、`AT-FILE-000=PASS`、任务=`DONE`；D1-T04 Sol + OpenCode Review=`PASS`、任务=`DONE`。D1-T05任务级冒烟门禁证据已提交（`REVIEW_PENDING`）。AT-SRC-002、Day 1真实raw闭环及Day 2总门禁仍均为`NOT_RUN`。 |
 | 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径本次成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。 |
-| 下一任务 | 等待项目方确认领取D1-T05；在领取前不得实施D1-T05或进入D2。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D1-T04真实PBOC双币raw/manifest与独立RECEIVED+PENDING timeline已通过Sol + OpenCode Review。 |
-| 最近一次Git提交 | 无；当前目录尚未初始化Git仓库 |
+| 下一任务 | 等待技术负责人D1-T05 Code Review；通过前不得改为`DONE`，不得启动D2或后续未批准任务。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D1-T05在独立dataRoot完成真实双币raw闭环冒烟门禁（含真实第二个Spring Context重启读取、幂等冲突证据、断网不造数）。 |
+| 最近一次Git提交 | 无；未获指示，未提交。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | Codex实现工程师窗口，按Sol技术负责人和OpenCode独立Review通过结论收口D1-T04。 |
-| 最后更新时间 | 2026-08-09 20:53:24（Asia/Shanghai） |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，按Sol Review BLOCKER要求修复D1-T05重启读取并重新提交。 |
+| 最后更新时间 | 2026-08-09（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照
 
@@ -319,6 +319,51 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | Git提交 | 无；当前目录尚未初始化Git仓库。 |
 | 是否偏离计划 | 否；严格只完成D1-T04状态收口与D1-T05只读开工确认。 |
 | 下一建议任务 | 项目方确认后领取D1-T05；本窗口未实施D1-T05。 |
+### D1-T05 领取与实施：PBOC双币raw闭环冒烟门禁
+
+| 字段 | 记录 |
+|---|---|
+| 开发日 | Day 1 |
+| 开始时间 | 2026-08-09 21:35（Asia/Shanghai，领取并更新快照） |
+| 结束时间 | 2026-08-09 21:44（Asia/Shanghai） |
+| 执行窗口/执行人 | OpenCode实现工程师窗口 |
+| 开始状态 | D1-T05=`NOT_STARTED`；D1-T02、D1-T03、D1-T04均为`DONE`。 |
+| 结束状态 | D1-T05=`REVIEW_PENDING`；`statusReason=REAL_PBOC_DUAL_CURRENCY_RAW_SMOKE_GATE_EVIDENCE_SUBMITTED_20260809`。执行人不得自行改为`DONE`。 |
+| 对应需求 | SUP-01、SUP-02、F03、F07；D1-T05任务定义、DoD与Day 1退出条款。 |
+| 已完成内容 | 在清空的独立dataRoot（`backend/data/d1-t05-smoke`，与D1-T04的`backend/data`完全独立）重新执行真实PBOC双币采集：列表→真实详情链接→详情实体→USD/EUR两个独立不可变raw/manifest与各自RECEIVED+PENDING timeline；核对SHA-256/来源/日期/单位/原始值（rawValue与保留页面可见文本锚点一致）；真实重复触发按冻结规则（总计划8.5.6同hash幂等/异hash冲突绝不覆盖）生成RawConflictEvidenceV1且既有证据逐字节未动；Spring Context关闭后重新初始化，从磁盘重启读取全部文件逐字节一致；断网（真实ConnectException）重试不造数、不写任何文件。 |
+| 创建/修改文件 | 新增`backend/src/test/java/com/supplymind/provider/pboc/PbocRawClosedLoopSmokeGateTest.java`（真实门禁测试 + 确定性断网不造数测试）；新增`docs/evidence/D1-T05/d1-t05-smoke-gate-summary.json`（测试自动生成）；新增`docs/evidence/D1-T05/D1T05-PBOC-RAW-CLOSED-LOOP-SMOKE-GATE-20260809T2142+0800.md`（Day 1退出报告/证据）；更新`docs/04-DEVELOPMENT-TASKS.md`与本台账状态。未修改生产代码。 |
+| 实际测试命令或步骤 | Java 17.0.19：`mvnw.cmd -q '-Dtest=PbocRawClosedLoopSmokeGateTest' '-Dpboc.real-network=true' '-Dd1-t05.data-root=...\backend\data\d1-t05-smoke' '-Dd1-t05.evidence-dir=...\docs\evidence\D1-T05' test`（2 PASS）；门禁定向回归6个测试类共21项（0 failures、0 errors）。 |
+| 测试结果 | 真实门禁：首次采集SUCCESS（businessDate=2026-08-07，USD=6.7904，EUR=7.8067，payloadSha256=f37cda1f…4f82）；重复触发=FROZEN_CONFLICT_EVIDENCE（1份冻结冲突证据，originals逐字节不变）；重启读取=PASS；失败路径=EXTERNAL_ACCESS_BLOCKED（ConnectException）且不造数。确定性断网测试始终通过。 |
+| 验收证据路径 | `docs/evidence/D1-T05/`；`backend/data/d1-t05-smoke/`（raw/manifest/staging/conflict evidence 全量SHA-256在证据文档中）；`backend/target/surefire-reports/com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest.txt`。 |
+| 失败与回退 | 开发期门禁测试自身暴露并修复：官方页meta描述与正文各含一次锚点文本（改为可见文本独立提取）；Files.walk删除包含根目录自身（跳过根）；writer锁文件被本进程FileLock占用不可读（按冻结文档属运行期非业务工件，快照排除）。均为测试侧修正，未改动生产代码与冻结语义。 |
+| 新增风险 | PBOC HTML结构或字段漂移（持续fail-closed）；真实重复触发因raw必填receivedAt走冻结冲突证据路径（符合8.5.6/DEC-044，D2采集窗口幂等消重属后续任务）。 |
+| 阻塞项变化 | D1-T05提交Code Review门禁（`REVIEW_PENDING`）。AT-SRC-002、Day 1/Day 2总门禁保持`NOT_RUN`，不得写PASS。 |
+| 最近可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D1-T05真实双币raw闭环冒烟门禁证据已提交。 |
+| Git提交 | 无；未获指示，未提交。 |
+| 是否偏离计划 | 否；严格只实施D1-T05，未进入D2、未标PASS任何总门禁、未实现标准化/校验/发布/daily/aggregate/warning/dashboard/Agent。 |
+| 下一建议任务 | 等待技术负责人D1-T05 Code Review；未批准前不得改为`DONE`，不得启动D2或后续未批准任务。 |
+### D1-T05 Review BLOCKER 定点修复：重启读取改为真实第二个 Spring Context
+
+| 字段 | 记录 |
+|---|---|
+| 开发日 | Day 1（Review BLOCKER 修复，非重新实施） |
+| 开始时间 | 2026-08-09 22:45（Asia/Shanghai） |
+| 结束时间 | 2026-08-09 22:52（Asia/Shanghai） |
+| 执行窗口/执行人 | OpenCode实现工程师窗口 |
+| 开始状态 | D1-T05=`REVIEW_PENDING`；Sol Review 唯一 BLOCKER：重启读取未真正启动第二个 Spring Context。 |
+| 结束状态 | D1-T05=`REVIEW_PENDING`；`statusReason=REAL_PBOC_DUAL_CURRENCY_RAW_SMOKE_GATE_EVIDENCE_RESUBMITTED_AFTER_REVIEW_FIX_20260809`。执行人不得自行改为`DONE`。 |
+| 已完成内容 | 修复`PbocRawClosedLoopSmokeGateTest`重启读取阶段：Context A（真实Spring Context）采集并落盘后`close()`并断言`isActive()==false`；使用同一物理dataRoot再次`SpringApplicationBuilder(SupplyMindApplication)`启动全新Spring Context B（断言`assertNotSame(contextA, contextB)`、`contextB.isActive()`、DataRoot Bean路径一致）；从Context B重新获取RawReceiptStore/AtomicFileStore/ConfigActivationStore/PbocOfficialWebDataProvider/SingleWriterGuard Bean并经其DataRoot Bean从磁盘读取；核验USD/EUR raw、manifest、timeline与Context A关闭前逐字节一致，解码对象相等且RECEIVED+PENDING/candidate=null；完成后关闭Context B。移除以DataRoot.forTest(root)直接读盘替代Context B的做法。 |
+| 创建/修改文件 | 仅修改`backend/src/test/java/com/supplymind/provider/pboc/PbocRawClosedLoopSmokeGateTest.java`；删除旧证据`docs/evidence/D1-T05/D1T05-PBOC-RAW-CLOSED-LOOP-SMOKE-GATE-20260809T2142+0800.md`（含不准确声明）；重新生成`docs/evidence/D1-T05/d1-t05-smoke-gate-summary.json`（测试自动生成）与`docs/evidence/D1-T05/D1T05-PBOC-RAW-CLOSED-LOOP-SMOKE-GATE-20260809T2249+0800.md`；最小同步`docs/04`与本台账。未修改生产代码。 |
+| 实际测试命令或步骤 | Java 17.0.19：`mvnw.cmd -q '-Dtest=PbocRawClosedLoopSmokeGateTest' '-Dpboc.real-network=true' '-Dd1-t05.data-root=...\backend\data\d1-t05-smoke' '-Dd1-t05.evidence-dir=...\docs\evidence\D1-T05' test`（2 PASS）；门禁定向回归6个测试类共21项（0 failures、0 errors）。 |
+| 测试结果 | 真实门禁PASS：首次采集SUCCESS（businessDate=2026-08-07，USD=6.7904，EUR=7.8067，payloadSha256=f37cda1f…4f82）；重复触发=FROZEN_CONFLICT_EVIDENCE（1份冻结冲突证据，originals逐字节不变）；重启读取=PASS（secondSpringContext=true、distinctFromContextA=true、contextAClosedBeforeRestart=true、filesUnchanged=true，beans经Context B重新取得）；失败路径=EXTERNAL_ACCESS_BLOCKED（ConnectException）且不造数。 |
+| 验收证据路径 | `docs/evidence/D1-T05/D1T05-PBOC-RAW-CLOSED-LOOP-SMOKE-GATE-20260809T2249+0800.md`；`docs/evidence/D1-T05/d1-t05-smoke-gate-summary.json`（含restartRead第二Context证据字段）；`backend/data/d1-t05-smoke/`（磁盘产物与SHA-256）；`backend/target/surefire-reports/com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest.txt`（测试计数）。 |
+| 失败与回退 | 无；修复后门禁一次通过。证据措辞同步修正：不再声称surefire .txt“仍包含全部原始输出行”，可持续证据以summary JSON、测试结果、磁盘产物与SHA-256为准。 |
+| 新增风险 | 无新增；PBOC HTML结构或字段漂移风险持续（fail-closed）。 |
+| 阻塞项变化 | D1-T05仍处Review门禁（`REVIEW_PENDING`），等待技术负责人重新Review。AT-SRC-002、Day 1/Day 2总门禁保持`NOT_RUN`。 |
+| 最近可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D1-T05门禁以真实第二个Spring Context完成重启读取验证。 |
+| Git提交 | 无；未获指示，未提交。 |
+| 是否偏离计划 | 否；严格按Sol Review BLOCKER范围定点修复，仅改测试与证据，未改生产代码、冻结计划、AT-SRC-002，未进入D2。 |
+| 下一建议任务 | 等待技术负责人D1-T05重新Review；通过前不得改为`DONE`，不得启动D2或后续未批准任务。 |
 ### 后续记录模板
 
 后续窗口复制以下模板并追加在最近一条记录之后，不得删除旧记录。
