@@ -56,19 +56,19 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 2 |
-| 当前任务编号 | D2-T02 PBOC VERIFIED发布门禁（`TaskExecutionStatus=REVIEW_PENDING`，publishRef MAJOR 与 stale CHANGE_REQUEST 均已关闭，等待最终 Review）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`（Git 基线 `day1-complete`）；DEC-050、DEC-051 生效。D2-T02=`REVIEW_PENDING`，`statusReason=PBOC_VERIFIED_PUBLISH_GATE_FINDINGS_CLOSED_AWAITING_FINAL_REVIEW_20260809`。 |
-| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050 已生效（PBOC基础校验v1业务口径）；最终任务/AT/需求/依赖引用扫描通过 |
-| 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）。 |
-| 正在进行任务 | 无；D2-T02已实施完毕并提交Code Review，等待正式裁决。 |
-| 阻塞项 | D2-T02 Review门禁待裁决。AT-SRC-002、Day 2总门禁仍未运行或通过（不得写PASS）。 |
-| 最近验收结果 | D1-T05=`DONE`、Day 1 Gate=`PASS`、Day 1=`COMPLETE`；AT-FILE-000=`PASS`；D2-T01 Sol最终Review=`PASS`、任务=`DONE`。D2-T02任务级发布门禁/隔离/读模型证据已提交（`REVIEW_PENDING`）。AT-SRC-002仍为`NOT_RUN`。 |
-| 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T01数值范围/时效窗口已由DEC-050正式批准为pboc-basic-validation-v1业务口径（30个自然日、(0,100]），仅限USD/CNY、EUR/CNY基础校验。D2-T02业务读模型stale已由DEC-051正式冻结（查询时派生，businessDate距referenceDate超过30个自然日为stale，复用DEC-050阈值，比较基准为referenceDate）。 |
-| 下一任务 | 等待技术负责人D2-T02 Code Review；通过前不得改为`DONE`，不得启动D2-T03或后续未批准任务。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T02发布门禁/隔离/读模型测试56项与真实raw双币PUBLISHED+VERIFIED（含publishRef）证据通过。 |
-| 最近一次Git提交 | 无新提交；当前分支 `feature/d2-t02`，基线 `day1-complete`；未获指示，本轮未提交。 |
+| 当前任务编号 | 无活动开发任务；下一候选为D2-T03 PBOC每日加工与CSV持久化（`TaskExecutionStatus=READY`，尚未领取）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`（Git 基线 `day1-complete`）；DEC-050、DEC-051 生效。D2-T02=`DONE`，`statusReason=REVIEW_PASS_SOL_FINAL_APPROVED_20260809`（审查 commit=`12766c9`）；publishRef MAJOR=`CLOSED`、stale CHANGE_REQUEST=`CLOSED`、D2-T02 DoD=`PASS`、Evidence=`VALID`。 |
+| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1业务口径）、DEC-051（业务读模型stale派生语义）已生效；最终任务/AT/需求/依赖引用扫描通过 |
+| 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02 PBOC VERIFIED发布门禁（Sol最终固定快照Review PASS，审查commit=12766c9）。 |
+| 正在进行任务 | 无。 |
+| 阻塞项 | 无任务级阻塞。AT-SRC-002、Day 2总门禁仍未运行或通过（不得写PASS）。 |
+| 最近验收结果 | D1-T05=`DONE`、Day 1 Gate=`PASS`、Day 1=`COMPLETE`；AT-FILE-000=`PASS`；D2-T01 Sol最终Review=`PASS`、任务=`DONE`；D2-T02 Sol最终固定快照Review=`PASS`、任务=`DONE`（publishRef MAJOR CLOSED、stale CHANGE_REQUEST CLOSED、DEC-051 生效）。AT-SRC-002仍为`NOT_RUN`。 |
+| 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T01数值范围/时效窗口由DEC-050正式批准为pboc-basic-validation-v1业务口径（30个自然日、(0,100]），仅限USD/CNY、EUR/CNY基础校验；D2-T02业务读模型stale由DEC-051正式冻结（查询时派生，businessDate距referenceDate超过30个自然日为stale，复用DEC-050阈值，比较基准为referenceDate）。 |
+| 下一任务 | 等待项目方确认领取 D2-T03 PBOC每日加工与CSV持久化（`TaskExecutionStatus=READY`，尚未领取）；领取前不得实施D2-T03。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T02 发布门禁/隔离/读模型 61 项测试与真实 raw 双币 PUBLISHED+VERIFIED 证据通过（Sol最终Review PASS）。 |
+| 最近一次Git提交 | 无新提交；审查基线 commit=`12766c9`（feature/d2-t02）；未获指示，本轮未提交。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，按正式Review MAJOR修复D2-T02读模型publishRef并重新提交。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，按Sol最终固定快照Review通过结论收口D2-T02为DONE。 |
 | 最后更新时间 | 2026-08-09（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照
@@ -471,7 +471,25 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 最近可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T02双币真实raw发布门禁与业务读模型证据已提交。 |
 | Git提交 | 无新提交；分支`feature/d2-t02`，基线`day1-complete`；未获指示，未提交。 |
 | 是否偏离计划 | 否；严格只实施D2-T02，未进入daily/aggregate/warning/Agent/Vue、未创建published目录、未修改AT-SRC-002、未启动D2-T03。 |
-| 下一建议任务 | 等待技术负责人D2-T02 Code Review；未批准前不得改为`DONE`，不得启动D2-T03或后续未批准任务。 |
+| 下一建议任务 | 等待项目方确认后领取 D2-T03 PBOC每日加工与CSV持久化。 |
+### D2-T02 Sol 最终固定快照 Review 通过与任务收口
+
+| 字段 | 记录 |
+|---|---|
+| 开发日 | Day 2（Review 收口，非新的业务开发） |
+| 开始时间 | 2026-08-09（Asia/Shanghai） |
+| 结束时间 | 2026-08-09（Asia/Shanghai） |
+| 执行窗口/执行人 | Sol 技术负责人最终固定快照 Review 结论；OpenCode实施工程师窗口记录状态收口 |
+| 开始状态 | D2-T02=`REVIEW_PENDING`；publishRef MAJOR=FIXED、stale CHANGE_REQUEST 已落地（DEC-051）、DEC与实现一致性=PASS。 |
+| 结束状态 | D2-T02=`DONE`；`statusReason=REVIEW_PASS_SOL_FINAL_APPROVED_20260809`。Sol 最终固定快照 Review=`PASS`（审查 commit=`12766c9`）；publishRef MAJOR=`CLOSED`、stale CHANGE_REQUEST=`CLOSED`、DEC-051 与实现=`PASS`、D2-T02 DoD=`PASS`、Evidence=`VALID`。本任务完成不代表 AT-SRC-002、Day 2 总门禁通过。 |
+| 已完成内容 | 接收 Sol 正式结论：D2-T02 通过最终固定快照 Review（审查 commit=`12766c9`）；完成 D2-T02 状态收口为`DONE`。 |
+| 创建/修改文件 | 仅更新`docs/04-DEVELOPMENT-TASKS.md`与本台账的 D2-T02 状态记录；未修改生产代码、测试、evidence、DEC-050/DEC-051 与冻结业务规则。 |
+| 测试/验收结果 | D2-T02 任务级 Review=`PASS`（61 项定向/回归测试、真实 raw 双币 PUBLISHED+VERIFIED 证据、publishRef 与 DEC-051 边界）。此状态不等于 AT-SRC-002、Day 2 总门禁通过。 |
+| 阻塞项变化 | D2-T02 Review 门禁解除；D2-T03 的直接依赖已满足，`TaskExecutionStatus=READY`，等待项目方确认领取。AT-SRC-002、Day 2 总门禁保持`NOT_RUN`。 |
+| 最近可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T02 发布门禁/隔离/读模型（含 publishRef、DEC-051 stale）已通过 Sol 最终 Review。 |
+| Git提交 | 无新提交；审查基线 commit=`12766c9`（feature/d2-t02）；未获指示，未提交。 |
+| 是否偏离计划 | 否；仅状态收口，未实施 D2-T03。 |
+| 下一建议任务 | 等待项目方确认后领取 D2-T03 PBOC每日加工与CSV持久化。 |
 ### 后续记录模板
 
 后续窗口复制以下模板并追加在最近一条记录之后，不得删除旧记录。

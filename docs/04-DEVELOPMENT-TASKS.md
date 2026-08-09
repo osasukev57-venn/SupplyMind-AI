@@ -146,7 +146,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D2-T02 PBOC VERIFIED发布门禁
 
-- **优先级/状态：** P0-最高 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=PBOC_VERIFIED_PUBLISH_GATE_FINDINGS_CLOSED_AWAITING_FINAL_REVIEW_20260809`。publishRef MAJOR=`CLOSED`；stale CHANGE_REQUEST=`CLOSED`（DEC-051 已登记）；等待最终Review；执行人不得自行改为`DONE`。
+- **优先级/状态：** P0-最高 / `TaskExecutionStatus=DONE`；`statusReason=REVIEW_PASS_SOL_FINAL_APPROVED_20260809`。Sol 最终固定快照 Review 通过（审查 commit=`12766c9`）；publishRef MAJOR=`CLOSED`、stale CHANGE_REQUEST=`CLOSED`、DEC-051 与实现一致、D2-T02 DoD=`PASS`、Evidence=`VALID`。本任务完成不代表 AT-SRC-002、Day 2 总门禁通过。
 - **任务目标：** 建立PBOC最小发布边界，确保只有`ProcessingStage=PUBLISHED`且ValidationStatus为两种VERIFIED状态的记录可被加工与查询。
 - **对应需求：** SUP-02、F06、H01、H02。
 - **输入：** D2-T01校验结果、raw引用。
