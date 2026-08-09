@@ -100,7 +100,7 @@ staging/<runId>.json（TimelineStore.read，manifest 校验）
 | 配置版本切换（同计算上下文 V1+V3）→ 单行 configVersions=[1,3]、validCount=2 | PASS |
 | 计算上下文切换（scale 8 vs 12）→ 两行分行，avg 分别 6.79040000 / 6.790400000000 | PASS |
 | 重算幂等（固定 Clock）→ 字节一致 | PASS |
-| 重启解码 daily 与计算结果一致 | PASS |
+| 重启读取：独立 Reader B（全新实例、同一物理 dataRoot）→ CSV/manifest 存在、fileSha256/byteLength/rowCount/min/max/sourceRunIds 对账、ManifestVerifier 通过、decodeDaily 逐字段独立期望一致 | PASS |
 
 ### 真实 raw 门禁 `DailyRealRawEvidenceTest`（gated `-Dd2-t03.real-raw=true`，PASS）
 
@@ -128,3 +128,26 @@ staging/<runId>.json（TimelineStore.read，manifest 校验）
 - 数据生命周期：真实双币 daily 已生成（输入为 PUBLISHED+VERIFIED）；未进入聚合（D2-T04）、warning、dashboard、Agent。
 - 失败回退：保留 raw/已发布值与旧 daily；写入经 DirtyMarker 原子事务，失败不产生正式半文件。
 - 未修改 AT-SRC-002（保持 `NOT_RUN`）；未进入 D2-T04；未绕过发布门禁；无 float/double。
+
+## Review Fix 记录（CHANGES_REQUESTED，2026-08-09）
+
+正式 Review（固定 commit=`caa6216`）结论：BLOCKER=无；MAJOR 1（重算确定性 updatedAt 来源）；MAJOR 2（restart 证据不充分）。
+
+### MAJOR 1：updatedAt 确定性来源 —— BUSINESS_DECISION_REQUIRED
+
+按 Finding 指令先核对冻结文档：总计划 8.4.5 Daily 固定表头、FILE-SCHEMA-V1、CALCULATION-RULES、DEC-048 均只对 daily `updatedAt` 作类型约束（ISO-8601 offset datetime），**未定义其业务语义或确定性来源**；冻结的确定性要求（"相同逻辑输入无论遍历/线程顺序如何都必须产生逐字节相同CSV与fileSha256"、AT-AGG-001"文件重算结果与首次计算完全一致"）成立，但 daily updatedAt 应取何确定性业务时间在冻结文档中缺失。唯一相关冻结先例为总计划 8.4.3 quarantine："`quarantinedAt`固定等于所投影终态快照的updatedAt，不得取重放时当前Clock"（派生记录时间字段取业务输入时间）。按 Finding 指令"冻结文档没有给出 updatedAt 的确定性来源时立即停止代码修改并报告"，本 Finding **未修改代码**，提交：
+
+- 待裁决项：daily 行 `updatedAt` 的确定性业务时间来源。候选方案（供裁决，未实施）：(a) 该行参与输入的最大 `publishedAt`（参照 quarantine 先例，完全由业务输入确定、可追溯）；(b) 行 `businessDate` 锚点（如 Asia/Shanghai 当日某固定时刻）。跨时钟幂等测试（Clock A≠B → 字节一致）待裁决后补齐；当前实现 updatedAt 取执行 Clock，跨时钟字节必然不同，故不加入必失败测试。
+- 建议：以新 DEC 明确 daily updatedAt 语义后按裁决实现并补跨时钟反例测试。
+
+### MAJOR 2：真正独立重启读取 —— FIXED
+
+`restartReadDecodesDailyFromDisk` 重写为 `restartReaderReinitializesIndependentlyAndVerifiesCsvAndManifestFromDisk`：
+
+- Writer A：完整写链（ingest → validation → publish → daily）后**完全丢弃**（不持有 A 的 DailyResult/store/service/codec 对象）；
+- Reader B：同一物理 dataRoot（`DataRoot.forTest(root.path())`）**全新初始化**所有 store/service（全新 AtomicFileStore/TimelineStore/DailyProcessingService/DataRoot），不持有 A 的任何对象；
+- 磁盘校验：从冻结路径规则（`DataPaths.dailyRef`）定位 daily CSV 与相邻 manifest；`ManifestV1.fileSha256` 与 CSV 实际字节一致、`byteLength` 正确、`rowCount`=1、`min/maxBusinessDate` 正确、`sourceRunIds` 正确、`ManifestVerifier.matches`（含 expected runIds）通过；
+- decode：`CsvV1Codec.decodeDaily` 成功，sum/validCount/avg/inputRefs/configVersions/计算上下文逐项与独立冻结期望一致（不使用 A.rows().equals 作为唯一 oracle）；
+- 真实门禁同步更新：reader B 在同一物理 root 上以全新实例重算/重读双币 daily，行集与字节一致，manifest 全字段对账通过；`restartReadOutcome=PASS` 仅在本次真实成立后写入 summary。
+
+EXT-03/EXT-06 保持 `OPEN`；D2-T03 保持 `REVIEW_PENDING`，不得 DONE。

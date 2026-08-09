@@ -3,7 +3,7 @@
   "executedAt" : "2026-08-09T22:50+08:00",
   "javaRuntime" : "17.0.19",
   "springBootVersion" : "3.3.6",
-  "evidenceDataRoot" : "D:\\Dev\\Temp\\junit9160527177178282805\\d2-t03 real raw daily root",
+  "evidenceDataRoot" : "D:\\Dev\\Temp\\junit17035121753986435842\\d2-t03 real raw daily root",
   "sourceDataRoot" : "D:\\Dev\\Projects\\SupplyMind AI\\backend\\data\\d1-t05-smoke",
   "realPageSha256" : "f37cda1f7717a317fe42997514b27850dd96b16df5847b5eafcfab9a543d4f82",
   "sourceRawCopiedByteIdentical" : true,
@@ -11,20 +11,22 @@
   "restartReadOutcome" : "PASS",
   "results" : {
     "usd" : {
-      "validCount" : 1,
-      "sum" : "6.7904",
       "businessDate" : "2026-08-07",
+      "sum" : "6.7904",
+      "dailyRef" : "processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv",
+      "validCount" : 1,
       "avg" : "6.79040000",
-      "avgScale" : 8,
-      "dailyRef" : "processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv"
+      "restartReaderRecomputeIdentical" : true,
+      "avgScale" : 8
     },
     "eur" : {
-      "validCount" : 1,
-      "sum" : "7.8067",
       "businessDate" : "2026-08-07",
+      "sum" : "7.8067",
+      "dailyRef" : "processed/daily/FX.EUR.CNY.PBOC_MID/2026-08.csv",
+      "validCount" : 1,
       "avg" : "7.80670000",
-      "avgScale" : 8,
-      "dailyRef" : "processed/daily/FX.EUR.CNY.PBOC_MID/2026-08.csv"
+      "restartReaderRecomputeIdentical" : true,
+      "avgScale" : 8
     }
   }
 }

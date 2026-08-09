@@ -56,8 +56,8 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 2 |
-| 当前任务编号 | D2-T03 PBOC每日加工与CSV持久化（`TaskExecutionStatus=REVIEW_PENDING`，已提交Code Review；EXT-03/EXT-06未关闭，不得标DONE）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050、DEC-051 生效。D2-T03=`REVIEW_PENDING`，`statusReason=PBOC_DAILY_PROCESSING_EVIDENCE_SUBMITTED_20260809`。 |
+| 当前任务编号 | D2-T03 PBOC每日加工与CSV持久化（`TaskExecutionStatus=REVIEW_PENDING`；MAJOR 2 已修复，MAJOR 1=`BUSINESS_DECISION_REQUIRED` 待裁决；EXT-03/EXT-06未关闭，不得标DONE）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050、DEC-051 生效。D2-T03=`REVIEW_PENDING`，`statusReason=PBOC_DAILY_PROCESSING_REVIEW_FIX_RESUBMITTED_20260809`。 |
 | 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）已生效；算术/日历版本化默认见CALCULATION-RULES（arithmetic-mean-v1、weekday-asia-shanghai-v1） |
 | 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS，审查commit=12766c9）。 |
 | 正在进行任务 | 无；D2-T03已实施完毕并提交Code Review，等待正式裁决。 |
@@ -65,10 +65,10 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 最近验收结果 | D2-T01、D2-T02=`DONE`（Sol最终Review PASS）；D2-T03任务级每日加工证据已提交（`REVIEW_PENDING`）。AT-SRC-002仍为`NOT_RUN`。 |
 | 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 依赖 EXT-03/EXT-06 未关闭：每日均值/节假日口径使用冻结版本化 P0 默认（arithmetic-mean-v1、weekday-asia-shanghai-v1），不得宣称正式业务口径通过。 |
 | 下一任务 | 等待技术负责人D2-T03 Code Review；通过前不得改为`DONE`，不得启动D2-T04或后续未批准任务。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T03 每日加工 75 项回归测试与真实 raw 双币 daily CSV 证据通过。 |
-| 最近一次Git提交 | 无新提交；当前分支 `feature/d2-t03`，基线 `day1-complete`，HEAD=`7258fb2`；未获指示，本轮未提交。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T03 每日加工 75 项回归测试与真实 raw 双币 daily CSV 证据通过（MAJOR 2 独立重启读取修复后）。 |
+| 最近一次Git提交 | 本轮将提交 fix commit（关闭 D2-T03 幂等/重启 Finding）；基线 `caa6216`（feature/d2-t03）。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，实施D2-T03并提交Review。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，按 CHANGES_REQUESTED 修复 D2-T03 MAJOR 2 并上报 MAJOR 1 业务裁决。 |
 | 最后更新时间 | 2026-08-09（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照

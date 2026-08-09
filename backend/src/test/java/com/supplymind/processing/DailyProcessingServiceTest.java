@@ -329,16 +329,58 @@ class DailyProcessingServiceTest {
     }
 
     @Test
-    void restartReadDecodesDailyFromDisk() throws IOException {
-        Harness harness = harness();
+    void restartReaderReinitializesIndependentlyAndVerifiesCsvAndManifestFromDisk() throws IOException {
+        Harness writerA = harness();
         RawReceiptV1 raw = pbocRaw("run-daily-restart-001", MonitorSeriesDefaults.USD_CNY_ITEM_ID,
                 "6.7904", "2026-08-10", 1);
-        ingestAndPublish(harness, raw);
-        DailyResult result = harness.daily().processMonth(raw.itemId(), MONTH_2026_08);
+        ingestAndPublish(writerA, raw);
+        writerA.daily().processMonth(raw.itemId(), MONTH_2026_08);
 
-        List<DailyRecordV1> decoded = CsvV1Codec.decodeDaily(
-                Files.readAllBytes(harness.root().resolveDataRef(result.dailyRef())));
-        assertEquals(result.rows(), decoded, "a fresh decode from disk must equal the computed rows");
+        Harness readerB = harness();
+        String dailyRef = DataPaths.dailyRef(raw.itemId(), MONTH_2026_08);
+        Path dailyPath = readerB.root().resolveDataRef(dailyRef);
+        Path manifestPath = readerB.root().resolveDataRef(DataPaths.manifestRef(dailyRef));
+        assertTrue(Files.isRegularFile(dailyPath), "the daily CSV must exist on disk for the restarted reader");
+        assertTrue(Files.isRegularFile(manifestPath), "the daily manifest must exist on disk for the restarted reader");
+
+        byte[] csvBytes = Files.readAllBytes(dailyPath);
+        ManifestV1 manifest = JsonV1Codec.decodeFile(Files.readAllBytes(manifestPath), ManifestV1.class);
+        assertEquals(FileDigest.sha256(csvBytes), manifest.fileSha256(),
+                "manifest fileSha256 must equal the actual CSV bytes");
+        assertEquals(csvBytes.length, manifest.byteLength());
+        assertEquals(1, manifest.rowCount());
+        assertEquals("2026-08-10", manifest.minBusinessDate());
+        assertEquals("2026-08-10", manifest.maxBusinessDate());
+        assertEquals(List.of("run-daily-restart-001"), manifest.sourceRunIds());
+        assertTrue(ManifestVerifier.matches(readerB.root(), dailyRef, dailyPath, manifestPath,
+                List.of("run-daily-restart-001")));
+
+        List<DailyRecordV1> decoded = CsvV1Codec.decodeDaily(csvBytes);
+        assertEquals(1, decoded.size());
+        DailyRecordV1 row = decoded.get(0);
+        assertEquals("2026-08-10", row.businessDate());
+        assertEquals(MonitorSeriesDefaults.USD_CNY_ITEM_ID, row.itemId());
+        assertEquals(ProcessingStage.PUBLISHED, row.processingStage());
+        assertEquals(ValidationStatus.VERIFIED, row.validationStatus());
+        assertEquals("pboc-basic-validation-v1", row.validationVersion());
+        assertEquals(List.of(1), row.configVersions());
+        assertEquals("arithmetic-mean-v1", row.calculationVersion());
+        assertEquals(8, row.calculationScale());
+        assertEquals(4, row.displayScale());
+        assertEquals(RoundingMode.HALF_UP, row.roundingMode());
+        assertEquals("weekday-asia-shanghai-v1", row.calendarVersion());
+        assertEquals("6.7904", row.sum());
+        assertEquals(1, row.validCount());
+        assertEquals("6.79040000", row.avg());
+        assertEquals(1, row.expectedCount());
+        assertEquals(0, row.missingCount());
+        assertTrue(row.complete());
+        assertEquals("CNY", row.currency());
+        assertEquals("CNY/1 USD", row.unit());
+        assertEquals(1, row.inputRefs().size());
+        assertEquals("run-daily-restart-001", row.inputRefs().get(0).runId());
+        assertEquals(raw.rawRef(), row.inputRefs().get(0).rawRef());
+        assertEquals(4, row.inputRefs().get(0).recordVersion());
     }
 
     private void assertRow(

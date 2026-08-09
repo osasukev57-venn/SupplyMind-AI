@@ -136,20 +136,49 @@ class DailyRealRawEvidenceTest {
         assertEquals("CNY/1 USD", decodedUsd.get(0).unit());
         assertEquals("CNY", decodedUsd.get(0).currency());
 
+        DataRoot readerRoot = DataRoot.forTest(root.path());
+        AtomicFileStore readerFileStore = new AtomicFileStore(readerRoot, new DirtyMarkerCodec());
+        TimelineStore readerTimeline = new TimelineStore(readerRoot, readerFileStore, FIXED_CLOCK);
+        DailyProcessingService readerDaily =
+                new DailyProcessingService(readerRoot, readerTimeline, readerFileStore, FIXED_CLOCK);
+        DailyResult usdReRead = readerDaily.processMonth("FX.USD.CNY.PBOC_MID", YearMonth.of(2026, 8));
+        DailyResult eurReRead = readerDaily.processMonth("FX.EUR.CNY.PBOC_MID", YearMonth.of(2026, 8));
+        assertEquals(usd.rows(), usdReRead.rows(),
+                "the restarted reader must recompute identical rows from disk state");
+        assertEquals(eur.rows(), eurReRead.rows(),
+                "the restarted reader must recompute identical rows from disk state");
+        byte[] usdBytesReRead = Files.readAllBytes(readerRoot.resolveDataRef(usdReRead.dailyRef()));
+        ManifestV1 usdManifestReRead = JsonV1Codec.decodeFile(
+                Files.readAllBytes(readerRoot.resolveDataRef(DataPaths.manifestRef(usdReRead.dailyRef()))),
+                ManifestV1.class);
+        assertEquals(FileDigest.sha256(usdBytesReRead), usdManifestReRead.fileSha256());
+        assertEquals(usdBytesReRead.length, usdManifestReRead.byteLength());
+        assertEquals(1, usdManifestReRead.rowCount());
+        assertEquals("2026-08-07", usdManifestReRead.minBusinessDate());
+        assertEquals("2026-08-07", usdManifestReRead.maxBusinessDate());
+        assertTrue(ManifestVerifier.matches(readerRoot, usdReRead.dailyRef(),
+                readerRoot.resolveDataRef(usdReRead.dailyRef()),
+                readerRoot.resolveDataRef(DataPaths.manifestRef(usdReRead.dailyRef())),
+                List.of(usdRow.inputRefs().get(0).runId())));
+        assertEquals(usd.rows(), CsvV1Codec.decodeDaily(usdBytesReRead),
+                "the restarted reader must decode the persisted CSV identically");
+
         results.put("usd", Map.of(
                 "businessDate", usdRow.businessDate(),
                 "sum", usdRow.sum(),
                 "avg", usdRow.avg(),
                 "validCount", usdRow.validCount(),
                 "dailyRef", usd.dailyRef(),
-                "avgScale", usdRow.avg().split("\\.")[1].length()));
+                "avgScale", usdRow.avg().split("\\.")[1].length(),
+                "restartReaderRecomputeIdentical", usd.rows().equals(usdReRead.rows())));
         results.put("eur", Map.of(
                 "businessDate", eurRow.businessDate(),
                 "sum", eurRow.sum(),
                 "avg", eurRow.avg(),
                 "validCount", eurRow.validCount(),
                 "dailyRef", eur.dailyRef(),
-                "avgScale", eurRow.avg().split("\\.")[1].length()));
+                "avgScale", eurRow.avg().split("\\.")[1].length(),
+                "restartReaderRecomputeIdentical", eur.rows().equals(eurReRead.rows())));
 
         System.out.printf("D2T03_REAL_RAW usd sum=%s avg=%s dailyRef=%s%n",
                 usdRow.sum(), usdRow.avg(), usd.dailyRef());
