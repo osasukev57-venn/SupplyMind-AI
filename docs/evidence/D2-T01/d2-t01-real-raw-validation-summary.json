@@ -1,0 +1,34 @@
+{
+  "gate" : "D2-T01 real D1-T05 raw standardization and basic validation evidence",
+  "executedAt" : "2026-08-09T22:50+08:00",
+  "javaRuntime" : "17.0.19",
+  "springBootVersion" : "3.3.6",
+  "evidenceDataRoot" : "D:\\Dev\\Temp\\junit1469037513036948482\\d2-t01 real raw evidence root",
+  "sourceDataRoot" : "D:\\Dev\\Projects\\SupplyMind AI\\backend\\data\\d1-t05-smoke",
+  "realPageSha256" : "f37cda1f7717a317fe42997514b27850dd96b16df5847b5eafcfab9a543d4f82",
+  "sourceRawCopiedByteIdentical" : true,
+  "rawFilesUnchangedAfterValidation" : true,
+  "restartReadOutcome" : "PASS",
+  "results" : {
+    "pboc-eur-20260807-f37cda1f7717a317fe42997514b27850dd96b16df5847b5eafcfab9a543d4f82" : {
+      "itemId" : "FX.EUR.CNY.PBOC_MID",
+      "businessDate" : "2026-08-07",
+      "value" : "7.8067",
+      "processingStage" : "VALIDATED",
+      "validationStatus" : "VERIFIED",
+      "recordVersion" : 3,
+      "validationVersion" : "pboc-basic-validation-v1",
+      "reasonCode" : null
+    },
+    "pboc-usd-20260807-f37cda1f7717a317fe42997514b27850dd96b16df5847b5eafcfab9a543d4f82" : {
+      "itemId" : "FX.USD.CNY.PBOC_MID",
+      "businessDate" : "2026-08-07",
+      "value" : "6.7904",
+      "processingStage" : "VALIDATED",
+      "validationStatus" : "VERIFIED",
+      "recordVersion" : 3,
+      "validationVersion" : "pboc-basic-validation-v1",
+      "reasonCode" : null
+    }
+  }
+}

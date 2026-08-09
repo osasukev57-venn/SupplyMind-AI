@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 1（D1-T02字段事实与Windows原生重放证据已通过技术负责人Code Review并为`DONE`；D1-T03最终二次Review=`PASS`、`AT-FILE-000=PASS`并为`DONE`；D1-T04经Sol技术负责人和OpenCode独立Review均确认`PASS`并为`DONE`；D1-T05真实PBOC双币raw闭环冒烟门禁已实施并提交证据，`TaskExecutionStatus=REVIEW_PENDING`）  
+> 当前阶段：Day 2（D1-T01～D1-T05 均`DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`，Git 基线 `day1-complete`；D2-T01 PBOC标准化与基础校验已实施并提交证据，`TaskExecutionStatus=REVIEW_PENDING`；AT-SRC-002 保持`NOT_RUN`）  
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -55,20 +55,20 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 
 | 字段 | 当前值 |
 |---|---|
-| 当前开发日 | Day 1 |
-| 当前任务编号 | D1-T05 PBOC双币raw闭环冒烟门禁（`TaskExecutionStatus=REVIEW_PENDING`，Review BLOCKER已修复并重新提交）。 |
-| 当前任务状态 | D1-T02、D1-T03、D1-T04均为`TaskExecutionStatus=DONE`。D1-T04：`statusReason=REVIEW_PASS_SOL_AND_OPENCODE_APPROVED_20260809`。D1-T05=`REVIEW_PENDING`，`statusReason=REAL_PBOC_DUAL_CURRENCY_RAW_SMOKE_GATE_EVIDENCE_RESUBMITTED_AFTER_REVIEW_FIX_20260809`。 |
-| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；最终任务/AT/需求/依赖引用扫描通过 |
-| 已完成任务 | BASELINE-DOCS；D1-T01；D1-T02 PBOC双币数据契约与连通性验证（Code Review通过）；D1-T03 最小Spring Boot、data/raw与BigDecimal文件基础（Sol最终二次Review通过）；D1-T04 OfficialWebDataProvider真实PBOC获取与raw落盘（Sol + OpenCode Review通过）。 |
-| 正在进行任务 | 无；D1-T05已实施完毕并提交Code Review，等待正式裁决。 |
-| 阻塞项 | D1-T05 Review门禁待裁决。AT-SRC-002、Day 1/Day 2总门禁仍未运行或通过（不得写PASS）。 |
-| 最近验收结果 | D1-T02=`PASS/DONE`；D1-T03 Sol最终二次Review=`PASS`、`AT-FILE-000=PASS`、任务=`DONE`；D1-T04 Sol + OpenCode Review=`PASS`、任务=`DONE`。D1-T05任务级冒烟门禁证据已提交（`REVIEW_PENDING`）。AT-SRC-002、Day 1真实raw闭环及Day 2总门禁仍均为`NOT_RUN`。 |
-| 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径本次成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。 |
-| 下一任务 | 等待技术负责人D1-T05 Code Review；通过前不得改为`DONE`，不得启动D2或后续未批准任务。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D1-T05在独立dataRoot完成真实双币raw闭环冒烟门禁（含真实第二个Spring Context重启读取、幂等冲突证据、断网不造数）。 |
-| 最近一次Git提交 | 无；未获指示，未提交。 |
+| 当前开发日 | Day 2 |
+| 当前任务编号 | D2-T02 PBOC VERIFIED发布门禁（`TaskExecutionStatus=REVIEW_PENDING`，publishRef MAJOR 与 stale CHANGE_REQUEST 均已关闭，等待最终 Review）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`（Git 基线 `day1-complete`）；DEC-050、DEC-051 生效。D2-T02=`REVIEW_PENDING`，`statusReason=PBOC_VERIFIED_PUBLISH_GATE_FINDINGS_CLOSED_AWAITING_FINAL_REVIEW_20260809`。 |
+| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050 已生效（PBOC基础校验v1业务口径）；最终任务/AT/需求/依赖引用扫描通过 |
+| 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）。 |
+| 正在进行任务 | 无；D2-T02已实施完毕并提交Code Review，等待正式裁决。 |
+| 阻塞项 | D2-T02 Review门禁待裁决。AT-SRC-002、Day 2总门禁仍未运行或通过（不得写PASS）。 |
+| 最近验收结果 | D1-T05=`DONE`、Day 1 Gate=`PASS`、Day 1=`COMPLETE`；AT-FILE-000=`PASS`；D2-T01 Sol最终Review=`PASS`、任务=`DONE`。D2-T02任务级发布门禁/隔离/读模型证据已提交（`REVIEW_PENDING`）。AT-SRC-002仍为`NOT_RUN`。 |
+| 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T01数值范围/时效窗口已由DEC-050正式批准为pboc-basic-validation-v1业务口径（30个自然日、(0,100]），仅限USD/CNY、EUR/CNY基础校验。D2-T02业务读模型stale已由DEC-051正式冻结（查询时派生，businessDate距referenceDate超过30个自然日为stale，复用DEC-050阈值，比较基准为referenceDate）。 |
+| 下一任务 | 等待技术负责人D2-T02 Code Review；通过前不得改为`DONE`，不得启动D2-T03或后续未批准任务。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T02发布门禁/隔离/读模型测试56项与真实raw双币PUBLISHED+VERIFIED（含publishRef）证据通过。 |
+| 最近一次Git提交 | 无新提交；当前分支 `feature/d2-t02`，基线 `day1-complete`；未获指示，本轮未提交。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，按Sol Review BLOCKER要求修复D1-T05重启读取并重新提交。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，按正式Review MAJOR修复D2-T02读模型publishRef并重新提交。 |
 | 最后更新时间 | 2026-08-09（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照
@@ -364,6 +364,114 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | Git提交 | 无；未获指示，未提交。 |
 | 是否偏离计划 | 否；严格按Sol Review BLOCKER范围定点修复，仅改测试与证据，未改生产代码、冻结计划、AT-SRC-002，未进入D2。 |
 | 下一建议任务 | 等待技术负责人D1-T05重新Review；通过前不得改为`DONE`，不得启动D2或后续未批准任务。 |
+### D2-T01 领取与实施：PBOC标准化与基础校验
+
+| 字段 | 记录 |
+|---|---|
+| 开发日 | Day 2 |
+| 开始时间 | 2026-08-09（Asia/Shanghai，领取并更新快照） |
+| 结束时间 | 2026-08-09（Asia/Shanghai） |
+| 执行窗口/执行人 | OpenCode实施工程师窗口 |
+| 开始状态 | D2-T01=`NOT_STARTED`；D1-T01～D1-T05=`DONE`，Day 1 Gate=`PASS`，Day 1=`COMPLETE`。 |
+| 结束状态 | D2-T01=`REVIEW_PENDING`；`statusReason=PBOC_STANDARDIZATION_AND_BASIC_VALIDATION_EVIDENCE_SUBMITTED_20260809`。执行人不得自行改为`DONE`。 |
+| 对应需求 | SUP-02、F03、F06、H02；D2-T01任务定义、DoD与冻结状态机/条件必填矩阵（总计划8.4.3、DEC-042、C28/C31）。 |
+| 已完成内容 | 实现PBOC标准化与基础校验最小链：新增TimelineStore（LifecycleTimelineV1初始创建与原子追加、幂等重放不追加重复快照）与validation包（PbocCandidateStandardizer `pboc-standardization-v1`、PbocBasicValidator `pboc-basic-validation-v1`、LifecycleValidationService 编排、ActiveConfigReader、原因码/结果载体）。执行链：RECEIVED+PENDING → PARSED+PENDING（不可变CandidateV1）→ VALIDATED+VERIFIED/VERIFIED_WITH_NOTICE/REJECTED/CONFLICT；解析失败 → RECEIVED+REJECTED（candidate=null）。校验规则版本化固定：来源、字段完整性、单位、币种、未来日期、30天时效窗口、范围(0,100]、同键同源重复→VERIFIED_WITH_NOTICE/DUPLICATE_OBSERVATION、异值→CONFLICT/VALUE_CONFLICT；无效数据绝不覆盖既有合法值。真实D1-T05双币raw（复制逐字节一致，真实页面SHA-256=f37cda1f…4f82，businessDate=2026-08-07）均PARSED→VALIDATED+VERIFIED（USD=6.7904、EUR=7.8067），raw校验后逐字节未动，重启重读一致。 |
+| 创建/修改文件 | 新增`backend/src/main/java/com/supplymind/foundation/storage/TimelineStore.java`；新增`backend/src/main/java/com/supplymind/validation/`（7个类）；新增测试`PbocValidationPipelineTest`（14项）与`PbocValidationRealRawEvidenceTest`（gated真实raw证据）；新增golden fixtures `contracts/v1/valid/lifecycle-validated-verified-pboc-v1.json`、`lifecycle-validated-rejected-unit-mismatch-pboc-v1.json`、`lifecycle-received-rejected-standardization-pboc-v1.json`与`contracts/v1/invalid/lifecycle-received-validated-skip.json`、`lifecycle-parsed-published-skip.json`；新增`docs/evidence/D2-T01/`（校验报告与`d2-t01-real-raw-validation-summary.json`）；同步`docs/04`与本台账。未修改任何Day 1生产代码、冻结计划与数据字典。 |
+| 实际测试命令或步骤 | Java 17.0.19：`mvnw.cmd -q '-Dtest=PbocValidationPipelineTest,PbocValidationRealRawEvidenceTest' test`；`mvnw.cmd -q '-Dtest=PbocValidationRealRawEvidenceTest' '-Dd2-t01.real-raw=true' '-Dd2-t01.source-data-root=...\backend\data\d1-t05-smoke' '-Dd2-t01.evidence-dir=...\docs\evidence\D2-T01' test`；最小直接回归6个测试类。 |
+| 测试结果 | 合成矩阵14项PASS（含3组golden bytes逐字节一致、重复/冲突/幂等/跳级拒绝/恢复）；真实raw证据门禁PASS（双币VALIDATED+VERIFIED）；最小直接回归31 tests，0 failures、0 errors（1 skipped=gated）。 |
+| 验收证据路径 | `docs/evidence/D2-T01/D2T01-PBOC-STANDARDIZATION-AND-BASIC-VALIDATION-20260809.md`；`docs/evidence/D2-T01/d2-t01-real-raw-validation-summary.json`；`backend/src/test/resources/contracts/v1/{valid,invalid}/`黄金/非法fixture；`backend/target/surefire-reports/`。 |
+| 失败与回退 | 开发期测试侧修正：golden fixture改为与冻结codec一致的compact单行固定字节；管线时钟统一Asia/Shanghai；SOURCE_MISMATCH用例改为直接落盘raw以独立验证校验规则（RawReceiptStore的冻结来源守卫使其无法经store注入）。均为测试侧调整，未改动生产语义。 |
+| 新增风险 | 数值范围上限(0,100]与30天时效窗口为冻结文档未锁定的版本化实现默认（随pboc-basic-validation-v1固定），待EXT-03/EXT-05/EXT-06关闭后以新validationVersion调整。 |
+| 阻塞项变化 | D2-T01提交Code Review门禁（`REVIEW_PENDING`）。AT-SRC-002、Day 2总门禁保持`NOT_RUN`，不得写PASS。 |
+| 最近可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T01双币真实raw标准化→校验→VALIDATED+VERIFIED闭环证据已提交。 |
+| Git提交 | 无新提交；分支`feature/d2-t01`，基线`day1-complete`；未获指示，未提交。 |
+| 是否偏离计划 | 否；严格只实施D2-T01，未进入发布门禁/每日加工/调度、未生成quarantine（属D2-T02）、未创建normalized/published目录、未修改AT-SRC-002。 |
+| 下一建议任务 | 等待技术负责人D2-T01 Code Review；未批准前不得改为`DONE`，不得启动D2-T02或后续未批准任务。 |
+### D2-T01 Review Fix：CHANGES_REQUESTED Finding 1-3 修复与 Finding 4 上报
+
+| 字段 | 记录 |
+|---|---|
+| 开发日 | Day 2（Review Fix，非重新实施） |
+| 开始时间 | 2026-08-09（Asia/Shanghai） |
+| 结束时间 | 2026-08-09（Asia/Shanghai） |
+| 执行窗口/执行人 | OpenCode实施工程师窗口 |
+| 开始状态 | D2-T01=`REVIEW_PENDING`；技术负责人 Review=`CHANGES_REQUESTED`（Finding 1 BLOCKER、Finding 2/3 MAJOR、Finding 4 业务决策）。 |
+| 结束状态 | D2-T01=`REVIEW_PENDING`；`statusReason=PBOC_STANDARDIZATION_AND_BASIC_VALIDATION_REVIEW_FIX_RESUBMITTED_20260809`。Finding 4=`CHANGE_REQUEST_REQUIRED`。执行人不得自行改为`DONE`。 |
+| 已完成内容 | Finding 1：重复/冲突历史扫描只纳入当前快照为 VERIFIED 类（VERIFIED/VERIFIED_WITH_NOTICE）的合法基准，排除 PARSED+PENDING、VALIDATED+REJECTED、VALIDATED+CONFLICT。Finding 2：`ActiveConfigReader` 改为 `VersionedConfigReader.readVersion(dataRoot, raw.configVersion())`，精确读取不可变 config history（manifest+版本一致校验），不再用当前 active config。Finding 3：standardizer 仅对不可解析/缺字段判 STANDARDIZATION_FAILED；可解析的 0/负数构造 CandidateV1 经 PARSED+PENDING 由 validator 判 VALIDATED+REJECTED/OUT_OF_RANGE。Finding 4：检查全部冻结 docs 后确认无任何 stale/range 阈值正式裁决，按要求上报 CHANGE_REQUEST_REQUIRED，未自行决定参数、未修改冻结 docs。 |
+| 创建/修改文件 | 修改`validation/PbocCandidateStandardizer.java`、`validation/LifecycleValidationService.java`；删除`validation/ActiveConfigReader.java`、新增`validation/VersionedConfigReader.java`；新增7项测试（rejected/conflict/pending 历史反例、configVersion 切换、0/负数/不可解析）；更新`docs/evidence/D2-T01/D2T01-...-20260809.md`（Review Fix 记录）、`docs/04`与本台账。未修改 Day 1 生产代码、冻结计划、数据字典。 |
+| 实际测试命令或步骤 | Java 17.0.19：`mvnw.cmd -q '-Dtest=PbocValidationPipelineTest,PbocValidationRealRawEvidenceTest' test`（21+1(skip) PASS）；真实raw门禁重跑（gated）PASS；最小直接回归6类38 tests。 |
+| 测试结果 | 21/21 PASS：新增 rejected 历史不参与 conflict、conflict 历史不污染同值新记录、PARSED+PENDING 历史不参与、configVersion=1 在 active V2 下仍按 V1 同结果且新 V1 raw 仍 VERIFIED、V2 raw 按 V2 判 VERIFIED、rawValue=0 与 -1.5 经 PARSED→OUT_OF_RANGE、rawValue=abc→RECEIVED+REJECTED(candidate=null)；原 14 项全部保持通过。真实 raw 门禁重跑双币 VERIFIED。回归38 tests 0 failures 0 errors（1 skipped）。 |
+| 验收证据路径 | `docs/evidence/D2-T01/D2T01-PBOC-STANDARDIZATION-AND-BASIC-VALIDATION-20260809.md`（含 Review Fix 记录）；`docs/evidence/D2-T01/d2-t01-real-raw-validation-summary.json`；surefire 报告。 |
+| 失败与回退 | 无。 |
+| 新增风险 | Finding 4 未决：stale 阈值与数值边界（当前实现维持 30 天/(0,100] 版本化默认行为，标注非正式）等待技术负责人正式裁决并提供 validationVersion；裁决前 D2-T01 不得宣称业务口径通过。 |
+| 阻塞项变化 | D2-T01 仍处 Review 门禁；Finding 4 裁决为新增外部裁决项。AT-SRC-002、Day 2 总门禁保持`NOT_RUN`。 |
+| 最近可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T01 Review Fix 后测试全绿。 |
+| Git提交 | 无新提交；分支`feature/d2-t01`，基线`day1-complete`；未获指示，未提交。 |
+| 是否偏离计划 | 否；严格只修复已确认 Finding，未进入 D2-T02/发布/隔离/加工，未修改 AT-SRC-002 与冻结 docs。 |
+| 下一建议任务 | 等待技术负责人：D2-T01 Finding 1-3 复审 + Finding 4 阈值正式裁决；未批准前不得改为`DONE`。 |
+### D2-T01 Finding 4 正式决策落地与 Review 收口
+
+| 字段 | 记录 |
+|---|---|
+| 开发日 | Day 2（决策落地与状态收口，非重新实施） |
+| 开始时间 | 2026-08-09（Asia/Shanghai） |
+| 结束时间 | 2026-08-09（Asia/Shanghai） |
+| 执行窗口/执行人 | OpenCode实施工程师窗口 |
+| 开始状态 | D2-T01=`REVIEW_PENDING`；Finding 1-3=`CLOSED`，Finding 4 待技术负责人正式裁决。 |
+| 结束状态 | D2-T01=`REVIEW_PENDING`；`statusReason=PBOC_STANDARDIZATION_AND_BASIC_VALIDATION_FINDINGS_CLOSED_AWAITING_FINAL_REVIEW_20260809`。Finding 1-4 全部关闭，等待最终 Review；执行人不得自行改为`DONE`。 |
+| 已完成内容 | 将技术负责人正式批准的 PBOC 汇率基础校验 v1 业务口径登记为 `docs/06-DECISION-LOG.md` 的 DEC-050（`staleThresholdDays=30`、`(0,100]`、`pboc-basic-validation-v1`，仅限 USD/CNY、EUR/CNY D2-T01 基础校验，历史 validationVersion 结果保持可追溯，不得扩展其他口径）。核验生产代码与正式参数逐字一致（30 天判断、signum<=0 或 >100 → OUT_OF_RANGE、100 允许、validationVersion 常量），生产代码零修改。新增 4 项 DEC-050 边界测试。修正 evidence 中"版本化实现默认/等待确认"措辞为正式批准口径（保留原 Review Fix 历史审计链）。 |
+| 创建/修改文件 | 修改`docs/06-DECISION-LOG.md`（新增 DEC-050）；修改`docs/evidence/D2-T01/D2T01-...-20260809.md`（正式参数说明、Finding 4 状态、边界测试结果）；修改`PbocValidationPipelineTest.java`（+4 边界测试）；最小同步`docs/04`与本台账。未修改生产代码与冻结计划。 |
+| 实际测试命令或步骤 | Java 17.0.19：`mvnw.cmd -q '-Dtest=PbocValidationPipelineTest' test`（25 PASS）；真实 raw 门禁重跑（gated）PASS；最小直接回归 6 类 42 tests。 |
+| 测试结果 | 边界：日期差=30（2026-07-11）→ 非 stale VERIFIED；日期差=31（2026-07-10）→ STALE_BUSINESS_DATE；value=0 与 -1.5 → 先 PARSED+PENDING 后 VALIDATED+REJECTED/OUT_OF_RANGE；value=100 → VERIFIED；value=101/500 → OUT_OF_RANGE。管线 25 tests 0 failures 0 errors；真实 raw 双币 VALIDATED+VERIFIED；回归 42 tests 0 failures 0 errors 0 skipped。 |
+| 验收证据路径 | `docs/06-DECISION-LOG.md#DEC-050`；`docs/evidence/D2-T01/`；surefire 报告。 |
+| 失败与回退 | 无。 |
+| 新增风险 | 无新增；DEC-050 适用范围已限定双币基础校验，扩展需新决策+新 validationVersion。 |
+| 阻塞项变化 | D2-T01 全部 Finding 关闭，仅剩最终 Review 门禁。AT-SRC-002、Day 2 总门禁保持`NOT_RUN`。 |
+| 最近可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T01 正式参数边界与真实 raw 证据通过。 |
+| Git提交 | 无新提交；分支`feature/d2-t01`，基线`day1-complete`；未获指示，未提交。 |
+| 是否偏离计划 | 否；未进入 D2-T02/PUBLISHED/quarantine/daily/aggregate/warning/Agent/前端，未修改 AT-SRC-002 与 Finding 1-3 实现。 |
+| 下一建议任务 | 等待技术负责人 D2-T01 最终 Review；通过前不得改为`DONE`，不得启动 D2-T02。 |
+### D2-T01 Sol 最终 Review 通过与任务收口
+
+| 字段 | 记录 |
+|---|---|
+| 开发日 | Day 2（Review 收口，非新的业务开发） |
+| 开始时间 | 2026-08-09（Asia/Shanghai） |
+| 结束时间 | 2026-08-09（Asia/Shanghai） |
+| 执行窗口/执行人 | Sol 技术负责人最终 Review 结论；OpenCode实施工程师窗口记录状态收口 |
+| 开始状态 | D2-T01=`REVIEW_PENDING`；Finding 1-4=`CLOSED`、DEC与实现一致性=PASS、边界规则=PASS、D2-T01 DoD=PASS、BLOCKER=无；唯一 MAJOR（证据/注释口径）已由 Final Delta 收口。 |
+| 结束状态 | D2-T01=`DONE`；`statusReason=REVIEW_PASS_SOL_FINAL_APPROVED_20260809`。Sol 最终 Review=`PASS`。本任务完成不代表 AT-SRC-002、Day 2 总门禁通过。 |
+| 已完成内容 | 接收 Sol 正式结论：D2-T01 通过最终 Review（Finding 1-4 全部 CLOSED、DoD PASS、DEC-050 已生效）；完成 D2-T01 状态收口为`DONE`。 |
+| 创建/修改文件 | 仅更新`docs/04-DEVELOPMENT-TASKS.md`与本台账的 D2-T01 状态记录；未修改生产代码、测试、evidence、冻结业务规则与 DEC-050。 |
+| 测试/验收结果 | D2-T01 任务级 Review=`PASS`（25 项定向测试、真实 raw 双币 VALIDATED+VERIFIED 证据、DEC-050 边界）。此状态不等于 AT-SRC-002、Day 2 总门禁通过。 |
+| 阻塞项变化 | D2-T01 Review 门禁解除；D2-T02 的直接依赖已满足，任务保持`NOT_STARTED`，等待项目方确认领取。AT-SRC-002、Day 2 总门禁保持`NOT_RUN`。 |
+| 最近可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T01 标准化/校验链（含 DEC-050 业务口径）已通过 Sol 最终 Review。 |
+| Git提交 | 无新提交；分支`feature/d2-t01`，基线`day1-complete`；未获指示，未提交。 |
+| 是否偏离计划 | 否；仅状态收口，未实施 D2-T02。 |
+| 下一建议任务 | 等待项目方确认后领取 D2-T02 PBOC VERIFIED发布门禁。 |
+### D2-T02 领取与实施：PBOC VERIFIED发布门禁
+
+| 字段 | 记录 |
+|---|---|
+| 开发日 | Day 2 |
+| 开始时间 | 2026-08-09（Asia/Shanghai，领取并更新快照） |
+| 结束时间 | 2026-08-09（Asia/Shanghai） |
+| 执行窗口/执行人 | OpenCode实施工程师窗口 |
+| 开始状态 | D2-T02=`NOT_STARTED`；D2-T01=`DONE`（Sol最终Review PASS）、DEC-050 生效。 |
+| 结束状态 | D2-T02=`REVIEW_PENDING`；`statusReason=PBOC_VERIFIED_PUBLISH_GATE_EVIDENCE_SUBMITTED_20260809`。执行人不得自行改为`DONE`。 |
+| 对应需求 | SUP-02、F06、H01、H02；D2-T02任务定义、DoD、冻结状态机/条件必填矩阵（总计划8.4.3、DEC-042、C28/C31、AT-PUB-001/002/003）。 |
+| 已完成内容 | 实现最小发布边界与业务读模型：新增QuarantineStore（CREATE_NEW不可变投影持久化、同hash幂等、异hash fail-closed）与publish包（LifecyclePublishService 编排、PublishedQueryService 业务入口、PublishOutcome/PublishedRecord 载体）。执行链：VALIDATED+VERIFIED类 → 追加PUBLISHED快照（recordVersion=4、publishRef=staging/<runId>.json#recordVersion=4、publishedAt，审计字段保持）；三个失败终态 → QuarantineProjectionV1.fromTerminal 确定性投影落盘（timeline逐字节不动）；PENDING → NOT_READY；PUBLISHED重放幂等。业务入口仅暴露PUBLISHED+VERIFIED类，记录可追溯（runId/rawRef/recordVersion/validationVersion/rawPayloadSha256/rawFileSha256/stale事实比较）。真实D1-T05双币raw（逐字节复制，真实页面SHA-256=f37cda1f…4f82）经D2-T01校验后均发布为PUBLISHED+VERIFIED（USD=6.7904、EUR=7.8067），raw逐字节未动、无quarantine、业务入口可见。 |
+| 创建/修改文件 | 新增`foundation/storage/QuarantineStore.java`；新增`publish/`（LifecyclePublishService、PublishedQueryService、PublishOutcome、PublishedRecord）；新增测试`PublishGateTest`（9项）、`PublishedQueryServiceTest`（5项）、`PublishRealRawEvidenceTest`（gated真实raw）；新增golden `contracts/v1/valid/lifecycle-published-pboc-v1.json`；新增`docs/evidence/D2-T02/`（实施记录与`d2-t02-real-raw-publish-summary.json`）；同步`docs/04`与本台账。未修改D1/D2-T01生产代码、冻结计划、DEC-050与数据字典。 |
+| 实际测试命令或步骤 | Java 17.0.19：`mvnw.cmd -q '-Dtest=PublishGateTest,PublishedQueryServiceTest,PublishRealRawEvidenceTest' test`（14+1(skip) PASS）；真实raw门禁（gated `-Dd2-t02.real-raw=true`）PASS；最小直接回归7类55 tests。 |
+| 测试结果 | 发布门禁9项PASS（含golden bytes、notice发布、PENDING不动、三终态quarantine逐字段对账、重放幂等、合法不误隔离）；读模型5项PASS（不可见性边界、全字段追溯、latest/stale、notice可见）；真实raw门禁双币PUBLISHED+VERIFIED；回归55 tests 0 failures 0 errors 0 skipped。 |
+| 验收证据路径 | `docs/evidence/D2-T02/D2T02-PBOC-VERIFIED-PUBLISH-GATE-20260809.md`；`docs/evidence/D2-T02/d2-t02-real-raw-publish-summary.json`；`backend/src/test/resources/contracts/v1/valid/lifecycle-published-pboc-v1.json`；`backend/target/surefire-reports/`。 |
+| 失败与回退 | 开发期测试侧修正：ManifestV1导入包位置与BOM清理、`isPublishedForDailyInput`调用对象、两个查询测试断言自身错误（未发布first运行、查询日期误用）。均为测试侧调整，未改动生产语义。 |
+| 新增风险 | 业务读模型stale为事实比较语义（businessDate<参考日，Asia/Shanghai），未引入业务阈值；正式stale展示口径（EXT-06相关）由后续任务/决策确定。 |
+| 阻塞项变化 | D2-T02提交Code Review门禁（`REVIEW_PENDING`）。AT-SRC-002、Day 2总门禁保持`NOT_RUN`，不得写PASS。 |
+| 最近可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T02双币真实raw发布门禁与业务读模型证据已提交。 |
+| Git提交 | 无新提交；分支`feature/d2-t02`，基线`day1-complete`；未获指示，未提交。 |
+| 是否偏离计划 | 否；严格只实施D2-T02，未进入daily/aggregate/warning/Agent/Vue、未创建published目录、未修改AT-SRC-002、未启动D2-T03。 |
+| 下一建议任务 | 等待技术负责人D2-T02 Code Review；未批准前不得改为`DONE`，不得启动D2-T03或后续未批准任务。 |
 ### 后续记录模板
 
 后续窗口复制以下模板并追加在最近一条记录之后，不得删除旧记录。
