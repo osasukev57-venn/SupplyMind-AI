@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 2（D1-T01～D1-T05 均`DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`，Git 基线 `day1-complete`；D2-T01、D2-T02、D2-T03 均`DONE`——D2-T03 经 Implementation Review PASS 与 EXT Gate PASS（DEC-052/053/054 生效）收口为候选`DONE`，等待 Gate Closure Review 通过；D2-T04 候选`READY`；AT-SRC-002 保持`NOT_RUN`）  
+> 当前阶段：Day 2（D1-T01～D1-T05 均`DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`，Git 基线 `day1-complete`；D2-T01、D2-T02、D2-T03、D2-T04 均`DONE`——D2-T04 经 `1ac8233`（Review=`CHANGES_REQUESTED`）→ `1178307`（Findings A/B/C 关闭）→ Sol/Second-party Final Delta Review=`PASS` 正式收口；D2-T05=`NOT_STARTED`（`NOT_READY`：冻结输入 AT-SRC-002=`NOT_RUN` 未满足）；AT-SRC-002 保持`NOT_RUN`）  
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -56,19 +56,19 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 2 |
-| 当前任务编号 | D2-T04 PBOC历史读取与多周期聚合最小闭环（`TaskExecutionStatus=REVIEW_PENDING`，DEC-055 已实施；`1ac8233` Review=`CHANGES_REQUESTED`，Findings A/B/C 已关闭并提交 closure evidence）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02、D2-T03均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050～055 生效。D2-T04=`REVIEW_PENDING`，`statusReason=D2T04_FINDINGS_CLOSURE_SUBMITTED_20260810`（Finding A 四级跨Clock、Finding B read-only restart、Finding C 多configVersion 全部关闭）。 |
-| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）、DEC-053（arithmetic-mean-v1接受版本化默认）、DEC-054（weekday-asia-shanghai-v1接受版本化默认）已生效 |
-| 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS）；D2-T03（Implementation Review PASS + EXT Gate PASS，commit=607e859）。 |
+| 当前任务编号 | D2-T04 PBOC历史读取与多周期聚合最小闭环（`TaskExecutionStatus=DONE`，`statusReason=REVIEW_PASS_IMPLEMENTATION_FINDINGS_CLOSED_DUAL_REVIEW_20260810`；implementation commit=`1ac8233`、findings closure commit=`1178307`）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02、D2-T03、D2-T04均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050～055 生效。D2-T04 状态依据：implementation=`1ac8233`（首轮 Review=`CHANGES_REQUESTED`：Finding A 四级跨Clock证据不足、Finding B Restart非纯只读、Finding C 多configVersion证据不足）；closure=`1178307`（Finding A/B/C 全部`CLOSED`）；Sol Final Delta Review=`PASS`、Second-party Final Delta Review=`PASS`（BLOCKER=无、MAJOR=无）；DEC-055=`PASS`；四级aggregate direct-from-daily=`PASS`、BigDecimal precision=`PASS`、四级persistence=`PASS`、Manifest/Atomic=`PASS`、四级cross-clock determinism=`PASS`、四级read-only restart=`PASS`、multi-configVersion traceability=`PASS`；真实PBOC aggregate evidence=`VALID`。 |
+| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）、DEC-053（arithmetic-mean-v1接受版本化默认）、DEC-054（weekday-asia-shanghai-v1接受版本化默认）、DEC-055（aggregate.calculatedAt=max(daily.updatedAt)确定性语义）已生效 |
+| 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS）；D2-T03（Implementation Review PASS + EXT Gate PASS，commit=607e859）；D2-T04（1ac8233→1178307，Sol/Second-party Final Delta Review 双PASS，commit=1178307）。 |
 | 正在进行任务 | 无。 |
-| 阻塞项 | D2-T04 Review 门禁待最终裁决（Findings A/B/C 已关闭，closure 提交待 Review）。AT-SRC-002、Day 2 总门禁仍未运行或通过（不得写PASS）。 |
-| 最近验收结果 | D2-T01、D2-T02、D2-T03=`DONE`；D2-T04 `1ac8233` Review=`CHANGES_REQUESTED`，Findings A/B/C 关闭（四级跨Clock 确定性、Reader B 纯只读 restart、多configVersion union/dedupe/sort/reorder 均 PASS），closure evidence=`docs/evidence/D2-T04/D2T04-FINDINGS-CLOSURE-20260810.md`。AT-SRC-002仍为`NOT_RUN`。 |
+| 阻塞项 | D2-T05 领取阻塞：冻结输入 AT-SRC-002=`NOT_RUN` 未满足（`readyState=NOT_READY`，DoD=AT-SRC-002=`PASS`）。AT-SRC-002、Day 2 总门禁仍未运行或通过（不得写PASS）。 |
+| 最近验收结果 | D2-T01、D2-T02、D2-T03、D2-T04=`DONE`；D2-T04 首轮 Review=`CHANGES_REQUESTED`（1ac8233）→ Findings Closure（1178307，Finding A/B/C 关闭）→ Sol Final Delta Review=`PASS`、Second-party Final Delta Review=`PASS`。AT-SRC-002仍为`NOT_RUN`。 |
 | 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 计算/日历口径已接受版本化默认（DEC-053/054）；weekday-asia-shanghai-v1 不构成完整法定节假日/调休/停报/特殊交易日日历，未来以新 calendarVersion 升级。 |
-| 下一任务 | 等待技术负责人 D2-T04 Code Review；通过前不得改为`DONE`，不得领取/启动 D2-T05。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T04 四级聚合 91 项回归测试与真实 raw 双币四级聚合证据通过（DEC-055）。 |
-| 最近一次Git提交 | 本轮将提交 `test: close D2-T04 review findings`；前序 checkpoint=`1ac8233`（Review=`CHANGES_REQUESTED`）。 |
+| 下一任务 | D2-T05（`NOT_STARTED`/`NOT_READY`）：等待 AT-SRC-002 冻结条件满足（双币真实全链 + 重启读取 + AT-SRC-002=`PASS`）后方可领取；在此之前不得开始 D2-T05。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T04 四级聚合 164 项全套测试（35 classes，0 failures）与真实 raw 双币四级聚合证据通过（DEC-055）。 |
+| 最近一次Git提交 | 本轮将提交 `docs: close D2-T04 after final review`；前序 checkpoint=`1178307`（Findings Closure，`test: close D2-T04 review findings`）。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，按 Review CHANGES_REQUESTED 关闭 D2-T04 Findings A/B/C（含测试环境事实：遗留 `backend/data` 已备份移出 `D:\Dev\Temp\opencode\sm-data-backup-20260809`，非 Git tracked）。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，D2-T04 最终状态收口：`DONE`（Implementation=`1ac8233`、Findings Closure=`1178307`、Sol/Second-party Final Delta Review 双PASS）；D2-T05=`NOT_READY`（冻结输入 AT-SRC-002=`NOT_RUN`）；未修改生产代码/测试/Evidence。 |
 | 最后更新时间 | 2026-08-10（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照

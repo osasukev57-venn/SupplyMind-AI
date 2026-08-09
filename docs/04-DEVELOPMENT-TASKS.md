@@ -174,7 +174,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D2-T04 PBOC历史读取与多周期聚合最小闭环
 
-- **优先级/状态：** P0-最高 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=PBOC_FOUR_GRAIN_AGGREGATE_EVIDENCE_SUBMITTED_20260809`。DEC-055 已实施（aggregate.calculatedAt=max(daily.updatedAt)，Instant 比较、Asia/Shanghai 输出）；四级写盘/跨文件/跨 Clock/重启/真实 PBOC 聚合证据已提交；等待技术负责人Code Review；执行人不得自行改为`DONE`，不得提前领取 D2-T05。
+- **优先级/状态：** P0-最高 / `TaskExecutionStatus=DONE`；`statusReason=REVIEW_PASS_IMPLEMENTATION_FINDINGS_CLOSED_DUAL_REVIEW_20260810`。Implementation commit=`1ac8233`（首轮 Implementation Review=`CHANGES_REQUESTED`，Finding A/B/C）；Findings closure commit=`1178307`（Finding A 四级跨Clock、Finding B 四级Read-only Restart、Finding C 多configVersion 全部`CLOSED`）；Sol Final Delta Review=`PASS`、Second-party Final Delta Review=`PASS`（BLOCKER=无、MAJOR=无）；DEC-055=`PASS`；四级aggregate direct-from-daily、BigDecimal precision、四级persistence、Manifest/Atomic、四级cross-clock determinism、四级read-only restart、multi-configVersion traceability 均`PASS`；真实PBOC aggregate evidence=`VALID`。本任务完成不代表 AT-SRC-002、Day 2 总门禁通过。
 - **任务目标：** 从daily文件读取历史并生成月、季、半年、年持久化聚合，形成最小完整闭环。
 - **对应需求：** SUP-02、F03、F09、H01、H02。
 - **输入：** D2-T03 daily、黄金历史样本、自然周期与精度规则。
@@ -188,7 +188,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D2-T05 PBOC调度、幂等、重启端到端硬门
 
-- **优先级/状态：** P0-最高 / `NOT_STARTED`。
+- **优先级/状态：** P0-最高 / `TaskExecutionStatus=NOT_STARTED`；`readyState=NOT_READY`（reason：冻结输入含 AT-SRC-002=`NOT_RUN`，未满足；D2-T04=`DONE` 后前置任务依赖 D2-T01至D2-T04 已满足，但 AT-SRC-002 未执行完整全链、DoD=AT-SRC-002=`PASS` 无法达成）。不得领取/开始。
 - **任务目标：** 完成真实定时/立即采集、raw先写、校验、发布、daily、聚合和重启读取的双币端到端验收。
 - **对应需求：** SUP-01、SUP-02、F02、F03、H01-H03。
 - **输入：** D1-T04、D2-T01至D2-T04、AT-SRC-002。
