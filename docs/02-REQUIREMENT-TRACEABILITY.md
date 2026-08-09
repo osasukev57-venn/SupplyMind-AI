@@ -126,10 +126,10 @@
 |---|---|---|---|---|---|---|---|---|
 | EXT-01 | PBOC EUR/CNY、USD/CNY的具体发布字段、单位、报价方向与业务日。 | D. 外部待确认 | P0-PBOC口径 | 汇率Series、OfficialWeb | D1-T02；D1-T04；D2-T01 | 保存官方raw并核对发布字段和换算；实施不等待商业源。 | docs/evidence/D1-T02/ 中的 PBOC 官方页面、字段映射、样例和确认记录 | EXTERNAL_CONFIRMED（字段事实；D1-T02重放证据、Java HTTPS与全链仍待后续任务） |
 | EXT-02 | 各实际来源ADC12/AZ91D的规格、地区、单位、含税口径和价格字段。 | D. 外部待确认 | P0-材料口径 | 材料Series、Provider | D3-T02；D3-T03；D3-T04；D3-T06 | 按实际来源×品种确认，不跨规格混算。 | 来源序列映射、数据字典、确认记录 | OPEN_EXTERNAL |
-| EXT-03 | “每日加工均值”的准确业务定义。 | D. 外部待确认 | P0-计算口径 | 每日加工 | D2-T03；D4-T03 | 冻结官方日均字段或sum/validCount规则并制作黄金样例。 | calculation-rules、手工复算表、确认记录 | OPEN_EXTERNAL |
+| EXT-03 | “每日加工均值”的准确业务定义。 | D. 外部待确认 | P0-计算口径 | 每日加工 | D2-T03；D4-T03 | 冻结官方日均字段或sum/validCount规则并制作黄金样例。 | calculation-rules、手工复算表、确认记录 | ACCEPTED_VERSIONED_DEFAULT（DEC-053；arithmetic-mean-v1） |
 | EXT-04 | SMM/Asian Metal是否存在合法公开页面、接口或已授权自动路径。 | D. 外部待确认 | 指定源自动能力/非全局阻塞 | 来源合规、路由 | D3-T02；D3-T06 | 能合法自动则使用；否则记录依据并转FreePublic→Manual。 | 条款/授权依据、能力矩阵、routeDecision | OPEN_EXTERNAL_NON_BLOCKING |
 | EXT-05 | 新增标的及初始化所需的历史回填范围。 | D. 外部待确认 | P0-验收范围 | 回填、历史能力 | D5-T04；D10-T04 | 确认起止日期；无自动历史时可由Manual/LocalImport进入同一门禁。 | 书面范围、回填报告、来源审计 | OPEN_EXTERNAL |
-| EXT-06 | 节假日、周末、停报和未发布日如何计入完整率及均值。 | D. 外部待确认 | P0-计算口径 | 日历、完整率 | D2-T03；D4-T03；D4-T04 | 缺失不补0，日历规则配置化。 | 日历配置、黄金样例、完整率测试 | OPEN_EXTERNAL |
+| EXT-06 | 节假日、周末、停报和未发布日如何计入完整率及均值。 | D. 外部待确认 | P0-计算口径 | 日历、完整率 | D2-T03；D4-T03；D4-T04 | 缺失不补0，日历规则配置化。 | 日历配置、黄金样例、完整率测试 | ACCEPTED_VERSIONED_DEFAULT（DEC-054；weekday-asia-shanghai-v1，当前版本口径；不代表完整法定节假日日历，未来以新calendarVersion演进） |
 | EXT-07 | 价格、汇率、质量和成本影响预警阈值。 | D. 外部待确认 | P0-业务规则 | 预警规则 | D5-T05；D10-T04 | 业务方确认阈值；未确认时只使用显式测试规则。 | alert-rules、确认记录、边界测试 | OPEN_EXTERNAL |
 | EXT-08 | 动态调价公式、成本权重和自动执行边界。 | D. 外部待确认 | P0-业务边界 | 成本影响、Agent | D5-T05；D6-T02；D10-T04 | P0默认非约束建议，不自动调价。 | 公式确认、审批说明 | OPEN_EXTERNAL |
 | EXT-09 | “跨卷”是多个轮转文件还是物理磁盘卷。 | D. 外部待确认 | P0-存储边界 | 轮转、历史查询 | D5-T01；D5-T02；D10-T02 | 默认同一data根目录多个轮转文件。 | 术语确认、跨卷测试 | OPEN_EXTERNAL |

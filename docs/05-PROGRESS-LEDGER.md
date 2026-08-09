@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 2（D1-T01～D1-T05 均`DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`，Git 基线 `day1-complete`；D2-T01 PBOC标准化与基础校验已实施并提交证据，`TaskExecutionStatus=REVIEW_PENDING`；AT-SRC-002 保持`NOT_RUN`）  
+> 当前阶段：Day 2（D1-T01～D1-T05 均`DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`，Git 基线 `day1-complete`；D2-T01、D2-T02、D2-T03 均`DONE`——D2-T03 经 Implementation Review PASS 与 EXT Gate PASS（DEC-052/053/054 生效）收口为候选`DONE`，等待 Gate Closure Review 通过；D2-T04 候选`READY`；AT-SRC-002 保持`NOT_RUN`）  
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -79,10 +79,10 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 |---|---|---|---|---|
 | EXT-01 | PBOC双币字段、单位与报价方向 | `EXTERNAL_CONFIRMED`（字段事实；非数据ValidationStatus或AT PASS） | PBOC硬门 | D1-T02重放证据已通过Review；D1-T04 Java 17已保存真实双币raw，D2仍须完成全链验收 |
 | EXT-02 | 各实际材料来源的规格口径 | 待确认 | 材料值可比性 | 按实际来源×品种配置；不跨规格混算 |
-| EXT-03 | 每日均值业务定义 | 待确认 | H01、H02 | 官方日均优先；多观测规则配置化并用黄金样例复算 |
+| EXT-03 | 每日均值业务定义 | `ACCEPTED_VERSIONED_DEFAULT`（via DEC-053；arithmetic-mean-v1） | H01、H02 | DEC-053 已生效；sum完整精度、avg仅最终除法舍入、displayScale不回写、missing不补0 |
 | EXT-04 | 指定商业源自动采集能力 | `OPEN_EXTERNAL_NON_BLOCKING` | 对应自动适配器声明 | 合法自动可用则接入，否则记录证据并转FreePublic→Manual |
 | EXT-05 | 历史回填范围 | 待确认 | H08 | 区间配置化；Manual/LocalImport同样经过发布门禁 |
-| EXT-06 | 节假日/未发布日 | 待确认 | 完整率、均值 | 缺失不补0，来源日历策略配置化 |
+| EXT-06 | 节假日/未发布日 | `ACCEPTED_VERSIONED_DEFAULT`（via DEC-054；weekday-asia-shanghai-v1，当前版本口径） | 完整率、均值 | DEC-054 已生效；缺失不补0，不代表完整法定节假日日历，未来以新calendarVersion演进 |
 | EXT-07 | 预警阈值 | 待确认 | 预警验收 | 使用显式测试规则，不冒充最终业务阈值 |
 | EXT-08 | 动态调价公式 | 待确认 | 成本影响、建议 | P0仅规则预警和非约束建议，不自动调价 |
 | EXT-09 | “跨卷”含义 | 待确认 | H06 | 临时解释为同一data根下多个轮转文件 |
