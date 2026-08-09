@@ -15,6 +15,7 @@ import com.supplymind.foundation.model.MonitorSeriesItemV1;
 import com.supplymind.foundation.model.ProcessingStage;
 import com.supplymind.foundation.model.ProviderType;
 import com.supplymind.foundation.model.RawReceiptV1;
+import com.supplymind.foundation.model.SchemaValidationException;
 import com.supplymind.foundation.model.SchemaV1;
 import com.supplymind.foundation.model.ValidationStatus;
 import com.supplymind.foundation.storage.AtomicFileStore;
@@ -54,6 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DailyProcessingServiceTest {
@@ -311,6 +313,162 @@ class DailyProcessingServiceTest {
     }
 
     @Test
+    void sameInputsAcrossDifferentProcessingClocksProduceIdenticalBytesAndSha() throws IOException {
+        RawReceiptV1 raw = pbocRaw("run-daily-crossclock-001", MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+                "6.7904", "2026-08-10", 1);
+        Harness writerA = harness(Clock.fixed(Instant.parse("2026-08-10T02:00:00Z"), SHANGHAI));
+        ingestAndPublish(writerA, raw);
+        DailyResult resultA = writerA.daily().processMonth(raw.itemId(), MONTH_2026_08);
+        byte[] bytesA = Files.readAllBytes(writerA.root().resolveDataRef(resultA.dailyRef()));
+        String shaA = FileDigest.sha256(bytesA);
+
+        Harness writerB = harness(Clock.fixed(Instant.parse("2026-08-10T10:30:00Z"), SHANGHAI));
+        ingestAndPublish(writerB, raw);
+        DailyResult resultB = writerB.daily().processMonth(raw.itemId(), MONTH_2026_08);
+        byte[] bytesB = Files.readAllBytes(writerB.root().resolveDataRef(resultB.dailyRef()));
+        String shaB = FileDigest.sha256(bytesB);
+
+        assertArrayEquals(bytesA, bytesB, "identical business inputs must produce identical daily CSV bytes");
+        assertEquals(shaA, shaB, "identical business inputs must produce identical CSV SHA-256");
+        assertEquals(resultA.rows().get(0).updatedAt(), resultB.rows().get(0).updatedAt());
+        assertEquals(resultA.rows().get(0), resultB.rows().get(0));
+    }
+
+    @Test
+    void dailyUpdatedAtEqualsPublishedAtOfSingleInput() throws IOException {
+        Harness harness = harness();
+        RawReceiptV1 raw = pbocRaw("run-daily-updatedat-001", MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+                "6.7904", "2026-08-10", 1);
+        ingestAndPublish(harness, raw);
+        DailyResult result = harness.daily().processMonth(raw.itemId(), MONTH_2026_08);
+        assertEquals("2026-08-10T09:02+08:00", result.rows().get(0).updatedAt().toString(),
+                "daily.updatedAt must equal the valid PUBLISHED input publishedAt, not the processing clock");
+    }
+
+    @Test
+    void dailyUpdatedAtIsMaxPublishedAtAcrossInputs() {
+        List<DailyInput> inputs = List.of(
+                dailyInput("run-max-a", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                        "2026-08-10T08:00+08:00"),
+                dailyInput("run-max-b", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                        "2026-08-10T09:30+08:00"),
+                dailyInput("run-max-c", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                        "2026-08-10T09:00+08:00"));
+        DailyRecordV1 row = DailyMeanCalculator.calculate(inputs).get(0);
+        assertEquals("2026-08-10T09:30+08:00", row.updatedAt().toString(),
+                "updatedAt must be the latest official publish instant of the group");
+    }
+
+    @Test
+    void dailyUpdatedAtIsOrderIndependent() {
+        List<DailyInput> forward = List.of(
+                dailyInput("run-order-a", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                        "2026-08-10T08:00+08:00"),
+                dailyInput("run-order-b", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                        "2026-08-10T09:30+08:00"),
+                dailyInput("run-order-c", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                        "2026-08-10T09:00+08:00"));
+        List<DailyInput> reversed = new java.util.ArrayList<>(forward);
+        java.util.Collections.reverse(reversed);
+        assertEquals(DailyMeanCalculator.calculate(forward).get(0),
+                DailyMeanCalculator.calculate(reversed).get(0),
+                "input order must not affect updatedAt");
+    }
+
+    @Test
+    void addingOlderInputKeepsUpdatedAtWhileNewerInputAdvancesIt() {
+        List<DailyInput> base = List.of(
+                dailyInput("run-evolve-a", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                        "2026-08-10T08:00+08:00"),
+                dailyInput("run-evolve-b", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                        "2026-08-10T09:00+08:00"));
+        assertEquals("2026-08-10T09:00+08:00",
+                DailyMeanCalculator.calculate(base).get(0).updatedAt().toString());
+        List<DailyInput> withOlder = new java.util.ArrayList<>(base);
+        withOlder.add(dailyInput("run-evolve-older", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                "2026-08-10T08:30+08:00"));
+        assertEquals("2026-08-10T09:00+08:00",
+                DailyMeanCalculator.calculate(withOlder).get(0).updatedAt().toString(),
+                "adding an older input must not change updatedAt");
+        List<DailyInput> withNewer = new java.util.ArrayList<>(base);
+        withNewer.add(dailyInput("run-evolve-newer", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                "2026-08-10T10:00+08:00"));
+        assertEquals("2026-08-10T10:00+08:00",
+                DailyMeanCalculator.calculate(withNewer).get(0).updatedAt().toString(),
+                "adding a newer input must advance updatedAt");
+    }
+
+    @Test
+    void publishedAtComparisonUsesInstantNotOffsetText() {
+        DailyInput textLater = dailyInput("run-instant-a", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                "2026-08-10T02:00+08:00");
+        DailyInput instantLater = dailyInput("run-instant-b", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                "2026-08-09T23:00+01:00");
+        List<DailyInput> inputs = List.of(textLater, instantLater);
+        DailyRecordV1 row = DailyMeanCalculator.calculate(inputs).get(0);
+        assertEquals("2026-08-10T06:00+08:00", row.updatedAt().toString(),
+                "comparison must use Instant (2026-08-09T23:00+01:00 is later than 2026-08-10T02:00+08:00), "
+                        + "not offset-text lexicographic order");
+    }
+
+    @Test
+    void verifiedGroupsTakeTheirOwnMaxPublishedAt() {
+        List<DailyInput> inputs = List.of(
+                dailyInput("run-split-verified", "6.7904", "2026-08-10", ValidationStatus.VERIFIED,
+                        "2026-08-10T08:00+08:00"),
+                dailyInput("run-split-notice-a", "6.7904", "2026-08-10", ValidationStatus.VERIFIED_WITH_NOTICE,
+                        "2026-08-10T09:30+08:00"),
+                dailyInput("run-split-notice-b", "6.7904", "2026-08-10", ValidationStatus.VERIFIED_WITH_NOTICE,
+                        "2026-08-10T09:00+08:00"));
+        List<DailyRecordV1> rows = DailyMeanCalculator.calculate(inputs);
+        assertEquals(2, rows.size(), "VERIFIED and VERIFIED_WITH_NOTICE must keep separate rows");
+        DailyRecordV1 verifiedRow = rows.stream()
+                .filter(row -> row.validationStatus() == ValidationStatus.VERIFIED).findFirst().orElseThrow();
+        DailyRecordV1 noticeRow = rows.stream()
+                .filter(row -> row.validationStatus() == ValidationStatus.VERIFIED_WITH_NOTICE).findFirst().orElseThrow();
+        assertEquals("2026-08-10T08:00+08:00", verifiedRow.updatedAt().toString(),
+                "each group must take its own max publishedAt");
+        assertEquals("2026-08-10T09:30+08:00", noticeRow.updatedAt().toString());
+    }
+
+    @Test
+    void missingPublishedAtFailsClosed() throws IOException {
+        Harness harness = harness();
+        CandidateV1 candidate = new PbocCandidateStandardizer().standardize(
+                pbocRaw("run-daily-nopublish-001", MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+                        "6.7904", "2026-08-10", 1)).candidate();
+        OffsetDateTime at = RECEIVED_AT.plusMinutes(1);
+        assertThrows(SchemaValidationException.class, () -> new LifecycleSnapshotV1(
+                4, ProcessingStage.PUBLISHED, ValidationStatus.VERIFIED, candidate, null,
+                "pboc-basic-validation-v1", at, null, null, at),
+                "a PUBLISHED snapshot without publishedAt must fail closed at the model boundary");
+
+        String stagingRef = DataPaths.stagingRef("run-daily-corrupt-001");
+        byte[] invalidStaging = ("{\"schemaVersion\":\"1.0\",\"recordId\":\"record-run-daily-corrupt-001\","
+                + "\"runId\":\"run-daily-corrupt-001\",\"rawRef\":\"raw/formal/official_web/FX.USD.CNY.PBOC_MID/2026/08/"
+                + "run-daily-corrupt-001.json\",\"currentRecordVersion\":4,\"records\":[{\"recordVersion\":4,"
+                + "\"processingStage\":\"PUBLISHED\",\"validationStatus\":\"VERIFIED\",\"candidate\":{\"itemId\":"
+                + "\"FX.USD.CNY.PBOC_MID\",\"businessDate\":\"2026-08-10\",\"value\":\"6.7904\",\"currency\":\"CNY\","
+                + "\"unit\":\"CNY/1 USD\",\"providerType\":\"official_web\",\"actualSourceName\":\""
+                + SOURCE_NAME + "\",\"accessMethod\":\"public_official_html\",\"normalizationVersion\":"
+                + "\"pboc-standardization-v1\"},\"reasonCode\":null,\"validationVersion\":\"pboc-basic-validation-v1\","
+                + "\"validatedAt\":\"2026-08-10T09:01+08:00\",\"publishedAt\":null,\"publishRef\":null,"
+                + "\"updatedAt\":\"2026-08-10T09:01+08:00\"}]}\n")
+                .getBytes(StandardCharsets.UTF_8);
+        ManifestV1 corruptManifest = com.supplymind.foundation.storage.ManifestFactory.json(
+                stagingRef, invalidStaging, List.of("run-daily-corrupt-001"), RECEIVED_AT);
+        assertThrows(SchemaValidationException.class, () -> harness.fileStore().commit(
+                        "daily-corrupt-" + System.nanoTime(),
+                        com.supplymind.foundation.storage.DirtyTransactionType.SINGLE_FILE, RECEIVED_AT,
+                        List.of(new com.supplymind.foundation.storage.FileTransactionTarget(
+                                com.supplymind.foundation.storage.DirtyTargetRole.BUSINESS_FILE,
+                                stagingRef, invalidStaging, JsonV1Codec.encodeFile(corruptManifest), false))),
+                "a timeline whose PUBLISHED snapshot lacks publishedAt must fail closed at the storage boundary");
+        assertFalse(Files.exists(harness.root().resolveDataRef(stagingRef)),
+                "no illegal timeline may be persisted");
+    }
+
+    @Test
     void reprocessingIsIdempotentWithFixedClock() throws IOException {
         Harness harness = harness();
         RawReceiptV1 raw = pbocRaw("run-daily-idempotent-001", MonitorSeriesDefaults.USD_CNY_ITEM_ID,
@@ -425,6 +583,10 @@ class DailyProcessingServiceTest {
     }
 
     private Harness harness() {
+        return harness(FIXED_CLOCK);
+    }
+
+    private Harness harness(Clock dailyClock) {
         DataRoot root = DataRoot.forTest(temporaryDirectory.resolve("d2-t03 daily root"));
         AtomicMoveSupport.probeOrFail(root);
         AtomicFileStore fileStore = new AtomicFileStore(root, new DirtyMarkerCodec());
@@ -435,7 +597,7 @@ class DailyProcessingServiceTest {
         LifecycleValidationService validation = new LifecycleValidationService(root, timelineStore, FIXED_CLOCK);
         QuarantineStore quarantineStore = new QuarantineStore(root, fileStore, FIXED_CLOCK);
         LifecyclePublishService publish = new LifecyclePublishService(root, timelineStore, quarantineStore, FIXED_CLOCK);
-        DailyProcessingService daily = new DailyProcessingService(root, timelineStore, fileStore, FIXED_CLOCK);
+        DailyProcessingService daily = new DailyProcessingService(root, timelineStore, fileStore, dailyClock);
         return new Harness(root, fileStore, configStore, rawStore, timelineStore, validation, publish, daily);
     }
 
@@ -514,6 +676,37 @@ class DailyProcessingServiceTest {
                 "1美元对人民币",
                 RECEIVED_AT
         );
+    }
+
+    private static DailyInput dailyInput(
+            String runId,
+            String value,
+            String businessDate,
+            ValidationStatus status,
+            String publishedAt
+    ) {
+        String rawRef = "raw/formal/official_web/FX.USD.CNY.PBOC_MID/2026/08/" + runId + ".json";
+        return new DailyInput(
+                MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+                businessDate,
+                value,
+                "CNY",
+                "CNY/1 USD",
+                ProviderType.OFFICIAL_WEB,
+                SOURCE_NAME,
+                AccessMethod.PUBLIC_OFFICIAL_HTML,
+                status,
+                "pboc-basic-validation-v1",
+                1,
+                runId,
+                rawRef,
+                4,
+                "arithmetic-mean-v1",
+                8,
+                4,
+                RoundingMode.HALF_UP,
+                "weekday-asia-shanghai-v1",
+                OffsetDateTime.parse(publishedAt));
     }
 
     private static byte[] fixtureBytes(String name) throws IOException {

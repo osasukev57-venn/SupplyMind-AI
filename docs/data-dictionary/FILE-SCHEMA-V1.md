@@ -93,7 +93,7 @@ items 按 itemId Unicode code point 升序且唯一。history `<configVersion>.j
 
 Daily 固定表头：`schemaVersion,businessDate,itemId,providerType,actualSourceName,accessMethod,processingStage,validationStatus,validationVersion,configVersions,calculationVersion,calculationScale,displayScale,roundingMode,calendarVersion,sum,validCount,avg,expectedCount,missingCount,complete,currency,unit,inputRefs,updatedAt`。
 
-Daily 的 processingStage 固定 `PUBLISHED`，validationStatus 仅 `VERIFIED` 或 `VERIFIED_WITH_NOTICE`；configVersions 为数值升序紧凑 JSON；inputRefs 为按 runId/rawRef/recordVersion 升序的紧凑 JSON，单项字段顺序为 runId、rawRef、recordVersion，且 recordVersion 固定 4。
+Daily 的 processingStage 固定 `PUBLISHED`，validationStatus 仅 `VERIFIED` 或 `VERIFIED_WITH_NOTICE`；configVersions 为数值升序紧凑 JSON；inputRefs 为按 runId/rawRef/recordVersion 升序的紧凑 JSON，单项字段顺序为 runId、rawRef、recordVersion，且 recordVersion 固定 4。`updatedAt`（DEC-052 确定性语义）表示该 daily 行全部有效 PUBLISHED 输入中 `max(publishedAt)`（按 Instant 比较后统一转换为 Asia/Shanghai 的 ISO-8601 offset datetime），**不是 processing 执行时间**；相同逻辑输入跨执行时间重算必须逐字节一致；缺少合法 publishedAt 必须 fail-closed。
 
 Aggregate 固定表头：`schemaVersion,grain,periodStart,periodEnd,itemId,providerType,actualSourceName,accessMethod,validationStatus,validationVersion,configVersions,calculationVersion,calculationScale,displayScale,roundingMode,calendarVersion,sum,validCount,avg,min,max,expectedCount,missingCount,complete,qualityStatus,currency,unit,sourceFingerprint,inputRefs,calculatedAt`。
 

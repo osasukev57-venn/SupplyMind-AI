@@ -75,10 +75,10 @@ staging/<runId>.json（TimelineStore.read，manifest 校验）
 
 输入复制自 `backend/data/d1-t05-smoke`（config/raw/staging 连同 manifest，逐字节一致；真实页面 SHA-256=`f37cda1f…4f82`，businessDate=2026-08-07），经 D2-T01 校验、D2-T02 发布后按 2026-08 月加工：
 
-| itemId | sum | avg | dailyRef |
-|---|---|---|---|
-| FX.USD.CNY.PBOC_MID | 6.7904 | 6.79040000（scale 8） | `processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv` |
-| FX.EUR.CNY.PBOC_MID | 7.8067 | 7.80670000（scale 8） | `processed/daily/FX.EUR.CNY.PBOC_MID/2026-08.csv` |
+| itemId | sum | avg | updatedAt（DEC-052） | dailyRef |
+|---|---|---|---|---|
+| FX.USD.CNY.PBOC_MID | 6.7904 | 6.79040000（scale 8） | `2026-08-09T22:50+08:00`（= 真实 PUBLISHED input publishedAt） | `processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv` |
+| FX.EUR.CNY.PBOC_MID | 7.8067 | 7.80670000（scale 8） | `2026-08-09T22:50+08:00`（= 真实 PUBLISHED input publishedAt） | `processed/daily/FX.EUR.CNY.PBOC_MID/2026-08.csv` |
 
 - 每行：PUBLISHED / VERIFIED / `pboc-basic-validation-v1` / configVersions=[1] / validCount=1 / inputRefs 指向真实 runId（`pboc-usd-…`/`pboc-eur-…`，recordVersion=4）/ currency=CNY / unit=CNY/1 USD、CNY/1 EUR
 - 真实 raw 文件加工后逐字节未动；manifest 校验通过（rowCount/min/max/sourceRunIds 对账）；重启解码（decodeDaily）与计算结果一致
@@ -86,7 +86,7 @@ staging/<runId>.json（TimelineStore.read，manifest 校验）
 
 ## 测试结果（Java 17）
 
-### `DailyProcessingServiceTest`（11 tests，0 failures，0 errors）
+### `DailyProcessingServiceTest`（19 tests，0 failures，0 errors）
 
 | 用例 | 结果 |
 |---|---|
@@ -101,14 +101,22 @@ staging/<runId>.json（TimelineStore.read，manifest 校验）
 | 计算上下文切换（scale 8 vs 12）→ 两行分行，avg 分别 6.79040000 / 6.790400000000 | PASS |
 | 重算幂等（固定 Clock）→ 字节一致 | PASS |
 | 重启读取：独立 Reader B（全新实例、同一物理 dataRoot）→ CSV/manifest 存在、fileSha256/byteLength/rowCount/min/max/sourceRunIds 对账、ManifestVerifier 通过、decodeDaily 逐字段独立期望一致 | PASS |
+| 跨 Clock 幂等（processing Clock A≠B）→ CSV bytes/SHA/updatedAt 一致 | PASS |
+| updatedAt = 单输入 publishedAt（DEC-052） | PASS |
+| updatedAt = 多输入 max(publishedAt)（08:00/09:30/09:00 → 09:30） | PASS |
+| 输入顺序反转 → updatedAt 不变 | PASS |
+| 新增较旧输入不变 / 新增较新输入推进 | PASS |
+| Instant 比较（非 offset 文本字典序）+ Asia/Shanghai 输出 | PASS |
+| VERIFIED 与 VERIFIED_WITH_NOTICE 分行各自 max | PASS |
+| missing publishedAt fail-closed（模型 + 存储边界，不落盘） | PASS |
 
 ### 真实 raw 门禁 `DailyRealRawEvidenceTest`（gated `-Dd2-t03.real-raw=true`，PASS）
 
 见"真实 PBOC 验证"。
 
-### 最小直接回归（10 类 75 tests，0 failures，0 errors，1 skipped=gated）
+### 最小直接回归（10 类 83 tests，0 failures，0 errors，1 skipped=gated）
 
-`DailyProcessingServiceTest`(11)、`DailyRealRawEvidenceTest`(1)、`PublishedQueryServiceTest`(11)、`PublishGateTest`(9)、`PbocValidationPipelineTest`(25)、`DualCurrencyRawLifecycleAcceptanceTest`(3)、`RawAndConfigStoreTest`(1)、`AtomicFileStoreWriteInvariantTest`(6)、`CsvV1CodecTest`(2)、`PbocOfficialWebDataProviderContractTest`(6)。
+`DailyProcessingServiceTest`(19)、`DailyRealRawEvidenceTest`(1)、`PublishedQueryServiceTest`(11)、`PublishGateTest`(9)、`PbocValidationPipelineTest`(25)、`DualCurrencyRawLifecycleAcceptanceTest`(3)、`RawAndConfigStoreTest`(1)、`AtomicFileStoreWriteInvariantTest`(6)、`CsvV1CodecTest`(2)、`PbocOfficialWebDataProviderContractTest`(6)。
 
 ## D2-T03 DoD 逐项
 
@@ -133,21 +141,32 @@ staging/<runId>.json（TimelineStore.read，manifest 校验）
 
 正式 Review（固定 commit=`caa6216`）结论：BLOCKER=无；MAJOR 1（重算确定性 updatedAt 来源）；MAJOR 2（restart 证据不充分）。
 
-### MAJOR 1：updatedAt 确定性来源 —— BUSINESS_DECISION_REQUIRED
+### MAJOR 1：daily.updatedAt 确定性 —— IMPLEMENTED（DEC-052）
 
-按 Finding 指令先核对冻结文档：总计划 8.4.5 Daily 固定表头、FILE-SCHEMA-V1、CALCULATION-RULES、DEC-048 均只对 daily `updatedAt` 作类型约束（ISO-8601 offset datetime），**未定义其业务语义或确定性来源**；冻结的确定性要求（"相同逻辑输入无论遍历/线程顺序如何都必须产生逐字节相同CSV与fileSha256"、AT-AGG-001"文件重算结果与首次计算完全一致"）成立，但 daily updatedAt 应取何确定性业务时间在冻结文档中缺失。唯一相关冻结先例为总计划 8.4.3 quarantine："`quarantinedAt`固定等于所投影终态快照的updatedAt，不得取重放时当前Clock"（派生记录时间字段取业务输入时间）。按 Finding 指令"冻结文档没有给出 updatedAt 的确定性来源时立即停止代码修改并报告"，本 Finding **未修改代码**，提交：
+技术负责人正式裁决 **DEC-052**（`docs/06-DECISION-LOG.md`）：daily 行 `updatedAt` = 该行全部有效 PUBLISHED 输入的 `max(publishedAt)`（按 Instant 比较），统一转换 Asia/Shanghai ISO-8601 offset datetime 输出；**不是 processing 执行时间**。实施：
 
-- 待裁决项：daily 行 `updatedAt` 的确定性业务时间来源。候选方案（供裁决，未实施）：(a) 该行参与输入的最大 `publishedAt`（参照 quarantine 先例，完全由业务输入确定、可追溯）；(b) 行 `businessDate` 锚点（如 Asia/Shanghai 当日某固定时刻）。跨时钟幂等测试（Clock A≠B → 字节一致）待裁决后补齐；当前实现 updatedAt 取执行 Clock，跨时钟字节必然不同，故不加入必失败测试。
-- 建议：以新 DEC 明确 daily updatedAt 语义后按裁决实现并补跨时钟反例测试。
+- `DailyInput` 增加必填 `publishedAt`（来源：实际进入 daily 的 PUBLISHED Lifecycle snapshot.publishedAt，经 TimelineStore 校验读取；不来自 raw/文件时间/businessDate 构造）；
+- `DailyMeanCalculator.deterministicUpdatedAt(inputs)`：Instant 比较取 max，`OffsetDateTime.ofInstant(latest, +08:00)` 输出；输入顺序无关；
+- `calculateRow` 的 updatedAt 完全由输入 publishedAt 决定，processing Clock 不再进入行内容（仅 manifest `generatedAt` 保留为提交元数据，非业务文件派生字段）；
+- `DailyProcessingService` 在收集输入时对 `publishedAt == null` fail-closed（`StorageException`）；模型层 PUBLISHED 快照缺 publishedAt 亦 fail-closed（SchemaValidationException）。
 
-### MAJOR 2：真正独立重启读取 —— FIXED
+跨 Clock 幂等：`sameInputsAcrossDifferentProcessingClocksProduceIdenticalBytesAndSha`——相同业务输入，processing Clock A=`2026-08-10T10:00+08:00`、Clock B=`2026-08-10T18:30+08:00`，CSV bytes/SHA-256/updatedAt/sum/validCount/avg/configVersions/inputRefs 完全一致（两 harness 校验/发布时钟相同以保证输入 publishedAt 一致，仅 daily processing 时钟不同）。
 
-`restartReadDecodesDailyFromDisk` 重写为 `restartReaderReinitializesIndependentlyAndVerifiesCsvAndManifestFromDisk`：
+### MAJOR 2：真正独立重启读取 —— FIXED（保留）
 
-- Writer A：完整写链（ingest → validation → publish → daily）后**完全丢弃**（不持有 A 的 DailyResult/store/service/codec 对象）；
-- Reader B：同一物理 dataRoot（`DataRoot.forTest(root.path())`）**全新初始化**所有 store/service（全新 AtomicFileStore/TimelineStore/DailyProcessingService/DataRoot），不持有 A 的任何对象；
-- 磁盘校验：从冻结路径规则（`DataPaths.dailyRef`）定位 daily CSV 与相邻 manifest；`ManifestV1.fileSha256` 与 CSV 实际字节一致、`byteLength` 正确、`rowCount`=1、`min/maxBusinessDate` 正确、`sourceRunIds` 正确、`ManifestVerifier.matches`（含 expected runIds）通过；
-- decode：`CsvV1Codec.decodeDaily` 成功，sum/validCount/avg/inputRefs/configVersions/计算上下文逐项与独立冻结期望一致（不使用 A.rows().equals 作为唯一 oracle）；
-- 真实门禁同步更新：reader B 在同一物理 root 上以全新实例重算/重读双币 daily，行集与字节一致，manifest 全字段对账通过；`restartReadOutcome=PASS` 仅在本次真实成立后写入 summary。
+`restartReaderReinitializesIndependentlyAndVerifiesCsvAndManifestFromDisk` 维持：Writer A 完整写链后完全丢弃 → 同一物理 dataRoot 全新 Reader B（全新 DataRoot/AtomicFileStore/TimelineStore/DailyProcessingService）→ 从磁盘定位 CSV+manifest → fileSha256/byteLength/rowCount/min/max/sourceRunIds/ManifestVerifier 对账 → decodeDaily 逐字段独立冻结期望验证（不使用 A.rows().equals 作为唯一 oracle）。未因 DEC-052 退化。
+
+### DEC-052 测试覆盖（`DailyProcessingServiceTest` 19 tests）
+
+| 用例 | 结果 |
+|---|---|
+| 跨 Clock 幂等（Clock A≠B）→ CSV bytes/SHA/updatedAt/全部字段一致 | PASS |
+| 单输入 updatedAt = 该输入 publishedAt（09:02+08:00，非 processing Clock） | PASS |
+| 多输入 updatedAt = max(publishedAt)（08:00/09:30/09:00 → 09:30） | PASS |
+| 输入顺序反转 → updatedAt 不变 | PASS |
+| 新增较旧输入（08:30）→ updatedAt 不变（09:00）；新增较新输入（10:00）→ updatedAt 推进（10:00） | PASS |
+| Instant 比较（2026-08-10T02:00+08:00 vs 2026-08-09T23:00+01:00 → 后者 Instant 更晚）→ updatedAt=2026-08-10T06:00+08:00（Asia/Shanghai 输出，非 offset 文本字典序） | PASS |
+| VERIFIED 与 VERIFIED_WITH_NOTICE 分行，各自独立取本组 max | PASS |
+| missing publishedAt fail-closed（模型层构造拒绝 + 存储边界 commit 拒绝且不落盘） | PASS |
 
 EXT-03/EXT-06 保持 `OPEN`；D2-T03 保持 `REVIEW_PENDING`，不得 DONE。

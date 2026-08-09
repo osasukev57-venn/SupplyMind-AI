@@ -115,6 +115,10 @@ class DailyRealRawEvidenceTest {
         assertTrue(usdRow.inputRefs().get(0).runId().startsWith("pboc-usd-20260807-"),
                 "the USD daily inputRef must point at the real USD run");
         assertTrue(usdRow.inputRefs().get(0).rawRef().startsWith("raw/formal/official_web/FX.USD.CNY.PBOC_MID/2026/08/"));
+        assertEquals("2026-08-09T22:50+08:00", usdRow.updatedAt().toString(),
+                "daily.updatedAt must be the real PUBLISHED input publishedAt (DEC-052), not the processing clock");
+        assertEquals("2026-08-09T22:50+08:00", eurRow.updatedAt().toString(),
+                "daily.updatedAt must be the real PUBLISHED input publishedAt (DEC-052), not the processing clock");
 
         assertTrue(Files.isRegularFile(root.resolveDataRef(usd.dailyRef())));
         assertTrue(Files.isRegularFile(root.resolveDataRef(eur.dailyRef())));
@@ -169,6 +173,8 @@ class DailyRealRawEvidenceTest {
                 "avg", usdRow.avg(),
                 "validCount", usdRow.validCount(),
                 "dailyRef", usd.dailyRef(),
+                "updatedAt", usdRow.updatedAt().toString(),
+                "updatedAtSource", "max(publishedAt) of valid PUBLISHED inputs (DEC-052)",
                 "avgScale", usdRow.avg().split("\\.")[1].length(),
                 "restartReaderRecomputeIdentical", usd.rows().equals(usdReRead.rows())));
         results.put("eur", Map.of(
@@ -177,6 +183,8 @@ class DailyRealRawEvidenceTest {
                 "avg", eurRow.avg(),
                 "validCount", eurRow.validCount(),
                 "dailyRef", eur.dailyRef(),
+                "updatedAt", eurRow.updatedAt().toString(),
+                "updatedAtSource", "max(publishedAt) of valid PUBLISHED inputs (DEC-052)",
                 "avgScale", eurRow.avg().split("\\.")[1].length(),
                 "restartReaderRecomputeIdentical", eur.rows().equals(eurReRead.rows())));
 

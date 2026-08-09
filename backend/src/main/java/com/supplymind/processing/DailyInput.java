@@ -5,6 +5,7 @@ import com.supplymind.foundation.model.ProviderType;
 import com.supplymind.foundation.model.ValidationStatus;
 
 import java.math.RoundingMode;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /** One gate-eligible PUBLISHED+VERIFIED-class input for the daily calculation. */
@@ -27,7 +28,8 @@ public record DailyInput(
         int calculationScale,
         int displayScale,
         RoundingMode roundingMode,
-        String calendarVersion
+        String calendarVersion,
+        OffsetDateTime publishedAt
 ) {
     public DailyInput {
         Objects.requireNonNull(itemId, "itemId");
@@ -45,5 +47,6 @@ public record DailyInput(
         Objects.requireNonNull(calculationVersion, "calculationVersion");
         Objects.requireNonNull(roundingMode, "roundingMode");
         Objects.requireNonNull(calendarVersion, "calendarVersion");
+        Objects.requireNonNull(publishedAt, "publishedAt");
     }
 }

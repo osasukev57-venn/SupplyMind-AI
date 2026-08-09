@@ -9,7 +9,9 @@ import com.supplymind.foundation.model.ValidationStatus;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -22,16 +24,19 @@ import java.util.Objects;
  * exact BigDecimal sum without rounding, avg = sum.divide(validCount, calculationScale, roundingMode),
  * expectedCount=1 per business day, missingCount=max(expectedCount-validCount,0), complete=validCount>=expectedCount.
  * Inputs are grouped by the frozen daily row key; different sources, units, currencies, validation
- * conclusions or calculation contexts never mix.
+ * conclusions or calculation contexts never mix. The row updatedAt is DEC-052 deterministic:
+ * max(publishedAt) of the group's valid PUBLISHED inputs compared by Instant and normalized to
+ * Asia/Shanghai, never the processing clock.
  */
 public final class DailyMeanCalculator {
+
+    public static final ZoneOffset ASIA_SHANGHAI_OFFSET = ZoneOffset.ofHours(8);
 
     private DailyMeanCalculator() {
     }
 
-    public static List<DailyRecordV1> calculate(List<DailyInput> inputs, OffsetDateTime updatedAt) {
+    public static List<DailyRecordV1> calculate(List<DailyInput> inputs) {
         Objects.requireNonNull(inputs, "inputs");
-        Objects.requireNonNull(updatedAt, "updatedAt");
         List<DailyInput> canonical = new ArrayList<>(inputs);
         canonical.sort(Comparator.comparing(DailyInput::runId));
         Map<DailyGroupKey, List<DailyInput>> groups = new LinkedHashMap<>();
@@ -40,12 +45,32 @@ public final class DailyMeanCalculator {
         }
         List<DailyRecordV1> rows = new ArrayList<>();
         for (List<DailyInput> group : groups.values()) {
-            rows.add(calculateRow(group, updatedAt));
+            rows.add(calculateRow(group));
         }
         return List.copyOf(rows);
     }
 
-    private static DailyRecordV1 calculateRow(List<DailyInput> inputs, OffsetDateTime updatedAt) {
+    /**
+     * DEC-052: the deterministic row updatedAt is the latest official publish instant of the
+     * group's valid PUBLISHED inputs, normalized to Asia/Shanghai. A missing publishedAt is
+     * fail-closed and must never fall back to the processing clock.
+     */
+    public static OffsetDateTime deterministicUpdatedAt(List<DailyInput> inputs) {
+        Objects.requireNonNull(inputs, "inputs");
+        if (inputs.isEmpty()) {
+            throw new IllegalArgumentException("daily updatedAt requires at least one valid input");
+        }
+        Instant latest = null;
+        for (DailyInput input : inputs) {
+            Instant published = input.publishedAt().toInstant();
+            if (latest == null || published.isAfter(latest)) {
+                latest = published;
+            }
+        }
+        return OffsetDateTime.ofInstant(latest, java.time.ZoneId.from(ASIA_SHANGHAI_OFFSET));
+    }
+
+    private static DailyRecordV1 calculateRow(List<DailyInput> inputs) {
         DailyInput first = inputs.get(0);
         BigDecimal sum = BigDecimal.ZERO;
         for (DailyInput input : inputs) {
@@ -91,7 +116,7 @@ public final class DailyMeanCalculator {
                 first.currency(),
                 first.unit(),
                 inputRefs,
-                updatedAt
+                deterministicUpdatedAt(inputs)
         );
     }
 

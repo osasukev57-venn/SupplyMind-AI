@@ -69,8 +69,7 @@ public final class DailyProcessingService {
         if (inputs.isEmpty()) {
             return new DailyResult(null, List.of());
         }
-        OffsetDateTime updatedAt = now();
-        List<DailyRecordV1> rows = DailyMeanCalculator.calculate(inputs, updatedAt);
+        List<DailyRecordV1> rows = DailyMeanCalculator.calculate(inputs);
         byte[] csvBytes = CsvV1Codec.encodeDaily(rows);
         String dailyRef = DataPaths.dailyRef(itemId, month);
         List<String> sourceRunIds = rows.stream()
@@ -81,13 +80,14 @@ public final class DailyProcessingService {
                 .toList();
         String minBusinessDate = rows.stream().map(DailyRecordV1::businessDate).min(String::compareTo).orElseThrow();
         String maxBusinessDate = rows.stream().map(DailyRecordV1::businessDate).max(String::compareTo).orElseThrow();
+        OffsetDateTime generatedAt = now();
         ManifestV1 manifest = ManifestFactory.csv(
-                dailyRef, csvBytes, rows.size(), minBusinessDate, maxBusinessDate, sourceRunIds, updatedAt);
+                dailyRef, csvBytes, rows.size(), minBusinessDate, maxBusinessDate, sourceRunIds, generatedAt);
         byte[] manifestBytes = JsonV1Codec.encodeFile(manifest);
         fileStore.commit(
                 "daily-" + itemId + "-" + month,
                 DirtyTransactionType.SINGLE_FILE,
-                updatedAt,
+                generatedAt,
                 List.of(new FileTransactionTarget(
                         DirtyTargetRole.BUSINESS_FILE, dailyRef, csvBytes, manifestBytes, false)));
         return new DailyResult(dailyRef, rows);
@@ -111,6 +111,11 @@ public final class DailyProcessingService {
             RawReceiptV1 raw = readRaw(timeline.rawRef(), runId);
             MonitorSeriesConfigV1 config = VersionedConfigReader.readVersion(dataRoot, raw.configVersion());
             MonitorSeriesItemV1 item = config.requireItem(raw.itemId());
+            OffsetDateTime publishedAt = current.publishedAt();
+            if (publishedAt == null) {
+                throw new StorageException("Daily processing requires a legal publishedAt on the PUBLISHED snapshot: "
+                        + timeline.runId());
+            }
             inputs.add(new DailyInput(
                     candidate.itemId(),
                     candidate.businessDate(),
@@ -130,7 +135,8 @@ public final class DailyProcessingService {
                     item.calculationScale(),
                     item.displayScale(),
                     item.roundingMode(),
-                    item.calendarVersion()));
+                    item.calendarVersion(),
+                    publishedAt));
         }
         inputs.sort(Comparator.comparing(DailyInput::runId));
         return List.copyOf(inputs);

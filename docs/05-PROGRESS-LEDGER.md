@@ -56,19 +56,19 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 2 |
-| 当前任务编号 | D2-T03 PBOC每日加工与CSV持久化（`TaskExecutionStatus=REVIEW_PENDING`；MAJOR 2 已修复，MAJOR 1=`BUSINESS_DECISION_REQUIRED` 待裁决；EXT-03/EXT-06未关闭，不得标DONE）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050、DEC-051 生效。D2-T03=`REVIEW_PENDING`，`statusReason=PBOC_DAILY_PROCESSING_REVIEW_FIX_RESUBMITTED_20260809`。 |
-| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）已生效；算术/日历版本化默认见CALCULATION-RULES（arithmetic-mean-v1、weekday-asia-shanghai-v1） |
+| 当前任务编号 | D2-T03 PBOC每日加工与CSV持久化（`TaskExecutionStatus=REVIEW_PENDING`；DEC-052 已实施，MAJOR 1/2 implementation fixed，等待固定 commit Review；EXT-03/EXT-06未关闭，不得标DONE）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050、DEC-051、DEC-052 生效。D2-T03=`REVIEW_PENDING`，`statusReason=PBOC_DAILY_PROCESSING_DEC052_IMPLEMENTED_AWAITING_FIXED_COMMIT_REVIEW_20260809`。 |
+| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）已生效；算术/日历版本化默认见CALCULATION-RULES（arithmetic-mean-v1、weekday-asia-shanghai-v1） |
 | 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS，审查commit=12766c9）。 |
 | 正在进行任务 | 无；D2-T03已实施完毕并提交Code Review，等待正式裁决。 |
 | 阻塞项 | D2-T03 Review门禁待裁决；EXT-03/EXT-06未关闭（按冻结DoD，D2-T03不得标DONE/宣称口径通过）。AT-SRC-002、Day 2总门禁仍未运行或通过（不得写PASS）。 |
 | 最近验收结果 | D2-T01、D2-T02=`DONE`（Sol最终Review PASS）；D2-T03任务级每日加工证据已提交（`REVIEW_PENDING`）。AT-SRC-002仍为`NOT_RUN`。 |
 | 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 依赖 EXT-03/EXT-06 未关闭：每日均值/节假日口径使用冻结版本化 P0 默认（arithmetic-mean-v1、weekday-asia-shanghai-v1），不得宣称正式业务口径通过。 |
 | 下一任务 | 等待技术负责人D2-T03 Code Review；通过前不得改为`DONE`，不得启动D2-T04或后续未批准任务。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T03 每日加工 75 项回归测试与真实 raw 双币 daily CSV 证据通过（MAJOR 2 独立重启读取修复后）。 |
-| 最近一次Git提交 | 本轮将提交 fix commit（关闭 D2-T03 幂等/重启 Finding）；基线 `caa6216`（feature/d2-t03）。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T03 每日加工 83 项回归测试与真实 raw 双币 daily CSV 证据通过（DEC-052 确定性 updatedAt 已实施）。 |
+| 最近一次Git提交 | 本轮将提交 fix commit（DEC-052 确定性 daily updatedAt）；基线 `7a5a18f`（feature/d2-t03）。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，按 CHANGES_REQUESTED 修复 D2-T03 MAJOR 2 并上报 MAJOR 1 业务裁决。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，按 DEC-052 正式裁决实施 daily.updatedAt 确定性语义并保留 MAJOR 2 重启证据。 |
 | 最后更新时间 | 2026-08-09（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照
