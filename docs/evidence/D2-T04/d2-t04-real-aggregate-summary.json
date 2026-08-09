@@ -1,0 +1,113 @@
+{
+  "gate" : "D2-T04 real D1-T05 PBOC four-grain aggregate evidence",
+  "executedAt" : "2026-08-09T22:50+08:00",
+  "javaRuntime" : "17.0.19",
+  "springBootVersion" : "3.3.6",
+  "evidenceDataRoot" : "D:\\Dev\\Temp\\junit11105799965519165078\\d2-t04 real raw aggregate root",
+  "sourceDataRoot" : "D:\\Dev\\Projects\\SupplyMind AI\\backend\\data\\d1-t05-smoke",
+  "realPageSha256" : "f37cda1f7717a317fe42997514b27850dd96b16df5847b5eafcfab9a543d4f82",
+  "chain" : "real raw -> validation -> publish -> daily -> aggregate (month/quarter/halfyear/year)",
+  "restartReaderOutcome" : "PASS",
+  "results" : {
+    "FX.USD.CNY.PBOC_MID" : {
+      "month" : {
+        "sum" : "6.79040000",
+        "missingCount" : 20,
+        "min" : "6.79040000",
+        "validCount" : 1,
+        "max" : "6.79040000",
+        "calculatedAt" : "2026-08-09T22:50+08:00",
+        "avg" : "6.79040000",
+        "expectedCount" : 21,
+        "inputRefs" : 1,
+        "complete" : false
+      },
+      "quarter" : {
+        "sum" : "6.79040000",
+        "missingCount" : 65,
+        "min" : "6.79040000",
+        "validCount" : 1,
+        "max" : "6.79040000",
+        "calculatedAt" : "2026-08-09T22:50+08:00",
+        "avg" : "6.79040000",
+        "expectedCount" : 66,
+        "inputRefs" : 1,
+        "complete" : false
+      },
+      "halfyear" : {
+        "sum" : "6.79040000",
+        "missingCount" : 131,
+        "min" : "6.79040000",
+        "validCount" : 1,
+        "max" : "6.79040000",
+        "calculatedAt" : "2026-08-09T22:50+08:00",
+        "avg" : "6.79040000",
+        "expectedCount" : 132,
+        "inputRefs" : 1,
+        "complete" : false
+      },
+      "year" : {
+        "sum" : "6.79040000",
+        "missingCount" : 260,
+        "min" : "6.79040000",
+        "validCount" : 1,
+        "max" : "6.79040000",
+        "calculatedAt" : "2026-08-09T22:50+08:00",
+        "avg" : "6.79040000",
+        "expectedCount" : 261,
+        "inputRefs" : 1,
+        "complete" : false
+      }
+    },
+    "FX.EUR.CNY.PBOC_MID" : {
+      "month" : {
+        "sum" : "7.80670000",
+        "missingCount" : 20,
+        "min" : "7.80670000",
+        "validCount" : 1,
+        "max" : "7.80670000",
+        "calculatedAt" : "2026-08-09T22:50+08:00",
+        "avg" : "7.80670000",
+        "expectedCount" : 21,
+        "inputRefs" : 1,
+        "complete" : false
+      },
+      "quarter" : {
+        "sum" : "7.80670000",
+        "missingCount" : 65,
+        "min" : "7.80670000",
+        "validCount" : 1,
+        "max" : "7.80670000",
+        "calculatedAt" : "2026-08-09T22:50+08:00",
+        "avg" : "7.80670000",
+        "expectedCount" : 66,
+        "inputRefs" : 1,
+        "complete" : false
+      },
+      "halfyear" : {
+        "sum" : "7.80670000",
+        "missingCount" : 131,
+        "min" : "7.80670000",
+        "validCount" : 1,
+        "max" : "7.80670000",
+        "calculatedAt" : "2026-08-09T22:50+08:00",
+        "avg" : "7.80670000",
+        "expectedCount" : 132,
+        "inputRefs" : 1,
+        "complete" : false
+      },
+      "year" : {
+        "sum" : "7.80670000",
+        "missingCount" : 260,
+        "min" : "7.80670000",
+        "validCount" : 1,
+        "max" : "7.80670000",
+        "calculatedAt" : "2026-08-09T22:50+08:00",
+        "avg" : "7.80670000",
+        "expectedCount" : 261,
+        "inputRefs" : 1,
+        "complete" : false
+      }
+    }
+  }
+}

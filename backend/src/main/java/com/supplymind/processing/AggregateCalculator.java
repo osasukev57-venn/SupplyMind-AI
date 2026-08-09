@@ -8,6 +8,7 @@ import com.supplymind.foundation.model.DailyRecordV1;
 import com.supplymind.foundation.model.QualityStatus;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -35,14 +36,12 @@ public final class AggregateCalculator {
             AggregateGrain grain,
             String periodStart,
             String periodEnd,
-            List<AggregateInput> inputs,
-            OffsetDateTime calculatedAt
+            List<AggregateInput> inputs
     ) {
         Objects.requireNonNull(grain, "grain");
         Objects.requireNonNull(periodStart, "periodStart");
         Objects.requireNonNull(periodEnd, "periodEnd");
         Objects.requireNonNull(inputs, "inputs");
-        Objects.requireNonNull(calculatedAt, "calculatedAt");
         LocalDate start = LocalDate.parse(periodStart);
         LocalDate end = LocalDate.parse(periodEnd);
         List<AggregateInput> inPeriod = inputs.stream()
@@ -62,17 +61,37 @@ public final class AggregateCalculator {
         }
         List<AggregateRecordV1> rows = new ArrayList<>();
         for (List<AggregateInput> group : groups.values()) {
-            rows.add(calculateRow(grain, periodStart, periodEnd, group, calculatedAt));
+            rows.add(calculateRow(grain, periodStart, periodEnd, group));
         }
         return List.copyOf(rows);
+    }
+
+    /**
+     * DEC-055: the deterministic aggregate calculatedAt is the latest daily.updatedAt instant
+     * of the row's actual participating formal daily inputs, normalized to Asia/Shanghai.
+     * A missing or unparseable daily.updatedAt is fail-closed (the daily model already
+     * requires it) and never falls back to the processing clock.
+     */
+    public static OffsetDateTime deterministicCalculatedAt(List<AggregateInput> inputs) {
+        Objects.requireNonNull(inputs, "inputs");
+        if (inputs.isEmpty()) {
+            throw new IllegalArgumentException("aggregate calculatedAt requires at least one valid daily input");
+        }
+        Instant latest = null;
+        for (AggregateInput input : inputs) {
+            Instant updated = input.dailyRow().updatedAt().toInstant();
+            if (latest == null || updated.isAfter(latest)) {
+                latest = updated;
+            }
+        }
+        return OffsetDateTime.ofInstant(latest, java.time.ZoneId.from(DailyMeanCalculator.ASIA_SHANGHAI_OFFSET));
     }
 
     private static AggregateRecordV1 calculateRow(
             AggregateGrain grain,
             String periodStart,
             String periodEnd,
-            List<AggregateInput> inputs,
-            OffsetDateTime calculatedAt
+            List<AggregateInput> inputs
     ) {
         DailyRecordV1 first = inputs.get(0).dailyRow();
         BigDecimal sum = BigDecimal.ZERO;
@@ -138,7 +157,7 @@ public final class AggregateCalculator {
                 first.unit(),
                 sourceFingerprint,
                 inputRefs,
-                calculatedAt
+                deterministicCalculatedAt(inputs)
         );
     }
 

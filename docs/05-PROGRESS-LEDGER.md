@@ -56,17 +56,17 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 2 |
-| 当前任务编号 | D2-T04 PBOC历史读取与多周期聚合最小闭环（`READY`，已领取实施中；聚合计算安全工作已提交，`aggregate.calculatedAt` 语义=`BUSINESS_DECISION_REQUIRED` 待裁决，裁决前不标 REVIEW_PENDING）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02、D2-T03均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050～054 生效。D2-T04=`READY`（实施中，calculatedAt 裁决待办）。 |
+| 当前任务编号 | D2-T04 PBOC历史读取与多周期聚合最小闭环（`TaskExecutionStatus=REVIEW_PENDING`，DEC-055 已实施并提交证据）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02、D2-T03均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050～055 生效。D2-T04=`REVIEW_PENDING`，`statusReason=PBOC_FOUR_GRAIN_AGGREGATE_EVIDENCE_SUBMITTED_20260809`。 |
 | 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）、DEC-053（arithmetic-mean-v1接受版本化默认）、DEC-054（weekday-asia-shanghai-v1接受版本化默认）已生效 |
 | 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS）；D2-T03（Implementation Review PASS + EXT Gate PASS，commit=607e859）。 |
 | 正在进行任务 | 无。 |
-| 阻塞项 | D2-T04 实施中：`aggregate.calculatedAt` 确定性语义缺失（冻结文档未定义），`BUSINESS_DECISION_REQUIRED` 等待技术负责人裁决；裁决前不实施写盘聚合。AT-SRC-002、Day 2 总门禁仍未运行或通过（不得写PASS）。 |
-| 最近验收结果 | D2-T01、D2-T02、D2-T03=`DONE`（Sol Implementation Review PASS + 第二方固定快照 Review PASS）；EXT-03=`ACCEPTED_VERSIONED_DEFAULT`（DEC-053）、EXT-06=`ACCEPTED_VERSIONED_DEFAULT`（DEC-054）、EXT Gate=`PASS`。AT-SRC-002仍为`NOT_RUN`。 |
+| 阻塞项 | D2-T04 Review 门禁待裁决（DEC-055 已裁决并实施，无剩余业务裁决待办）。AT-SRC-002、Day 2 总门禁仍未运行或通过（不得写PASS）。 |
+| 最近验收结果 | D2-T01、D2-T02、D2-T03=`DONE`；D2-T04 任务级证据已提交（`REVIEW_PENDING`，DEC-055 生效）。AT-SRC-002仍为`NOT_RUN`。 |
 | 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 计算/日历口径已接受版本化默认（DEC-053/054）；weekday-asia-shanghai-v1 不构成完整法定节假日/调休/停报/特殊交易日日历，未来以新 calendarVersion 升级。 |
-| 下一任务 | 等待技术负责人裁决 `aggregate.calculatedAt` 确定性语义；裁决后完成 D2-T04 写盘聚合/重启/真实 Evidence 并提交 Review（`REVIEW_PENDING`）。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T04 聚合计算安全工作 79 项回归测试通过。 |
-| 最近一次Git提交 | 本轮将提交 feat: implement D2-T04（安全工作 commit）。 |
+| 下一任务 | 等待技术负责人 D2-T04 Code Review；通过前不得改为`DONE`，不得领取/启动 D2-T05。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T04 四级聚合 91 项回归测试与真实 raw 双币四级聚合证据通过（DEC-055）。 |
+| 最近一次Git提交 | 本轮将提交 feat: complete D2-T04 aggregate persistence；前序 checkpoint=`fccede8`。 |
 | 是否偏离计划 | 否 |
 | 最后更新人/窗口 | OpenCode实施工程师窗口，按 DEC-053/DEC-054 正式裁决收口 D2-T03 EXT Gate。 |
 | 最后更新时间 | 2026-08-09（Asia/Shanghai） |

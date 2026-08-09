@@ -97,7 +97,7 @@ Daily 的 processingStage 固定 `PUBLISHED`，validationStatus 仅 `VERIFIED` �
 
 Aggregate 固定表头：`schemaVersion,grain,periodStart,periodEnd,itemId,providerType,actualSourceName,accessMethod,validationStatus,validationVersion,configVersions,calculationVersion,calculationScale,displayScale,roundingMode,calendarVersion,sum,validCount,avg,min,max,expectedCount,missingCount,complete,qualityStatus,currency,unit,sourceFingerprint,inputRefs,calculatedAt`。
 
-Aggregate 的 qualityStatus 仅 `COMPLETE`/`INCOMPLETE`，必须分别对应 complete=true/false。sourceFingerprint 是无 BOM/空白/末尾换行的紧凑 JSON（字段顺序 providerType、actualSourceName、accessMethod）的 SHA-256。inputRefs 的对象字段顺序为 dailyFileRef、businessDate、validationVersion、fileSha256，并按 businessDate/dailyFileRef/validationVersion/fileSha256 升序。
+Aggregate 的 qualityStatus 仅 `COMPLETE`/`INCOMPLETE`，必须分别对应 complete=true/false。sourceFingerprint 是无 BOM/空白/末尾换行的紧凑 JSON（字段顺序 providerType、actualSourceName、accessMethod）的 SHA-256。inputRefs 的对象字段顺序为 dailyFileRef、businessDate、validationVersion、fileSha256，并按 businessDate/dailyFileRef/validationVersion/fileSha256 升序。`calculatedAt`（DEC-055 确定性语义）表示该 aggregate 行实际参与计算的全部正式 daily inputs 中 `max(daily.updatedAt)`（按 Instant 比较后统一转换为 Asia/Shanghai 的 ISO-8601 offset datetime），**不是 processing 执行时间**；month/quarter/halfyear/year 四级全部直接从各自周期内正式 daily 行独立计算，禁止从下级聚合继承；相同逻辑 daily 输入跨执行时间重算必须逐字节一致；daily updatedAt 缺失/非法或输入不可解析必须 fail-closed。
 
 ## ManifestV1 与 DirtyMarkerV1
 

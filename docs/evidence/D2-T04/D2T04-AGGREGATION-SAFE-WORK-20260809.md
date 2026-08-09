@@ -63,7 +63,40 @@
 - 重启读取（Writer A → Reader B）测试与真实 PBOC aggregate Evidence：待上述裁决后随写盘服务实施；
 - D2-T04 任务状态不标记 REVIEW_PENDING（按窗口指令：未形成完整可审快照时不虚假标记）。
 
+## DEC-055 正式落地与最终实现（2026-08-09）
+
+技术负责人正式裁决 **DEC-055**（`docs/06-DECISION-LOG.md`，同步 `docs/01` 与 `docs/data-dictionary/FILE-SCHEMA-V1.md`）：`aggregate.calculatedAt = max(实际参与该行的正式 daily 行 daily.updatedAt)`（Instant 比较、Asia/Shanghai 输出）；month/quarter/halfyear/year 四级全部直接从各自周期内正式 daily 行独立计算，禁止从下级聚合继承；manifest.generatedAt 允许 processing Clock。最终实现：
+
+| 组件 | 内容 |
+|---|---|
+| `AggregateCalculator` | `deterministicCalculatedAt(inputs)`：max(daily.updatedAt) 按 Instant 比较、Asia/Shanghai 输出；行内 calculatedAt 完全由输入派生，不取 processing Clock |
+| `AggregateProcessingService`（新增） | 正式持久化闭环：按 grain 从各自周期内全部 daily CSV（manifest 校验读取，跨月文件合并）加载输入 → `CsvV1Codec.encodeAggregate`（冻结 30 列表头）→ 原子写 `processed/aggregate/<itemId>/{month,quarter,halfyear,year}/YYYY.csv` + 相邻 manifest（rowCount/实际行 periodStart 最小/periodEnd 最大/sourceRunIds=被引用 daily manifest sourceRunIds 并集/COMMITTED）；空周期不写文件；同周期重算原子替换（确定性字节） |
+| Manifest | 复用 ManifestFactory.csv + ManifestVerifier + AtomicFileStore（DirtyMarker 原子单文件事务）；aggregate manifest 派生校验（ManifestDerivedFieldsVerifier）通过 |
+| Golden | `contracts/v1/valid/aggregate-month-pboc-2026-08.csv`（静态固定字节，独立手工 SHA 计算 inputRefs.fileSha256 与 sourceFingerprint 后手写）+ 手写 daily/manifest 输入 fixtures |
+
+### 测试（`AggregateProcessingServiceTest` 6 + `AggregateCalculatorTest` 14）
+
+- 月聚合 golden bytes 逐字节一致；manifest 全字段对账；decode 往返一致
+- 四级全部直接从 daily 重算（month/quarter/halfyear/year 各自行，手算 sum/avg/min/max/expectedCount 一致）
+- calculatedAt = max(daily.updatedAt)（单输入/多输入/顺序无关/新增较旧不变/新增较新推进/不同 offset 按 Instant 比较并 Asia/Shanghai 输出）
+- 缺失 daily.updatedAt fail-closed（模型层）
+- 跨 Clock 确定性（aggregate processing Clock A≠B → month CSV bytes/SHA 完全一致；manifest.generatedAt 允许不同）
+- 跨文件（quarter 合并 2026-01.csv 与 2026-02.csv；inputRefs 覆盖多文件）
+- restart：Writer A 写后丢弃 → 全新 Reader B 同一物理 dataRoot → CSV/manifest 全字段校验 + decode 独立期望
+- 空周期不写文件
+
+### 真实 PBOC 四级聚合（gated `-Dd2-t04.real-raw=true`，PASS）
+
+复用 D1-T05 真实 raw（复制逐字节一致，真实页面 SHA-256=`f37cda1f…4f82`，businessDate=2026-08-07）→ validation → publish → daily → aggregate：
+
+| itemId | grain | sum / avg / min / max | expectedCount | calculatedAt |
+|---|---|---|---|---|
+| FX.USD.CNY.PBOC_MID | month/quarter/halfyear/year | 6.79040000 / 6.79040000 / 6.79040000 / 6.79040000 | 21 / 66 / 132 / 261 | 2026-08-09T22:50+08:00 |
+| FX.EUR.CNY.PBOC_MID | month/quarter/halfyear/year | 7.80670000 / 7.80670000 / 7.80670000 / 7.80670000 | 21 / 66 / 132 / 261 | 2026-08-09T22:50+08:00 |
+
+四级均直接从真实 daily 行独立计算（不传播下级聚合）；calculatedAt 四级均为真实 daily.updatedAt=max(publishedAt)=2026-08-09T22:50+08:00；inputRefs 指向真实 daily 文件（fileSha256 与 daily manifest 一致）；restart Reader B 重算一致。机器证据：`docs/evidence/D2-T04/d2-t04-real-aggregate-summary.json`。
+
 ## 状态与边界
 
-- 未创建任何 aggregate 物理文件；未修改 AT-SRC-002（`NOT_RUN`）；未进入 D2-T05。
+- 未创建任何业务目录之外的文件；未修改 AT-SRC-002（`NOT_RUN`）；未进入 D2-T05。
 - 未修改 D2-T01/D2-T02/D2-T03 生产代码、DEC-050~054、CALCULATION-RULES、FILE-SCHEMA-V1 与既有 evidence。

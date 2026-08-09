@@ -174,7 +174,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D2-T04 PBOC历史读取与多周期聚合最小闭环
 
-- **优先级/状态：** P0-最高 / `READY`（已领取实施中；聚合计算安全工作已提交，`aggregate.calculatedAt` 确定性语义缺失=`BUSINESS_DECISION_REQUIRED` 待技术负责人裁决，裁决前不标记 REVIEW_PENDING、不得实施写盘聚合与 D2-T05）。
+- **优先级/状态：** P0-最高 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=PBOC_FOUR_GRAIN_AGGREGATE_EVIDENCE_SUBMITTED_20260809`。DEC-055 已实施（aggregate.calculatedAt=max(daily.updatedAt)，Instant 比较、Asia/Shanghai 输出）；四级写盘/跨文件/跨 Clock/重启/真实 PBOC 聚合证据已提交；等待技术负责人Code Review；执行人不得自行改为`DONE`，不得提前领取 D2-T05。
 - **任务目标：** 从daily文件读取历史并生成月、季、半年、年持久化聚合，形成最小完整闭环。
 - **对应需求：** SUP-02、F03、F09、H01、H02。
 - **输入：** D2-T03 daily、黄金历史样本、自然周期与精度规则。
