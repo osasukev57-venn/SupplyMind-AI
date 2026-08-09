@@ -289,8 +289,65 @@ class AggregateCalculatorTest {
                 "input order must never change the aggregate result");
     }
 
+    @Test
+    void configVersionsAreUnionDeduplicatedSortedAcrossInputs() {
+        List<AggregateInput> inputs = List.of(
+                input(dailyWithConfigVersions("2026-01-05", "6.79040000", List.of(1))),
+                input(dailyWithConfigVersions("2026-01-06", "6.80000000", List.of(2))),
+                input(dailyWithConfigVersions("2026-01-07", "7.10000000", List.of(1, 3))));
+
+        AggregateRecordV1 row = AggregateCalculator.calculate(
+                AggregateGrain.MONTH, JAN, JAN_END, inputs).get(0);
+
+        assertEquals(List.of(1, 2, 3), row.configVersions(),
+                "configVersions must be the union, deduplicated and numerically sorted");
+
+        List<AggregateInput> reordered = new ArrayList<>(inputs);
+        Collections.reverse(reordered);
+        assertEquals(row.configVersions(), AggregateCalculator.calculate(
+                AggregateGrain.MONTH, JAN, JAN_END, reordered).get(0).configVersions(),
+                "input reorder must never change the configVersions union");
+    }
+
     private static AggregateInput input(DailyRecordV1 row) {
         return new AggregateInput(row, "processed/daily/FX.USD.CNY.PBOC_MID/2026-01.csv", DAILY_FILE_SHA);
+    }
+
+    private static DailyRecordV1 dailyWithConfigVersions(
+            String businessDate,
+            String avg,
+            List<Integer> configVersions
+    ) {
+        List<DailyInputRefV1> refs = List.of(new DailyInputRefV1(
+                "run-" + businessDate,
+                "raw/formal/official_web/FX.USD.CNY.PBOC_MID/2026/01/" + businessDate + ".json",
+                4));
+        return new DailyRecordV1(
+                "1.0",
+                businessDate,
+                ITEM,
+                ProviderType.OFFICIAL_WEB,
+                SOURCE,
+                AccessMethod.PUBLIC_OFFICIAL_HTML,
+                ProcessingStage.PUBLISHED,
+                ValidationStatus.VERIFIED,
+                "pboc-basic-validation-v1",
+                configVersions,
+                "arithmetic-mean-v1",
+                8,
+                4,
+                RoundingMode.HALF_UP,
+                WEEKDAY,
+                avg,
+                1,
+                avg,
+                1,
+                0,
+                true,
+                "CNY",
+                "CNY/1 USD",
+                refs,
+                OffsetDateTime.parse("2026-01-06T09:00+08:00"));
     }
 
     private static DailyRecordV1 daily(

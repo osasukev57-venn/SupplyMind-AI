@@ -131,29 +131,37 @@ class AggregateRealRawEvidenceTest {
         }
 
         DataRoot readerRoot = DataRoot.forTest(root.path());
-        AtomicFileStore readerFileStore = new AtomicFileStore(readerRoot, new DirtyMarkerCodec());
-        TimelineStore readerTimeline = new TimelineStore(readerRoot, readerFileStore, FIXED_CLOCK);
-        DailyProcessingService readerDaily = new DailyProcessingService(readerRoot, readerTimeline, readerFileStore, FIXED_CLOCK);
-        AggregateProcessingService readerAggregate = new AggregateProcessingService(readerRoot, readerFileStore, FIXED_CLOCK);
-        List<DailyRecordV1> usdDailyReRead = readerDaily.processMonth("FX.USD.CNY.PBOC_MID", java.time.YearMonth.of(2026, 8)).rows();
-        assertEquals(1, usdDailyReRead.size());
-        readerAggregate.processYear("FX.USD.CNY.PBOC_MID", 2026);
-        readerAggregate.processYear("FX.EUR.CNY.PBOC_MID", 2026);
+        AggregateReadService reader = new AggregateReadService(readerRoot);
+        Map<String, String> aggregateHashesBefore = new java.util.TreeMap<>();
         for (String itemId : List.of("FX.USD.CNY.PBOC_MID", "FX.EUR.CNY.PBOC_MID")) {
-            String expectedSum = itemId.startsWith("FX.USD") ? "6.79040000" : "7.80670000";
             for (AggregateGrain grain : List.of(AggregateGrain.MONTH, AggregateGrain.QUARTER,
                     AggregateGrain.HALFYEAR, AggregateGrain.YEAR)) {
                 String ref = DataPaths.aggregateRef(itemId, grain.wireValue(), 2026);
-                List<AggregateRecordV1> recomputed = CsvV1Codec.decodeAggregate(
-                        Files.readAllBytes(readerRoot.resolveDataRef(ref)));
-                assertEquals(1, recomputed.size());
-                assertEquals(expectedSum, recomputed.get(0).sum());
-                assertEquals(1, recomputed.get(0).validCount());
-                assertEquals(expectedSum, recomputed.get(0).avg());
-                assertEquals(expectedSum, recomputed.get(0).min());
-                assertEquals(expectedSum, recomputed.get(0).max());
-                assertEquals("2026-08-09T22:50+08:00", recomputed.get(0).calculatedAt().toString(),
-                        "restart reader must recompute the identical calculatedAt from daily");
+                aggregateHashesBefore.put(ref, FileDigest.sha256(root.resolveDataRef(ref)));
+            }
+        }
+
+        String expectedUsdSum = "6.79040000";
+        String expectedEurSum = "7.80670000";
+        for (String itemId : List.of("FX.USD.CNY.PBOC_MID", "FX.EUR.CNY.PBOC_MID")) {
+            String expectedSum = itemId.startsWith("FX.USD") ? expectedUsdSum : expectedEurSum;
+            for (AggregateGrain grain : List.of(AggregateGrain.MONTH, AggregateGrain.QUARTER,
+                    AggregateGrain.HALFYEAR, AggregateGrain.YEAR)) {
+                AggregateReadService.AggregateFile file = reader.read(itemId, grain, 2026);
+                assertNotNull(file, "restart reader must discover the persisted " + grain.wireValue() + " CSV");
+                assertEquals(ManifestV1.COMMITTED, file.manifest().commitState());
+                assertEquals(FileDigest.sha256(file.csvBytes()), file.manifest().fileSha256());
+                assertEquals(file.csvBytes().length, file.manifest().byteLength());
+                assertEquals(1, file.rows().size());
+                assertEquals(expectedSum, file.rows().get(0).sum());
+                assertEquals(1, file.rows().get(0).validCount());
+                assertEquals(expectedSum, file.rows().get(0).avg());
+                assertEquals(expectedSum, file.rows().get(0).min());
+                assertEquals(expectedSum, file.rows().get(0).max());
+                assertEquals("2026-08-09T22:50+08:00", file.rows().get(0).calculatedAt().toString(),
+                        "restart reader must read the identical calculatedAt without any rebuild");
+                assertEquals(aggregateHashesBefore.get(file.ref()), FileDigest.sha256(root.resolveDataRef(file.ref())),
+                        "the read-only restart reader must never rewrite the persisted aggregate CSV");
             }
         }
 

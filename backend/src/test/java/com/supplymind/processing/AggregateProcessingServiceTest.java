@@ -32,6 +32,7 @@ import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -171,69 +172,111 @@ class AggregateProcessingServiceTest {
     }
 
     @Test
-    void aggregateIsDeterministicAcrossProcessingClocks() throws IOException {
-        Harness writerA = harness(Clock.fixed(Instant.parse("2026-08-10T02:00:00Z"), SHANGHAI));
-        installDailyFixture(writerA, "2026-08", "daily-pboc-v1.csv",
-                "aggregate-daily-input-2026-08.csv.manifest.json");
-        Harness writerB = harness(Clock.fixed(Instant.parse("2026-08-10T10:30:00Z"), SHANGHAI));
-        installDailyFixture(writerB, "2026-08", "daily-pboc-v1.csv",
-                "aggregate-daily-input-2026-08.csv.manifest.json");
+    void fourGrainsAreDeterministicAcrossProcessingClocks() throws IOException {
+        Clock clockA = Clock.fixed(Instant.parse("2026-08-10T02:00:00Z"), SHANGHAI);
+        Clock clockB = Clock.fixed(Instant.parse("2026-08-10T10:30:00Z"), SHANGHAI);
+        Harness writerA = harness(clockA);
+        installDailyFixture(writerA, "2026-01", "aggregate-daily-input-2026-01.csv",
+                "aggregate-daily-input-2026-01.csv.manifest.json");
+        installDailyFixture(writerA, "2026-02", "aggregate-daily-input-2026-02.csv",
+                "aggregate-daily-input-2026-02.csv.manifest.json");
+        Harness writerB = harness(clockB);
+        installDailyFixture(writerB, "2026-01", "aggregate-daily-input-2026-01.csv",
+                "aggregate-daily-input-2026-01.csv.manifest.json");
+        installDailyFixture(writerB, "2026-02", "aggregate-daily-input-2026-02.csv",
+                "aggregate-daily-input-2026-02.csv.manifest.json");
 
-        String refA = writerA.aggregate().processGrain(ITEM, AggregateGrain.MONTH, 2026).get(0);
-        String refB = writerB.aggregate().processGrain(ITEM, AggregateGrain.MONTH, 2026).get(0);
-        byte[] bytesA = Files.readAllBytes(writerA.root().resolveDataRef(refA));
-        byte[] bytesB = Files.readAllBytes(writerB.root().resolveDataRef(refB));
+        writerA.aggregate().processYear(ITEM, 2026);
+        writerB.aggregate().processYear(ITEM, 2026);
 
-        assertArrayEquals(bytesA, bytesB, "identical daily inputs must produce identical aggregate CSV bytes");
-        assertEquals(FileDigest.sha256(bytesA), FileDigest.sha256(bytesB));
-        List<AggregateRecordV1> rowsA = CsvV1Codec.decodeAggregate(bytesA);
-        List<AggregateRecordV1> rowsB = CsvV1Codec.decodeAggregate(bytesB);
-        assertEquals(rowsA, rowsB);
-        assertEquals("2026-08-10T09:02+08:00", rowsA.get(0).calculatedAt().toString());
+        for (AggregateGrain grain : List.of(AggregateGrain.MONTH, AggregateGrain.QUARTER,
+                AggregateGrain.HALFYEAR, AggregateGrain.YEAR)) {
+            String ref = DataPaths.aggregateRef(ITEM, grain.wireValue(), 2026);
+            byte[] bytesA = Files.readAllBytes(writerA.root().resolveDataRef(ref));
+            byte[] bytesB = Files.readAllBytes(writerB.root().resolveDataRef(ref));
+            assertArrayEquals(bytesA, bytesB,
+                    grain.wireValue() + " CSV bytes must be identical across processing clocks");
+            assertEquals(FileDigest.sha256(bytesA), FileDigest.sha256(bytesB),
+                    grain.wireValue() + " CSV SHA-256 must be identical across processing clocks");
+            List<AggregateRecordV1> rowsA = CsvV1Codec.decodeAggregate(bytesA);
+            List<AggregateRecordV1> rowsB = CsvV1Codec.decodeAggregate(bytesB);
+            assertEquals(rowsA, rowsB);
+            for (int index = 0; index < rowsA.size(); index++) {
+                assertEquals(rowsA.get(index).calculatedAt(), rowsB.get(index).calculatedAt(),
+                        grain.wireValue() + " calculatedAt must be identical across processing clocks");
+            }
+
+            ManifestV1 manifestA = JsonV1Codec.decodeFile(
+                    Files.readAllBytes(writerA.root().resolveDataRef(DataPaths.manifestRef(ref))), ManifestV1.class);
+            ManifestV1 manifestB = JsonV1Codec.decodeFile(
+                    Files.readAllBytes(writerB.root().resolveDataRef(DataPaths.manifestRef(ref))), ManifestV1.class);
+            assertEquals(manifestA.fileSha256(), manifestB.fileSha256(),
+                    grain.wireValue() + " manifest fileSha256 must be identical");
+            assertEquals(manifestA.byteLength(), manifestB.byteLength());
+            assertEquals(manifestA.rowCount(), manifestB.rowCount());
+            assertEquals(manifestA.sourceRunIds(), manifestB.sourceRunIds());
+            assertFalse(manifestA.generatedAt().equals(manifestB.generatedAt()),
+                    grain.wireValue() + " manifest.generatedAt may legitimately differ across clocks");
+        }
     }
 
     @Test
-    void restartReaderVerifiesAggregateCsvAndManifestFromDisk() throws IOException {
+    void restartReaderOnlyReadsPersistedAggregatesWithoutAnyRebuild() throws IOException {
         Harness writerA = harness();
-        installDailyFixture(writerA, "2026-08", "daily-pboc-v1.csv",
-                "aggregate-daily-input-2026-08.csv.manifest.json");
-        writerA.aggregate().processGrain(ITEM, AggregateGrain.MONTH, 2026);
+        installDailyFixture(writerA, "2026-01", "aggregate-daily-input-2026-01.csv",
+                "aggregate-daily-input-2026-01.csv.manifest.json");
+        installDailyFixture(writerA, "2026-02", "aggregate-daily-input-2026-02.csv",
+                "aggregate-daily-input-2026-02.csv.manifest.json");
+        writerA.aggregate().processYear(ITEM, 2026);
 
-        Harness readerB = harness();
-        String ref = "processed/aggregate/FX.USD.CNY.PBOC_MID/month/2026.csv";
-        Path aggregatePath = readerB.root().resolveDataRef(ref);
-        Path manifestPath = readerB.root().resolveDataRef(DataPaths.manifestRef(ref));
-        assertTrue(Files.isRegularFile(aggregatePath));
-        assertTrue(Files.isRegularFile(manifestPath));
-        byte[] csvBytes = Files.readAllBytes(aggregatePath);
-        ManifestV1 manifest = JsonV1Codec.decodeFile(Files.readAllBytes(manifestPath), ManifestV1.class);
-        assertEquals(FileDigest.sha256(csvBytes), manifest.fileSha256());
-        assertEquals(csvBytes.length, manifest.byteLength());
-        assertEquals(1, manifest.rowCount());
-        assertEquals("2026-08-01", manifest.minBusinessDate());
-        assertEquals("2026-08-31", manifest.maxBusinessDate());
-        assertEquals(List.of("run-daily-golden-001"), manifest.sourceRunIds());
-        assertTrue(ManifestVerifier.matches(readerB.root(), ref, aggregatePath, manifestPath));
+        Map<String, String> aggregateHashesBefore = new java.util.TreeMap<>();
+        for (AggregateGrain grain : List.of(AggregateGrain.MONTH, AggregateGrain.QUARTER,
+                AggregateGrain.HALFYEAR, AggregateGrain.YEAR)) {
+            String ref = DataPaths.aggregateRef(ITEM, grain.wireValue(), 2026);
+            aggregateHashesBefore.put(ref, FileDigest.sha256(writerA.root().resolveDataRef(ref)));
+        }
 
-        List<AggregateRecordV1> decoded = CsvV1Codec.decodeAggregate(csvBytes);
-        assertEquals(1, decoded.size());
-        AggregateRecordV1 row = decoded.get(0);
-        assertEquals(AggregateGrain.MONTH, row.grain());
-        assertEquals("2026-08-01", row.periodStart());
-        assertEquals("2026-08-31", row.periodEnd());
-        assertEquals("6.79040000", row.sum());
-        assertEquals(1, row.validCount());
-        assertEquals("6.79040000", row.avg());
-        assertEquals("6.79040000", row.min());
-        assertEquals("6.79040000", row.max());
-        assertEquals(21, row.expectedCount());
-        assertEquals(20, row.missingCount());
-        assertEquals(ValidationStatus.VERIFIED, row.validationStatus());
-        assertEquals("pboc-basic-validation-v1", row.validationVersion());
-        assertEquals(List.of(1), row.configVersions());
-        assertEquals("2026-08-10T09:02+08:00", row.calculatedAt().toString());
-        assertEquals(1, row.inputRefs().size());
-        assertEquals("processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv", row.inputRefs().get(0).dailyFileRef());
+        DataRoot readerRoot = DataRoot.forTest(writerA.root().path());
+        AggregateReadService reader = new AggregateReadService(readerRoot);
+
+        String expectedMonthSum = "13.59040000";
+        String expectedHighSum = "20.49040000";
+        for (AggregateGrain grain : List.of(AggregateGrain.MONTH, AggregateGrain.QUARTER,
+                AggregateGrain.HALFYEAR, AggregateGrain.YEAR)) {
+            AggregateReadService.AggregateFile file = reader.read(ITEM, grain, 2026);
+            assertNotNull(file, grain.wireValue() + " must be discoverable by the read-only reader");
+            assertEquals("processed/aggregate/FX.USD.CNY.PBOC_MID/" + grain.wireValue() + "/2026.csv", file.ref());
+            assertEquals(ManifestV1.COMMITTED, file.manifest().commitState());
+            assertEquals(FileDigest.sha256(file.csvBytes()), file.manifest().fileSha256());
+            assertEquals(file.csvBytes().length, file.manifest().byteLength());
+            if (grain == AggregateGrain.MONTH) {
+                assertEquals(2, file.manifest().rowCount());
+                assertEquals("2026-01-01", file.manifest().minBusinessDate());
+                assertEquals("2026-02-28", file.manifest().maxBusinessDate());
+            } else if (grain == AggregateGrain.QUARTER) {
+                assertEquals(1, file.manifest().rowCount());
+                assertEquals("2026-01-01", file.manifest().minBusinessDate());
+                assertEquals("2026-03-31", file.manifest().maxBusinessDate());
+            } else if (grain == AggregateGrain.HALFYEAR) {
+                assertEquals(1, file.manifest().rowCount());
+                assertEquals("2026-01-01", file.manifest().minBusinessDate());
+                assertEquals("2026-06-30", file.manifest().maxBusinessDate());
+            } else {
+                assertEquals(1, file.manifest().rowCount());
+                assertEquals("2026-01-01", file.manifest().minBusinessDate());
+                assertEquals("2026-12-31", file.manifest().maxBusinessDate());
+            }
+            assertEquals(grain == AggregateGrain.MONTH ? 2 : 1, file.rows().size(),
+                    grain.wireValue() + " row count");
+            AggregateRecordV1 row = file.rows().get(0);
+            assertEquals(grain == AggregateGrain.MONTH ? expectedMonthSum : expectedHighSum, row.sum());
+            assertEquals(grain == AggregateGrain.MONTH ? 2 : 3, row.validCount());
+            assertEquals(grain == AggregateGrain.MONTH
+                    ? "2026-01-06T09:30+08:00" : "2026-02-02T10:00+08:00", row.calculatedAt().toString());
+            assertEquals(aggregateHashesBefore.get(file.ref()), FileDigest.sha256(
+                    readerRoot.resolveDataRef(file.ref())),
+                    grain.wireValue() + " CSV bytes must be untouched by the read-only reader");
+        }
     }
 
     @Test
@@ -262,7 +305,7 @@ class AggregateProcessingServiceTest {
     }
 
     private Harness harness(Clock aggregateClock) {
-        DataRoot root = DataRoot.forTest(temporaryDirectory.resolve("d2-t04 aggregate root"));
+        DataRoot root = DataRoot.forTest(temporaryDirectory.resolve("d2-t04 aggregate root " + System.nanoTime()));
         AtomicMoveSupport.probeOrFail(root);
         AtomicFileStore fileStore = new AtomicFileStore(root, new DirtyMarkerCodec());
         new ConfigActivationStore(root, fileStore, FIXED_CLOCK).ensureInitialDefault();
