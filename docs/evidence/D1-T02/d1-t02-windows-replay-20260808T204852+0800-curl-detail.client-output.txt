@@ -1,0 +1,6 @@
+curl: (35) schannel: failed to receive handshake, SSL/TLS connection failed
+http_code=000
+content_type=
+url_effective=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/2026080709013821880/index.html
+num_redirects=0
+size_download=0

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "quarantineRef": "quarantine/FX.USD.CNY.CONTRACT_FIXTURE/2026-08/run-invalid-published.json",
+  "itemId": "FX.USD.CNY.CONTRACT_FIXTURE",
+  "runId": "run-invalid-published",
+  "rawRef": "raw/test/synthetic_demo/FX.USD.CNY.CONTRACT_FIXTURE/2026/08/run-invalid-published.json",
+  "stagingRef": "staging/run-invalid-published.json",
+  "terminalRecordVersion": 4,
+  "processingStage": "PUBLISHED",
+  "validationStatus": "VERIFIED",
+  "reasonCode": "INVALID_QUARANTINE",
+  "validationVersion": "validation-contract-v1",
+  "rawPayloadSha256": "13e896e5e608126fad1234f7bfb8a7c68ad5a5774fdd971baa4a957a486334a2",
+  "rawFileSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "receivedAt": "2026-08-10T09:00:00+08:00",
+  "quarantinedAt": "2026-08-10T09:03:00+08:00"
+}

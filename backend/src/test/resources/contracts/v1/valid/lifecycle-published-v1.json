@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0",
+  "recordId": "record-fixture-usd-0001",
+  "runId": "run-fixture-usd-0001",
+  "rawRef": "raw/test/synthetic_demo/FX.USD.CNY.CONTRACT_FIXTURE/2026/08/run-fixture-usd-0001.json",
+  "currentRecordVersion": 4,
+  "records": [
+    {
+      "recordVersion": 1,
+      "processingStage": "RECEIVED",
+      "validationStatus": "PENDING",
+      "candidate": null,
+      "reasonCode": null,
+      "validationVersion": null,
+      "validatedAt": null,
+      "publishedAt": null,
+      "publishRef": null,
+      "updatedAt": "2026-08-10T09:00:00+08:00"
+    },
+    {
+      "recordVersion": 2,
+      "processingStage": "PARSED",
+      "validationStatus": "PENDING",
+      "candidate": {
+        "itemId": "FX.USD.CNY.CONTRACT_FIXTURE",
+        "businessDate": "2026-08-10",
+        "value": "7.123456789",
+        "currency": "CNY",
+        "unit": "CNY/1 USD",
+        "providerType": "synthetic_demo",
+        "actualSourceName": "D1-T03 test/contract fixture — NOT REAL PBOC",
+        "accessMethod": "synthetic_demo",
+        "normalizationVersion": "contract-normalization-v1"
+      },
+      "reasonCode": null,
+      "validationVersion": null,
+      "validatedAt": null,
+      "publishedAt": null,
+      "publishRef": null,
+      "updatedAt": "2026-08-10T09:01:00+08:00"
+    },
+    {
+      "recordVersion": 3,
+      "processingStage": "VALIDATED",
+      "validationStatus": "VERIFIED",
+      "candidate": {
+        "itemId": "FX.USD.CNY.CONTRACT_FIXTURE",
+        "businessDate": "2026-08-10",
+        "value": "7.123456789",
+        "currency": "CNY",
+        "unit": "CNY/1 USD",
+        "providerType": "synthetic_demo",
+        "actualSourceName": "D1-T03 test/contract fixture — NOT REAL PBOC",
+        "accessMethod": "synthetic_demo",
+        "normalizationVersion": "contract-normalization-v1"
+      },
+      "reasonCode": null,
+      "validationVersion": "validation-contract-v1",
+      "validatedAt": "2026-08-10T09:02:00+08:00",
+      "publishedAt": null,
+      "publishRef": null,
+      "updatedAt": "2026-08-10T09:02:00+08:00"
+    },
+    {
+      "recordVersion": 4,
+      "processingStage": "PUBLISHED",
+      "validationStatus": "VERIFIED",
+      "candidate": {
+        "itemId": "FX.USD.CNY.CONTRACT_FIXTURE",
+        "businessDate": "2026-08-10",
+        "value": "7.123456789",
+        "currency": "CNY",
+        "unit": "CNY/1 USD",
+        "providerType": "synthetic_demo",
+        "actualSourceName": "D1-T03 test/contract fixture — NOT REAL PBOC",
+        "accessMethod": "synthetic_demo",
+        "normalizationVersion": "contract-normalization-v1"
+      },
+      "reasonCode": null,
+      "validationVersion": "validation-contract-v1",
+      "validatedAt": "2026-08-10T09:02:00+08:00",
+      "publishedAt": "2026-08-10T09:03:00+08:00",
+      "publishRef": "staging/run-fixture-usd-0001.json#recordVersion=4",
+      "updatedAt": "2026-08-10T09:03:00+08:00"
+    }
+  ]
+}

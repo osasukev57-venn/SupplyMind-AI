@@ -1,0 +1,37 @@
+﻿# ==============================
+# SupplyMind AI - Git Ignore
+# ==============================
+
+# Maven build output
+backend/target/
+
+# Runtime business data
+backend/data/
+backend/data.__manual_startup_backup__/
+
+# Logs
+backend/logs/
+logs/
+
+# Temporary review/work directories
+.codex-doc-review/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+
+# Local environment / secrets
+.env
+.env.*
+application-local.yml
+application-local.yaml
+application-local.properties

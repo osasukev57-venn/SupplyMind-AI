@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "fileName": "run-fixture-usd-0001.json",
+  "fileSha256": "98f4a7cf87e6020d82450a826208311e417c26058086b32817951d15e9cb9551",
+  "byteLength": 1221,
+  "rowCount": null,
+  "minBusinessDate": null,
+  "maxBusinessDate": null,
+  "sourceRunIds": [
+    "run-fixture-usd-0001"
+  ],
+  "generatedAt": "2026-08-10T09:04:00+08:00",
+  "commitState": "COMMITTED"
+}

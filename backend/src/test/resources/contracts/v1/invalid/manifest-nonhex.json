@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "fileName": "invalid.json",
+  "fileSha256": "not-a-sha256",
+  "byteLength": 0,
+  "rowCount": null,
+  "minBusinessDate": null,
+  "maxBusinessDate": null,
+  "sourceRunIds": [],
+  "generatedAt": "2026-08-10T09:00:00+08:00",
+  "commitState": "COMMITTED"
+}

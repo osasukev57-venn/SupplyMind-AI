@@ -1,0 +1,4 @@
+D1-T03 test/contract fixture dual-currency response entity
+NOT REAL PBOC; NOT production raw; NOT AT-SRC-002 or Day 1/Day 2 PASS.
+fixture.usd.cny=7.123456789
+fixture.eur.cny=7.987654321

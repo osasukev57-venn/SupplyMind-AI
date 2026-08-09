@@ -1,0 +1,234 @@
+package com.supplymind.provider.pboc;
+
+import com.supplymind.foundation.codec.JsonV1Codec;
+import com.supplymind.foundation.model.AccessMethod;
+import com.supplymind.foundation.model.LifecycleTimelineV1;
+import com.supplymind.foundation.model.ManifestV1;
+import com.supplymind.foundation.model.MonitorSeriesConfigV1;
+import com.supplymind.foundation.model.MonitorSeriesDefaults;
+import com.supplymind.foundation.model.MonitorSeriesItemV1;
+import com.supplymind.foundation.model.ProviderType;
+import com.supplymind.foundation.model.RawReceiptV1;
+import com.supplymind.foundation.model.RouteDecision;
+import com.supplymind.foundation.model.SchemaV1;
+import com.supplymind.foundation.storage.AtomicFileStore;
+import com.supplymind.foundation.storage.DataPaths;
+import com.supplymind.foundation.storage.DataRoot;
+import com.supplymind.foundation.storage.DirtyTargetRole;
+import com.supplymind.foundation.storage.DirtyTransactionType;
+import com.supplymind.foundation.storage.FileDigest;
+import com.supplymind.foundation.storage.FileTransactionTarget;
+import com.supplymind.foundation.storage.ManifestFactory;
+import com.supplymind.foundation.storage.ManifestVerifier;
+import com.supplymind.foundation.storage.RawReceiptStore;
+
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.util.Base64;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.function.Consumer;
+
+/**
+ * D1-T04's only concrete Provider: legal PBOC public HTML collection to immutable raw and RECEIVED+PENDING timelines.
+ * It never retries, validates, publishes, calculates, or invokes another Provider type.
+ */
+public final class PbocOfficialWebDataProvider {
+
+    public static final URI ANNOUNCEMENT_LIST_URI = URI.create(
+            "https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/index.html");
+
+    private final DataRoot dataRoot;
+    private final RawReceiptStore rawReceiptStore;
+    private final AtomicFileStore atomicFileStore;
+    private final Clock clock;
+    private final PbocHttpTransport transport;
+    private final PbocAnnouncementParser parser;
+    private final Consumer<PbocDiagnosticEvent> diagnostics;
+
+    public PbocOfficialWebDataProvider(
+            DataRoot dataRoot,
+            RawReceiptStore rawReceiptStore,
+            AtomicFileStore atomicFileStore,
+            Clock clock,
+            PbocHttpTransport transport,
+            PbocAnnouncementParser parser,
+            Consumer<PbocDiagnosticEvent> diagnostics
+    ) {
+        this.dataRoot = Objects.requireNonNull(dataRoot, "dataRoot");
+        this.rawReceiptStore = Objects.requireNonNull(rawReceiptStore, "rawReceiptStore");
+        this.atomicFileStore = Objects.requireNonNull(atomicFileStore, "atomicFileStore");
+        this.clock = Objects.requireNonNull(clock, "clock");
+        this.transport = Objects.requireNonNull(transport, "transport");
+        this.parser = Objects.requireNonNull(parser, "parser");
+        this.diagnostics = Objects.requireNonNull(diagnostics, "diagnostics");
+    }
+
+    public PbocCollectionResult collectLatestAnnouncement() {
+        URI currentUri = ANNOUNCEMENT_LIST_URI;
+        try {
+            MonitorSeriesConfigV1 config = loadActiveConfig();
+            MonitorSeriesItemV1 usd = requireFrozenPbocItem(config, MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+                    "USD", "1美元对人民币", "USD", "CNY/1 USD");
+            MonitorSeriesItemV1 eur = requireFrozenPbocItem(config, MonitorSeriesDefaults.EUR_CNY_ITEM_ID,
+                    "EUR", "1欧元对人民币", "EUR", "CNY/1 EUR");
+
+            PbocHttpResponse listResponse = transport.get(ANNOUNCEMENT_LIST_URI);
+            requireSuccessfulHtml("LIST", listResponse);
+            URI detailUri = parser.discoverLatestDetailUri(listResponse.responseUri(),
+                    parser.decodeHtml(listResponse.responseUri(), listResponse.entityBytes(), listResponse.contentType()));
+            currentUri = detailUri;
+
+            PbocHttpResponse detailResponse = transport.get(detailUri);
+            requireSuccessfulHtml("DETAIL", detailResponse);
+            PbocAnnouncement announcement = parser.parseDetail(detailResponse.responseUri(),
+                    parser.decodeHtml(detailResponse.responseUri(), detailResponse.entityBytes(), detailResponse.contentType()));
+            OffsetDateTime receivedAt = OffsetDateTime.now(clock);
+            byte[] entityBytes = detailResponse.entityBytes();
+            String payloadSha256 = FileDigest.sha256(entityBytes);
+            String acquisitionId = acquisitionId(announcement.businessDate().toString(), payloadSha256);
+
+            RawReceiptV1 usdRaw = createRawReceipt(config, usd, acquisitionId, announcement, listResponse.responseUri(),
+                    detailResponse, entityBytes, payloadSha256, receivedAt);
+            RawReceiptV1 eurRaw = createRawReceipt(config, eur, acquisitionId, announcement, listResponse.responseUri(),
+                    detailResponse, entityBytes, payloadSha256, receivedAt);
+
+            rawReceiptStore.store(usdRaw);
+            rawReceiptStore.store(eurRaw);
+            LifecycleTimelineV1 usdTimeline = storeInitialTimeline(usdRaw);
+            LifecycleTimelineV1 eurTimeline = storeInitialTimeline(eurRaw);
+
+            recordDiagnostic("SUCCESS", "COMPLETE", detailResponse.responseUri(), detailResponse.statusCode(), "NONE");
+            return new PbocCollectionResult(acquisitionId, listResponse.responseUri(), detailResponse.responseUri(),
+                    announcement.businessDate().toString(), payloadSha256, usdRaw, eurRaw, usdTimeline, eurTimeline);
+        } catch (PbocCollectionException exception) {
+            recordDiagnostic(exception.failureKind().name(), exception.stage(), exception.uri(), exception.httpStatus(),
+                    exception.getCause() == null ? "NONE" : exception.getCause().getClass().getSimpleName());
+            throw exception;
+        } catch (RuntimeException exception) {
+            PbocCollectionException wrapped = new PbocCollectionException(
+                    PbocCollectionFailureKind.PERSISTENCE_FAILED, "PERSISTENCE", currentUri, null,
+                    "PBOC collection failed without producing a successful publishable result", exception);
+            recordDiagnostic(wrapped.failureKind().name(), wrapped.stage(), wrapped.uri(), null,
+                    exception.getClass().getSimpleName());
+            throw wrapped;
+        }
+    }
+
+    private MonitorSeriesConfigV1 loadActiveConfig() {
+        String activeRef = DataPaths.configActiveRef();
+        Path activePath = dataRoot.resolveDataRef(activeRef);
+        Path manifestPath = dataRoot.resolveDataRef(DataPaths.manifestRef(activeRef));
+        if (!ManifestVerifier.matches(dataRoot, activeRef, activePath, manifestPath, List.of())) {
+            throw new PbocCollectionException(PbocCollectionFailureKind.CONFIG_REJECTED, "CONFIG", null, null,
+                    "PBOC collection requires a valid active monitor-series configuration and manifest");
+        }
+        try {
+            return JsonV1Codec.decodeFile(Files.readAllBytes(activePath), MonitorSeriesConfigV1.class);
+        } catch (IOException | RuntimeException exception) {
+            throw new PbocCollectionException(PbocCollectionFailureKind.CONFIG_REJECTED, "CONFIG", null, null,
+                    "PBOC collection cannot read the active monitor-series configuration", exception);
+        }
+    }
+
+    private static MonitorSeriesItemV1 requireFrozenPbocItem(
+            MonitorSeriesConfigV1 config, String itemId, String expectedExternalCode, String expectedAnchor,
+            String expectedBaseCurrency, String expectedUnit
+    ) {
+        MonitorSeriesItemV1 item;
+        try {
+            item = config.requireItem(itemId);
+        } catch (RuntimeException exception) {
+            throw new PbocCollectionException(PbocCollectionFailureKind.CONFIG_REJECTED, "CONFIG", null, null,
+                    "PBOC collection requires both frozen EUR/CNY and USD/CNY items", exception);
+        }
+        boolean valid = item.enabled()
+                && "PBOC".equals(item.sourceIntent())
+                && item.providerType() == ProviderType.OFFICIAL_WEB
+                && item.accessMethod() == AccessMethod.PUBLIC_OFFICIAL_HTML
+                && MonitorSeriesDefaults.PBOC_SOURCE_NAME.equals(item.actualSourceName())
+                && item.routeDecision() == RouteDecision.PRIMARY
+                && expectedExternalCode.equals(item.externalCode())
+                && expectedAnchor.equals(item.sourceFieldKey())
+                && expectedBaseCurrency.equals(item.baseCurrency())
+                && "CNY".equals(item.currency())
+                && expectedUnit.equals(item.unit());
+        if (!valid) {
+            throw new PbocCollectionException(PbocCollectionFailureKind.CONFIG_REJECTED, "CONFIG", null, null,
+                    "Active monitor-series configuration does not match the frozen PBOC item contract");
+        }
+        return item;
+    }
+
+    private RawReceiptV1 createRawReceipt(
+            MonitorSeriesConfigV1 config, MonitorSeriesItemV1 item, String acquisitionId, PbocAnnouncement announcement,
+            URI listUri, PbocHttpResponse detailResponse, byte[] entityBytes, String payloadSha256, OffsetDateTime receivedAt
+    ) {
+        String runId = runId(item.externalCode(), announcement.businessDate().toString(), payloadSha256);
+        String rawRef = RawReceiptV1.deriveRawRef(config.mode(), item.providerType(), item.itemId(), receivedAt, runId);
+        String rawValue = "USD".equals(item.externalCode()) ? announcement.usdRawValue() : announcement.eurRawValue();
+        String sourceReference = "PBOC公告列表=" + listUri + ";公告标题=" + announcement.title();
+        return new RawReceiptV1(
+                SchemaV1.VERSION, rawRef, acquisitionId, runId, config.mode(), item.providerType(), item.accessMethod(),
+                config.configVersion(), item.actualSourceName(), detailResponse.responseUri().toString(), sourceReference,
+                item.itemId(), announcement.titleBusinessDateRaw(), announcement.businessDate().toString(),
+                announcement.sourcePublishedAtRaw(), announcement.sourcePublishedAt(), receivedAt, null, rawValue,
+                item.unit(), item.currency(), null, detailResponse.statusCode(), detailResponse.contentType(), "base64",
+                Base64.getEncoder().encodeToString(entityBytes), payloadSha256, item.sourceFieldKey(), receivedAt);
+    }
+
+    private LifecycleTimelineV1 storeInitialTimeline(RawReceiptV1 raw) {
+        String recordId = "record-" + raw.runId();
+        LifecycleTimelineV1 timeline = LifecycleTimelineV1.initial(recordId, raw.runId(), raw.rawRef(), raw.receivedAt());
+        String stagingRef = DataPaths.stagingRef(raw.runId());
+        byte[] dataBytes = JsonV1Codec.encodeFile(timeline);
+        ManifestV1 manifest = ManifestFactory.json(stagingRef, dataBytes, List.of(raw.runId()), raw.receivedAt());
+        byte[] manifestBytes = JsonV1Codec.encodeFile(manifest);
+        FileTransactionTarget target = new FileTransactionTarget(DirtyTargetRole.BUSINESS_FILE, stagingRef,
+                dataBytes, manifestBytes, false);
+        atomicFileStore.commit("timeline-" + raw.runId(), DirtyTransactionType.SINGLE_FILE, raw.receivedAt(), List.of(target));
+        return timeline;
+    }
+
+    private static void requireSuccessfulHtml(String stage, PbocHttpResponse response) {
+        URI uri = response.responseUri();
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new PbocCollectionException(PbocCollectionFailureKind.HTTP_REJECTED, stage, uri, response.statusCode(),
+                    "PBOC response status is not successful");
+        }
+        String contentType = response.contentType();
+        if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("text/html")) {
+            throw new PbocCollectionException(PbocCollectionFailureKind.CONTENT_TYPE_REJECTED, stage, uri, response.statusCode(),
+                    "PBOC response Content-Type is not text/html");
+        }
+    }
+
+    private static String acquisitionId(String businessDate, String payloadSha256) {
+        return "pboc-acq-" + businessDate.replace("-", "") + "-" + payloadSha256;
+    }
+
+    private static String runId(String externalCode, String businessDate, String payloadSha256) {
+        return "pboc-" + externalCode.toLowerCase(Locale.ROOT) + "-" + businessDate.replace("-", "") + "-" + payloadSha256;
+    }
+
+    private void recordDiagnostic(String outcome, String stage, URI uri, Integer httpStatus, String exceptionType) {
+        try {
+            diagnostics.accept(new PbocDiagnosticEvent(outcome, stage, sanitizeUri(uri), httpStatus, exceptionType));
+        } catch (RuntimeException ignored) {
+            // Diagnostics must not manufacture success or change file persistence semantics.
+        }
+    }
+
+    private static String sanitizeUri(URI uri) {
+        if (uri == null || uri.getScheme() == null || uri.getHost() == null) { return "unavailable"; }
+        int port = uri.getPort();
+        String authority = uri.getHost() + (port < 0 ? "" : ":" + port);
+        String path = uri.getRawPath() == null || uri.getRawPath().isBlank() ? "/" : uri.getRawPath();
+        return uri.getScheme().toLowerCase(Locale.ROOT) + "://" + authority + path;
+    }
+}

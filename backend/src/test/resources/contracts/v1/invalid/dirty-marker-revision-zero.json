@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "transactionId": "tx-invalid-revision-zero",
+  "transactionType": "SINGLE_FILE",
+  "createdAt": "2026-08-10T09:00:00+08:00",
+  "markerRevision": 0,
+  "transactionPhase": "OPEN",
+  "targets": [
+    {
+      "order": 1,
+      "role": "BUSINESS_FILE",
+      "dataRef": "staging/run-invalid.json",
+      "manifestRef": "staging/run-invalid.json.manifest.json",
+      "expectedFileSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "oldFileSha256": null,
+      "targetPhase": "PREPARED"
+    }
+  ]
+}

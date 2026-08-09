@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: supplymind-backend
+  main:
+    web-application-type: none
+
+supplymind:
+  data-root: ${user.dir}/data

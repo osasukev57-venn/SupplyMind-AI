@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "recordId": "record-fixture-rejected-0001",
+  "runId": "run-fixture-rejected-0001",
+  "rawRef": "raw/test/synthetic_demo/FX.USD.CNY.CONTRACT_FIXTURE/2026/08/run-fixture-rejected-0001.json",
+  "currentRecordVersion": 2,
+  "records": [
+    {
+      "recordVersion": 1,
+      "processingStage": "RECEIVED",
+      "validationStatus": "PENDING",
+      "candidate": null,
+      "reasonCode": null,
+      "validationVersion": null,
+      "validatedAt": null,
+      "publishedAt": null,
+      "publishRef": null,
+      "updatedAt": "2026-08-10T10:00:00+08:00"
+    },
+    {
+      "recordVersion": 2,
+      "processingStage": "RECEIVED",
+      "validationStatus": "REJECTED",
+      "candidate": null,
+      "reasonCode": "PAYLOAD_SHAPE_INVALID",
+      "validationVersion": null,
+      "validatedAt": null,
+      "publishedAt": null,
+      "publishRef": null,
+      "updatedAt": "2026-08-10T10:01:00+08:00"
+    }
+  ]
+}

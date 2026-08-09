@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "transactionId": "tx-config-fixture-0001",
+  "transactionType": "CONFIG_ACTIVATION",
+  "createdAt": "2026-08-10T08:00:00+08:00",
+  "markerRevision": 3,
+  "transactionPhase": "OPEN",
+  "targets": [
+    {
+      "order": 1,
+      "role": "CONFIG_HISTORY",
+      "dataRef": "config/history/2.json",
+      "manifestRef": "config/history/2.json.manifest.json",
+      "expectedFileSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "oldFileSha256": null,
+      "targetPhase": "MANIFEST_COMMITTED"
+    },
+    {
+      "order": 2,
+      "role": "CONFIG_ACTIVE",
+      "dataRef": "config/monitor-series.json",
+      "manifestRef": "config/monitor-series.json.manifest.json",
+      "expectedFileSha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "oldFileSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "targetPhase": "PREPARED"
+    }
+  ]
+}

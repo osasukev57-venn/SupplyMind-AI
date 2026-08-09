@@ -1,0 +1,21 @@
+# SupplyMind AI line-ending rules
+
+*.java text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.properties text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+mvnw text eol=lf
+
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Byte-sensitive contract fixtures: preserve exact bytes
+backend/src/test/resources/contracts/** -text
+
+# Evidence may contain hash-bound/raw evidence: preserve exact bytes
+docs/evidence/** -text
