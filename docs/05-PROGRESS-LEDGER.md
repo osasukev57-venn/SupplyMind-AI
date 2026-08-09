@@ -56,19 +56,19 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 2 |
-| 当前任务编号 | 无活动开发任务；下一候选为D2-T03 PBOC每日加工与CSV持久化（`TaskExecutionStatus=READY`，尚未领取）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`（Git 基线 `day1-complete`）；DEC-050、DEC-051 生效。D2-T02=`DONE`，`statusReason=REVIEW_PASS_SOL_FINAL_APPROVED_20260809`（审查 commit=`12766c9`）；publishRef MAJOR=`CLOSED`、stale CHANGE_REQUEST=`CLOSED`、D2-T02 DoD=`PASS`、Evidence=`VALID`。 |
-| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1业务口径）、DEC-051（业务读模型stale派生语义）已生效；最终任务/AT/需求/依赖引用扫描通过 |
-| 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02 PBOC VERIFIED发布门禁（Sol最终固定快照Review PASS，审查commit=12766c9）。 |
-| 正在进行任务 | 无。 |
-| 阻塞项 | 无任务级阻塞。AT-SRC-002、Day 2总门禁仍未运行或通过（不得写PASS）。 |
-| 最近验收结果 | D1-T05=`DONE`、Day 1 Gate=`PASS`、Day 1=`COMPLETE`；AT-FILE-000=`PASS`；D2-T01 Sol最终Review=`PASS`、任务=`DONE`；D2-T02 Sol最终固定快照Review=`PASS`、任务=`DONE`（publishRef MAJOR CLOSED、stale CHANGE_REQUEST CLOSED、DEC-051 生效）。AT-SRC-002仍为`NOT_RUN`。 |
-| 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T01数值范围/时效窗口由DEC-050正式批准为pboc-basic-validation-v1业务口径（30个自然日、(0,100]），仅限USD/CNY、EUR/CNY基础校验；D2-T02业务读模型stale由DEC-051正式冻结（查询时派生，businessDate距referenceDate超过30个自然日为stale，复用DEC-050阈值，比较基准为referenceDate）。 |
-| 下一任务 | 等待项目方确认领取 D2-T03 PBOC每日加工与CSV持久化（`TaskExecutionStatus=READY`，尚未领取）；领取前不得实施D2-T03。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T02 发布门禁/隔离/读模型 61 项测试与真实 raw 双币 PUBLISHED+VERIFIED 证据通过（Sol最终Review PASS）。 |
-| 最近一次Git提交 | 无新提交；审查基线 commit=`12766c9`（feature/d2-t02）；未获指示，本轮未提交。 |
+| 当前任务编号 | D2-T03 PBOC每日加工与CSV持久化（`TaskExecutionStatus=REVIEW_PENDING`，已提交Code Review；EXT-03/EXT-06未关闭，不得标DONE）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050、DEC-051 生效。D2-T03=`REVIEW_PENDING`，`statusReason=PBOC_DAILY_PROCESSING_EVIDENCE_SUBMITTED_20260809`。 |
+| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）已生效；算术/日历版本化默认见CALCULATION-RULES（arithmetic-mean-v1、weekday-asia-shanghai-v1） |
+| 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS，审查commit=12766c9）。 |
+| 正在进行任务 | 无；D2-T03已实施完毕并提交Code Review，等待正式裁决。 |
+| 阻塞项 | D2-T03 Review门禁待裁决；EXT-03/EXT-06未关闭（按冻结DoD，D2-T03不得标DONE/宣称口径通过）。AT-SRC-002、Day 2总门禁仍未运行或通过（不得写PASS）。 |
+| 最近验收结果 | D2-T01、D2-T02=`DONE`（Sol最终Review PASS）；D2-T03任务级每日加工证据已提交（`REVIEW_PENDING`）。AT-SRC-002仍为`NOT_RUN`。 |
+| 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 依赖 EXT-03/EXT-06 未关闭：每日均值/节假日口径使用冻结版本化 P0 默认（arithmetic-mean-v1、weekday-asia-shanghai-v1），不得宣称正式业务口径通过。 |
+| 下一任务 | 等待技术负责人D2-T03 Code Review；通过前不得改为`DONE`，不得启动D2-T04或后续未批准任务。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T03 每日加工 75 项回归测试与真实 raw 双币 daily CSV 证据通过。 |
+| 最近一次Git提交 | 无新提交；当前分支 `feature/d2-t03`，基线 `day1-complete`，HEAD=`7258fb2`；未获指示，本轮未提交。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，按Sol最终固定快照Review通过结论收口D2-T02为DONE。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，实施D2-T03并提交Review。 |
 | 最后更新时间 | 2026-08-09（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照
@@ -490,6 +490,29 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | Git提交 | 无新提交；审查基线 commit=`12766c9`（feature/d2-t02）；未获指示，未提交。 |
 | 是否偏离计划 | 否；仅状态收口，未实施 D2-T03。 |
 | 下一建议任务 | 等待项目方确认后领取 D2-T03 PBOC每日加工与CSV持久化。 |
+### D2-T03 领取与实施：PBOC每日加工与CSV持久化
+
+| 字段 | 记录 |
+|---|---|
+| 开发日 | Day 2 |
+| 开始时间 | 2026-08-09（Asia/Shanghai，领取并更新快照） |
+| 结束时间 | 2026-08-09（Asia/Shanghai） |
+| 执行窗口/执行人 | OpenCode实施工程师窗口 |
+| 开始状态 | D2-T03=`READY`；D2-T01、D2-T02=`DONE`（Sol最终Review PASS）。 |
+| 结束状态 | D2-T03=`REVIEW_PENDING`；`statusReason=PBOC_DAILY_PROCESSING_EVIDENCE_SUBMITTED_20260809`。EXT-03/EXT-06未关闭，按冻结DoD不得标DONE或宣称正式业务口径通过；执行人不得自行改为`DONE`。 |
+| 对应需求 | SUP-02、F03、F08、H01、H02；D2-T03任务定义、DoD、总计划8.4.5 Daily CSV固定表头、CALCULATION-RULES（arithmetic-mean-v1）、DEC-016/DEC-043/DEC-048、AT-PUB-001。 |
+| 已完成内容 | 实现每日加工最小链：新增processing包（DailyProcessingService 按月编排、DailyMeanCalculator 冻结算术平均计算、DailyInput/DailyResult 载体）。仅接受PUBLISHED+VERIFIED类输入（冻结发布门禁谓词）；逐输入经TimelineStore/raw/manifest校验读取与VersionedConfigReader（raw.configVersion→不可变history）解析计算上下文；按冻结分组键分组（不同来源/单位/币种/校验结论/计算上下文分行）；sum精确不舍入、avg仅按calculationScale/roundingMode一次舍入、displayScale不回写、expectedCount=1、缺失不补0、完整inputRefs（runId/rawRef/recordVersion=4覆盖全部validCount）；原子写processed/daily/<itemId>/YYYY-MM.csv+manifest（ManifestFactory.csv，rowCount/min/max/sourceRunIds）。真实D1-T05双币raw（逐字节复制，真实页面SHA-256=f37cda1f…4f82，businessDate=2026-08-07）经校验/发布后生成双币daily：USD sum=6.7904 avg=6.79040000、EUR sum=7.8067 avg=7.80670000，raw逐字节未动、重启解码一致。 |
+| 创建/修改文件 | 新增`processing/`（DailyProcessingService、DailyMeanCalculator、DailyInput、DailyResult）；新增测试`DailyProcessingServiceTest`（11项）、`DailyRealRawEvidenceTest`（gated真实raw）；新增golden `contracts/v1/valid/daily-pboc-v1.csv`（CRLF固定字节）；新增`docs/evidence/D2-T03/`（实施记录与`d2-t03-real-raw-daily-summary.json`）；同步`docs/04`与本台账。未修改D1/D2生产代码、冻结计划、CALCULATION-RULES与数据字典。 |
+| 实际测试命令或步骤 | Java 17.0.19：`mvnw.cmd -q '-Dtest=DailyProcessingServiceTest,DailyRealRawEvidenceTest' test`（11+1(skip) PASS）；真实raw门禁（gated `-Dd2-t03.real-raw=true`）PASS；最小直接回归10类75 tests。 |
+| 测试结果 | 每日加工11项PASS（golden bytes、多观测平均、缺失日/空月、重复分行、非法不可见、循环小数、12/9位、配置版本同上下文合并、计算上下文分行、重算幂等、重启解码）；真实raw门禁双币daily PASS；回归75 tests 0 failures 0 errors 1 skipped(gated)。 |
+| 验收证据路径 | `docs/evidence/D2-T03/D2T03-PBOC-DAILY-PROCESSING-20260809.md`；`docs/evidence/D2-T03/d2-t03-real-raw-daily-summary.json`；`backend/src/test/resources/contracts/v1/valid/daily-pboc-v1.csv`；`backend/target/surefire-reports/`。 |
+| 失败与回验 | 开发期测试侧修正：多观测/循环小数/12位用例改为fixture直接构造PUBLISHED运行（D2-T01冻结冲突/重复规则使同源同日不同值必然CONFLICT、同值按校验结论分行，真实流水线无法产生同组validCount>1）；golden CSV两处修正（configVersions无逗号不加引号、updatedAt零秒省略）。均为测试侧调整，未改动生产语义。 |
+| 新增风险 | EXT-03/EXT-06未关闭：每日均值/节假日口径使用冻结版本化P0默认（arithmetic-mean-v1、weekday-asia-shanghai-v1），本任务不得宣称正式业务口径通过；关闭后可能以新规则版本调整。 |
+| 阻塞项变化 | D2-T03提交Code Review门禁（`REVIEW_PENDING`）。AT-SRC-002、Day 2总门禁保持`NOT_RUN`，不得写PASS。 |
+| 最近可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T03双币真实raw每日加工证据已提交。 |
+| Git提交 | 无新提交；分支`feature/d2-t03`，HEAD=`7258fb2`；未获指示，未提交。 |
+| 是否偏离计划 | 否；严格只实施D2-T03，未进入聚合（D2-T04）/warning/Agent、未绕过发布门禁、未引入float/double、未修改AT-SRC-002。 |
+| 下一建议任务 | 等待技术负责人D2-T03 Code Review；未批准前不得改为`DONE`，不得启动D2-T04或后续未批准任务。 |
 ### 后续记录模板
 
 后续窗口复制以下模板并追加在最近一条记录之后，不得删除旧记录。

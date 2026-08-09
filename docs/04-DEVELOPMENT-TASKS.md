@@ -160,7 +160,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D2-T03 PBOC每日加工与CSV持久化
 
-- **优先级/状态：** P0-最高 / `NOT_STARTED`。
+- **优先级/状态：** P0-最高 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=PBOC_DAILY_PROCESSING_EVIDENCE_SUBMITTED_20260809`。每日加工实现、测试与真实 raw 证据已提交；EXT-03/EXT-06 未关闭，按冻结 DoD 不得标 DONE 或宣称正式业务口径通过；等待技术负责人Code Review；执行人不得自行改为`DONE`。
 - **任务目标：** 以BigDecimal从已发布双币记录计算每日加工值，并按月写daily CSV。
 - **对应需求：** SUP-02、F03、F08、H01、H02。
 - **输入：** D2-T02已发布记录、不可变配置history、追加式CALCULATION-RULES、每日均值规则和业务日历；EXT-03/EXT-06确认记录或书面接受的版本化P0默认。
