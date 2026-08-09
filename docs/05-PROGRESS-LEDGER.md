@@ -56,19 +56,19 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 2 |
-| 当前任务编号 | D2-T03 PBOC每日加工与CSV持久化（`TaskExecutionStatus=REVIEW_PENDING`；DEC-052 已实施，MAJOR 1/2 implementation fixed，等待固定 commit Review；EXT-03/EXT-06未关闭，不得标DONE）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050、DEC-051、DEC-052 生效。D2-T03=`REVIEW_PENDING`，`statusReason=PBOC_DAILY_PROCESSING_DEC052_IMPLEMENTED_AWAITING_FIXED_COMMIT_REVIEW_20260809`。 |
-| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）已生效；算术/日历版本化默认见CALCULATION-RULES（arithmetic-mean-v1、weekday-asia-shanghai-v1） |
-| 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS，审查commit=12766c9）。 |
-| 正在进行任务 | 无；D2-T03已实施完毕并提交Code Review，等待正式裁决。 |
-| 阻塞项 | D2-T03 Review门禁待裁决；EXT-03/EXT-06未关闭（按冻结DoD，D2-T03不得标DONE/宣称口径通过）。AT-SRC-002、Day 2总门禁仍未运行或通过（不得写PASS）。 |
-| 最近验收结果 | D2-T01、D2-T02=`DONE`（Sol最终Review PASS）；D2-T03任务级每日加工证据已提交（`REVIEW_PENDING`）。AT-SRC-002仍为`NOT_RUN`。 |
-| 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 依赖 EXT-03/EXT-06 未关闭：每日均值/节假日口径使用冻结版本化 P0 默认（arithmetic-mean-v1、weekday-asia-shanghai-v1），不得宣称正式业务口径通过。 |
-| 下一任务 | 等待技术负责人D2-T03 Code Review；通过前不得改为`DONE`，不得启动D2-T04或后续未批准任务。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T03 每日加工 83 项回归测试与真实 raw 双币 daily CSV 证据通过（DEC-052 确定性 updatedAt 已实施）。 |
-| 最近一次Git提交 | 本轮将提交 fix commit（DEC-052 确定性 daily updatedAt）；基线 `7a5a18f`（feature/d2-t03）。 |
+| 当前任务编号 | 无活动开发任务；下一候选为D2-T04 PBOC历史读取与多周期聚合最小闭环（`TaskExecutionStatus=READY`，尚未领取）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01、D2-T02、D2-T03均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050、DEC-051、DEC-052、DEC-053、DEC-054 生效。D2-T03=`DONE`，`statusReason=REVIEW_PASS_EXT_GATE_PASS_DEC053_DEC054_20260809`；D2-T04=`READY`。 |
+| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）、DEC-053（arithmetic-mean-v1接受版本化默认）、DEC-054（weekday-asia-shanghai-v1接受版本化默认）已生效 |
+| 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS）；D2-T03（Implementation Review PASS + EXT Gate PASS，commit=607e859）。 |
+| 正在进行任务 | 无。 |
+| 阻塞项 | 无任务级阻塞。AT-SRC-002、Day 2总门禁仍未运行或通过（不得写PASS）。 |
+| 最近验收结果 | D2-T01、D2-T02、D2-T03=`DONE`（Sol Implementation Review PASS + 第二方固定快照 Review PASS）；EXT-03=`ACCEPTED_VERSIONED_DEFAULT`（DEC-053）、EXT-06=`ACCEPTED_VERSIONED_DEFAULT`（DEC-054）、EXT Gate=`PASS`。AT-SRC-002仍为`NOT_RUN`。 |
+| 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 计算/日历口径已接受版本化默认（DEC-053/054）；weekday-asia-shanghai-v1 不构成完整法定节假日/调休/停报/特殊交易日日历，未来以新 calendarVersion 升级。 |
+| 下一任务 | 等待项目方确认领取 D2-T04（`READY`）；领取前不得实施D2-T04。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T03 每日加工 83 项回归测试与真实 raw 双币 daily CSV 证据通过（Implementation Review PASS）。 |
+| 最近一次Git提交 | 本轮将提交 docs: close D2-T03 EXT gate；implementation commit=`607e859`（feature/d2-t03）。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，按 DEC-052 正式裁决实施 daily.updatedAt 确定性语义并保留 MAJOR 2 重启证据。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，按 DEC-053/DEC-054 正式裁决收口 D2-T03 EXT Gate。 |
 | 最后更新时间 | 2026-08-09（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照
@@ -513,6 +513,24 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | Git提交 | 无新提交；分支`feature/d2-t03`，HEAD=`7258fb2`；未获指示，未提交。 |
 | 是否偏离计划 | 否；严格只实施D2-T03，未进入聚合（D2-T04）/warning/Agent、未绕过发布门禁、未引入float/double、未修改AT-SRC-002。 |
 | 下一建议任务 | 等待技术负责人D2-T03 Code Review；未批准前不得改为`DONE`，不得启动D2-T04或后续未批准任务。 |
+### D2-T03 EXT Gate 最终收口（DEC-053 / DEC-054）
+
+| 字段 | 记录 |
+|---|---|
+| 开发日 | Day 2（EXT Gate 文档收口，非技术实现） |
+| 开始时间 | 2026-08-09（Asia/Shanghai） |
+| 结束时间 | 2026-08-09（Asia/Shanghai） |
+| 执行窗口/执行人 | OpenCode实施工程师窗口，按技术负责人 EXT-03/EXT-06 正式裁决收口 |
+| 开始状态 | D2-T03=`REVIEW_PENDING`；Implementation Review（Sol + 第二方）=`PASS`、MAJOR 1/2=`CLOSED`、DEC-052=`PASS`（固定 commit=`607e859`）；EXT-03/EXT-06 待正式裁决。 |
+| 结束状态 | D2-T03=`DONE`，`statusReason=REVIEW_PASS_EXT_GATE_PASS_DEC053_DEC054_20260809`；D2-T04=`READY`。EXT-03=`ACCEPTED_VERSIONED_DEFAULT`（DEC-053）、EXT-06=`ACCEPTED_VERSIONED_DEFAULT`（DEC-054）、EXT Gate=`PASS`。 |
+| 已完成内容 | 登记 DEC-053（EXT-03 arithmetic-mean-v1 接受版本化默认，正式规则：sum 完整精度/validCount 只统计合法输入/avg 仅最终除法舍入/displayScale 不回写/missing 不补0，未来变更须新 calculationVersion+configVersion）与 DEC-054（EXT-06 weekday-asia-shanghai-v1 接受版本化默认，Asia/Shanghai 周一至周五预期日期/expectedCount=1/missing/complete/缺失不补0/空月不虚构，能力边界：不代表完整法定节假日/调休/停报/特殊交易日日历）；同步 docs/01（EXT-03/06 行）、docs/02（追踪关系）、docs/04（D2-T03=DONE、D2-T04=READY）、docs/05、docs/data-dictionary/CALCULATION-RULES.md。未修改生产代码、测试、evidence、FILE-SCHEMA-V1、DEC-052 内容。 |
+| 创建/修改文件 | `docs/01-PROJECT-MASTER-PLAN.md`、`docs/02-REQUIREMENT-TRACEABILITY.md`、`docs/04-DEVELOPMENT-TASKS.md`、`docs/05-PROGRESS-LEDGER.md`、`docs/06-DECISION-LOG.md`（DEC-053/054）、`docs/data-dictionary/CALCULATION-RULES.md`。 |
+| 测试/验收结果 | 技术 DoD 已于 Implementation Review 确认 PASS（固定 commit=607e859）；本轮为纯 Gate 文档收口，不重跑技术测试。EXT Gate=`PASS`（DEC-053/054 接受版本化默认）。AT-SRC-002、Day 2 总门禁仍为`NOT_RUN`。 |
+| 阻塞项变化 | D2-T03 全部门禁解除并`DONE`；D2-T04=`READY`（前置依赖满足，尚未领取）。AT-SRC-002、Day 2 总门禁保持`NOT_RUN`。 |
+| 最近可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T03（含 DEC-052/053/054 口径）通过 Implementation Review。 |
+| Git提交 | 本轮创建 `docs: close D2-T03 EXT gate` commit；implementation commit=`607e859`。 |
+| 是否偏离计划 | 否；纯状态/决策收口，未实现 D2-T04、未修改 AT-SRC-002。 |
+| 下一建议任务 | 等待项目方确认后领取 D2-T04。 |
 ### 后续记录模板
 
 后续窗口复制以下模板并追加在最近一条记录之后，不得删除旧记录。

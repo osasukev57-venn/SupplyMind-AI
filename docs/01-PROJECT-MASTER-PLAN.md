@@ -554,10 +554,10 @@ P1/P2 只有在 P0 验收通过且有剩余资源时启动。
 |---|---|---|---|---|---|---|
 | EXT-01 | PBOC EUR/CNY、USD/CNY 的具体发布字段、单位、报价方向与业务日 | 已由 D1-T02 在 PBOC 官方公告 HTML 确认：按“1 外币对人民币 X 元”中间价建立可配置序列；详情见 docs/evidence/D1-T02/ | 当前 Windows 原生 TLS 路径仍可能阻断实际 Java 获取 | Day 1（字段已确认） | D1-T04 保存完整官方 raw 并验证 Java HTTPS 路径 | 是，字段已确认；PBOC 全链仍须通过 Day 2 硬门 |
 | EXT-02 | 各实际来源的 ADC12/AZ91D 规格、地区、单位、含税口径和价格字段 | 按“实际来源×品种”分别建序列，不跨规格混算 | 同名价格不可比 | Day 3 | 使用完整元数据黄金样本；Manual保底 | 是，影响材料值口径 |
-| EXT-03 | “每日加工均值”的业务定义 | 来源已发布单一官方日值时直接把该值作为当日合法样本；来源同日有多条同口径观测时才按sum/validCount，并保留计算版本 | 可能要求收盘价或加权均价 | Day 2 | 聚合策略可配置并固定黄金样例 | 是，影响H01/H02 |
+| EXT-03 | “每日加工均值”的业务定义 | 已正式接受版本化默认：`calculationVersion=arithmetic-mean-v1`（DEC-053）。同一daily group全部合法PUBLISHED输入：sum以BigDecimal完整精度求和、validCount只统计合法正式输入、avg仅在最终除法按calculationScale/roundingMode舍入、displayScale仅展示不回写、missing不进入validCount/sum且不补0。未来改为收盘价/加权均价等必须新增calculationVersion与configVersion，不得改写历史。 | 可能要求收盘价或加权均价 | Day 2 | DEC-053 已生效；D2-T03 EXT Gate 已满足 | 是，影响H01/H02 |
 | EXT-04 | SMM/Asian Metal 是否存在合法公开页面、接口或已授权自动路径 | 能合法自动则优先；否则免费公开信源→Manual | 只影响指定源自动采集能力 | Day 3 | 记录routeDecision与fallbackReason并执行三层降级 | 否，不阻塞整体P0；影响对应自动能力声明 |
 | EXT-05 | 新增标的及初始化所需的历史回填范围 | 验收夹具默认至少连续13个自然月并跨年；真实来源回填起止日期仍配置化 | H08历史覆盖范围不明确 | Day 5 | Manual/LocalImport可补历史，任何回填仍经过发布门禁 | 是，影响H08范围，不阻塞通用链路 |
-| EXT-06 | 节假日和未发布日处理 | 缺失不补0，记录覆盖率和过期状态 | expectedCount与均值口径争议 | Day 2 | 黄金日历固定、规则可配置 | 是，影响完整率 |
+| EXT-06 | 节假日和未发布日处理 | 已正式接受版本化默认：`calendarVersion=weekday-asia-shanghai-v1`（DEC-054）。Asia/Shanghai周一至周五为预期业务日期；daily expectedCount=1、missingCount=max(expectedCount-validCount,0)、complete=validCount>=expectedCount；缺失不补0、空月不生成虚构数据。仅覆盖expected-count/completeness，不代表完整法定节假日/调休/停报/特殊交易日日历；提升日历精度须新增calendarVersion与configVersion。 | expectedCount与均值口径争议 | Day 2 | DEC-054 已生效；D2-T03 EXT Gate 已满足 | 是，影响完整率 |
 | EXT-07 | 预警阈值和严重度 | 使用演示阈值并明确标记非正式 | 无法声称业务预警阈值正式有效 | Day 5前 | 完成规则框架与演示规则 | 部分 |
 | EXT-08 | 动态调价公式、成本权重、汇率换算 | P0只输出参考成本影响，不自动执行调价 | 成本建议缺少业务依据 | Day 5前 | 可配置演示成本篮子 | 是，影响正式建议 |
 | EXT-09 | “跨卷”是否仅指多个轮转文件，或包含多个物理磁盘卷 | 默认指按月/年轮转文件 | 物理跨盘场景可能漏验 | Day 5前 | 完成跨文件/跨年；不自动跨物理盘 | 是，影响H06边界 |

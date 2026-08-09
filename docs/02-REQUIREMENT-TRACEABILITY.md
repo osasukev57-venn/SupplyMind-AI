@@ -156,10 +156,10 @@
 |---|---|---|---|---|---|---|
 | EXT-01 | PBOC字段、单位与报价方向 | 按EUR/CNY、USD/CNY人民币中间价建可配置Series，保存官方raw后再转换。 | 错序列会使全部汇率结果失效。 | Day1 | 立即做OfficialWeb连通与raw，不等待材料授权。 | 是，影响PBOC硬门。 |
 | EXT-02 | ADC12/AZ91D精确业务口径 | 按每个实际来源×品种分别建序列，规格、地区、含税和单位可配置。 | 不可比报价被混算。 | Day3 | 使用完整元数据黄金样本；Manual保底。 | 是，影响材料值口径。 |
-| EXT-03 | 每日加工均值公式 | 优先官方日均字段；同日多条同口径有效观测按sum/validCount。 | H01/H02期望不统一。 | Day2 | 黄金数据同时覆盖单值日和多观测日。 | 是。 |
+| EXT-03 | 每日加工均值公式 | 已正式接受版本化默认：`calculationVersion=arithmetic-mean-v1`（DEC-053），D2-T03 EXT Gate 已满足。同一daily group全部合法PUBLISHED输入：sum以BigDecimal完整精度求和、validCount只统计合法正式输入、avg仅在最终除法按calculationScale/roundingMode舍入、displayScale仅展示不回写、missing不进入validCount/sum且不补0；未来口径变更须新增calculationVersion与configVersion。 | H01/H02期望不统一。 | Day2 | DEC-053 已生效；黄金数据同时覆盖单值日和多观测日。 | 是（已接受版本化默认）。 |
 | EXT-04 | 指定商业源自动能力 | 合法公开/授权自动优先；不可用则FreePublic→Manual，禁止绕过限制。 | 只缺少指定网站自动能力，不应拖停整体P0。 | Day3 | 记录routeDecision/fallbackReason并走替代链。 | 否；仅影响对应能力声明。 |
 | EXT-05 | 历史回填范围 | 至少准备连续13个自然月并跨年，最终范围按确认。 | 随机历史月和H08覆盖不足。 | Day5前 | 黄金跨年验证；真实数据可通过Manual/LocalImport进入门禁。 | 是，影响范围。 |
-| EXT-06 | 节假日和未发布日 | 按来源日历计算expectedCount；缺失不补0。 | 完整率和均值权重错误。 | Day2 | 可配置日历和黄金样例。 | 是。 |
+| EXT-06 | 节假日和未发布日 | 已正式接受版本化默认：`calendarVersion=weekday-asia-shanghai-v1`（DEC-054），D2-T03 EXT Gate 已满足。Asia/Shanghai周一至周五为预期业务日期；daily expectedCount=1、missingCount=max(expectedCount-validCount,0)、complete=validCount>=expectedCount；缺失不补0、空月不生成虚构数据；仅覆盖expected-count/completeness，不代表完整法定节假日/调休/停报/特殊交易日日历，提升日历精度须新增calendarVersion与configVersion。 | 完整率和均值权重错误。 | Day2 | DEC-054 已生效；可配置日历和黄金样例。 | 是（已接受版本化默认）。 |
 | EXT-07 | 预警阈值 | 规则版本化；未确认时只启用质量告警或显式demo阈值。 | 误报漏报。 | Day5前 | 不宣称测试阈值为生产规则。 | 部分。 |
 | EXT-08 | 调价公式和执行权限 | P0仅输出Java计算的影响与非约束建议，不自动修改价格。 | 越权调价。 | Day5前 | 演示成本权重。 | 不影响H01-H09。 |
 | EXT-09 | 跨卷含义 | 默认同一data根下多轮转文件，不含多个物理盘。 | 若指物理盘需重构路径发现。 | Day5前 | dataRoot可配置并显著记录假设。 | 是，影响H05/H06。 |

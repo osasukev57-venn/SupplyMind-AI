@@ -13,23 +13,27 @@
 
 | 属性 | 冻结定义 |
 |---|---|
-| 状态 | EXT-03 确认前的带版本实现默认；不得宣称为已验收的正式业务口径 |
+| 状态 | EXT-03 已正式接受版本化默认（DEC-053）：当前可上线、可验收的正式 daily 计算口径 |
 | 输入 | 同一完整分组中的 `PUBLISHED + VERIFIED` 或 `PUBLISHED + VERIFIED_WITH_NOTICE` Candidate.value；输入按冻结 inputRefs 顺序 |
 | daily sum | 精确 BigDecimal 相加，不舍入，持久化为 toPlainString() |
-| daily avg | `sum.divide(validCount, calculationScale, roundingMode)`；持久化时恰好保留 calculationScale 位 |
+| daily avg | `sum.divide(validCount, calculationScale, roundingMode)`；持久化时恰好保留 calculationScale 位；只在最终除法执行舍入 |
 | 单日默认 | 单一已发布官方日值是唯一合法样本；同日/同源/同口径多条观测采用算术平均 |
-| daily 计数 | expectedCount=1；missingCount=`max(expectedCount-validCount,0)`；complete=`validCount>=expectedCount` |
+| daily 计数 | expectedCount=1；missingCount=`max(expectedCount-validCount,0)`；complete=`validCount>=expectedCount`；missing 不进入 validCount、不进入 sum、不得补 0 |
+| displayScale | 仅用于 API/UI 展示边界，不得回写正式业务计算值 |
 | aggregate | 直接由有效 daily `avg` 字符串重算，不读取月均值或 displayScale 值；sum 为 daily avg 精确和，validCount 为 daily 行数，avg 以相同 scale/rounding 除法，min/max 为输入 daily avg 精确最小/最大 |
 | 隔离 | 来源、单位、币种、validationVersion 或计算上下文不同必须分行，绝不混算 |
+| 变更规则 | 未来改为收盘价、加权均价或其他 daily 计算规则时，必须新增 calculationVersion 及相应 configVersion（DEC-053），不得静默修改本版本或改写已有历史语义 |
 
 ## calendarVersion：weekday-asia-shanghai-v1
 
 | 属性 | 冻结定义 |
 |---|---|
-| 状态 | EXT-06 正式确认前的可替换实现默认；不是已确认节假日口径 |
+| 状态 | EXT-06 已正式接受版本化默认（DEC-054）：当前可上线、可验收的 expected-count/completeness 版本化规则 |
 | 时区 | Asia/Shanghai |
 | expected business dates | 周一至周五 |
-| aggregate 计数 | expectedCount 为 periodStart 至 periodEnd 内的预期日数；missingCount=`max(expectedCount-validCount,0)`；complete=`validCount>=expectedCount`；缺失或无效日不得补零 |
+| daily 计数 | expectedCount 为预期业务日数（单日固定 1）；missingCount=`max(expectedCount-validCount,0)`；complete=`validCount>=expectedCount`；缺失或无效日不得补零 |
+| 能力边界 | 不代表完整中国法定节假日日历、完整调休规则、完整停报日规则或完整特殊交易日日历（DEC-054） |
+| 变更规则 | 未来提升日历精度（法定节假日/调休/停报/特殊交易日）必须新增 calendarVersion 及相应 configVersion（DEC-054）；历史正式结果必须保留其实际使用的 calendarVersion |
 
 ## calendarVersion：golden-calendar-v1
 
