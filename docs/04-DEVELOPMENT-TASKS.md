@@ -188,7 +188,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D2-T05 PBOC调度、幂等、重启端到端硬门
 
-- **优先级/状态：** P0-最高 / `TaskExecutionStatus=NOT_STARTED`；`readyState=NOT_READY`（reason：冻结输入含 AT-SRC-002=`NOT_RUN`，未满足；D2-T04=`DONE` 后前置任务依赖 D2-T01至D2-T04 已满足，但 AT-SRC-002 未执行完整全链、DoD=AT-SRC-002=`PASS` 无法达成）。不得领取/开始。
+- **优先级/状态：** P0-最高 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`。已具备领取/实施条件，尚未开始实施。Ready 语义（Sol Status Closure Review 正式采用解释）：冻结输入 D1-T04、D2-T01至D2-T04 均满足；其中 AT-SRC-002 作为**验收规范/待执行 Acceptance Test**输入（其 PASS 属本任务 DoD，由本任务执行达成），不能解释为开工前 AT-SRC-002 已 PASS 的结果——否则形成循环 Gate（D2-T05 未开始→AT-SRC-002 无法通过→D2-T05 又不能开始）。READY 不等于开始实施；不构成"进入原材料开发"（该条款阻止 Day 3/材料 Provider 开发，不阻止负责完成 AT-SRC-002 的 Day 2 收尾任务）。
 - **任务目标：** 完成真实定时/立即采集、raw先写、校验、发布、daily、聚合和重启读取的双币端到端验收。
 - **对应需求：** SUP-01、SUP-02、F02、F03、H01-H03。
 - **输入：** D1-T04、D2-T01至D2-T04、AT-SRC-002。

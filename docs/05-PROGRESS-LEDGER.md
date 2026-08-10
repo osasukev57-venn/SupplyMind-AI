@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 2（D1-T01～D1-T05 均`DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`，Git 基线 `day1-complete`；D2-T01、D2-T02、D2-T03、D2-T04 均`DONE`——D2-T04 经 `1ac8233`（Review=`CHANGES_REQUESTED`）→ `1178307`（Findings A/B/C 关闭）→ Sol/Second-party Final Delta Review=`PASS` 正式收口；D2-T05=`NOT_STARTED`（`NOT_READY`：冻结输入 AT-SRC-002=`NOT_RUN` 未满足）；AT-SRC-002 保持`NOT_RUN`）  
+> 当前阶段：Day 2（D1-T01～D1-T05 均`DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`，Git 基线 `day1-complete`；D2-T01、D2-T02、D2-T03、D2-T04 均`DONE`——D2-T04 经 `1ac8233`（Review=`CHANGES_REQUESTED`）→ `1178307`（Findings A/B/C 关闭）→ Sol/Second-party Final Delta Review=`PASS` 正式收口；D2-T05=`NOT_STARTED`、`readyState=READY`（`7c519fa` 曾记 `NOT_READY`，Sol Status Closure Review 指出循环 Gate 解释后纠正：AT-SRC-002 在 D2-T05 中作为待执行验收任务输入，非开工前 PASS 结果；已具备领取/实施条件）；AT-SRC-002 保持`NOT_RUN`）  
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -61,14 +61,14 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）、DEC-053（arithmetic-mean-v1接受版本化默认）、DEC-054（weekday-asia-shanghai-v1接受版本化默认）、DEC-055（aggregate.calculatedAt=max(daily.updatedAt)确定性语义）已生效 |
 | 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS）；D2-T03（Implementation Review PASS + EXT Gate PASS，commit=607e859）；D2-T04（1ac8233→1178307，Sol/Second-party Final Delta Review 双PASS，commit=1178307）。 |
 | 正在进行任务 | 无。 |
-| 阻塞项 | D2-T05 领取阻塞：冻结输入 AT-SRC-002=`NOT_RUN` 未满足（`readyState=NOT_READY`，DoD=AT-SRC-002=`PASS`）。AT-SRC-002、Day 2 总门禁仍未运行或通过（不得写PASS）。 |
+| 阻塞项 | 无 D2-T05 领取阻塞（`readyState=READY`，可领取并开始；READY≠开始，本状态仅表示具备实施条件）。AT-SRC-002、Day 2 总门禁仍未运行或通过（不得写PASS）；AT-SRC-002 的 PASS 属 D2-T05 执行目标/DoD。 |
 | 最近验收结果 | D2-T01、D2-T02、D2-T03、D2-T04=`DONE`；D2-T04 首轮 Review=`CHANGES_REQUESTED`（1ac8233）→ Findings Closure（1178307，Finding A/B/C 关闭）→ Sol Final Delta Review=`PASS`、Second-party Final Delta Review=`PASS`。AT-SRC-002仍为`NOT_RUN`。 |
 | 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 计算/日历口径已接受版本化默认（DEC-053/054）；weekday-asia-shanghai-v1 不构成完整法定节假日/调休/停报/特殊交易日日历，未来以新 calendarVersion 升级。 |
-| 下一任务 | D2-T05（`NOT_STARTED`/`NOT_READY`）：等待 AT-SRC-002 冻结条件满足（双币真实全链 + 重启读取 + AT-SRC-002=`PASS`）后方可领取；在此之前不得开始 D2-T05。 |
+| 下一任务 | D2-T05（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`）：已具备领取/实施条件，可领取并开始实施（实施核心目标之一为正式执行 AT-SRC-002 并使其达到`PASS`）；本纠正 commit 不实施 D2-T05。 |
 | 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；D2-T04 四级聚合 164 项全套测试（35 classes，0 failures）与真实 raw 双币四级聚合证据通过（DEC-055）。 |
-| 最近一次Git提交 | 本轮将提交 `docs: close D2-T04 after final review`；前序 checkpoint=`1178307`（Findings Closure，`test: close D2-T04 review findings`）。 |
+| 最近一次Git提交 | 本轮将提交 `docs: correct D2-T05 ready state`（纠正 `7c519fa` 的 D2-T05=`NOT_READY` 解释，正式采用 Sol 解释：AT-SRC-002 为 D2-T05 待执行验收任务输入/DoD，非开工前 PASS 结果 → `readyState=READY`）；前序 checkpoint=`7c519fa`（Status Closure，曾记 D2-T05=`NOT_READY`，属上一版候选状态）。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，D2-T04 最终状态收口：`DONE`（Implementation=`1ac8233`、Findings Closure=`1178307`、Sol/Second-party Final Delta Review 双PASS）；D2-T05=`NOT_READY`（冻结输入 AT-SRC-002=`NOT_RUN`）；未修改生产代码/测试/Evidence。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，D2-T05 Ready 状态纠正（Sol Status Closure Review=`CHANGES_REQUESTED`，采用 Sol 解释：AT-SRC-002 作为 D2-T05 待执行验收任务输入而非开工前 PASS 结果，`readyState` 由 `NOT_READY` 纠正为 `READY`，`TaskExecutionStatus` 保持 `NOT_STARTED`）；D2-T04=`DONE`、AT-SRC-002=`NOT_RUN`、Day 2=`NOT_COMPLETE` 不变；未新增 DEC、未修改生产代码/测试/Evidence。 |
 | 最后更新时间 | 2026-08-10（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照
