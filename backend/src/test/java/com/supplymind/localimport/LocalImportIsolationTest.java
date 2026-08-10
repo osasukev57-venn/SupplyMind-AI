@@ -307,6 +307,108 @@ class LocalImportIsolationTest {
     }
 
     @Test
+    void sameXlsxSameKeyMultipleRowsAreSeparateVersionsAndNeverDedupe() throws IOException {
+        Harness harness = harness();
+        byte[] xlsx = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "100", "元/吨", "CNY", "SOURCE_A厂报价单", "REF_A", ""},
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "101", "元/吨", "CNY", "SOURCE_B厂报价单", "REF_B", ""}
+        });
+        LocalImportResult first = harness.service().importFile(xlsx);
+
+        assertFalse(first.fileFailed());
+        assertEquals(2, first.accepted().size());
+        assertEquals(LocalImportResult.ImportMode.NEW, first.accepted().get(0).mode());
+        assertEquals(LocalImportResult.ImportMode.NEW, first.accepted().get(1).mode(),
+                "two same-key rows with different business content must never dedupe each other");
+        assertFalse(first.accepted().get(0).runId().equals(first.accepted().get(1).runId()),
+                "different business content must get different run identities");
+        assertEquals(2, localImportRawCount(harness.root(), IMP_ADC12));
+
+        RawReceiptV1 rowA = decodeRaw(harness.root(), first.accepted().get(0).rawRef());
+        RawReceiptV1 rowB = decodeRaw(harness.root(), first.accepted().get(1).rawRef());
+        assertEquals("100", rowA.rawValue());
+        assertEquals("SOURCE_A厂报价单", rowA.declaredSourceName());
+        assertEquals("REF_A", rowA.sourceReference());
+        assertEquals("101", rowB.rawValue());
+        assertEquals("SOURCE_B厂报价单", rowB.declaredSourceName());
+        assertEquals("REF_B", rowB.sourceReference());
+        assertArrayEquals(xlsx, Base64.getDecoder().decode(rowA.payloadBase64()),
+                "every XLSX item raw must keep the ORIGINAL_FULL_FILE_BYTES");
+        assertArrayEquals(xlsx, Base64.getDecoder().decode(rowB.payloadBase64()));
+
+        LocalImportResult replay = harness.service().importFile(xlsx);
+        assertEquals(LocalImportResult.ImportMode.IDEMPOTENT_REUSE, replay.accepted().get(0).mode(),
+                "row1 must reuse its own history");
+        assertEquals(LocalImportResult.ImportMode.IDEMPOTENT_REUSE, replay.accepted().get(1).mode(),
+                "row2 must reuse its own history, never row1");
+        assertEquals(first.accepted().get(0).runId(), replay.accepted().get(0).runId());
+        assertEquals(first.accepted().get(1).runId(), replay.accepted().get(1).runId());
+        assertEquals(2, localImportRawCount(harness.root(), IMP_ADC12));
+    }
+
+    @Test
+    void xlsxRowOrderDoesNotAffectBusinessContentIdentity() throws IOException {
+        Harness harness = harness();
+        byte[] original = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "100", "元/吨", "CNY", "SOURCE_A厂报价单", "REF_A", ""},
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "101", "元/吨", "CNY", "SOURCE_B厂报价单", "REF_B", ""}
+        });
+        LocalImportResult first = harness.service().importFile(original);
+
+        byte[] swapped = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "101", "元/吨", "CNY", "SOURCE_B厂报价单", "REF_B", ""},
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "100", "元/吨", "CNY", "SOURCE_A厂报价单", "REF_A", ""}
+        });
+        LocalImportResult replay = harness.service().importFile(swapped);
+
+        assertEquals(2, replay.accepted().size());
+        assertEquals(LocalImportResult.ImportMode.IDEMPOTENT_REUSE, replay.accepted().get(0).mode(),
+                "row order must not decide business identity (content 101 reuses its own history)");
+        assertEquals(LocalImportResult.ImportMode.IDEMPOTENT_REUSE, replay.accepted().get(1).mode());
+        assertEquals(first.accepted().get(1).runId(), replay.accepted().get(0).runId());
+        assertEquals(first.accepted().get(0).runId(), replay.accepted().get(1).runId());
+        assertEquals(2, localImportRawCount(harness.root(), IMP_ADC12));
+    }
+
+    @Test
+    void xlsxDifferentValueOrSourceReferenceIsANewPendingVersion() throws IOException {
+        Harness harness = harness();
+        byte[] base = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "19850.50", "元/吨", "CNY", "SOURCE_A厂报价单", "REF_A", ""}
+        });
+        LocalImportResult v1 = harness.service().importFile(base);
+
+        byte[] differentValue = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "20000.00", "元/吨", "CNY", "SOURCE_A厂报价单", "REF_A", ""}
+        });
+        LocalImportResult v2 = harness.service().importFile(differentValue);
+        assertEquals(LocalImportResult.ImportMode.NEW, v2.accepted().get(0).mode(),
+                "same key + different value must be a new pending version");
+        assertFalse(v1.accepted().get(0).runId().equals(v2.accepted().get(0).runId()));
+
+        byte[] differentRef = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "19850.50", "元/吨", "CNY", "SOURCE_A厂报价单", "REF_B", ""}
+        });
+        LocalImportResult v3 = harness.service().importFile(differentRef);
+        assertEquals(LocalImportResult.ImportMode.NEW, v3.accepted().get(0).mode(),
+                "same key + different sourceReference must be a new pending version");
+
+        assertEquals(3, localImportRawCount(harness.root(), IMP_ADC12));
+        for (LocalImportResult.RowOutcome outcome : List.of(v1.accepted().get(0), v2.accepted().get(0), v3.accepted().get(0))) {
+            assertTrue(Files.isRegularFile(harness.root().resolveDataRef(DataPaths.stagingRef(outcome.runId()))));
+            LifecycleTimelineV1 timeline = harness.timelineStore().read(outcome.runId());
+            assertEquals(ValidationStatus.PENDING, timeline.current().validationStatus());
+            assertTrue(timeline.records().stream().noneMatch(s -> s.validationStatus() == ValidationStatus.CONFLICT));
+        }
+    }
+
+    @Test
     void xlsxNumericValueCellIsRejectedToPreventDoublePollution() throws IOException {
         Harness harness = harness();
         byte[] xlsx = buildXlsxWithNumericValue("IMP.ADC12.001", 19850.5);

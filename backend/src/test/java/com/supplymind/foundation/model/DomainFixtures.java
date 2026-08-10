@@ -76,6 +76,7 @@ public final class DomainFixtures {
                 JsonV1Codec.sha256LowerHex(payload),
                   "test/contract fixture USD field",
                   RECEIVED_AT,
+                  null,
                   null
           );
     }

@@ -59,6 +59,7 @@ data/runtime/conflicts/raw/<itemId>/YYYY-MM/<runId>/<conflictId>.json
 | matchAnchor | nullable item 级自动解析锚点 |
 | updatedAt | 必填 ISO-8601 offset datetime，创建时等于 receivedAt，之后永不改写 |
 | acquisitionRef | nullable string（DEC-056 新增）；外部 HTTP provider 必填，逐字等于按 acquisitionId 导出的 `raw/source/<acquisitionId>.json`；manual/local_import/synthetic_demo 可为 null。item RawReceipt 通过它追溯 source-level Raw Acquisition 原始 HTTP payload |
+| declaredSourceName | nullable string（D3-T05 新增，实现层字段补全）；LocalImport（XLSX 路径）逐行持久化用户声明/输入的真实来源名称，用于无歧义的业务内容相等判断；CSV 路径该声明来源保留于行原始字节 span payload，本字段为 null；其余 provider 为 null。不改变冻结业务字段集合与 Raw payload 语义 |
 
 PBOC USD/CNY 与 EUR/CNY 的 `rawCurrency` 都是 `CNY`；`baseCurrency` 仅由配置显式表达，单位分别为 `CNY/1 USD`、`CNY/1 EUR`。RawReceipt 不含 `processingStage` 或 `validationStatus`。
 

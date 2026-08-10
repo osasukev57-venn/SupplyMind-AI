@@ -113,7 +113,7 @@ public final class LocalImportService {
                 continue;
             }
             byte[] rowPayload = parsed.rowSpans().get(index).bytes();
-            accepted.add(persistRow(row, config, importId, receivedAt, rowNumber, rowPayload));
+            accepted.add(persistRow(row, config, importId, receivedAt, rowNumber, rowPayload, null));
         }
         return new LocalImportResult(null, accepted, rowErrors);
     }
@@ -174,8 +174,10 @@ public final class LocalImportService {
                 continue;
             }
             // DEC-057/L354: the item raw payload is the ORIGINAL FULL XLSX file bytes; the
-            // parsed cell facts are derived evidence and never a raw payload.
-            accepted.add(persistRow(row, config, importId, receivedAt, rowNumber, originalBytes));
+            // parsed cell facts are derived evidence and never a raw payload. The declared
+            // source name is persisted as structured item state for unambiguous idempotency.
+            accepted.add(persistRow(row, config, importId, receivedAt, rowNumber, originalBytes,
+                    row.actualSourceName()));
         }
         return new LocalImportResult(null, accepted, rowErrors);
     }
@@ -210,7 +212,8 @@ public final class LocalImportService {
             String importId,
             OffsetDateTime receivedAt,
             int rowNumber,
-            byte[] rowPayload
+            byte[] rowPayload,
+            String declaredSourceName
     ) {
         String contentHash = FileDigest.sha256(JsonV1Codec.encodeFile(row));
         String runId = "import-" + row.itemId() + "-" + row.businessDate().replace("-", "") + "-" + contentHash;
@@ -225,7 +228,7 @@ public final class LocalImportService {
                 receivedAt, receivedAt, row.value(), row.unit(), row.currency(),
                 null, null, "text/csv", "base64",
                 Base64.getEncoder().encodeToString(rowPayload),
-                FileDigest.sha256(rowPayload), null, receivedAt, null);
+                FileDigest.sha256(rowPayload), null, receivedAt, null, declaredSourceName);
         rawReceiptStore.store(raw);
         timelineStore.createInitial(runId, rawRef, receivedAt);
         return new LocalImportResult.RowOutcome(
@@ -310,13 +313,22 @@ public final class LocalImportService {
     /**
      * Row content equality over the immutable row payload. For CSV the payload is the exact
      * original record span and is parsed back; for XLSX the payload is the original full file
-     * bytes, so the matching row is re-located inside that immutable XLSX and ALL business
-     * content fields (including the declared actualSourceName) are compared. Server-generated
-     * time and the import identity never participate.
+     * bytes, so equality compares the item's OWN persisted structured state (including the
+     * declared actualSourceName) against the incoming parsed row - never by re-opening the
+     * old workbook or guessing a row. Server-generated time and the import identity never
+     * participate.
      */
     private static boolean sameRowContent(LocalImportRow row, RawReceiptV1 existing, boolean xlsxSource) {
         if (xlsxSource) {
-            return sameXlsxRowContent(row, existing);
+            return row.schemaVersion().equals(existing.schemaVersion())
+                    && row.itemId().equals(existing.itemId())
+                    && row.businessDate().equals(existing.sourceBusinessDate())
+                    && row.value().equals(existing.rawValue())
+                    && row.unit().equals(existing.rawUnit())
+                    && row.currency().equals(existing.rawCurrency())
+                    && row.actualSourceName().equals(existing.declaredSourceName())
+                    && row.sourceReference().equals(existing.sourceReference())
+                    && java.util.Objects.equals(row.sourceUrl(), existing.sourceUrl());
         }
         try {
             byte[] payload = Base64.getDecoder().decode(existing.payloadBase64());
@@ -339,49 +351,6 @@ public final class LocalImportService {
         } catch (RuntimeException exception) {
             return false;
         }
-    }
-
-    /**
-     * Relocates the business row inside the immutable XLSX payload of an existing item raw and
-     * compares every frozen business content field, including the declared actualSourceName.
-     */
-    private static boolean sameXlsxRowContent(LocalImportRow row, RawReceiptV1 existing) {
-        try {
-            byte[] xlsxBytes = Base64.getDecoder().decode(existing.payloadBase64());
-            try (Workbook workbook = WorkbookFactory.create(new ByteArrayInputStream(xlsxBytes))) {
-                Sheet sheet = workbook.getNumberOfSheets() == 0 ? null : workbook.getSheetAt(0);
-                if (sheet == null) {
-                    return false;
-                }
-                DataFormatter formatter = new DataFormatter();
-                for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
-                    Row candidateRow = sheet.getRow(rowIndex);
-                    if (candidateRow == null) {
-                        continue;
-                    }
-                    List<String> fields = readRowAsStrings(sheet, candidateRow, formatter);
-                    if (fields == null || fields.size() != LocalImportCsvParser.TEMPLATE_HEADER.size()) {
-                        continue;
-                    }
-                    if (!row.itemId().equals(fields.get(1))
-                            || !row.businessDate().equals(fields.get(2))) {
-                        continue;
-                    }
-                    String sourceUrl = fields.get(8);
-                    return row.schemaVersion().equals(fields.get(0))
-                            && row.value().equals(fields.get(3))
-                            && row.unit().equals(fields.get(4))
-                            && row.currency().equals(fields.get(5))
-                            && row.actualSourceName().equals(fields.get(6))
-                            && row.sourceReference().equals(fields.get(7))
-                            && java.util.Objects.equals(
-                            row.sourceUrl(), sourceUrl == null || sourceUrl.isBlank() ? null : sourceUrl);
-                }
-            }
-        } catch (IOException | RuntimeException exception) {
-            return false;
-        }
-        return false;
     }
 
     private static String stripTerminator(String record) {

@@ -96,7 +96,7 @@ public final class ManualMaterialIntakeService {
                 receivedAt, receivedAt, submission.value(), submission.unit(),
                 submission.currency(), operatorRef, null, "application/json", "base64",
                 Base64.getEncoder().encodeToString(payload),
-                FileDigest.sha256(payload), null, receivedAt, null);
+                FileDigest.sha256(payload), null, receivedAt, null, null);
         rawReceiptStore.store(raw);
         LifecycleTimelineV1 timeline = timelineStore.createInitial(runId, rawRef, receivedAt);
         String timelineRef = DataPaths.stagingRef(runId);

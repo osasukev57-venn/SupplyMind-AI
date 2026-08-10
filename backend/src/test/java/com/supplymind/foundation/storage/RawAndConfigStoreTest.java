@@ -150,6 +150,7 @@ class RawAndConfigStoreTest {
                 JsonV1Codec.sha256LowerHex(payload),
                   "test/contract fixture field",
                   NOW,
+                  null,
                   null
           );
     }

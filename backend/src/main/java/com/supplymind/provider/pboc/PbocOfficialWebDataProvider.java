@@ -313,7 +313,7 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
                 announcement.sourcePublishedAtRaw(), announcement.sourcePublishedAt(), receivedAt, null, rawValue,
                 item.unit(), item.currency(), null, detailResponse.statusCode(), detailResponse.contentType(), "base64",
                 Base64.getEncoder().encodeToString(entityBytes), payloadSha256, item.sourceFieldKey(), receivedAt,
-                acquisition.acquisitionRef());
+                acquisition.acquisitionRef(), null);
     }
 
     private LifecycleTimelineV1 storeInitialTimelineIfMissing(RawReceiptV1 raw) {

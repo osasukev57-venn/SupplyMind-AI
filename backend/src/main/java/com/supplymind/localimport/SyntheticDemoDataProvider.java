@@ -89,7 +89,7 @@ public final class SyntheticDemoDataProvider implements DataProvider {
                     null, null, scenarioTime, null, value, "元/吨", "CNY",
                     null, null, "text/plain", "base64",
                     Base64.getEncoder().encodeToString(payload), FileDigest.sha256(payload),
-                    null, scenarioTime, null);
+                    null, scenarioTime, null, null);
             raws.add(demoRaw);
         }
         return new ProviderCollectOutcome(
