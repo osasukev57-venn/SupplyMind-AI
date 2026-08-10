@@ -220,7 +220,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T02 材料三层路由与AuthorizedApi能力
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`。冻结依赖 D3-T01=`DONE`（Provider 能力矩阵/来源能力模型已就绪）；输入（公开条款/授权、材料规格、Provider 能力矩阵）属任务执行期收集，不构成领取阻断；EXT-04=`OPEN_EXTERNAL_NON_BLOCKING`（docs/01：仅局部影响指定源自动采集能力，不阻塞 P0，不阻断本任务领取）；已具备领取/实施条件，尚未开始实施。READY≠开始。
+- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D3T02_MATERIAL_ROUTING_IMPLEMENTED_20260810`。冻结三层受控降级（DEC-037：合法指定源自动→同类免费公开信源→Manual）已实现：`MaterialRouteResolver`（仅经 `DataProviderRegistry` 发现候选；逐候选记录层级与可用性原因；每次降级记录 routeDecision/fallbackReason/实际来源；current/history 能力过滤；未知 provider/无合法候选/不支持目标 fail-closed）、路由模型（`MaterialRouteConfigV1`/`MaterialRouteDecision`/`RouteTier`/`CandidateUnavailability`/`RouteAcceptance`，routeDecision 归配置边界）、AuthorizedApi 能力边界（`ApiAuthorizationProbe`：默认 NOT_CONFIGURED，无真实凭证不标 AVAILABLE，secret 不入代码/日志/Evidence）；Manual/LocalImport 仅作路由候选边界，未做录入 UI；SyntheticDemo 显式排除出正式路由；未访问任何真实材料网站；DoD 满足；等待第二方 R1+ Review；不得在 Review 前自行 DONE。
 - **任务目标：** 对SMM/Asian Metal逐项判断合法自动能力，并为ADC12/AZ91D形成受控三层路由。
 - **对应需求：** SUP-03、SUP-08、F04、F05、EXT-04。
 - **输入：** 公开条款/授权、材料规格、Provider能力矩阵。

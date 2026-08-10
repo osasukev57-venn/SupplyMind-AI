@@ -9,10 +9,11 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Minimal D3-T01 model checks for the provider package. Mirrors the frozen source/access
- * pairing and identifier/schema rules without widening the package-private foundation rules.
+ * Minimal D3-T01/D3-T02 model checks shared by the provider and routing packages. Mirrors the
+ * frozen source/access pairing and identifier/schema rules without widening the
+ * package-private foundation rules.
  */
-final class ProviderModelChecks {
+public final class ProviderModelChecks {
 
     private static final Pattern IDENTIFIER = Pattern.compile("[A-Za-z0-9._-]+");
     private static final Map<ProviderType, AccessMethod> FROZEN_PAIRS = Map.of(
@@ -26,31 +27,31 @@ final class ProviderModelChecks {
     private ProviderModelChecks() {
     }
 
-    static void schemaVersion(String schemaVersion) {
+    public static void schemaVersion(String schemaVersion) {
         if (!"1.0".equals(schemaVersion)) {
             throw new SchemaValidationException("schemaVersion must be \"1.0\"");
         }
     }
 
-    static void identifier(String value, String fieldName) {
+    public static void identifier(String value, String fieldName) {
         if (value == null || !IDENTIFIER.matcher(value).matches()) {
             throw new SchemaValidationException(fieldName + " must match " + IDENTIFIER.pattern());
         }
     }
 
-    static void nonBlank(String value, String fieldName) {
+    public static void nonBlank(String value, String fieldName) {
         if (value == null || value.isBlank()) {
             throw new SchemaValidationException(fieldName + " must not be blank");
         }
     }
 
-    static void required(Object value, String fieldName) {
+    public static void required(Object value, String fieldName) {
         if (value == null) {
             throw new SchemaValidationException(fieldName + " is required");
         }
     }
 
-    static void providerPair(ProviderType providerType, AccessMethod accessMethod) {
+    public static void providerPair(ProviderType providerType, AccessMethod accessMethod) {
         if (providerType == null || accessMethod == null) {
             throw new SchemaValidationException("providerType and accessMethod are required");
         }
@@ -62,7 +63,7 @@ final class ProviderModelChecks {
         }
     }
 
-    static void httpUrl(String value, String fieldName) {
+    public static void httpUrl(String value, String fieldName) {
         nonBlank(value, fieldName);
         try {
             URI uri = URI.create(value);
