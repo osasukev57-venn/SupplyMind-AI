@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 3（D1-T01～D1-T05、D2-T01～D2-T05、D3-T01、D3-T02、D3-T03 均`DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`；DEC-050～057 生效；D3-T04=`NOT_STARTED`/`NOT_READY`（DEC-057 文档一致性 Review 待过）；Day 3 阶段 Gate 未执行）  
+> 当前阶段：Day 3（D1-T01～D1-T05、D2-T01～D2-T05、D3-T01、D3-T02、D3-T03 均`DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`；DEC-050～056 已生效；DEC-057 已登记（DOCUMENTATION_IMPLEMENTED，REVIEW_PENDING，尚未正式生效）；D3-T04=`NOT_STARTED`/`NOT_READY`（DEC-057 文档一致性 Review 待过）；Day 3 阶段 Gate 未执行）  
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -57,7 +57,7 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 |---|---|
 | 当前开发日 | Day 2 |
 | 当前任务编号 | D3-T04 ManualDataProvider与数据治理门禁（`TaskExecutionStatus=NOT_STARTED`、`readyState=NOT_READY`；`statusReason=DEC-057_CHANGE_REQUEST_DOCUMENTED_REVIEW_PENDING`）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01～D2-T05、D3-T01、D3-T02、D3-T03 均为`TaskExecutionStatus=DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`、DEC-050～057 生效（DEC-056 implementation=`PASS`）。D3-T04 领取时触发 BUSINESS_DECISION_REQUIRED（材料 Manual 无冻结规则可达 VERIFIED 类）；Sol R2 裁决=`CHANGE_REQUEST_REQUIRED`；`DEC-057`（Manual Material Intake, Revision, Validation and Review Boundary）已登记为 `DOCUMENTATION_IMPLEMENTED`/`REVIEW_PENDING`：D3-T04 最大生命周期=`PARSED+PENDING`，材料 validationVersion=`DEFERRED_TO_D4_T01`，Manual 正式链职责移至 D4-T01~D4-T04，Publish Gate 不变；DEC-057 文档一致性 Review 通过前 D3-T04 不得重新 `READY`。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01～D2-T05、D3-T01、D3-T02、D3-T03 均为`TaskExecutionStatus=DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`、DEC-050～056 已生效（DEC-056 implementation=`PASS`）；DEC-057 已登记为 `DOCUMENTATION_IMPLEMENTED`/`REVIEW_PENDING`（尚未正式 EFFECTIVE）。D3-T04 领取时触发 BUSINESS_DECISION_REQUIRED（材料 Manual 无冻结规则可达 VERIFIED 类）；Sol R2 裁决=`CHANGE_REQUEST_REQUIRED`；`DEC-057`（Manual Material Intake, Revision, Validation and Review Boundary）：D3-T04 最大生命周期=`PARSED+PENDING`，材料 validationVersion=`DEFERRED_TO_D4_T01`，Manual 正式链职责移至 D4-T01~D4-T04，Publish Gate 不变；DEC-057 正式 R2 Final Review 通过前 D3-T04 不得重新 `READY`。 |
 | 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）、DEC-053（arithmetic-mean-v1接受版本化默认）、DEC-054（weekday-asia-shanghai-v1接受版本化默认）、DEC-055（aggregate.calculatedAt=max(daily.updatedAt)确定性语义）、DEC-056（raw-first acquisition boundary + 业务键幂等 + AT runner 证据保存）已生效 |
 | 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS）；D2-T03（Implementation Review PASS + EXT Gate PASS，commit=607e859）；D2-T04（1ac8233→1178307，Sol/Second-party Final Delta Review 双PASS，commit=1178307）；D2-T05（24d24b6→2b7d2f4→a482087→79680ec，Sol+Second-party 最终双PASS，commit=79680ec）。 |
 | 正在进行任务 | 无（D3-T04 待 DEC-057 文档一致性 Review 通过后重新 READY 方可领取）。 |
