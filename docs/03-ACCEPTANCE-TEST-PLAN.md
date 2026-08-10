@@ -352,21 +352,22 @@ GD-07用于AT-SRC-005至AT-SRC-008；每个文件生成SHA-256并固定期望状
 ### AT-SRC-007 ManualDataProvider治理与门禁
 
 - 对应需求：SRC-02、SRC-03、SRC-04、H01、H02、H08、PUB-01。
-- 前置条件：ManualDataProvider和表单可用；校验规则固定；业务标的已配置。
+- 前置条件：ManualDataProvider和表单可用；`manual-material-normalization-v1` 规则固定；业务标的已配置。
 - 测试数据：一条合法材料值；缺实际来源、错误单位、未来日期、重复及修订数据。
+- 阶段责任（DEC-057）：Day 3 部分验证 Manual 受理与治理边界（受理→immutable raw→RECEIVED+PENDING→机械标准化→PARSED+PENDING、真实来源、operator审计、版本保留、PENDING 正式出口不可见）；Day 4 部分验证完整正式链（材料 validation→VALIDATED→VERIFIED/VERIFIED_WITH_NOTICE→PUBLISHED→daily→aggregate）。最终 AT-SRC-007 完整闭环要求不删除、不降低（官方 P0 最终要求保持不变）。
 - 步骤：
   1. 输入actualSourceName、itemId、businessDate、value、unit、currency和sourceReference；由认证上下文提供operatorRef，客户端不提交inputAt/receivedAt/updatedAt/accessMethod。
-  2. 提交后立即查询面板、API和Agent。
-  3. 执行标准化、校验和发布，再运行daily及聚合。
-  4. 提交缺字段/错误数据并检查隔离。
-  5. 修订合法记录并检查原raw与版本审计。
+  2. 提交后立即查询面板、API和Agent（Day 3：PENDING 必须对所有正式业务出口不可见）。
+  3. （Day 3）执行机械标准化至 `PARSED+PENDING`；不得产生 VERIFIED/PUBLISHED。（Day 4）执行材料校验（D4-T01 validationVersion）、发布（D4-T02）并运行daily（D4-T03）及聚合（D4-T04）。
+  4. 提交缺字段/错误数据并检查隔离（Day 3：机械层 fail-closed；Day 4：业务校验 REJECTED/隔离）。
+  5. 修订合法记录并检查原raw与版本审计（新版本保留，不覆盖旧raw）。
 - 预期：
-  1. 系统按总计划7.4的唯一映射写RawReceiptV1：businessDate→sourceBusinessDateRaw/sourceBusinessDate、value→rawValue、unit→rawUnit、currency→rawCurrency，并由服务端生成审计时间、固定manual访问方式和认证operatorRef；独立Lifecycle timeline记录processingStage、validationStatus和updatedAt；缺必填字段不能形成合法候选。
-  2. 提交后先写不可变raw，并建立candidate=null的RECEIVED+PENDING LifecycleRecord；标准化后CandidateV1才保存可信businessDate/value/currency/unit，未校验且未发布前所有业务入口不可见。
-  3. 只有PUBLISHED+VERIFIED或PUBLISHED+VERIFIED_WITH_NOTICE进入daily、聚合、面板、预警和Agent。
-  4. 错误数据REJECTED/隔离；修订不覆盖原raw，保留操作与时间审计。
-  5. 页面显示实际来源和“手工录入”，不显示成指定商业网站自动数据。
-- 证据：表单截图、Manual raw、状态时间线、隔离记录、daily/aggregate、版本审计；存入AT-SRC-007。
+  1. 系统按总计划7.4的唯一映射写RawReceiptV1：businessDate→sourceBusinessDateRaw/sourceBusinessDate、value→rawValue、unit→rawUnit、currency→rawCurrency，并由服务端生成审计时间、固定manual访问方式和认证operatorRef；独立Lifecycle timeline记录processingStage、validationStatus和updatedAt；缺必填字段或缺失sourceReference不能形成合法候选（Day 3）。
+  2. 提交后先写不可变raw，并建立candidate=null的RECEIVED+PENDING LifecycleRecord；机械标准化（manual-material-normalization-v1）后CandidateV1才保存可信businessDate/value/currency/unit；未校验且未发布前所有业务入口不可见；Day 3 合法记录最多 `PARSED+PENDING`。
+  3. 只有PUBLISHED+VERIFIED或PUBLISHED+VERIFIED_WITH_NOTICE进入daily、聚合、面板、预警和Agent（Day 4 起生效；最终 P0 要求不变）。
+  4. 错误数据REJECTED/隔离（Day 4）；Day 3 机械层失败保留raw并fail-closed；修订不覆盖原raw，保留操作与时间审计（新 runId/新 RECEIVED+PENDING timeline）。
+  5. 页面显示实际来源和"手工录入"，不显示成指定商业网站自动数据。
+- 证据：表单截图、Manual raw、状态时间线（RECEIVED+PENDING→PARSED+PENDING→Day4 VALIDATED→PUBLISHED）、隔离记录、daily/aggregate、版本审计；存入AT-SRC-007（Day 3 部分与 Day 4 部分分阶段归档）。
 
 ### AT-SRC-008 来源不可冒充与跨出口一致性
 

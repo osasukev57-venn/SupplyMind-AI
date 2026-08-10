@@ -248,17 +248,17 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T04 ManualDataProvider与数据治理门禁
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`。冻结依赖任务 D3-T01、D2-T01、D2-T02 均=`DONE`；输入（Manual字段schema、材料配置、校验规则）属任务执行期收集，不构成领取阻断；EXT-11=`OPEN_EXTERNAL_NON_BLOCKING`（docs/01：仅局部影响 Manual 复核能力，不阻塞 P0，不阻断本任务领取）；已具备领取/实施条件，尚未开始实施。READY≠开始。
-- **任务目标：** 提供手工填写入口，并强制记录来源字段、不可变raw + 独立初始`RECEIVED+PENDING` LifecycleRecord、双维校验、PUBLISHED+VERIFIED类发布、加工和版本审计。
-- **对应需求：** SUP-03、SUP-05、SUP-06、SUP-07、F04-F07、H08、EXT-11。
-- **输入：** Manual字段schema、材料配置、校验规则。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=NOT_READY`；`statusReason=DEC-057_CHANGE_REQUEST_DOCUMENTED_REVIEW_PENDING`。领取时触发 BUSINESS_DECISION_REQUIRED（材料 Manual 无冻结校验规则可达到 VERIFIED 类——DEC-050 仅适用 PBOC），Sol R2 裁决=`CHANGE_REQUEST_REQUIRED`，`DEC-057` 已登记（Manual Material Intake, Revision, Validation and Review Boundary）；DEC-057 文档一致性 Review 通过前不得重新设 `READY`，不得开始实施。
+- **任务目标：** 提供手工受控提交入口（DEC-057 后边界）：Manual提交 → immutable raw → 独立初始`RECEIVED+PENDING` LifecycleRecord → 机械标准化（`manual-material-normalization-v1`，仅确定性字段/格式处理）→ `PARSED+PENDING` → 既有 Publish Gate 负向验证；并实现真实来源追踪、operator审计、幂等、修订候选保留、版本审计。~~原条款（双维校验、PUBLISHED+VERIFIED类发布、加工）已由 DEC-057 superseded~~：材料业务validation/正式publish/daily/aggregate 属 D4-T01~D4-T04。
+- **对应需求：** SUP-03、SUP-05、SUP-06、SUP-07、F04-F07、H08、EXT-11。（阶段职责按 DEC-057 拆分：Day 3 受理与治理边界；Day 4 正式validation/publish/加工/聚合。）
+- **输入：** Manual字段schema、材料配置、`manual-material-normalization-v1` 规则。
 - **创建或修改文件：** Manual适配、受控提交API、raw审计、状态机和测试。
-- **输出：** Manual请求`businessDate/value/unit/currency`按总计划7.4唯一映射为RawReceiptV1的`sourceBusinessDateRaw/sourceBusinessDate/rawValue/rawUnit/rawCurrency`；服务端保存actualSourceName、itemId、sourceReference，生成inputAt/receivedAt/updatedAt，固定accessMethod=manual并从认证上下文取得operatorRef；可信字段仅进入PARSED后的CandidateV1；独立Lifecycle timeline保存processingStage、validationStatus及全部版本。
+- **输出：** Manual请求`businessDate/value/unit/currency`按总计划7.4唯一映射为RawReceiptV1的`sourceBusinessDateRaw/sourceBusinessDate/rawValue/rawUnit/rawCurrency`；服务端保存actualSourceName、itemId、sourceReference（MUST非空，缺失不得形成Candidate），生成inputAt/receivedAt/updatedAt，固定accessMethod=manual并从认证上下文取得operatorRef（MUST NOT由客户端指定）；可信字段仅经机械标准化确定性映射进PARSED后CandidateV1；独立Lifecycle timeline保存processingStage、validationStatus及全部版本；合法结构记录最多推进至`PARSED+PENDING`。
 - **依赖任务：** D3-T01、D2-T01、D2-T02。
-- **具体测试：** 合法、缺来源、错误单位、未来日期、重复、修订、RECEIVED/PARSED+PENDING查询拒绝、PUBLISHED+VERIFIED后加工。
-- **Definition of Done：** 手工提交不直达面板；修订不覆盖原raw；实际来源和手工方式在全链可见。
+- **具体测试：** 合法受理至`PARSED+PENDING`；缺必填字段/sourceReference缺失/非法日期格式/非十进制数值/itemId未配置→fail-closed；operatorRef来自认证上下文；same key + same content 幂等；same key + different content 新建版本且旧raw/timeline永久保留；`PENDING` Manual 被既有 Publish Gate 拒绝（负向）；不产生 VERIFIED/PUBLISHED。
+- **Definition of Done：** 1) Manual submission 不直接进入 Dashboard/正式业务出口；2) raw immutable；3) 初始`RECEIVED+PENDING`；4) 机械标准化成功→`PARSED+PENDING`；5) sourceReference 非空；6) operatorRef 来自认证上下文；7) sourceUrl 可空且不单独影响状态；8) same key+same content 幂等；9) same key+different content 新版本保留不覆盖；10) PENDING Manual 被既有 Publish Gate 拒绝。完成边界=`PARSED+PENDING`（非 PUBLISHED+VERIFIED）。
 - **失败回退：** 禁用提交入口并保留raw/错误报告，不允许管理员直接写processed。
-- **是否阻塞后续：** 是；它是材料最终保底路线。
+- **是否阻塞后续：** 是；它是材料最终保底路线（正式链在 D4-T01~D4-T04 完成）。
 
 ### D3-T05 LocalImport与SyntheticDemo隔离
 
@@ -295,7 +295,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 ### D4-T01 全Provider标准化与校验规则
 
 - **优先级/状态：** P0 / `NOT_STARTED`。
-- **任务目标：** 将Day2 PBOC基础校验推广到六类Provider，覆盖来源、日期、单位、规格、范围、重复、时效和冲突。
+- **任务目标：** 将Day2 PBOC基础校验推广到六类Provider，覆盖来源、日期、单位、规格、范围、重复、时效和冲突。DEC-057 职责边界：MUST 新增独立材料 validationVersion，MUST NOT 复用 `pboc-basic-validation-v1` 验证材料（DEC-050 仅适用 PBOC）；负责冻结并实现 ADC12/AZ91D 及来源意图规格、unit/currency、数值范围、businessDate/future date/stale、来源字段一致性、重复、修订、冲突，并确定性产生 `VERIFIED`/`VERIFIED_WITH_NOTICE`/`REJECTED`/`CONFLICT`。
 - **对应需求：** SUP-06、SUP-07、F06、F07、H02。
 - **输入：** D3-T06各类raw、validation-rules和Series定义。
 - **创建或修改文件：** 通用standardization/validation、规则版本和测试。
@@ -309,7 +309,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 ### D4-T02 全Provider统一发布门禁
 
 - **优先级/状态：** P0 / `NOT_STARTED`。
-- **任务目标：** 强制加工、查询、预警和Agent只能访问PUBLISHED+两种VERIFIED状态。
+- **任务目标：** 强制加工、查询、预警和Agent只能访问PUBLISHED+两种VERIFIED状态。DEC-057 职责边界：在 D4-T01 已产生 `VALIDATED+VERIFIED` 类结果后进行正式发布。
 - **对应需求：** SUP-06、F06、H01、H02。
 - **输入：** D4-T01结果、真实/演示模式和来源策略。
 - **创建或修改文件：** 通用publish边界、查询过滤、模式/来源安全测试。

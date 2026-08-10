@@ -516,7 +516,7 @@ Day 8 完成后冻结新增业务功能，只允许修复 P0 验收缺陷、补�
 |---|---|---|
 | Day 1 | `D1-T01` 纳入补充说明并冻结PBOC双币契约；`D1-T02` PBOC字段/连通性调查；`D1-T03` 最小Spring Boot与data/raw文件基础；`D1-T04` OfficialWeb真实获取；`D1-T05` EUR/USD raw闭环冒烟 | **退出条件仅为**EUR/CNY、USD/CNY真实获取并生成可追溯raw JSON；D1-T02失败证据仅是调查产物，不能使Day1或PBOC验收通过。 |
 | Day 2 | `D2-T01` 标准化与基础校验；`D2-T02` PUBLISHED+VERIFIED类发布门禁；`D2-T03` 每日加工CSV；`D2-T04` 历史读取与四级aggregate CSV；`D2-T05` 调度/幂等/重启端到端验收 | 两个币种完成PBOC→raw JSON→PARSED/PENDING→VALIDATED→PUBLISHED+VERIFIED类→daily/aggregate CSV→重启读取；AT-SRC-002必须PASS后才能进入原材料开发 |
-| Day 3 | `D3-T01` 六类Provider边界；`D3-T02` 三层路由与AuthorizedApi；`D3-T03` FreePublic；`D3-T04` Manual；`D3-T05` LocalImport/Synthetic隔离；`D3-T06` ADC12/AZ91D合规接入 | 四个来源意图×材料序列各有合法指定源、免费公开源或Manual中的一条non-synthetic路径；实际来源不可冒充 |
+| Day 3 | `D3-T01` 六类Provider边界；`D3-T02` 三层路由与AuthorizedApi；`D3-T03` FreePublic；`D3-T04` Manual；`D3-T05` LocalImport/Synthetic隔离；`D3-T06` ADC12/AZ91D合规接入 | 四个来源意图×材料序列各有合法指定源、免费公开源或Manual中的一条non-synthetic路径；实际来源不可冒充。Day 3 Gate（DEC-057 边界）：不要求材料在Day 3达到VERIFIED/PUBLISHED/daily/aggregate；Manual fallback 须具备可追溯的 raw、`PARSED+PENDING`、source identity、operator 与 revision/version 能力；所有 PENDING 数据必须被正式 Gate 拒绝。材料 validation/publish/processing/aggregate 与 AT-SRC-007 正向全链由 Day 4（D4-T01~D4-T04）承担 |
 | Day 4 | `D4-T01` 全Provider标准化/校验；`D4-T02` 统一发布门禁；`D4-T03` 每日加工通用化；`D4-T04` 五级聚合；`D4-T05` 黄金复算与来源治理测试 | Day1-2最小链推广到全部Provider；手工/免费源不得绕门禁；H01/H02核心计算通过 |
 | Day 5 | `D5-T01` 系统时间与文件轮转；`D5-T02` 跨卷/跨年读取；`D5-T03` 动态标的与依赖；`D5-T04` 历史回填；`D5-T05` 最小规则预警 | H05-H09后端链路可演示；前跳/回拨有证据；历史不删除；预警已持久化 |
 | Day 6 | `D6-T01` 七个Agent工具；`D6-T02` EvidencePack；`D6-T03` LLMService/CloudLLMService；`D6-T04` 证据核验与结构化报告；`D6-T05` Java模板降级 | LLM不直接计算；回答展示真实来源；断网/云模型失败仍返回确定性报告 |
