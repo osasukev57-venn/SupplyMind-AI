@@ -26,6 +26,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -184,6 +185,61 @@ class PbocRawFirstContractTest {
         assertEquals(1, acquisitionCount(root));
     }
 
+    @Test
+    void decodeHtmlFailureKeepsSourceAcquisitionAndNoDownstreamState() throws Exception {
+        byte[] listEntity = fixtureBytes("announcement-list-normal.html");
+        byte[] invalidUtf8Detail = new byte[]{(byte) 0xC3, (byte) 0x28, (byte) 0xC3, (byte) 0x28};
+        DataRoot root = initializedRoot();
+        AtomicFileStore fileStore = new AtomicFileStore(root, new DirtyMarkerCodec());
+        RawReceiptStore rawStore = new RawReceiptStore(root, fileStore, Clock.systemUTC());
+        RawAcquisitionStore acquisitionStore = new RawAcquisitionStore(root, fileStore, Clock.systemUTC());
+        List<PbocDiagnosticEvent> events = new ArrayList<>();
+        PbocOfficialWebDataProvider provider = provider(root, rawStore, acquisitionStore, fileStore,
+                Clock.fixed(Instant.parse("2026-08-10T01:30:00Z"), ZoneOffset.UTC),
+                FixtureTransport.responses(Map.of(
+                        LIST_URI, new PbocHttpResponse(LIST_URI, 200, "text/html; charset=UTF-8", listEntity),
+                        DETAIL_URI, new PbocHttpResponse(DETAIL_URI, 200, "text/html; charset=utf-8", invalidUtf8Detail)
+                )),
+                events);
+
+        PbocCollectionException failure = assertThrows(PbocCollectionException.class,
+                provider::collectLatestAnnouncement);
+
+        assertEquals(PbocCollectionFailureKind.PARSE_REJECTED, failure.failureKind());
+        assertEquals("HTTP", failure.stage(),
+                "the failure must come from decodeHtml (stage HTTP), not from parseDetail (stage DETAIL)");
+        assertTrue(failure.getCause() instanceof java.nio.charset.CharacterCodingException,
+                "decodeHtml must throw on the deterministic undecodable entity, got "
+                        + (failure.getCause() == null ? "none" : failure.getCause().getClass().getSimpleName()));
+
+        assertEquals(1, acquisitionCount(root),
+                "decodeHtml failure must still preserve the source raw acquisition");
+        Path sourceDir = root.resolveInternalRelative("raw/source");
+        List<Path> files;
+        try (Stream<Path> stream = Files.list(sourceDir)) {
+            files = stream.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .filter(path -> !path.getFileName().toString().endsWith(".manifest.json"))
+                    .toList();
+        }
+        assertEquals(1, files.size());
+        Path acquisitionPath = files.get(0);
+        String acquisitionRef = "raw/source/" + acquisitionPath.getFileName();
+        com.supplymind.foundation.model.RawAcquisitionV1 persisted = JsonV1Codec.decodeFile(
+                Files.readAllBytes(acquisitionPath), com.supplymind.foundation.model.RawAcquisitionV1.class);
+        assertEquals(FileDigest.sha256(invalidUtf8Detail), persisted.payloadSha256(),
+                "the preserved acquisition must carry the payload SHA of the unparsed bytes");
+        assertArrayEquals(invalidUtf8Detail, Base64.getDecoder().decode(persisted.payloadBase64()));
+        assertTrue(ManifestVerifier.matches(root, acquisitionRef, acquisitionPath,
+                root.resolveDataRef(DataPaths.manifestRef(acquisitionRef)),
+                List.of(persisted.acquisitionId())),
+                "the preserved acquisition manifest must verify");
+        assertEquals(0, itemRawCount(root), "decodeHtml failure must not create any item raw");
+        assertEquals(0, stagingCount(root), "decodeHtml failure must not create any lifecycle timeline");
+        assertEquals(1, events.size());
+        assertEquals("PARSE_REJECTED", events.get(0).outcome());
+        assertEquals("HTTP", events.get(0).stage());
+    }
     private static void assertNullField(RawAcquisitionV1 acquisition) {
         assertNotNull(acquisition);
         assertEquals("1.0", acquisition.schemaVersion());

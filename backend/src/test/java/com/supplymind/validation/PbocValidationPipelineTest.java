@@ -22,6 +22,7 @@ import com.supplymind.foundation.storage.DataPaths;
 import com.supplymind.foundation.storage.DataRoot;
 import com.supplymind.foundation.storage.DirtyMarkerCodec;
 import com.supplymind.foundation.storage.FileDigest;
+import com.supplymind.foundation.storage.RawAcquisitionStore;
 import com.supplymind.foundation.storage.RawReceiptStore;
 import com.supplymind.foundation.storage.TimelineStore;
 import org.junit.jupiter.api.Test;
@@ -519,6 +520,8 @@ class PbocValidationPipelineTest {
     }
 
     private static void ingest(Harness harness, RawReceiptV1 raw) {
+        new RawAcquisitionStore(harness.root(), harness.fileStore(), FIXED_CLOCK)
+                .store(com.supplymind.foundation.model.DomainFixtures.acquisitionFor(raw));
         harness.rawStore().store(raw);
         harness.timelineStore().createInitial(raw.runId(), raw.rawRef(), raw.receivedAt());
     }
@@ -618,7 +621,7 @@ class PbocValidationPipelineTest {
                 JsonV1Codec.sha256LowerHex(payload),
                   "1美元对人民币",
                   RECEIVED_AT,
-                  null
+                  DataPaths.acquisitionRef("acq-" + runId)
           );
     }
 

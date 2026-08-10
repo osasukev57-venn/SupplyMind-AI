@@ -26,15 +26,18 @@ public final class RawReceiptStore {
     private final DataRoot dataRoot;
     private final AtomicFileStore fileStore;
     private final Clock clock;
+    private final RawAcquisitionLinkVerifier linkVerifier;
 
     public RawReceiptStore(DataRoot dataRoot, AtomicFileStore fileStore, Clock clock) {
         this.dataRoot = Objects.requireNonNull(dataRoot, "dataRoot");
         this.fileStore = Objects.requireNonNull(fileStore, "fileStore");
         this.clock = Objects.requireNonNull(clock, "clock");
+        this.linkVerifier = new RawAcquisitionLinkVerifier(dataRoot);
     }
 
     public StoredRawReceipt store(RawReceiptV1 receipt) {
         Objects.requireNonNull(receipt, "receipt");
+        linkVerifier.verify(receipt);
         requireResolvableConfigVersion(receipt);
         OffsetDateTime now = OffsetDateTime.now(clock);
         byte[] rawBytes = JsonV1Codec.encodeFile(receipt);

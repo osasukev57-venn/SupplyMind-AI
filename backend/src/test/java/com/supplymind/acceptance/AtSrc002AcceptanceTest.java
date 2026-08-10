@@ -562,16 +562,14 @@ class AtSrc002AcceptanceTest {
                 "sourceAcquisitionRef", DataPaths.acquisitionRef(cycle.acquisitionId()),
                 "acquisitionManifest", ManifestV1.COMMITTED,
                 "parseFailureKeepsSourceRaw", true,
-                "itemRawAcquisitionRefTraceable", true));
+                "decodeHtmlFailureKeepsSourceRaw", true,
+                "itemRawAcquisitionRefTraceable", true,
+                "acquisitionLinkEnforced", "RawAcquisitionLinkVerifier invoked by RawReceiptStore.store"));
         summary.put("realGateProperty", "at-src-002.real");
-        summary.put("realGateValue", "true");
-        summary.put("tests", 1);
-        summary.put("failures", 0);
-        summary.put("errors", 0);
-        summary.put("skipped", 0);
+        summary.put("realGateValue", System.getProperty("at-src-002.real", "false"));
         summary.put("runnerEvidenceRef", "TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml");
-        summary.put("runnerEvidenceSha256", null);
-        summary.put("result", "PASS");
+        summary.put("summaryGenerationMethod", "AUTO_SCRIPT_XML_PARSE (capture-at-src-002-evidence.ps1)");
+        summary.put("runtimeFactsGeneratedBy", "AtSrc002AcceptanceTest (no runner counts hardcoded)");
 
         String evidenceDirValue = System.getProperty("at-src-002.evidence-dir");
         if (evidenceDirValue != null && !evidenceDirValue.isBlank()) {
@@ -579,8 +577,9 @@ class AtSrc002AcceptanceTest {
             Files.createDirectories(evidenceDir);
             ObjectMapper mapper = JsonV1Codec.mapper();
             byte[] bytes = mapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(summary);
-            Files.write(evidenceDir.resolve("at-src-002-summary.json"), bytes);
-            System.out.printf("AT_SRC_002 evidence written=%s%n", evidenceDir.resolve("at-src-002-summary.json"));
+            Files.write(evidenceDir.resolve("at-src-002-runtime-facts.json"), bytes);
+            System.out.printf("AT_SRC_002 runtime facts written=%s%n",
+                    evidenceDir.resolve("at-src-002-runtime-facts.json"));
         }
     }
 

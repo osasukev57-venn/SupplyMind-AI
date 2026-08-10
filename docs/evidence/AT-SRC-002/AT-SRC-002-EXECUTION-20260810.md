@@ -117,3 +117,56 @@ raw 路由：`raw/formal/official_web/FX.{USD,EUR}.CNY.PBOC_MID/2026/08/….json
 ### 结论（正式）
 
 AT-SRC-002 = **PASS_CANDIDATE**（DEC-056 修复后真实双币全链正式运行 1/1，awaiting fixed-commit Review；D2-T05=REVIEW_PENDING，Day 2 未宣布 COMPLETE）。
+
+---
+
+## DEC-056 Findings Closure Round 2 重跑（2026-08-10 15:45，Asia/Shanghai）
+
+> Sol Findings Closure Review（commit `2b7d2f4`）= CHANGES_REQUESTED（A item→source 追溯未强制 / B decodeHtml 失败契约缺失 / C summary runner 数据硬编码与人工后处理 / D 实时状态与 regression 数字不唯一）。本轮四项全部修复后重新正式执行；独立空 dataRoot `D:\Dev\Temp\opencode\at-src-002-run-round2`。
+
+### Finding A —— item Raw → source Raw 追溯强制（ENFORCED）
+
+- 生产路径强制：`RawAcquisitionLinkVerifier` 由 `RawReceiptStore.store`（正式保存路径）对外部 HTTP item receipt 执行：① acquisitionRef 必填；② 必须等于 `DataPaths.acquisitionRef(acquisitionId)`（canonical，禁止手工拼接）；③ source acquisition 文件必须存在；④ 相邻 manifest 必须存在、COMMITTED、ManifestVerifier PASS（含 derived fields）；⑤ source acquisitionId 与 item 一致；⑥ source payloadSha256 与 item 一致；⑦ mode/providerType/accessMethod/actualSourceName/configVersion/detailUrl 一致。任一失败 fail-closed，不存储正式 item raw。
+- 负向确定性测试（`RawAcquisitionLinkVerifierTest`，7 用例全 PASS）：
+  - Case 1 acquisitionRef 缺失 → reject：PASS
+  - Case 2 正确 acquisitionId + 错误路径（非 canonical）→ reject：PASS
+  - Case 3 source acquisition 内部 acquisitionId 与 item 不一致 → reject（经 manifest/derived 链拦截）：PASS
+  - Case 4 payload identity 不一致 → reject：PASS
+  - Case 5 manifest 缺失 / manifest 校验失败 → reject：PASS（+1 正向用例）
+- 真实 AT：USD/EUR item raw 均经 verifier 通过（acquisitionRef→source→manifest→payload 真实可解析，非仅字符串检查）。
+
+### Finding B —— decodeHtml 失败契约（PASS）
+
+- 确定性测试真实命中 `PbocAnnouncementParser.decodeHtml`（detail entity=不可解码 UTF-8 字节，`contentType="text/html; charset=utf-8"`）：failure.kind=PARSE_REJECTED、failure.stage=`HTTP`（decodeHtml 阶段，非 parseDetail 的 DETAIL 阶段）、cause=CharacterCodingException。
+- 断言：RawAcquisition 已持久化且 payloadSha=sha(entity) 精确匹配、manifest 可验证；item Raw=0、Candidate=0、Validation=0、Publish=0、Daily=0、Aggregate=0。
+- raw-first 两条失败边界齐备：HTTP bytes→source raw committed→decodeHtml FAIL→downstream none；HTTP bytes→source raw committed→decodeHtml PASS→parseDetail FAIL→downstream none（契约测试 3 用例）。
+
+### Finding C —— Runner → Summary 自动证据流水线（AUTO）
+
+- 测试只生成 runtime facts（businessDate/USD/EUR/payloadSha/refs/restart/rawFirst，realGateValue=实际环境属性 `at-src-002.real`），不再硬编码 tests/failures/errors/skipped/result/runnerEvidenceSha256。
+- `docs/evidence/AT-SRC-002/capture-at-src-002-evidence.ps1`：解析 tracked Surefire XML 取得 tests/failures/errors/skipped/suite → 复制 XML 到 evidence → 计算 XML SHA-256 → 由实际计数推导 result（failures=0 且 errors=0 且 skipped=0 且 tests>0 且 realGate=true 才 PASS）→ 合并 runtime facts 生成 `at-src-002-summary.json`。realGateValue≠true 时拒绝生成正式 summary。
+- 本轮实测：`tests=1 failures=0 errors=0 skipped=0`、`runnerFactsSource=AUTO_XML_PARSE`、`summaryGenerationMethod=AUTO_SCRIPT_XML_PARSE`、runner XML SHA-256=`6e9d7c50a88cc9a8fce740df6d1e0bd17e9ba60bdd457de033bfee8227e2b1d8`（AUTO 计算）。
+
+### Finding D —— 实时状态唯一
+
+- 当前唯一实时状态：D2-T05=`REVIEW_PENDING`、AT-SRC-002=`PASS_CANDIDATE`（awaiting fixed-commit review）、Day 2=`NOT_COMPLETE`、原材料开发=`NOT_ALLOWED`。当前状态区域无独立 `PASS` 声明（历史 24d24b6/2b7d2f4 记录保留为审计）。
+- 全量回归数字更新为当前最新：38 classes / 176 tests / 0 failures / 0 errors / 7 skipped（门禁）。
+
+### 本轮真实结果
+
+| 项 | 值 |
+|---|---|
+| 执行时间 | 2026-08-10T15:45（Asia/Shanghai） |
+| real gate | `-Dat-src-002.real=true` |
+| businessDate | 2026-08-10（官方公告，payload SHA=`d7d03779…0544a`） |
+| USD/CNY | 6.7884（raw）→ 6.78840000（daily/aggregate） |
+| EUR/CNY | 7.8171（raw）→ 7.81710000（daily/aggregate） |
+| source acquisitionRef | `raw/source/pboc-acq-2026081009005136814-d7d03779….json` |
+| 完整链 | raw acquisition→item raw→validation→publish→daily→month/quarter/halfyear/year 全部 PASS |
+| 幂等 replay | IDEMPOTENT（快照零变化） |
+| Restart | Context A→B 离线只读 PASS（AggregateReadService，无 rebuild/write） |
+| 正式 gated runner | 1 test / 0 failures / 0 errors / 0 skipped |
+| runner evidence | `docs/evidence/AT-SRC-002/TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml`，SHA-256=`6e9d7c50…2e1b8` |
+| summary | `at-src-002-summary.json`（AUTO_XML_PARSE 生成） |
+
+AT-SRC-002（Round 2 正式）= **PASS_CANDIDATE**（awaiting fixed-commit Review）。

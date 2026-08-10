@@ -23,6 +23,7 @@ import com.supplymind.foundation.storage.DirtyMarkerCodec;
 import com.supplymind.foundation.storage.FileDigest;
 import com.supplymind.foundation.storage.ManifestVerifier;
 import com.supplymind.foundation.storage.QuarantineStore;
+import com.supplymind.foundation.storage.RawAcquisitionStore;
 import com.supplymind.foundation.storage.RawReceiptStore;
 import com.supplymind.foundation.storage.TimelineStore;
 import com.supplymind.validation.LifecycleValidationService;
@@ -298,6 +299,8 @@ class PublishGateTest {
     }
 
     private static void ingest(Harness harness, RawReceiptV1 raw) {
+        new RawAcquisitionStore(harness.root(), harness.fileStore(), FIXED_CLOCK)
+                .store(com.supplymind.foundation.model.DomainFixtures.acquisitionFor(raw));
         harness.rawStore().store(raw);
         harness.timelineStore().createInitial(raw.runId(), raw.rawRef(), raw.receivedAt());
     }
@@ -353,7 +356,7 @@ class PublishGateTest {
                 JsonV1Codec.sha256LowerHex(payload),
                   "1美元对人民币",
                   RECEIVED_AT,
-                  null
+                  DataPaths.acquisitionRef("acq-" + runId)
           );
     }
 

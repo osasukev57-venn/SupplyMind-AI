@@ -188,7 +188,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D2-T05 PBOC调度、幂等、重启端到端硬门
 
-- **优先级/状态：** P0-最高 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=DEC056_FIX_AT_SRC_002_PASS_CANDIDATE_20260810`。DEC-056（raw-first + 业务键幂等 + gated runner 证据）已实施：RawAcquisitionV1 source 证据先于解析持久化、同业务键同 payload=IDEMPOTENT、同业务键异 payload=CONFLICT fail-closed、runner XML 固化；AT-SRC-002 修复后正式重跑=`PASS_CANDIDATE`（真实联网 businessDate=2026-08-10 USD=6.7884/EUR=7.8171，surefire 1/1，Evidence=`docs/evidence/AT-SRC-002/`，awaiting fixed-commit Review）；等待 Sol/Second-party Review 收口 DONE；不得在 Review 前自行 DONE。
+- **优先级/状态：** P0-最高 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=DEC056_ROUND2_FIX_AT_SRC_002_PASS_CANDIDATE_20260810`。DEC-056 Round 2 已实施：Finding A item→source 追溯强制（RawAcquisitionLinkVerifier 生产路径执行）、Finding B decodeHtml 失败契约、Finding C runner→summary 自动证据流水线（无硬编码 runner 计数）、Finding D 实时状态唯一；AT-SRC-002 修复后正式重跑=`PASS_CANDIDATE`（真实联网 businessDate=2026-08-10 USD=6.7884/EUR=7.8171，surefire 1/1，runner XML 固化，awaiting fixed-commit Review）；等待 Sol/Second-party Review 收口 DONE；不得在 Review 前自行 DONE。
 - **任务目标：** 完成真实定时/立即采集、raw先写、校验、发布、daily、聚合和重启读取的双币端到端验收。
 - **对应需求：** SUP-01、SUP-02、F02、F03、H01-H03。
 - **输入：** D1-T04、D2-T01至D2-T04、AT-SRC-002。

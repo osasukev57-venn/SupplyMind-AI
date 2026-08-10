@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.supplymind.acceptance.AtSrc002AcceptanceTest" time="4.639" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.supplymind.acceptance.AtSrc002AcceptanceTest" time="5.299" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="CN"/>
     <property name="sun.boot.library.path" value="D:\Dev\SDK\Java\jdk-17\bin"/>
-    <property name="sun.java.command" value="D:\Dev\Temp\surefire17682618796681191262\surefirebooter-20260810145609536_3.jar D:\Dev\Temp\surefire17682618796681191262 2026-08-10T14-56-09_391-jvmRun1 surefire-20260810145609536_1tmp surefire_0-20260810145609536_2tmp"/>
+    <property name="sun.java.command" value="D:\Dev\Temp\surefire4429149460725601566\surefirebooter-20260810154430337_3.jar D:\Dev\Temp\surefire4429149460725601566 2026-08-10T15-44-30_187-jvmRun1 surefire-20260810154430337_1tmp surefire_0-20260810154430337_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="test" value="AtSrc002AcceptanceTest"/>
     <property name="surefire.test.class.path" value="D:\Dev\Projects\SupplyMind AI\backend\target\test-classes;D:\Dev\Projects\SupplyMind AI\backend\target\classes;D:\Dev\Maven\maven-local\org\springframework\boot\spring-boot-starter\3.3.6\spring-boot-starter-3.3.6.jar;D:\Dev\Maven\maven-local\org\springframework\boot\spring-boot\3.3.6\spring-boot-3.3.6.jar;D:\Dev\Maven\maven-local\org\springframework\spring-context\6.1.15\spring-context-6.1.15.jar;D:\Dev\Maven\maven-local\org\springframework\spring-aop\6.1.15\spring-aop-6.1.15.jar;D:\Dev\Maven\maven-local\org\springframework\spring-expression\6.1.15\spring-expression-6.1.15.jar;D:\Dev\Maven\maven-local\org\springframework\boot\spring-boot-autoconfigure\3.3.6\spring-boot-autoconfigure-3.3.6.jar;D:\Dev\Maven\maven-local\org\springframework\boot\spring-boot-starter-logging\3.3.6\spring-boot-starter-logging-3.3.6.jar;D:\Dev\Maven\maven-local\ch\qos\logback\logback-classic\1.5.12\logback-classic-1.5.12.jar;D:\Dev\Maven\maven-local\ch\qos\logback\logback-core\1.5.12\logback-core-1.5.12.jar;D:\Dev\Maven\maven-local\org\apache\logging\log4j\log4j-to-slf4j\2.23.1\log4j-to-slf4j-2.23.1.jar;D:\Dev\Maven\maven-local\org\apache\logging\log4j\log4j-api\2.23.1\log4j-api-2.23.1.jar;D:\Dev\Maven\maven-local\org\slf4j\jul-to-slf4j\2.0.16\jul-to-slf4j-2.0.16.jar;D:\Dev\Maven\maven-local\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;D:\Dev\Maven\maven-local\org\springframework\spring-core\6.1.15\spring-core-6.1.15.jar;D:\Dev\Maven\maven-local\org\springframework\spring-jcl\6.1.15\spring-jcl-6.1.15.jar;D:\Dev\Maven\maven-local\org\yaml\snakeyaml\2.2\snakeyaml-2.2.jar;D:\Dev\Maven\maven-local\org\springframework\boot\spring-boot-starter-json\3.3.6\spring-boot-starter-json-3.3.6.jar;D:\Dev\Maven\maven-local\org\springframework\spring-web\6.1.15\spring-web-6.1.15.jar;D:\Dev\Maven\maven-local\org\springframework\spring-beans\6.1.15\spring-beans-6.1.15.jar;D:\Dev\Maven\maven-local\io\micrometer\micrometer-observation\1.13.8\micrometer-observation-1.13.8.jar;D:\Dev\Maven\maven-local\io\micrometer\micrometer-commons\1.13.8\micrometer-commons-1.13.8.jar;D:\Dev\Maven\maven-local\com\fasterxml\jackson\core\jackson-databind\2.17.3\jackson-databind-2.17.3.jar;D:\Dev\Maven\maven-local\com\fasterxml\jackson\core\jackson-annotations\2.17.3\jackson-annotations-2.17.3.jar;D:\Dev\Maven\maven-local\com\fasterxml\jackson\core\jackson-core\2.17.3\jackson-core-2.17.3.jar;D:\Dev\Maven\maven-local\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.17.3\jackson-datatype-jdk8-2.17.3.jar;D:\Dev\Maven\maven-local\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.17.3\jackson-datatype-jsr310-2.17.3.jar;D:\Dev\Maven\maven-local\com\fasterxml\jackson\module\jackson-module-parameter-names\2.17.3\jackson-module-parameter-names-2.17.3.jar;D:\Dev\Maven\maven-local\org\apache\commons\commons-csv\1.11.0\commons-csv-1.11.0.jar;D:\Dev\Maven\maven-local\commons-io\commons-io\2.16.1\commons-io-2.16.1.jar;D:\Dev\Maven\maven-local\commons-codec\commons-codec\1.16.1\commons-codec-1.16.1.jar;D:\Dev\Maven\maven-local\org\springframework\boot\spring-boot-starter-test\3.3.6\spring-boot-starter-test-3.3.6.jar;D:\Dev\Maven\maven-local\org\springframework\boot\spring-boot-test\3.3.6\spring-boot-test-3.3.6.jar;D:\Dev\Maven\maven-local\org\springframework\boot\spring-boot-test-autoconfigure\3.3.6\spring-boot-test-autoconfigure-3.3.6.jar;D:\Dev\Maven\maven-local\com\jayway\jsonpath\json-path\2.9.0\json-path-2.9.0.jar;D:\Dev\Maven\maven-local\org\slf4j\slf4j-api\2.0.16\slf4j-api-2.0.16.jar;D:\Dev\Maven\maven-local\jakarta\xml\bind\jakarta.xml.bind-api\4.0.2\jakarta.xml.bind-api-4.0.2.jar;D:\Dev\Maven\maven-local\jakarta\activation\jakarta.activation-api\2.1.3\jakarta.activation-api-2.1.3.jar;D:\Dev\Maven\maven-local\net\minidev\json-smart\2.5.1\json-smart-2.5.1.jar;D:\Dev\Maven\maven-local\net\minidev\accessors-smart\2.5.1\accessors-smart-2.5.1.jar;D:\Dev\Maven\maven-local\org\ow2\asm\asm\9.6\asm-9.6.jar;D:\Dev\Maven\maven-local\org\assertj\assertj-core\3.25.3\assertj-core-3.25.3.jar;D:\Dev\Maven\maven-local\net\bytebuddy\byte-buddy\1.14.19\byte-buddy-1.14.19.jar;D:\Dev\Maven\maven-local\org\awaitility\awaitility\4.2.2\awaitility-4.2.2.jar;D:\Dev\Maven\maven-local\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;D:\Dev\Maven\maven-local\org\junit\jupiter\junit-jupiter\5.10.5\junit-jupiter-5.10.5.jar;D:\Dev\Maven\maven-local\org\junit\jupiter\junit-jupiter-api\5.10.5\junit-jupiter-api-5.10.5.jar;D:\Dev\Maven\maven-local\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;D:\Dev\Maven\maven-local\org\junit\platform\junit-platform-commons\1.10.5\junit-platform-commons-1.10.5.jar;D:\Dev\Maven\maven-local\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;D:\Dev\Maven\maven-local\org\junit\jupiter\junit-jupiter-params\5.10.5\junit-jupiter-params-5.10.5.jar;D:\Dev\Maven\maven-local\org\junit\jupiter\junit-jupiter-engine\5.10.5\junit-jupiter-engine-5.10.5.jar;D:\Dev\Maven\maven-local\org\junit\platform\junit-platform-engine\1.10.5\junit-platform-engine-1.10.5.jar;D:\Dev\Maven\maven-local\org\mockito\mockito-core\5.11.0\mockito-core-5.11.0.jar;D:\Dev\Maven\maven-local\net\bytebuddy\byte-buddy-agent\1.14.19\byte-buddy-agent-1.14.19.jar;D:\Dev\Maven\maven-local\org\objenesis\objenesis\3.3\objenesis-3.3.jar;D:\Dev\Maven\maven-local\org\mockito\mockito-junit-jupiter\5.11.0\mockito-junit-jupiter-5.11.0.jar;D:\Dev\Maven\maven-local\org\skyscreamer\jsonassert\1.5.3\jsonassert-1.5.3.jar;D:\Dev\Maven\maven-local\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;D:\Dev\Maven\maven-local\org\springframework\spring-test\6.1.15\spring-test-6.1.15.jar;D:\Dev\Maven\maven-local\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;"/>
@@ -33,8 +33,8 @@
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="FILE_LOG_CHARSET" value="GBK"/>
     <property name="java.awt.headless" value="true"/>
-    <property name="at-src-002.data-root" value="D:\Dev\Temp\opencode\at-src-002-run-dec056"/>
-    <property name="surefire.real.class.path" value="D:\Dev\Temp\surefire17682618796681191262\surefirebooter-20260810145609536_3.jar"/>
+    <property name="at-src-002.data-root" value="D:\Dev\Temp\opencode\at-src-002-run-round2"/>
+    <property name="surefire.real.class.path" value="D:\Dev\Temp\surefire4429149460725601566\surefirebooter-20260810154430337_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.19+10-LTS"/>
@@ -54,7 +54,7 @@
     <property name="user.dir" value="D:\Dev\Projects\SupplyMind AI\backend"/>
     <property name="os.arch" value="amd64"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
-    <property name="PID" value="16516"/>
+    <property name="PID" value="14756"/>
     <property name="sun.os.patch.level" value=""/>
     <property name="CONSOLE_LOG_CHARSET" value="GBK"/>
     <property name="native.encoding" value="GBK"/>
@@ -67,7 +67,7 @@
     <property name="java.class.version" value="61.0"/>
     <property name="LOGGED_APPLICATION_NAME" value="[supplymind-backend] "/>
   </properties>
-  <testcase name="dualCurrencyRealChainIdempotencyAndOfflineRestart" classname="com.supplymind.acceptance.AtSrc002AcceptanceTest" time="4.613">
+  <testcase name="dualCurrencyRealChainIdempotencyAndOfflineRestart" classname="com.supplymind.acceptance.AtSrc002AcceptanceTest" time="5.268">
     <system-out><![CDATA[
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -78,11 +78,11 @@
 
  :: Spring Boot ::                (v3.3.6)
 
-2026-08-10T14:56:10.642+08:00  INFO 16516 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.2.5 using Java 17.0.19 with PID 16516 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
-2026-08-10T14:56:10.642+08:00  INFO 16516 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
-2026-08-10T14:56:11.682+08:00  INFO 16516 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 1.438 seconds (process running for 2.031)
-2026-08-10T14:56:12.895+08:00  INFO 16516 --- [supplymind-backend] [           main] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/2026081009005136814/index.html httpStatus=200 exception=NONE
-2026-08-10T14:56:14.367+08:00  INFO 16516 --- [supplymind-backend] [           main] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/2026081009005136814/index.html httpStatus=200 exception=NONE
+2026-08-10T15:44:31.537+08:00  INFO 14756 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.2.5 using Java 17.0.19 with PID 14756 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-08-10T15:44:31.539+08:00  INFO 14756 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-08-10T15:44:33.273+08:00  INFO 14756 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 2.145 seconds (process running for 2.801)
+2026-08-10T15:44:34.461+08:00  INFO 14756 --- [supplymind-backend] [           main] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/2026081009005136814/index.html httpStatus=200 exception=NONE
+2026-08-10T15:44:35.900+08:00  INFO 14756 --- [supplymind-backend] [           main] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/2026081009005136814/index.html httpStatus=200 exception=NONE
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -93,14 +93,14 @@
 
  :: Spring Boot ::                (v3.3.6)
 
-2026-08-10T14:56:14.406+08:00  INFO 16516 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.2.5 using Java 17.0.19 with PID 16516 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
-2026-08-10T14:56:14.406+08:00  INFO 16516 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
-2026-08-10T14:56:14.633+08:00  INFO 16516 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 0.257 seconds (process running for 4.979)
+2026-08-10T15:44:35.944+08:00  INFO 14756 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.2.5 using Java 17.0.19 with PID 14756 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-08-10T15:44:35.944+08:00  INFO 14756 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-08-10T15:44:36.172+08:00  INFO 14756 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 0.257 seconds (process running for 5.7)
 AT_SRC_002 cycle businessDate=2026-08-10 acquisitionId=pboc-acq-2026081009005136814-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a payloadSha256=d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a
 AT_SRC_002 usd rawValue=6.7884 dailyAvg=6.78840000 dailyRef=processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv runId=pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a
 AT_SRC_002 eur rawValue=7.8171 dailyAvg=7.81710000 dailyRef=processed/daily/FX.EUR.CNY.PBOC_MID/2026-08.csv runId=pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a
 AT_SRC_002 publishRef=staging/pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json#recordVersion=4 aggregateRefs=4+4 restartOfflineRead=PASS repeat=IDEMPOTENT
-AT_SRC_002 evidence written=D:\Dev\Projects\SupplyMind AI\docs\evidence\AT-SRC-002\at-src-002-summary.json
+AT_SRC_002 runtime facts written=D:\Dev\Projects\SupplyMind AI\docs\evidence\AT-SRC-002\at-src-002-runtime-facts.json
 ]]></system-out>
   </testcase>
 </testsuite>

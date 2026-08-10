@@ -1,99 +1,104 @@
-﻿{
+{
     "acceptanceTest":  "AT-SRC-002 Day1-Day2 PBOC dual-currency real acquisition and file closed loop",
-    "executedAt":  "2026-08-10T14:56:14+08:00",
+    "executedAt":  "2026-08-10T15:44:36+08:00",
     "javaRuntime":  "17.0.19",
     "springBootVersion":  "3.3.6",
-    "dataRoot":  "D:\\Dev\\Temp\\opencode\\at-src-002-run-dec056",
+    "dataRoot":  "D:\\Dev\\Temp\\opencode\\at-src-002-run-round2",
     "realSource":  "涓浗浜烘皯閾惰瀹樼綉锛堟巿鏉冧腑鍥藉姹囦氦鏄撲腑蹇冨叕甯冿級",
     "businessDate":  "2026-08-10",
     "acquisitionId":  "pboc-acq-2026081009005136814-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
     "payloadSha256":  "d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
     "usd":  {
-                "aggregateCalculatedAt":  "2026-08-10T14:56:13.087911600+08:00",
-                "itemId":  "FX.USD.CNY.PBOC_MID",
-                "rawFileSha256":  "2677fda44a15abe4eff4479812ecdfc6e4861cfa3cf4fbd2c3f34b8859270bb2",
-                "dailyRef":  "processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv",
+                "dailyUpdatedAt":  "2026-08-10T15:44:34.644540200+08:00",
+                "dailyAvg":  "6.78840000",
+                "dailySum":  "6.7884",
+                "rawRef":  "raw/formal/official_web/FX.USD.CNY.PBOC_MID/2026/08/pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json",
+                "rawValue":  "6.7884",
+                "runId":  "pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
                 "aggregateRefs":  [
                                       "processed/aggregate/FX.USD.CNY.PBOC_MID/month/2026.csv",
                                       "processed/aggregate/FX.USD.CNY.PBOC_MID/quarter/2026.csv",
                                       "processed/aggregate/FX.USD.CNY.PBOC_MID/halfyear/2026.csv",
                                       "processed/aggregate/FX.USD.CNY.PBOC_MID/year/2026.csv"
                                   ],
-                "runId":  "pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
-                "rawValue":  "6.7884",
-                "rawRef":  "raw/formal/official_web/FX.USD.CNY.PBOC_MID/2026/08/pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json",
-                "dailySum":  "6.7884",
-                "dailyAvg":  "6.78840000",
-                "dailyUpdatedAt":  "2026-08-10T14:56:13.087911600+08:00"
+                "dailyRef":  "processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv",
+                "rawFileSha256":  "edf4320790fa7fae28e4f65c58e7209d572a9c66d119cd4f1fde615fa1ecc18a",
+                "itemId":  "FX.USD.CNY.PBOC_MID",
+                "aggregateCalculatedAt":  "2026-08-10T15:44:34.644540200+08:00"
             },
     "eur":  {
-                "aggregateCalculatedAt":  "2026-08-10T14:56:13.331310600+08:00",
-                "itemId":  "FX.EUR.CNY.PBOC_MID",
-                "rawFileSha256":  "2600620fdc5ad95de59e2eb2d2a5df3b1f413291ab2725a37eb58e67bd7b3457",
-                "dailyRef":  "processed/daily/FX.EUR.CNY.PBOC_MID/2026-08.csv",
+                "dailyUpdatedAt":  "2026-08-10T15:44:34.889511600+08:00",
+                "dailyAvg":  "7.81710000",
+                "dailySum":  "7.8171",
+                "rawRef":  "raw/formal/official_web/FX.EUR.CNY.PBOC_MID/2026/08/pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json",
+                "rawValue":  "7.8171",
+                "runId":  "pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
                 "aggregateRefs":  [
                                       "processed/aggregate/FX.EUR.CNY.PBOC_MID/month/2026.csv",
                                       "processed/aggregate/FX.EUR.CNY.PBOC_MID/quarter/2026.csv",
                                       "processed/aggregate/FX.EUR.CNY.PBOC_MID/halfyear/2026.csv",
                                       "processed/aggregate/FX.EUR.CNY.PBOC_MID/year/2026.csv"
                                   ],
-                "runId":  "pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
-                "rawValue":  "7.8171",
-                "rawRef":  "raw/formal/official_web/FX.EUR.CNY.PBOC_MID/2026/08/pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json",
-                "dailySum":  "7.8171",
-                "dailyAvg":  "7.81710000",
-                "dailyUpdatedAt":  "2026-08-10T14:56:13.331310600+08:00"
+                "dailyRef":  "processed/daily/FX.EUR.CNY.PBOC_MID/2026-08.csv",
+                "rawFileSha256":  "6119109a0c52d12592e8b258796417a5fee471834e861759b28c8fb113046241",
+                "itemId":  "FX.EUR.CNY.PBOC_MID",
+                "aggregateCalculatedAt":  "2026-08-10T15:44:34.889511600+08:00"
             },
     "publishGate":  {
-                        "usdPublishedAt":  "2026-08-10T14:56:13.087911600+08:00",
+                        "eurPublishRef":  "staging/pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json#recordVersion=4",
+                        "eurPublishedAt":  "2026-08-10T15:44:34.889511600+08:00",
                         "usdPublishRef":  "staging/pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json#recordVersion=4",
-                        "eurPublishedAt":  "2026-08-10T14:56:13.331310600+08:00",
-                        "eurPublishRef":  "staging/pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json#recordVersion=4"
+                        "usdPublishedAt":  "2026-08-10T15:44:34.644540200+08:00"
                     },
     "repeatTrigger":  {
-                          "outcome":  "IDEMPOTENT_REPLAY",
-                          "noDoublePublish":  true,
-                          "samePayloadSha256":  true,
-                          "noConflictEvidence":  true,
-                          "sameBusinessKey":  true,
-                          "noDuplicateRaw":  true,
-                          "aggregateBytesUnchanged":  true,
-                          "receivedAtChanged":  true,
+                          "dailyBytesUnchanged":  true,
                           "noRawReceiptConflict":  true,
-                          "dailyBytesUnchanged":  true
+                          "receivedAtChanged":  true,
+                          "aggregateBytesUnchanged":  true,
+                          "noDuplicateRaw":  true,
+                          "sameBusinessKey":  true,
+                          "noConflictEvidence":  true,
+                          "samePayloadSha256":  true,
+                          "noDoublePublish":  true,
+                          "outcome":  "IDEMPOTENT_REPLAY"
                       },
     "restart":  {
                     "filesUnchanged":  true,
-                    "noProcessYearOrRebuild":  true,
-                    "dailyDecodedIdentical":  true,
-                    "publishedRecordsReadable":  true,
-                    "aggregateDecodedIdentical":  true,
-                    "aggregateReader":  "AggregateReadService",
-                    "offlineReadOnly":  true,
+                    "secondSpringContext":  true,
                     "outcome":  "PASS",
-                    "secondSpringContext":  true
+                    "offlineReadOnly":  true,
+                    "aggregateReader":  "AggregateReadService",
+                    "aggregateDecodedIdentical":  true,
+                    "publishedRecordsReadable":  true,
+                    "dailyDecodedIdentical":  true,
+                    "noProcessYearOrRebuild":  true
                 },
     "independentRecompute":  {
-                                 "usdExpectedDailyAvg":  "6.78840000",
-                                 "eurActualDailyAvg":  "7.81710000",
-                                 "usdActualDailyAvg":  "6.78840000",
+                                 "precision":  "BigDecimal from String, HALF_UP at scale 8, no float/double",
                                  "eurExpectedDailyAvg":  "7.81710000",
-                                 "precision":  "BigDecimal from String, HALF_UP at scale 8, no float/double"
+                                 "usdActualDailyAvg":  "6.78840000",
+                                 "eurActualDailyAvg":  "7.81710000",
+                                 "usdExpectedDailyAvg":  "6.78840000"
                              },
     "rawFirst":  {
-                     "acquisitionManifest":  "COMMITTED",
                      "sourceAcquisitionRef":  "raw/source/pboc-acq-2026081009005136814-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json",
-                     "parseFailureKeepsSourceRaw":  true,
-                     "itemRawAcquisitionRefTraceable":  true
+                     "decodeHtmlFailureKeepsSourceRaw":  true,
+                     "acquisitionLinkEnforced":  "RawAcquisitionLinkVerifier invoked by RawReceiptStore.store",
+                     "acquisitionManifest":  "COMMITTED",
+                     "itemRawAcquisitionRefTraceable":  true,
+                     "parseFailureKeepsSourceRaw":  true
                  },
     "realGateProperty":  "at-src-002.real",
     "realGateValue":  "true",
+    "summaryGenerationMethod":  "AUTO_SCRIPT_XML_PARSE (capture-at-src-002-evidence.ps1)",
+    "runtimeFactsGeneratedBy":  "AtSrc002AcceptanceTest (no runner counts hardcoded)",
     "tests":  1,
     "failures":  0,
     "errors":  0,
     "skipped":  0,
+    "runnerSuite":  "com.supplymind.acceptance.AtSrc002AcceptanceTest",
     "runnerEvidenceRef":  "TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml",
-    "result":  "PASS",
-    "runnerEvidenceSha256":  "2fa63b319def9c8b0588315a77d8d6306bae6bc95ff25f60807c53930624ea5f",
-    "repeatTriggerOutcome":  "IDEMPOTENT_REPLAY"
+    "runnerEvidenceSha256":  "6e9d7c50a88cc9a8fce740df6d1e0bd17e9ba60bdd457de033bfee8227e2b1d8",
+    "runnerFactsSource":  "AUTO_XML_PARSE",
+    "result":  "PASS"
 }

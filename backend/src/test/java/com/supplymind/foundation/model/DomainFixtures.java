@@ -1,6 +1,7 @@
 package com.supplymind.foundation.model;
 
 import com.supplymind.foundation.codec.JsonV1Codec;
+import com.supplymind.foundation.storage.DataPaths;
 
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
@@ -11,8 +12,35 @@ public final class DomainFixtures {
     public static final OffsetDateTime RECEIVED_AT = OffsetDateTime.parse("2026-08-08T10:00:00+08:00");
     public static final String ITEM_ID = "FX.USD.CNY.PBOC_MID";
     public static final String RUN_ID = "test-run-usd-001";
+    private static final String PBOC_LIST_URL =
+            "https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/index.html";
 
     private DomainFixtures() {
+    }
+
+    /**
+     * DEC-056: builds the canonical source RawAcquisitionV1 matching an external HTTP item
+     * receipt, so downstream pipeline tests that feed pre-existing raws satisfy the enforced
+     * acquisition link before RawReceiptStore.store accepts the item raw.
+     */
+    public static RawAcquisitionV1 acquisitionFor(RawReceiptV1 receipt) {
+        return new RawAcquisitionV1(
+                SchemaV1.VERSION,
+                DataPaths.acquisitionRef(receipt.acquisitionId()),
+                receipt.acquisitionId(),
+                receipt.mode(),
+                receipt.providerType(),
+                receipt.accessMethod(),
+                receipt.configVersion(),
+                receipt.actualSourceName(),
+                PBOC_LIST_URL,
+                receipt.sourceUrl() == null ? PBOC_LIST_URL : receipt.sourceUrl(),
+                receipt.httpStatus(),
+                receipt.contentType(),
+                receipt.receivedAt(),
+                "base64",
+                receipt.payloadBase64(),
+                receipt.payloadSha256());
     }
 
     public static RawReceiptV1 rawReceipt() {
