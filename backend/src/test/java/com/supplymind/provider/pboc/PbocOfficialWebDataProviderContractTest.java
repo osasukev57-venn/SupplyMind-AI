@@ -11,6 +11,7 @@ import com.supplymind.foundation.storage.ConfigActivationStore;
 import com.supplymind.foundation.storage.DataPaths;
 import com.supplymind.foundation.storage.DataRoot;
 import com.supplymind.foundation.storage.DirtyMarkerCodec;
+import com.supplymind.foundation.storage.ManifestVerifier;
 import com.supplymind.foundation.storage.RawReceiptStore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,11 +34,13 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -88,6 +91,7 @@ class PbocOfficialWebDataProviderContractTest {
 
         assertRawTraceability(usd, "FX.USD.CNY.PBOC_MID", "1美元对人民币", "CNY/1 USD", "6.812345678");
         assertRawTraceability(eur, "FX.EUR.CNY.PBOC_MID", "1欧元对人民币", "CNY/1 EUR", "7.901234567");
+        assertSourceAcquisitionTraceability(harness.root(), detailEntity, usd, eur);
 
         assertInitialTimeline(harness.root(), result.usdTimeline(), usd);
         assertInitialTimeline(harness.root(), result.eurTimeline(), eur);
@@ -101,9 +105,10 @@ class PbocOfficialWebDataProviderContractTest {
     }
 
     @Test
-    void rejectsMissingUsdFixtureWithoutCreatingRawOrTimeline() throws Exception {
+    void rejectsMissingUsdFixturePersistingOnlyTheSourceRawAcquisition() throws Exception {
+        byte[] detailEntity = fixtureBytes("announcement-detail-missing-usd.html");
         TestHarness harness = initializedHarness(successfulTransport(
-                fixtureBytes("announcement-list-normal.html"), fixtureBytes("announcement-detail-missing-usd.html")));
+                fixtureBytes("announcement-list-normal.html"), detailEntity));
 
         PbocCollectionException exception = assertThrows(PbocCollectionException.class,
                 () -> harness.provider().collectLatestAnnouncement());
@@ -111,13 +116,14 @@ class PbocOfficialWebDataProviderContractTest {
         assertEquals(PbocCollectionFailureKind.PARSE_REJECTED, exception.failureKind());
         assertEquals("DETAIL", exception.stage());
         assertEquals(DETAIL_URI, exception.uri());
-        assertNoRawOrTimelineWasCreated(harness.root());
+        assertAcquisitionOnlyWasCreated(harness.root(), detailEntity, exception);
     }
 
     @Test
-    void rejectsMissingEurFixtureWithoutCreatingRawOrTimeline() throws Exception {
+    void rejectsMissingEurFixturePersistingOnlyTheSourceRawAcquisition() throws Exception {
+        byte[] detailEntity = fixtureBytes("announcement-detail-missing-eur.html");
         TestHarness harness = initializedHarness(successfulTransport(
-                fixtureBytes("announcement-list-normal.html"), fixtureBytes("announcement-detail-missing-eur.html")));
+                fixtureBytes("announcement-list-normal.html"), detailEntity));
 
         PbocCollectionException exception = assertThrows(PbocCollectionException.class,
                 () -> harness.provider().collectLatestAnnouncement());
@@ -125,13 +131,14 @@ class PbocOfficialWebDataProviderContractTest {
         assertEquals(PbocCollectionFailureKind.PARSE_REJECTED, exception.failureKind());
         assertEquals("DETAIL", exception.stage());
         assertEquals(DETAIL_URI, exception.uri());
-        assertNoRawOrTimelineWasCreated(harness.root());
+        assertAcquisitionOnlyWasCreated(harness.root(), detailEntity, exception);
     }
 
     @Test
-    void rejectsStructureChangedFixtureWithoutInferringReplacementValues() throws Exception {
+    void rejectsStructureChangedFixturePersistingOnlyTheSourceRawAcquisition() throws Exception {
+        byte[] detailEntity = fixtureBytes("announcement-detail-structure-changed.html");
         TestHarness harness = initializedHarness(successfulTransport(
-                fixtureBytes("announcement-list-normal.html"), fixtureBytes("announcement-detail-structure-changed.html")));
+                fixtureBytes("announcement-list-normal.html"), detailEntity));
 
         PbocCollectionException exception = assertThrows(PbocCollectionException.class,
                 () -> harness.provider().collectLatestAnnouncement());
@@ -139,7 +146,7 @@ class PbocOfficialWebDataProviderContractTest {
         assertEquals(PbocCollectionFailureKind.PARSE_REJECTED, exception.failureKind());
         assertEquals("DETAIL", exception.stage());
         assertEquals(DETAIL_URI, exception.uri());
-        assertNoRawOrTimelineWasCreated(harness.root());
+        assertAcquisitionOnlyWasCreated(harness.root(), detailEntity, exception);
     }
 
     @Test
@@ -202,8 +209,38 @@ class PbocOfficialWebDataProviderContractTest {
                 Files.readAllBytes(harness.root().resolveDataRef(DataPaths.stagingRef(first.usdRaw().runId()))));
         assertArrayEquals(eurTimelineBefore,
                 Files.readAllBytes(harness.root().resolveDataRef(DataPaths.stagingRef(first.eurRaw().runId()))));
+        assertEquals(1, acquisitionFileCount(harness.root()),
+                "an identical replay must not create a duplicate source acquisition");
+        assertEquals(2, itemRawCount(harness.root()),
+                "an identical replay must not create duplicate item raws");
         assertEquals(2, harness.events().size());
         assertTrue(harness.events().stream().allMatch(event -> "SUCCESS".equals(event.outcome())));
+    }
+
+    private static int acquisitionFileCount(DataRoot root) throws IOException {
+        Path sourceDir = root.path().resolve("raw").resolve("source");
+        if (!Files.isDirectory(sourceDir)) {
+            return 0;
+        }
+        try (Stream<Path> stream = Files.list(sourceDir)) {
+            return (int) stream.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .filter(path -> !path.getFileName().toString().endsWith(".manifest.json"))
+                    .count();
+        }
+    }
+
+    private static int itemRawCount(DataRoot root) throws IOException {
+        Path rawFormalDir = root.path().resolve("raw").resolve("formal");
+        if (!Files.isDirectory(rawFormalDir)) {
+            return 0;
+        }
+        try (Stream<Path> stream = Files.walk(rawFormalDir)) {
+            return (int) stream.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .filter(path -> !path.getFileName().toString().endsWith(".manifest.json"))
+                    .count();
+        }
     }
 
     private TestHarness initializedHarness(FixtureTransport transport) {
@@ -216,6 +253,7 @@ class PbocOfficialWebDataProviderContractTest {
         PbocOfficialWebDataProvider provider = new PbocOfficialWebDataProvider(
                 root,
                 rawReceiptStore,
+                new com.supplymind.foundation.storage.RawAcquisitionStore(root, fileStore, FIXED_CLOCK),
                 fileStore,
                 FIXED_CLOCK,
                 transport,
@@ -230,6 +268,37 @@ class PbocOfficialWebDataProviderContractTest {
                 LIST_URI, new PbocHttpResponse(LIST_URI, 200, "text/html; charset=UTF-8", listEntity),
                 DETAIL_URI, new PbocHttpResponse(DETAIL_URI, 200, "text/html; charset=UTF-8", detailEntity)
         ));
+    }
+
+    private static void assertSourceAcquisitionTraceability(
+            DataRoot root, byte[] detailEntity, RawReceiptV1 usd, RawReceiptV1 eur
+    ) throws IOException {
+        assertEquals(usd.acquisitionRef(), eur.acquisitionRef(),
+                "both item receipts must reference the same source acquisition");
+        assertEquals(DataPaths.acquisitionRef(usd.acquisitionId()), usd.acquisitionRef());
+        Path acquisitionPath = root.resolveDataRef(usd.acquisitionRef());
+        assertTrue(Files.isRegularFile(acquisitionPath), "the source raw acquisition must be persisted");
+        assertTrue(Files.isRegularFile(root.resolveDataRef(DataPaths.manifestRef(usd.acquisitionRef()))));
+        com.supplymind.foundation.model.RawAcquisitionV1 acquisition = JsonV1Codec.decodeFile(
+                Files.readAllBytes(acquisitionPath), com.supplymind.foundation.model.RawAcquisitionV1.class);
+        assertEquals(independentSha256(detailEntity), acquisition.payloadSha256(),
+                "the acquisition must carry the unparsed HTTP payload hash");
+        assertArrayEquals(detailEntity, Base64.getDecoder().decode(acquisition.payloadBase64()),
+                "the acquisition must retain the full original response bytes");
+        assertEquals(DETAIL_URI.toString(), acquisition.detailUrl());
+        assertEquals(200, acquisition.httpStatus());
+        assertEquals(usd.payloadSha256(), acquisition.payloadSha256());
+        assertTrue(ManifestVerifier.matches(root, usd.acquisitionRef(), acquisitionPath,
+                root.resolveDataRef(DataPaths.manifestRef(usd.acquisitionRef())),
+                List.of(acquisition.acquisitionId())));
+        Path rawFormalDir = root.path().resolve("raw").resolve("formal");
+        try (Stream<Path> stream = Files.walk(rawFormalDir)) {
+            assertTrue(stream.filter(Files::isRegularFile)
+                            .filter(path -> path.getFileName().toString().endsWith(".json"))
+                            .filter(path -> !path.getFileName().toString().endsWith(".manifest.json"))
+                            .count() == 2,
+                    "the formal chain must hold exactly the two item-level raws after the source acquisition");
+        }
     }
 
     private static void assertRawTraceability(
@@ -271,8 +340,47 @@ class PbocOfficialWebDataProviderContractTest {
     }
 
     private static void assertNoRawOrTimelineWasCreated(DataRoot root) {
-        assertFalse(Files.exists(root.path().resolve("raw")), "failed collection must not create a raw directory");
+        assertFalse(Files.exists(root.path().resolve("raw")), "a failed request must not create a raw directory");
         assertFalse(Files.exists(root.path().resolve("staging")), "failed collection must not create a lifecycle directory");
+    }
+
+    /**
+     * DEC-056 raw-first contract on the failure path: the source-level raw acquisition of the
+     * HTTP detail response must already be on disk with a verifiable manifest, while no item
+     * raw, timeline or downstream state exists.
+     */
+    private static void assertAcquisitionOnlyWasCreated(DataRoot root, byte[] detailEntity,
+                                                        PbocCollectionException exception) throws IOException {
+        Path sourceDir = root.path().resolve("raw").resolve("source");
+        assertTrue(Files.isDirectory(sourceDir), "the source raw acquisition directory must exist");
+        List<Path> acquisitionFiles;
+        try (Stream<Path> stream = Files.list(sourceDir)) {
+            acquisitionFiles = stream.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .filter(path -> !path.getFileName().toString().endsWith(".manifest.json"))
+                    .toList();
+        }
+        assertEquals(1, acquisitionFiles.size(),
+                "parse failure must leave exactly one source raw acquisition");
+        Path acquisitionPath = acquisitionFiles.get(0);
+        String acquisitionRef = "raw/source/" + acquisitionPath.getFileName();
+        com.supplymind.foundation.model.RawAcquisitionV1 acquisition =
+                JsonV1Codec.decodeFile(Files.readAllBytes(acquisitionPath),
+                        com.supplymind.foundation.model.RawAcquisitionV1.class);
+        assertEquals(independentSha256(detailEntity), acquisition.payloadSha256(),
+                "the persisted acquisition must carry the unparsed HTTP payload hash");
+        assertArrayEquals(detailEntity, Base64.getDecoder().decode(acquisition.payloadBase64()),
+                "the persisted acquisition must retain the full original response bytes");
+        assertEquals(200, acquisition.httpStatus());
+        assertTrue(ManifestVerifier.matches(root, acquisitionRef, acquisitionPath,
+                root.resolveDataRef(DataPaths.manifestRef(acquisitionRef)),
+                List.of(acquisition.acquisitionId())),
+                "the persisted acquisition manifest must verify");
+        assertFalse(Files.exists(root.path().resolve("raw").resolve("formal")),
+                "parse failure must not create item-level raws");
+        assertFalse(Files.exists(root.path().resolve("staging")),
+                "parse failure must not create lifecycle timelines");
+        assertNotNull(exception);
     }
 
     private byte[] fixtureBytes(String name) throws IOException {

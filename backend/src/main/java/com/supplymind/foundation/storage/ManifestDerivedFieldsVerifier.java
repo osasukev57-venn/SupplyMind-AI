@@ -10,6 +10,7 @@ import com.supplymind.foundation.model.LifecycleTimelineV1;
 import com.supplymind.foundation.model.ManifestV1;
 import com.supplymind.foundation.model.MonitorSeriesConfigV1;
 import com.supplymind.foundation.model.QuarantineProjectionV1;
+import com.supplymind.foundation.model.RawAcquisitionV1;
 import com.supplymind.foundation.model.RawReceiptV1;
 
 import java.io.IOException;
@@ -96,6 +97,10 @@ final class ManifestDerivedFieldsVerifier {
         if (dataRef.equals(DataPaths.configActiveRef()) || dataRef.startsWith("config/history/")) {
             JsonV1Codec.decodeFile(dataBytes, MonitorSeriesConfigV1.class);
             return jsonFields(List.of());
+        }
+        if (dataRef.startsWith("raw/source/")) {
+            RawAcquisitionV1 acquisition = JsonV1Codec.decodeFile(dataBytes, RawAcquisitionV1.class);
+            return jsonFields(List.of(acquisition.acquisitionId()));
         }
         if (dataRef.startsWith("raw/")) {
             RawReceiptV1 raw = JsonV1Codec.decodeFile(dataBytes, RawReceiptV1.class);

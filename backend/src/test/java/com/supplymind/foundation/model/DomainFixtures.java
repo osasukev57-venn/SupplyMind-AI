@@ -46,9 +46,10 @@ public final class DomainFixtures {
                 "base64",
                 Base64.getEncoder().encodeToString(payload),
                 JsonV1Codec.sha256LowerHex(payload),
-                "test/contract fixture USD field",
-                RECEIVED_AT
-        );
+                  "test/contract fixture USD field",
+                  RECEIVED_AT,
+                  null
+          );
     }
 
     public static CandidateV1 candidate() {

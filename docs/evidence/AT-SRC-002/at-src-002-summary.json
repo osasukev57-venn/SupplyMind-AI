@@ -1,69 +1,99 @@
-{
-  "acceptanceTest" : "AT-SRC-002 Day1-Day2 PBOC dual-currency real acquisition and file closed loop",
-  "executedAt" : "2026-08-10T14:12:51+08:00",
-  "javaRuntime" : "17.0.19",
-  "springBootVersion" : "3.3.6",
-  "dataRoot" : "D:\\Dev\\Temp\\opencode\\at-src-002-run",
-  "realSource" : "中国人民银行官网（授权中国外汇交易中心公布）",
-  "businessDate" : "2026-08-10",
-  "acquisitionId" : "pboc-acq-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
-  "payloadSha256" : "d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
-  "usd" : {
-    "dailyUpdatedAt" : "2026-08-10T14:12:49.296279100+08:00",
-    "dailyAvg" : "6.78840000",
-    "dailySum" : "6.7884",
-    "rawRef" : "raw/formal/official_web/FX.USD.CNY.PBOC_MID/2026/08/pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json",
-    "rawValue" : "6.7884",
-    "runId" : "pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
-    "aggregateRefs" : [ "processed/aggregate/FX.USD.CNY.PBOC_MID/month/2026.csv", "processed/aggregate/FX.USD.CNY.PBOC_MID/quarter/2026.csv", "processed/aggregate/FX.USD.CNY.PBOC_MID/halfyear/2026.csv", "processed/aggregate/FX.USD.CNY.PBOC_MID/year/2026.csv" ],
-    "dailyRef" : "processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv",
-    "rawFileSha256" : "57904305667b8efdd42aaaad7dc821ad5e3b1b873c318d557d9b6922495917bd",
-    "itemId" : "FX.USD.CNY.PBOC_MID",
-    "aggregateCalculatedAt" : "2026-08-10T14:12:49.296279100+08:00"
-  },
-  "eur" : {
-    "dailyUpdatedAt" : "2026-08-10T14:12:49.549299600+08:00",
-    "dailyAvg" : "7.81710000",
-    "dailySum" : "7.8171",
-    "rawRef" : "raw/formal/official_web/FX.EUR.CNY.PBOC_MID/2026/08/pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json",
-    "rawValue" : "7.8171",
-    "runId" : "pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
-    "aggregateRefs" : [ "processed/aggregate/FX.EUR.CNY.PBOC_MID/month/2026.csv", "processed/aggregate/FX.EUR.CNY.PBOC_MID/quarter/2026.csv", "processed/aggregate/FX.EUR.CNY.PBOC_MID/halfyear/2026.csv", "processed/aggregate/FX.EUR.CNY.PBOC_MID/year/2026.csv" ],
-    "dailyRef" : "processed/daily/FX.EUR.CNY.PBOC_MID/2026-08.csv",
-    "rawFileSha256" : "24ea5ff5bf274cd6f6498fe12b617c199ee695f02c380f72e89e6f89bc5f54f3",
-    "itemId" : "FX.EUR.CNY.PBOC_MID",
-    "aggregateCalculatedAt" : "2026-08-10T14:12:49.549299600+08:00"
-  },
-  "publishGate" : {
-    "eurPublishRef" : "staging/pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json#recordVersion=4",
-    "eurPublishedAt" : "2026-08-10T14:12:49.549299600+08:00",
-    "usdPublishRef" : "staging/pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json#recordVersion=4",
-    "usdPublishedAt" : "2026-08-10T14:12:49.296279100+08:00"
-  },
-  "repeatTrigger" : {
-    "noDoublePublish" : true,
-    "outcome" : "FROZEN_CONFLICT_EVIDENCE",
-    "failureKind" : "PERSISTENCE_FAILED",
-    "dailyBytesUnchanged" : true,
-    "aggregateBytesUnchanged" : true
-  },
-  "restart" : {
-    "secondSpringContext" : true,
-    "outcome" : "PASS",
-    "offlineReadOnly" : true,
-    "aggregateReader" : "AggregateReadService",
-    "aggregateDecodedIdentical" : true,
-    "publishedRecordsReadable" : true,
-    "dailyDecodedIdentical" : true,
-    "noProcessYearOrRebuild" : true,
-    "filesUnchanged" : true
-  },
-  "independentRecompute" : {
-    "precision" : "BigDecimal from String, HALF_UP at scale 8, no float/double",
-    "eurExpectedDailyAvg" : "7.81710000",
-    "usdActualDailyAvg" : "6.78840000",
-    "eurActualDailyAvg" : "7.81710000",
-    "usdExpectedDailyAvg" : "6.78840000"
-  },
-  "result" : "PASS"
+﻿{
+    "acceptanceTest":  "AT-SRC-002 Day1-Day2 PBOC dual-currency real acquisition and file closed loop",
+    "executedAt":  "2026-08-10T14:56:14+08:00",
+    "javaRuntime":  "17.0.19",
+    "springBootVersion":  "3.3.6",
+    "dataRoot":  "D:\\Dev\\Temp\\opencode\\at-src-002-run-dec056",
+    "realSource":  "涓浗浜烘皯閾惰瀹樼綉锛堟巿鏉冧腑鍥藉姹囦氦鏄撲腑蹇冨叕甯冿級",
+    "businessDate":  "2026-08-10",
+    "acquisitionId":  "pboc-acq-2026081009005136814-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
+    "payloadSha256":  "d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
+    "usd":  {
+                "aggregateCalculatedAt":  "2026-08-10T14:56:13.087911600+08:00",
+                "itemId":  "FX.USD.CNY.PBOC_MID",
+                "rawFileSha256":  "2677fda44a15abe4eff4479812ecdfc6e4861cfa3cf4fbd2c3f34b8859270bb2",
+                "dailyRef":  "processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv",
+                "aggregateRefs":  [
+                                      "processed/aggregate/FX.USD.CNY.PBOC_MID/month/2026.csv",
+                                      "processed/aggregate/FX.USD.CNY.PBOC_MID/quarter/2026.csv",
+                                      "processed/aggregate/FX.USD.CNY.PBOC_MID/halfyear/2026.csv",
+                                      "processed/aggregate/FX.USD.CNY.PBOC_MID/year/2026.csv"
+                                  ],
+                "runId":  "pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
+                "rawValue":  "6.7884",
+                "rawRef":  "raw/formal/official_web/FX.USD.CNY.PBOC_MID/2026/08/pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json",
+                "dailySum":  "6.7884",
+                "dailyAvg":  "6.78840000",
+                "dailyUpdatedAt":  "2026-08-10T14:56:13.087911600+08:00"
+            },
+    "eur":  {
+                "aggregateCalculatedAt":  "2026-08-10T14:56:13.331310600+08:00",
+                "itemId":  "FX.EUR.CNY.PBOC_MID",
+                "rawFileSha256":  "2600620fdc5ad95de59e2eb2d2a5df3b1f413291ab2725a37eb58e67bd7b3457",
+                "dailyRef":  "processed/daily/FX.EUR.CNY.PBOC_MID/2026-08.csv",
+                "aggregateRefs":  [
+                                      "processed/aggregate/FX.EUR.CNY.PBOC_MID/month/2026.csv",
+                                      "processed/aggregate/FX.EUR.CNY.PBOC_MID/quarter/2026.csv",
+                                      "processed/aggregate/FX.EUR.CNY.PBOC_MID/halfyear/2026.csv",
+                                      "processed/aggregate/FX.EUR.CNY.PBOC_MID/year/2026.csv"
+                                  ],
+                "runId":  "pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
+                "rawValue":  "7.8171",
+                "rawRef":  "raw/formal/official_web/FX.EUR.CNY.PBOC_MID/2026/08/pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json",
+                "dailySum":  "7.8171",
+                "dailyAvg":  "7.81710000",
+                "dailyUpdatedAt":  "2026-08-10T14:56:13.331310600+08:00"
+            },
+    "publishGate":  {
+                        "usdPublishedAt":  "2026-08-10T14:56:13.087911600+08:00",
+                        "usdPublishRef":  "staging/pboc-usd-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json#recordVersion=4",
+                        "eurPublishedAt":  "2026-08-10T14:56:13.331310600+08:00",
+                        "eurPublishRef":  "staging/pboc-eur-20260810-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json#recordVersion=4"
+                    },
+    "repeatTrigger":  {
+                          "outcome":  "IDEMPOTENT_REPLAY",
+                          "noDoublePublish":  true,
+                          "samePayloadSha256":  true,
+                          "noConflictEvidence":  true,
+                          "sameBusinessKey":  true,
+                          "noDuplicateRaw":  true,
+                          "aggregateBytesUnchanged":  true,
+                          "receivedAtChanged":  true,
+                          "noRawReceiptConflict":  true,
+                          "dailyBytesUnchanged":  true
+                      },
+    "restart":  {
+                    "filesUnchanged":  true,
+                    "noProcessYearOrRebuild":  true,
+                    "dailyDecodedIdentical":  true,
+                    "publishedRecordsReadable":  true,
+                    "aggregateDecodedIdentical":  true,
+                    "aggregateReader":  "AggregateReadService",
+                    "offlineReadOnly":  true,
+                    "outcome":  "PASS",
+                    "secondSpringContext":  true
+                },
+    "independentRecompute":  {
+                                 "usdExpectedDailyAvg":  "6.78840000",
+                                 "eurActualDailyAvg":  "7.81710000",
+                                 "usdActualDailyAvg":  "6.78840000",
+                                 "eurExpectedDailyAvg":  "7.81710000",
+                                 "precision":  "BigDecimal from String, HALF_UP at scale 8, no float/double"
+                             },
+    "rawFirst":  {
+                     "acquisitionManifest":  "COMMITTED",
+                     "sourceAcquisitionRef":  "raw/source/pboc-acq-2026081009005136814-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a.json",
+                     "parseFailureKeepsSourceRaw":  true,
+                     "itemRawAcquisitionRefTraceable":  true
+                 },
+    "realGateProperty":  "at-src-002.real",
+    "realGateValue":  "true",
+    "tests":  1,
+    "failures":  0,
+    "errors":  0,
+    "skipped":  0,
+    "runnerEvidenceRef":  "TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml",
+    "result":  "PASS",
+    "runnerEvidenceSha256":  "2fa63b319def9c8b0588315a77d8d6306bae6bc95ff25f60807c53930624ea5f",
+    "repeatTriggerOutcome":  "IDEMPOTENT_REPLAY"
 }

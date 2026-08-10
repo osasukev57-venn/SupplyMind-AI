@@ -1,9 +1,12 @@
 package com.supplymind.foundation.storage;
 
 import com.supplymind.foundation.codec.JsonV1Codec;
+import com.supplymind.foundation.model.AccessMethod;
 import com.supplymind.foundation.model.ManifestV1;
+import com.supplymind.foundation.model.Mode;
 import com.supplymind.foundation.model.MonitorSeriesConfigV1;
 import com.supplymind.foundation.model.MonitorSeriesItemV1;
+import com.supplymind.foundation.model.ProviderType;
 import com.supplymind.foundation.model.RawReceiptV1;
 
 import java.io.IOException;
@@ -13,7 +16,9 @@ import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 /** Immutable per-item raw persistence with same-hash idempotency and conflict evidence. */
 public final class RawReceiptStore {
@@ -79,6 +84,88 @@ public final class RawReceiptStore {
                     )));
             throw new RawReceiptConflictException(conflictRef, conflict);
         }
+    }
+
+    /**
+     * DEC-056 business-key lookup: the formal per-item raw record for one provider+item+
+     * businessDate, used to decide IDEMPOTENT REPLAY (same payloadSha256) versus CONFLICT
+     * (different payloadSha256) before any incoming write.
+     */
+    public Optional<RawReceiptV1> findByBusinessKey(
+            Mode mode, ProviderType providerType, String itemId, String businessDate
+    ) {
+        Objects.requireNonNull(mode, "mode");
+        Objects.requireNonNull(providerType, "providerType");
+        Objects.requireNonNull(itemId, "itemId");
+        Objects.requireNonNull(businessDate, "businessDate");
+        Path itemDir = dataRoot.resolveInternalRelative(
+                "raw/" + mode.wireValue() + "/" + providerType.wireValue() + "/" + itemId);
+        if (!Files.isDirectory(itemDir)) {
+            return Optional.empty();
+        }
+        try (Stream<Path> walk = Files.walk(itemDir)) {
+            List<Path> candidates = walk.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .filter(path -> !path.getFileName().toString().endsWith(".manifest.json"))
+                    .toList();
+            for (Path candidate : candidates) {
+                try {
+                    RawReceiptV1 receipt = JsonV1Codec.decodeFile(
+                            Files.readAllBytes(candidate), RawReceiptV1.class);
+                    if (businessDate.equals(receipt.sourceBusinessDate())) {
+                        return Optional.of(receipt);
+                    }
+                } catch (IOException | RuntimeException ignored) {
+                    // A corrupt candidate is not a business-key match; the store never rewrites it here.
+                }
+            }
+        } catch (IOException exception) {
+            throw new StorageException("Unable to scan raw business keys under " + itemDir, exception);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * DEC-056 conflict evidence for the same business key with a different official payload:
+     * the original formal raw is preserved untouched and a frozen RawConflictEvidenceV1 with
+     * its adjacent manifest is committed before the caller fails closed. Returns the evidence ref.
+     */
+    public String writeBusinessKeyConflictEvidence(
+            RawReceiptV1 incoming, RawReceiptV1 existing, OffsetDateTime now
+    ) {
+        Objects.requireNonNull(incoming, "incoming");
+        Objects.requireNonNull(existing, "existing");
+        Objects.requireNonNull(now, "now");
+        String conflictId = transactionId("raw-conflict");
+        String conflictRef = DataPaths.rawConflictRef(
+                incoming.itemId(), incoming.receivedAt(), incoming.runId(), conflictId);
+        Path existingRawPath = dataRoot.resolveDataRef(existing.rawRef());
+        if (!Files.isRegularFile(existingRawPath)) {
+            throw new StorageException("Business-key conflict references a missing formal raw: " + existing.rawRef());
+        }
+        RawConflictEvidenceV1 evidence = new RawConflictEvidenceV1(
+                "1.0",
+                conflictId,
+                incoming.itemId(),
+                incoming.runId(),
+                existing.rawRef(),
+                FileDigest.sha256(existingRawPath),
+                FileDigest.sha256(JsonV1Codec.encodeFile(incoming)),
+                incoming,
+                now
+        );
+        byte[] evidenceBytes = JsonV1Codec.encodeFile(evidence);
+        byte[] evidenceManifestBytes = reusableOrRebuiltManifest(
+                conflictRef, evidenceBytes, List.of(incoming.runId()), now);
+        fileStore.commit(transactionId("raw-conflict-write"), DirtyTransactionType.SINGLE_FILE,
+                now, List.of(new FileTransactionTarget(
+                        DirtyTargetRole.BUSINESS_FILE,
+                        conflictRef,
+                        evidenceBytes,
+                        evidenceManifestBytes,
+                        true
+                )));
+        return conflictRef;
     }
 
     private void requireResolvableConfigVersion(RawReceiptV1 receipt) {

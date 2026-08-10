@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 2（D1-T01～D1-T05 均`DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`，Git 基线 `day1-complete`；D2-T01～D2-T04 均`DONE`；D2-T05=`REVIEW_PENDING`（实施完成，AT-SRC-002 正式运行=`PASS`，真实联网 businessDate=2026-08-10 USD=6.7884/EUR=7.8171，等待 Review 收口）；AT-SRC-002=`PASS`；Day 2 Gate candidate=`PASS`（等待 Review closure））  
+> 当前阶段：Day 2（D1-T01～D1-T05 均`DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`，Git 基线 `day1-complete`；D2-T01～D2-T04 均`DONE`；D2-T05=`REVIEW_PENDING`（DEC-056 修复后 AT-SRC-002 正式重跑=`PASS_CANDIDATE`，真实联网 businessDate=2026-08-10 USD=6.7884/EUR=7.8171，awaiting fixed-commit Review）；AT-SRC-002=`PASS_CANDIDATE`；Day 2 Gate candidate=`PASS`（等待 Review closure））  
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -56,19 +56,19 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 2 |
-| 当前任务编号 | D2-T05 PBOC调度、幂等、重启端到端硬门（`TaskExecutionStatus=REVIEW_PENDING`，`statusReason=AT_SRC_002_PASS_DUAL_REAL_CURRENCY_E2E_20260810`；AT-SRC-002 正式运行=PASS）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01～D2-T04 均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050～055 生效。D2-T05 已实施（scheduler/幂等批次/端到端验收）并正式执行 AT-SRC-002=`PASS`（真实联网：businessDate=2026-08-10，USD/CNY=6.7884、EUR/CNY=7.8171，payload SHA=`d7d03779…0544a`，surefire gated 1/1，Evidence=`docs/evidence/AT-SRC-002/`）；提交 Review 门禁，等待 Sol/Second-party Review 收口 DONE。 |
+| 当前任务编号 | D2-T05 PBOC调度、幂等、重启端到端硬门（`TaskExecutionStatus=REVIEW_PENDING`，`statusReason=DEC056_FIX_AT_SRC_002_PASS_CANDIDATE_20260810`；DEC-056 修复后 AT-SRC-002 正式重跑=PASS_CANDIDATE）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01～D2-T04 均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；DEC-050～056 生效。D2-T05：DEC-056（raw-first：RawAcquisitionV1 先于解析持久化；业务键幂等：同 key 同 payload=IDEMPOTENT、异 payload=CONFLICT；gated runner 证据固化）已实施；AT-SRC-002 修复后正式重跑=`PASS_CANDIDATE`（真实联网，businessDate=2026-08-10，USD=6.7884、EUR=7.8171，payload SHA=`d7d03779…0544a`，surefire 1/1，runner XML 已固化）；awaiting fixed-commit Review，提交 Review 门禁。 |
 | 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）、DEC-053（arithmetic-mean-v1接受版本化默认）、DEC-054（weekday-asia-shanghai-v1接受版本化默认）、DEC-055（aggregate.calculatedAt=max(daily.updatedAt)确定性语义）已生效 |
 | 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS）；D2-T03（Implementation Review PASS + EXT Gate PASS，commit=607e859）；D2-T04（1ac8233→1178307，Sol/Second-party Final Delta Review 双PASS，commit=1178307）。 |
 | 正在进行任务 | D2-T05（`TaskExecutionStatus=REVIEW_PENDING`，实施已完成，AT-SRC-002=PASS，等待 Review 收口）。 |
 | 阻塞项 | D2-T05 Review 门禁待 Sol/Second-party Review 最终裁决。AT-SRC-002=`PASS`（真实执行）；Day 2 总门禁仍等待 D2-T05 Review 收口（不得自行宣布 Day 2 COMPLETE）。 |
-| 最近验收结果 | D2-T01～D2-T04=`DONE`；D2-T05 实施 + AT-SRC-002 正式执行=`PASS`（双币真实全链 raw→validation→publish→daily→aggregate→幂等→离线重启读取→独立复算；businessDate=2026-08-10，USD=6.7884→6.78840000、EUR=7.8171→7.81710000）。 |
+| 最近验收结果 | D2-T01～D2-T04=`DONE`；D2-T05：24d24b6 候选 PASS 经 Review+Fact Adjudication 判无效（raw-first FAIL/idempotency AMBIGUOUS/gated evidence FAIL）→ DEC-056 落地 → 修复后 AT-SRC-002 正式重跑=`PASS_CANDIDATE`（双币真实全链 raw acquisition→item raw→validation→publish→daily→四级 aggregate→幂等 replay→离线只读重启→独立复算；businessDate=2026-08-10，USD=6.7884→6.78840000、EUR=7.8171→7.81710000）。 |
 | 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 计算/日历口径已接受版本化默认（DEC-053/054）；weekday-asia-shanghai-v1 不构成完整法定节假日/调休/停报/特殊交易日日历，未来以新 calendarVersion 升级。 |
 | 下一任务 | D2-T05 Review 通过后收口 `DONE` → Day 2 Gate closure 评审（候选 PASS）→ 按冻结 Gate 进入 Day 3 前须满足 AT-SRC-002 已 PASS 且 Day 2 收口；本窗口不开始 Day 3/原材料。 |
 | 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；全套 165 项测试（36 classes，0 failures，0 errors）+ 真实联网 AT-SRC-002 双币端到端验收（surefire gated 1/1）通过。 |
-| 最近一次Git提交 | 本轮将提交 `test: execute D2-T05 AT-SRC-002 acceptance`；前序 checkpoint=`d8c5c11`（D2-T05 readyState 纠正为 READY）。 |
+| 最近一次Git提交 | 本轮将提交 `fix: close D2-T05 raw-first and idempotency findings`；前序 checkpoint=`24d24b6`（候选 PASS，已判无效）。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，D2-T05 实施与 AT-SRC-002 正式验收：真实联网采集（非 fixture/mock），scheduler/幂等批次最小实现（默认禁用），端到端验收测试 `AtSrc002AcceptanceTest`（gated `-Dat-src-002.real=true`）；Evidence=`docs/evidence/AT-SRC-002/`（md+json）；D2-T05=`REVIEW_PENDING`、AT-SRC-002=`PASS`、Day 2 Gate candidate=`PASS`（等待 Review closure）、原材料开发=`NOT_ALLOWED`；未开始 Day 3。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，D2-T05 DEC-056 Findings Fix：先落 DEC-056（raw-first acquisition boundary + 业务键幂等 + AT runner 证据保存），实现 RawAcquisitionV1/RawReceiptV1.acquisitionRef/RawAcquisitionStore/业务键冲突证据，修正 Provider 顺序（transport→acquisition persist→parse），修正 AT 重复触发断言为 IDEMPOTENT（receivedAt 不再冲突），新增确定性 raw-first/冲突契约测试，固化 runner XML+SHA 到 `docs/evidence/AT-SRC-002/`，修复后真实 gated AT 重跑=`PASS_CANDIDATE`；D2-T05=`REVIEW_PENDING`、AT-SRC-002=`PASS_CANDIDATE`、Day 2 Gate candidate=`PASS`（等待 Review closure）、原材料开发=`NOT_ALLOWED`；未开始 Day 3。 |
 | 最后更新时间 | 2026-08-10（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照

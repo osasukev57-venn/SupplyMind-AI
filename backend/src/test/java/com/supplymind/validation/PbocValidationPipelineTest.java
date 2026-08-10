@@ -616,9 +616,10 @@ class PbocValidationPipelineTest {
                 "base64",
                 Base64.getEncoder().encodeToString(payload),
                 JsonV1Codec.sha256LowerHex(payload),
-                "1美元对人民币",
-                RECEIVED_AT
-        );
+                  "1美元对人民币",
+                  RECEIVED_AT,
+                  null
+          );
     }
 
     private static byte[] fixtureBytes(String name) throws IOException {

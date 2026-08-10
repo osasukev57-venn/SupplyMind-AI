@@ -148,8 +148,9 @@ class RawAndConfigStoreTest {
                 "base64",
                 Base64.getEncoder().encodeToString(payload),
                 JsonV1Codec.sha256LowerHex(payload),
-                "test/contract fixture field",
-                NOW
-        );
+                  "test/contract fixture field",
+                  NOW,
+                  null
+          );
     }
 }

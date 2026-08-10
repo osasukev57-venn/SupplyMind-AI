@@ -314,7 +314,8 @@ class PublishedQueryServiceTest {
                 Base64.getEncoder().encodeToString(payload),
                 JsonV1Codec.sha256LowerHex(payload),
                 "1美元对人民币",
-                receivedAt
+                receivedAt,
+                null
         );
     }
 

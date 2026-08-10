@@ -36,8 +36,7 @@ public record RawConflictEvidenceV1(
         }
         Objects.requireNonNull(incomingReceipt, "incomingReceipt");
         Objects.requireNonNull(detectedAt, "detectedAt");
-        if (!itemId.equals(incomingReceipt.itemId()) || !runId.equals(incomingReceipt.runId())
-                || !existingRawRef.equals(incomingReceipt.rawRef())) {
+        if (!itemId.equals(incomingReceipt.itemId()) || !runId.equals(incomingReceipt.runId())) {
             throw new StorageException("RawConflictEvidenceV1 must identify its incoming RawReceiptV1 exactly");
         }
     }

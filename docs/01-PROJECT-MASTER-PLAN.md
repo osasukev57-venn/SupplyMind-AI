@@ -404,6 +404,7 @@ schema v1由上述字段、黄金文件和数据字典共同约束。D1-T03必�
 8. 第7条的同transactionId、合法命名DirtyMarkerV1候选组是“无canonical dirty marker时不得自动采用tmp/bak”的唯一例外。除此之外，无dirty marker的孤立tmp/bak、manifest hash不匹配或无法归属事务的文件不得自动当作正式数据。可证明为已完成事务的残留才可删除；其余保留并报告运维冲突。任何manifest重建都必须重新验证目标schema、字节长度和fileSha256，旧manifest不得被当作业务真值。
 9. 同一item+period使用单写锁；Electron/Spring Boot只允许一个写实例。获取幂等键至少包含provider、item、businessDate/采集窗口；同一次多item响应额外保留共享acquisitionId。聚合前建立dirty marker，全部下游文件及manifest成功后才清除。
 10. 重复执行通过业务键upsert且不产生重复行。中断、文件占用、manifest缺失/陈旧、ATOMIC_MOVE不可用及启动恢复测试必须证明：不存在半文件、raw覆盖、无来源残留或损坏数据静默可见。
+11. 交叉引用（DEC-056，2026-08-10，D2-T05 正式裁决；不修改以上冻结条款）：§8.5.6/8.5.9-10 的"hash 幂等/冲突"在业务层细化为——外部 HTTP detail 响应先持久化 source-level `RawAcquisitionV1`（`data/raw/source/<acquisitionId>.json`，原子+manifest）再解析；重复采集以 stable business key（provider+item+businessDate）+ `payloadSha256` 判定：相同=IDEMPOTENT REPLAY（复用正式 rawRef，`receivedAt` 变化不构成冲突），不同=CONFLICT（保留原 raw、写证据、fail-closed）。`fileSha256` 仅用于文件完整性与 manifest 校验，不直接等同业务 payload identity。详见 DEC-056 与 FILE-SCHEMA-V1。
 
 ## 9. 精度与聚合规则
 

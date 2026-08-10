@@ -188,7 +188,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D2-T05 PBOC调度、幂等、重启端到端硬门
 
-- **优先级/状态：** P0-最高 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=AT_SRC_002_PASS_DUAL_REAL_CURRENCY_E2E_20260810`。AT-SRC-002 正式执行=PASS（`-Dat-src-002.real=true` 真实联网，businessDate=2026-08-10，USD/CNY=6.7884、EUR/CNY=7.8171，payload SHA=`d7d03779…0544a`；surefire 1/1）；scheduler/幂等批次（`scheduling/PbocDay2CollectionService`+`PbocDay2Scheduler`，默认禁用）与端到端验收（`AtSrc002AcceptanceTest`）已实施；等待 Sol/Second-party Review 后收口 DONE；不得在 Review 前自行 DONE。
+- **优先级/状态：** P0-最高 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=DEC056_FIX_AT_SRC_002_PASS_CANDIDATE_20260810`。DEC-056（raw-first + 业务键幂等 + gated runner 证据）已实施：RawAcquisitionV1 source 证据先于解析持久化、同业务键同 payload=IDEMPOTENT、同业务键异 payload=CONFLICT fail-closed、runner XML 固化；AT-SRC-002 修复后正式重跑=`PASS_CANDIDATE`（真实联网 businessDate=2026-08-10 USD=6.7884/EUR=7.8171，surefire 1/1，Evidence=`docs/evidence/AT-SRC-002/`，awaiting fixed-commit Review）；等待 Sol/Second-party Review 收口 DONE；不得在 Review 前自行 DONE。
 - **任务目标：** 完成真实定时/立即采集、raw先写、校验、发布、daily、聚合和重启读取的双币端到端验收。
 - **对应需求：** SUP-01、SUP-02、F02、F03、H01-H03。
 - **输入：** D1-T04、D2-T01至D2-T04、AT-SRC-002。

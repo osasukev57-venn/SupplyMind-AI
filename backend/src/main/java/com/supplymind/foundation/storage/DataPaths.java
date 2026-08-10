@@ -38,6 +38,12 @@ public final class DataPaths {
         return "staging/" + runId + ".json";
     }
 
+    /** DEC-056 source-level raw acquisition evidence path, derived from the acquisitionId. */
+    public static String acquisitionRef(String acquisitionId) {
+        requireIdentifier(acquisitionId, "acquisitionId");
+        return "raw/source/" + acquisitionId + ".json";
+    }
+
     public static String quarantineRef(String itemId, OffsetDateTime receivedAt, String runId) {
         requireIdentifier(itemId, "itemId");
         requireIdentifier(runId, "runId");
@@ -72,8 +78,7 @@ public final class DataPaths {
         return "processed/aggregate/" + itemId + "/" + grain + "/" + year + ".csv";
     }
 
-    public static String rawConflictRef(String itemId, OffsetDateTime receivedAt, String runId, String conflictId) {
-        requireIdentifier(itemId, "itemId");
+    public static String rawConflictRef(String itemId, OffsetDateTime receivedAt, String runId, String conflictId) {        requireIdentifier(itemId, "itemId");
         requireIdentifier(runId, "runId");
         requireIdentifier(conflictId, "conflictId");
         return "runtime/conflicts/raw/" + itemId + "/" + shanghaiYearMonth(receivedAt)
@@ -188,6 +193,10 @@ public final class DataPaths {
                 && PROVIDER_TYPES.contains(segments[2]) && IDENTIFIER.matcher(segments[3]).matches()
                 && YEAR.matcher(segments[4]).matches() && MONTH.matcher(segments[5]).matches()
                 && segments[6].matches("[A-Za-z0-9._-]+\\.json")) {
+            return true;
+        }
+        if (segments.length == 3 && segments[0].equals("raw") && segments[1].equals("source")
+                && segments[2].matches("[A-Za-z0-9._-]+\\.json")) {
             return true;
         }
         if (segments.length == 2 && segments[0].equals("staging") && segments[1].matches("[A-Za-z0-9._-]+\\.json")) {

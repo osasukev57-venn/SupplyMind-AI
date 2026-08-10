@@ -138,6 +138,7 @@ class PbocRawClosedLoopSmokeGateTest {
         PbocOfficialWebDataProvider provider = new PbocOfficialWebDataProvider(
                 root,
                 new RawReceiptStore(root, fileStore, SHANGHAI_CLOCK),
+                new com.supplymind.foundation.storage.RawAcquisitionStore(root, fileStore, SHANGHAI_CLOCK),
                 fileStore,
                 SHANGHAI_CLOCK,
                 disconnectedTransport(),
@@ -387,6 +388,7 @@ class PbocRawClosedLoopSmokeGateTest {
         PbocOfficialWebDataProvider provider = new PbocOfficialWebDataProvider(
                 dataRoot,
                 new RawReceiptStore(dataRoot, fileStore, SHANGHAI_CLOCK),
+                new com.supplymind.foundation.storage.RawAcquisitionStore(dataRoot, fileStore, SHANGHAI_CLOCK),
                 fileStore,
                 SHANGHAI_CLOCK,
                 disconnectedTransport(),

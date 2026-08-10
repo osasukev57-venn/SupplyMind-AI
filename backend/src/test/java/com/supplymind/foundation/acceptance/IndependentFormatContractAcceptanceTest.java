@@ -56,7 +56,7 @@ class IndependentFormatContractAcceptanceTest {
     private static final String SOURCE_FINGERPRINT = "a8fdb8ba84aeec216d4453436ae4a29d95fc29245e1892f038dd9773b7391deb";
     private static final String PAYLOAD_BASE64 = "RDEtVDAzIFRFU1QvQ09OVFJBQ1QgRklYVFVSRSBPTkxZOyBOT1QgUkVBTCBQQk9D";
     private static final String PAYLOAD_SHA256 = "553d58a4dd628811a45eb341a6b7ffe85346934415e6a5dec82145abc8ec79d9";
-    private static final String RAW_JSON_SHA256 = "6d2ba78f0d9a8e97409708e08e886d6dddaa7af3af56b99560eee29000982886";
+    private static final String RAW_JSON_SHA256 = "589bd59e6035ea1b4559f1c702f343c3137cf7d6715b5e99eb17c735a98094cc";
 
     // These fields are intentionally literal, not CsvV1Codec.DAILY_HEADER / AGGREGATE_HEADER.
     private static final String DAILY_HEADER = "schemaVersion,businessDate,itemId,providerType,actualSourceName,accessMethod,"
@@ -133,7 +133,7 @@ class IndependentFormatContractAcceptanceTest {
         assertArrayEquals(expectedMarker, actualMarker,
                 "DirtyMarker JSON must use the independently hand-frozen UTF-8/no-BOM/LF contract bytes");
         assertEquals(RAW_JSON_SHA256, sha256(actualRaw));
-        assertEquals("59ec19022974e24b7e1ade8b8fe15911dd8a10ccfd8ec4050f2af808a64b7052", sha256(actualMarker));
+        assertEquals("7fd724496ac1d5e30c0cfbffe0a5b4db991baade8109888fcbebd4bd71e0794f", sha256(actualMarker));
         assertEquals(SOURCE_FINGERPRINT, sha256(SOURCE_IDENTITY_JSON.getBytes(StandardCharsets.UTF_8)),
                 "sourceFingerprint is an independently frozen JDK SHA-256 vector, not a production CanonicalJson oracle");
         assertTrue(new String(actualRaw, StandardCharsets.UTF_8).contains("NOT REAL PBOC"));
@@ -225,8 +225,8 @@ class IndependentFormatContractAcceptanceTest {
                 AccessMethod.SYNTHETIC_DEMO, 2, SOURCE_NAME, null, "D1-T03-review-fix-raw-v1",
                 "FX.EUR.CNY.INDEPENDENT", "2026-08-03", "2026-08-03", null, null, receivedAt, null,
                 "100.0", "CNY/1 EUR", "CNY", null, null, "text/plain; charset=utf-8", "base64",
-                PAYLOAD_BASE64, PAYLOAD_SHA256, "D1-T03-review-fix-anchor", receivedAt
-        );
+  PAYLOAD_BASE64, PAYLOAD_SHA256, "D1-T03-review-fix-anchor", receivedAt, null
+  );
     }
 
     private DirtyMarkerV1 dirtyMarker() {

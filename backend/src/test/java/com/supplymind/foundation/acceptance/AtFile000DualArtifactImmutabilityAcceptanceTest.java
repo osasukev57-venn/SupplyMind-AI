@@ -422,7 +422,7 @@ class AtFile000DualArtifactImmutabilityAcceptanceTest {
                 source.sourcePublishedAtRaw(), source.sourcePublishedAt(), source.receivedAt(), source.inputAt(),
                 source.rawValue(), source.rawUnit(), source.rawCurrency(), source.operatorRef(), source.httpStatus(),
                 source.contentType(), source.payloadEncoding(), source.payloadBase64(), source.payloadSha256(),
-                source.matchAnchor(), source.updatedAt());
+                source.matchAnchor(), source.updatedAt(), null);
     }
 
     private RawReceiptV1 copyWithPayload(RawReceiptV1 source, byte[] payload) {
@@ -434,7 +434,7 @@ class AtFile000DualArtifactImmutabilityAcceptanceTest {
                 source.sourceBusinessDate(), source.sourcePublishedAtRaw(), source.sourcePublishedAt(), source.receivedAt(),
                 source.inputAt(), source.rawValue(), source.rawUnit(), source.rawCurrency(), source.operatorRef(),
                 source.httpStatus(), source.contentType(), source.payloadEncoding(), encodedPayload, sha256(payload),
-                source.matchAnchor(), source.updatedAt());
+                source.matchAnchor(), source.updatedAt(), null);
     }
 
     private byte[] fixtureBytes(String name) throws IOException {

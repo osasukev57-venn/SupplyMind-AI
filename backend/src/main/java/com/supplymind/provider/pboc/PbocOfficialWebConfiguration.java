@@ -22,12 +22,22 @@ public class PbocOfficialWebConfiguration {
     PbocAnnouncementParser pbocAnnouncementParser() { return new PbocAnnouncementParser(); }
 
     @Bean
+    com.supplymind.foundation.storage.RawAcquisitionStore rawAcquisitionStore(
+            DataRoot dataRoot, AtomicFileStore atomicFileStore, Clock foundationClock
+    ) {
+        return new com.supplymind.foundation.storage.RawAcquisitionStore(dataRoot, atomicFileStore, foundationClock);
+    }
+
+    @Bean
     PbocOfficialWebDataProvider pbocOfficialWebDataProvider(
-            DataRoot dataRoot, RawReceiptStore rawReceiptStore, AtomicFileStore atomicFileStore,
+            DataRoot dataRoot, RawReceiptStore rawReceiptStore,
+            com.supplymind.foundation.storage.RawAcquisitionStore rawAcquisitionStore,
+            AtomicFileStore atomicFileStore,
             Clock foundationClock, PbocHttpTransport transport, PbocAnnouncementParser parser
     ) {
-        return new PbocOfficialWebDataProvider(dataRoot, rawReceiptStore, atomicFileStore, foundationClock, transport,
-                parser, event -> LOGGER.info("pboc_official_web outcome={} stage={} url={} httpStatus={} exception={}",
+        return new PbocOfficialWebDataProvider(dataRoot, rawReceiptStore, rawAcquisitionStore, atomicFileStore,
+                foundationClock, transport, parser, event -> LOGGER.info(
+                        "pboc_official_web outcome={} stage={} url={} httpStatus={} exception={}",
                         event.outcome(), event.stage(), event.sanitizedUrl(), event.httpStatus(), event.exceptionType()));
     }
 }

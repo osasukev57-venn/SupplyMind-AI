@@ -177,7 +177,7 @@ class DualCurrencyRawLifecycleAcceptanceTest {
                 original.sourcePublishedAtRaw(), original.sourcePublishedAt(), original.receivedAt(), original.inputAt(),
                 original.rawValue(), original.rawUnit(), original.rawCurrency(), original.operatorRef(), original.httpStatus(),
                 original.contentType(), original.payloadEncoding(), original.payloadBase64(), original.payloadSha256(),
-                original.matchAnchor(), original.updatedAt());
+                original.matchAnchor(), original.updatedAt(), null);
     }
 
     private RawReceiptV1 copyWithPayload(RawReceiptV1 original, byte[] payload) {
@@ -189,7 +189,7 @@ class DualCurrencyRawLifecycleAcceptanceTest {
                 original.sourceBusinessDate(), original.sourcePublishedAtRaw(), original.sourcePublishedAt(), original.receivedAt(),
                 original.inputAt(), original.rawValue(), original.rawUnit(), original.rawCurrency(), original.operatorRef(),
                 original.httpStatus(), original.contentType(), original.payloadEncoding(), encodedPayload,
-                JsonV1Codec.sha256LowerHex(payload), original.matchAnchor(), original.updatedAt());
+                JsonV1Codec.sha256LowerHex(payload), original.matchAnchor(), original.updatedAt(), null);
     }
 
     private byte[] fixtureBytes(String name) throws IOException {

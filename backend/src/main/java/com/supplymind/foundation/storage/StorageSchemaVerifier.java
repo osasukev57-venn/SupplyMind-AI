@@ -5,6 +5,7 @@ import com.supplymind.foundation.codec.JsonV1Codec;
 import com.supplymind.foundation.model.LifecycleTimelineV1;
 import com.supplymind.foundation.model.MonitorSeriesConfigV1;
 import com.supplymind.foundation.model.QuarantineProjectionV1;
+import com.supplymind.foundation.model.RawAcquisitionV1;
 import com.supplymind.foundation.model.RawReceiptV1;
 
 /** Re-reads known D1-T03 business documents before an atomic target becomes visible. */
@@ -20,6 +21,11 @@ final class StorageSchemaVerifier {
                     && !dataRef.equals(DataPaths.configHistoryRef(configuration.configVersion()))) {
                 throw new StorageException("config/history reference must match MonitorSeriesConfigV1.configVersion: "
                         + dataRef);
+            }
+        } else if (dataRef.startsWith("raw/source/")) {
+            RawAcquisitionV1 acquisition = JsonV1Codec.decodeFile(bytes, RawAcquisitionV1.class);
+            if (!dataRef.equals(acquisition.acquisitionRef())) {
+                throw new StorageException("RawAcquisitionV1.acquisitionRef must match its atomic target: " + dataRef);
             }
         } else if (dataRef.startsWith("raw/")) {
             RawReceiptV1 receipt = JsonV1Codec.decodeFile(bytes, RawReceiptV1.class);

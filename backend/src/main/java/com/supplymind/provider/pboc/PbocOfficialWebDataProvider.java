@@ -8,6 +8,7 @@ import com.supplymind.foundation.model.MonitorSeriesConfigV1;
 import com.supplymind.foundation.model.MonitorSeriesDefaults;
 import com.supplymind.foundation.model.MonitorSeriesItemV1;
 import com.supplymind.foundation.model.ProviderType;
+import com.supplymind.foundation.model.RawAcquisitionV1;
 import com.supplymind.foundation.model.RawReceiptV1;
 import com.supplymind.foundation.model.RouteDecision;
 import com.supplymind.foundation.model.SchemaV1;
@@ -20,6 +21,9 @@ import com.supplymind.foundation.storage.FileDigest;
 import com.supplymind.foundation.storage.FileTransactionTarget;
 import com.supplymind.foundation.storage.ManifestFactory;
 import com.supplymind.foundation.storage.ManifestVerifier;
+import com.supplymind.foundation.storage.RawAcquisitionStore;
+import com.supplymind.foundation.storage.RawConflictEvidenceV1;
+import com.supplymind.foundation.storage.RawReceiptConflictException;
 import com.supplymind.foundation.storage.RawReceiptStore;
 
 import java.io.IOException;
@@ -32,11 +36,16 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
  * D1-T04's only concrete Provider: legal PBOC public HTML collection to immutable raw and RECEIVED+PENDING timelines.
- * It never retries, validates, publishes, calculates, or invokes another Provider type.
+ * DEC-056 raw-first: the detail response entity bytes are persisted as a source-level RawAcquisitionV1 before any
+ * HTML decoding/parsing, so parse failures still leave verifiable source evidence. Repeat acquisition with the same
+ * stable business key and the same official payload SHA-256 is an idempotent replay; a different payload for the
+ * same business key fails closed with frozen conflict evidence. It never retries, validates, publishes, calculates,
+ * or invokes another Provider type.
  */
 public final class PbocOfficialWebDataProvider {
 
@@ -45,6 +54,7 @@ public final class PbocOfficialWebDataProvider {
 
     private final DataRoot dataRoot;
     private final RawReceiptStore rawReceiptStore;
+    private final RawAcquisitionStore acquisitionStore;
     private final AtomicFileStore atomicFileStore;
     private final Clock clock;
     private final PbocHttpTransport transport;
@@ -54,6 +64,7 @@ public final class PbocOfficialWebDataProvider {
     public PbocOfficialWebDataProvider(
             DataRoot dataRoot,
             RawReceiptStore rawReceiptStore,
+            RawAcquisitionStore acquisitionStore,
             AtomicFileStore atomicFileStore,
             Clock clock,
             PbocHttpTransport transport,
@@ -62,6 +73,7 @@ public final class PbocOfficialWebDataProvider {
     ) {
         this.dataRoot = Objects.requireNonNull(dataRoot, "dataRoot");
         this.rawReceiptStore = Objects.requireNonNull(rawReceiptStore, "rawReceiptStore");
+        this.acquisitionStore = Objects.requireNonNull(acquisitionStore, "acquisitionStore");
         this.atomicFileStore = Objects.requireNonNull(atomicFileStore, "atomicFileStore");
         this.clock = Objects.requireNonNull(clock, "clock");
         this.transport = Objects.requireNonNull(transport, "transport");
@@ -86,22 +98,25 @@ public final class PbocOfficialWebDataProvider {
 
             PbocHttpResponse detailResponse = transport.get(detailUri);
             requireSuccessfulHtml("DETAIL", detailResponse);
-            PbocAnnouncement announcement = parser.parseDetail(detailResponse.responseUri(),
-                    parser.decodeHtml(detailResponse.responseUri(), detailResponse.entityBytes(), detailResponse.contentType()));
             OffsetDateTime receivedAt = OffsetDateTime.now(clock);
             byte[] entityBytes = detailResponse.entityBytes();
             String payloadSha256 = FileDigest.sha256(entityBytes);
-            String acquisitionId = acquisitionId(announcement.businessDate().toString(), payloadSha256);
+            String acquisitionId = acquisitionId(detailUri, payloadSha256);
 
-            RawReceiptV1 usdRaw = createRawReceipt(config, usd, acquisitionId, announcement, listResponse.responseUri(),
+            RawAcquisitionV1 acquisition = createAcquisition(config, acquisitionId, listResponse.responseUri(),
                     detailResponse, entityBytes, payloadSha256, receivedAt);
-            RawReceiptV1 eurRaw = createRawReceipt(config, eur, acquisitionId, announcement, listResponse.responseUri(),
+            acquisitionStore.store(acquisition);
+
+            PbocAnnouncement announcement = parser.parseDetail(detailUri,
+                    parser.decodeHtml(detailUri, entityBytes, detailResponse.contentType()));
+
+            RawReceiptV1 usdRaw = resolveItemRaw(config, usd, acquisition, announcement, listResponse.responseUri(),
+                    detailResponse, entityBytes, payloadSha256, receivedAt);
+            RawReceiptV1 eurRaw = resolveItemRaw(config, eur, acquisition, announcement, listResponse.responseUri(),
                     detailResponse, entityBytes, payloadSha256, receivedAt);
 
-            rawReceiptStore.store(usdRaw);
-            rawReceiptStore.store(eurRaw);
-            LifecycleTimelineV1 usdTimeline = storeInitialTimeline(usdRaw);
-            LifecycleTimelineV1 eurTimeline = storeInitialTimeline(eurRaw);
+            LifecycleTimelineV1 usdTimeline = storeInitialTimelineIfMissing(usdRaw);
+            LifecycleTimelineV1 eurTimeline = storeInitialTimelineIfMissing(eurRaw);
 
             recordDiagnostic("SUCCESS", "COMPLETE", detailResponse.responseUri(), detailResponse.statusCode(), "NONE");
             return new PbocCollectionResult(acquisitionId, listResponse.responseUri(), detailResponse.responseUri(),
@@ -118,6 +133,69 @@ public final class PbocOfficialWebDataProvider {
                     exception.getClass().getSimpleName());
             throw wrapped;
         }
+    }
+
+    private RawAcquisitionV1 createAcquisition(
+            MonitorSeriesConfigV1 config,
+            String acquisitionId,
+            URI listUri,
+            PbocHttpResponse detailResponse,
+            byte[] entityBytes,
+            String payloadSha256,
+            OffsetDateTime receivedAt
+    ) {
+        return new RawAcquisitionV1(
+                SchemaV1.VERSION,
+                RawAcquisitionV1.deriveAcquisitionRef(acquisitionId),
+                acquisitionId,
+                config.mode(),
+                ProviderType.OFFICIAL_WEB,
+                AccessMethod.PUBLIC_OFFICIAL_HTML,
+                config.configVersion(),
+                MonitorSeriesDefaults.PBOC_SOURCE_NAME,
+                listUri.toString(),
+                detailResponse.responseUri().toString(),
+                detailResponse.statusCode(),
+                detailResponse.contentType(),
+                receivedAt,
+                "base64",
+                Base64.getEncoder().encodeToString(entityBytes),
+                payloadSha256);
+    }
+
+    private RawReceiptV1 resolveItemRaw(
+            MonitorSeriesConfigV1 config,
+            MonitorSeriesItemV1 item,
+            RawAcquisitionV1 acquisition,
+            PbocAnnouncement announcement,
+            URI listUri,
+            PbocHttpResponse detailResponse,
+            byte[] entityBytes,
+            String payloadSha256,
+            OffsetDateTime receivedAt
+    ) {
+        Optional<RawReceiptV1> existing = rawReceiptStore.findByBusinessKey(
+                config.mode(), item.providerType(), item.itemId(), announcement.businessDate().toString());
+        if (existing.isPresent()) {
+            RawReceiptV1 existingReceipt = existing.get();
+            if (payloadSha256.equals(existingReceipt.payloadSha256())) {
+                return existingReceipt;
+            }
+            String conflictRef = rawReceiptStore.writeBusinessKeyConflictEvidence(
+                    createRawReceipt(config, item, acquisition, announcement, listUri,
+                            detailResponse, entityBytes, payloadSha256, receivedAt),
+                    existingReceipt,
+                    receivedAt);
+            throw new PbocCollectionException(PbocCollectionFailureKind.PERSISTENCE_FAILED, "PERSISTENCE",
+                    detailResponse.responseUri(), detailResponse.statusCode(),
+                    "Same business key with a different official payload SHA-256; conflict evidence committed at "
+                            + conflictRef,
+                    new RawReceiptConflictException(conflictRef, null));
+        }
+        RawReceiptV1 raw = createRawReceipt(config, item, acquisition, announcement, listUri,
+                detailResponse, entityBytes, payloadSha256, receivedAt);
+        rawReceiptStore.store(raw);
+        return raw;
     }
 
     private MonitorSeriesConfigV1 loadActiveConfig() {
@@ -166,20 +244,39 @@ public final class PbocOfficialWebDataProvider {
     }
 
     private RawReceiptV1 createRawReceipt(
-            MonitorSeriesConfigV1 config, MonitorSeriesItemV1 item, String acquisitionId, PbocAnnouncement announcement,
-            URI listUri, PbocHttpResponse detailResponse, byte[] entityBytes, String payloadSha256, OffsetDateTime receivedAt
+            MonitorSeriesConfigV1 config, MonitorSeriesItemV1 item, RawAcquisitionV1 acquisition,
+            PbocAnnouncement announcement, URI listUri, PbocHttpResponse detailResponse, byte[] entityBytes,
+            String payloadSha256, OffsetDateTime receivedAt
     ) {
         String runId = runId(item.externalCode(), announcement.businessDate().toString(), payloadSha256);
         String rawRef = RawReceiptV1.deriveRawRef(config.mode(), item.providerType(), item.itemId(), receivedAt, runId);
         String rawValue = "USD".equals(item.externalCode()) ? announcement.usdRawValue() : announcement.eurRawValue();
         String sourceReference = "PBOC公告列表=" + listUri + ";公告标题=" + announcement.title();
         return new RawReceiptV1(
-                SchemaV1.VERSION, rawRef, acquisitionId, runId, config.mode(), item.providerType(), item.accessMethod(),
-                config.configVersion(), item.actualSourceName(), detailResponse.responseUri().toString(), sourceReference,
-                item.itemId(), announcement.titleBusinessDateRaw(), announcement.businessDate().toString(),
+                SchemaV1.VERSION, rawRef, acquisition.acquisitionId(), runId, config.mode(), item.providerType(),
+                item.accessMethod(), config.configVersion(), item.actualSourceName(),
+                detailResponse.responseUri().toString(), sourceReference, item.itemId(),
+                announcement.titleBusinessDateRaw(), announcement.businessDate().toString(),
                 announcement.sourcePublishedAtRaw(), announcement.sourcePublishedAt(), receivedAt, null, rawValue,
                 item.unit(), item.currency(), null, detailResponse.statusCode(), detailResponse.contentType(), "base64",
-                Base64.getEncoder().encodeToString(entityBytes), payloadSha256, item.sourceFieldKey(), receivedAt);
+                Base64.getEncoder().encodeToString(entityBytes), payloadSha256, item.sourceFieldKey(), receivedAt,
+                acquisition.acquisitionRef());
+    }
+
+    private LifecycleTimelineV1 storeInitialTimelineIfMissing(RawReceiptV1 raw) {
+        Path stagingPath = dataRoot.resolveDataRef(DataPaths.stagingRef(raw.runId()));
+        if (Files.isRegularFile(stagingPath)) {
+            return JsonV1Codec.decodeFile(readAllBytes(stagingPath), LifecycleTimelineV1.class);
+        }
+        return storeInitialTimeline(raw);
+    }
+
+    private static byte[] readAllBytes(Path path) {
+        try {
+            return Files.readAllBytes(path);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Unable to read " + path, exception);
+        }
     }
 
     private LifecycleTimelineV1 storeInitialTimeline(RawReceiptV1 raw) {
@@ -208,8 +305,28 @@ public final class PbocOfficialWebDataProvider {
         }
     }
 
-    private static String acquisitionId(String businessDate, String payloadSha256) {
-        return "pboc-acq-" + businessDate.replace("-", "") + "-" + payloadSha256;
+    private static String acquisitionId(URI detailUri, String payloadSha256) {
+        String announcementSegment = announcementSegment(detailUri);
+        return "pboc-acq-" + announcementSegment + "-" + payloadSha256;
+    }
+
+    private static String announcementSegment(URI detailUri) {
+        String path = detailUri.getRawPath();
+        if (path == null || path.isBlank()) {
+            return "unknown";
+        }
+        String trimmed = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+        int lastSlash = trimmed.lastIndexOf('/');
+        String last = lastSlash < 0 ? trimmed : trimmed.substring(lastSlash + 1);
+        if (!"index.html".equals(last) && last.endsWith(".html")) {
+            return last.substring(0, last.length() - ".html".length());
+        }
+        if (lastSlash > 0) {
+            String parent = trimmed.substring(0, lastSlash);
+            int parentSlash = parent.lastIndexOf('/');
+            return parentSlash < 0 ? parent : parent.substring(parentSlash + 1);
+        }
+        return "unknown";
     }
 
     private static String runId(String externalCode, String businessDate, String payloadSha256) {

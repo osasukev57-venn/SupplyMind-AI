@@ -1,15 +1,16 @@
 # AT-SRC-002 正式执行记录 —— Day1-Day2 PBOC 双币真实获取与文件闭环（2026-08-10）
 
+> **状态说明（2026-08-10 晚，DEC-056 修复后）**：本文件正文第一轮（commit `24d24b6`，执行时间 14:12）的候选 PASS **经固定快照 Review + Fact Adjudication 判定无效**：A raw-first=FAIL（parse 失败无 source 证据落盘）、B idempotency=AMBIGUOUS（receivedAt 导致同 payload 重复采集误判 CONFLICT）、C gated evidence=FAIL（无 tracked runner 原件）。第一轮记录保留作为历史执行事实。**正式验收以本文档末尾"DEC-056 修复后正式重跑"为准**（commit 待本轮提交）。
+
 > 性质：D2-T05（PBOC调度、幂等、重启端到端硬门）正式验收执行证据。
 > 执行方式：真实联网采集（PBOC 官方网页，Java 17 JDK HTTPS），非 fixture、非 mock、非重放既有 raw。
-> 结果：**AT-SRC-002 = PASS**（gated 正式运行，`-Dat-src-002.real=true`，surefire 1/1）。
 > 机器证据：`docs/evidence/AT-SRC-002/at-src-002-summary.json`（由测试运行真实输出生成）。
 
 ## 执行环境
 
 | 项 | 实际值 |
 |---|---|
-| 执行时间 | 2026-08-10T14:12（Asia/Shanghai） |
+| 执行时间 | 2026-08-10T14:12（Asia/Shanghai）（第一轮，已判无效；DEC-056 重跑见文末） |
 | Java 运行时 | 17.0.19（Microsoft OpenJDK） |
 | Maven | 3.9.11 |
 | Spring Boot | 3.3.6 |
@@ -71,6 +72,48 @@ raw 路由：`raw/formal/official_web/FX.{USD,EUR}.CNY.PBOC_MID/2026/08/….json
 - 真实网络正式启用（`-Dat-src-002.real=true` 门禁），本次外部 PBOC 网络可达，非 EXTERNAL_ENVIRONMENT_BLOCKED。
 - 断网/失败路径由既有 `PbocRawClosedLoopSmokeGateTest.networkFailureNeverFabricatesDataOrWritesArtifacts`（非 gated，常跑）覆盖：EXTERNAL_ACCESS_BLOCKED 时零产物。
 
-## 结论
+## 结论（第一轮，已判无效）
 
-AT-SRC-002 = **PASS**（真实双币全链：raw→validation→publish→daily→aggregate→幂等→离线重启读取→独立复算）。
+第一轮 AT-SRC-002 = 候选 **PASS**（commit `24d24b6`）——经固定快照 Review + Fact Adjudication 判定无效（raw-first FAIL / idempotency AMBIGUOUS / gated evidence FAIL），不作为正式结论。
+
+---
+
+## DEC-056 修复后正式重跑（2026-08-10 14:56，Asia/Shanghai）
+
+> 本轮为 DEC-056 修复后的正式重跑，独立空 dataRoot `D:\Dev\Temp\opencode\at-src-002-run-dec056`（启动前清空）。旧的 24d24b6 PASS 声明不复用。
+
+### Raw-first（DEC-056）
+
+- 生产顺序：`transport.get(detail)` → 持久化 `RawAcquisitionV1`（`raw/source/<acquisitionId>.json`，原子写入 + 相邻 manifest COMMITTED + SHA-256/length）→ `decodeHtml`/`parseDetail` → item `RawReceiptV1`（含 `acquisitionRef` 追溯）→ validation → publish → daily → aggregate。
+- 本次真实 acquisitionRef：`raw/source/pboc-acq-2026081009005136814-d7d03779….json`（详情页 URL 段 `2026081009005136814` + payload SHA 派生，解析前可计算）。
+- parse 失败路径（确定性契约，非真实网络）：`PbocOfficialWebDataProviderContractTest` 三个 parse-rejection 用例 + `PbocRawFirstContractTest`——失败时 acquisition 已落盘且 manifest 可验证，无 item raw/staging/downstream。
+
+### 幂等（DEC-056）
+
+- 相同 stable business key（provider+item+businessDate）+ 相同 payloadSha256 = **IDEMPOTENT REPLAY**：重复采集返回同一 acquisitionId/businessDate/payloadSha/runId/rawRef；dataRoot 快照逐文件 SHA 零变化（无新增、无删除、无改写）；无 RawReceiptConflictException；不重复 publish；daily/aggregate 字节不变。
+- `receivedAt` 不再造成冲突（observation metadata 与业务 identity 分离；fileSha256 仅用于文件完整性，payloadSha256+业务键用于幂等/冲突判断）。
+- 同业务键 + 不同 payload = **CONFLICT**：保留原正式 raw、写 `runtime/conflicts/raw/…` 证据（RawConflictEvidenceV1 + manifest）、fail-closed（确定性 fixture 测试 `PbocRawFirstContractTest.sameBusinessKeyWithDifferentPayload…` 证明；真实 AT 无法合法制造 PBOC 官方 payload 变更，故负向场景用确定性测试，不伪装真实联网）。
+
+### 真实链路结果（与第一轮同为 2026-08-10 官方公告，payload SHA 相同）
+
+| 项 | USD/CNY | EUR/CNY |
+|---|---|---|
+| 官方 rawValue | 6.7884 | 7.8171 |
+| daily sum / avg（scale 8 HALF_UP） | 6.7884 / 6.78840000 | 7.8171 / 7.81710000 |
+| month/quarter/halfyear/year sum/avg/min/max | 6.78840000 | 7.81710000 |
+| configVersions | [1] | [1] |
+
+- 完整链 PASS：raw acquisition → item raw → validation（VERIFIED, pboc-basic-validation-v1）→ publish（publishRef=`staging/pboc-usd-….json#recordVersion=4`）→ daily（双币各 1 行）→ 四级 aggregate（双币 × 4 = 8 文件，manifest COMMITTED 全对账）。
+- 重复真实采集：**IDEMPOTENT**（快照零变化）。
+- Restart：Context A 关闭 → 全新 Context B 同一物理 dataRoot 离线只读（PublishedQueryService/daily decode/`AggregateReadService`，无 processYear/rebuild/write），快照零变化。
+- BigDecimal 独立复算 PASS；Manifest PASS；Traceability（rawRef/publishRef/dailyRef/aggregate inputRefs/configVersions）PASS。
+
+### Gated runner 证据（DEC-056）
+
+- `docs/evidence/AT-SRC-002/TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml`（本次真实 gated run 原件，未人工编辑）
+- runner XML SHA-256：`2fa63b319def9c8b0588315a77d8d6306bae6bc95ff25f60807c53930624ea5f`
+- `at-src-002-summary.json`：acceptanceTest=AT-SRC-002、realGateProperty=`at-src-002.real`、realGateValue=`true`、tests=1、failures=0、errors=0、skipped=0、result=PASS、businessDate=2026-08-10、USD=6.7884、EUR=7.8171、payloadSha、dataRoot、runnerEvidenceRef、runnerEvidenceSha256（计数来自本次实际 runner 结果，非硬编码假数据）。
+
+### 结论（正式）
+
+AT-SRC-002 = **PASS_CANDIDATE**（DEC-056 修复后真实双币全链正式运行 1/1，awaiting fixed-commit Review；D2-T05=REVIEW_PENDING，Day 2 未宣布 COMPLETE）。

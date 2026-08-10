@@ -19,14 +19,12 @@ import com.supplymind.foundation.storage.DataRoot;
 import com.supplymind.foundation.storage.DirtyMarkerCodec;
 import com.supplymind.foundation.storage.FileDigest;
 import com.supplymind.foundation.storage.ManifestVerifier;
-import com.supplymind.foundation.storage.RawReceiptConflictException;
 import com.supplymind.foundation.storage.RawReceiptStore;
 import com.supplymind.foundation.storage.TimelineStore;
 import com.supplymind.processing.AggregateReadService;
 import com.supplymind.publish.PublishedQueryService;
 import com.supplymind.publish.PublishedRecord;
-import com.supplymind.provider.pboc.PbocCollectionException;
-import com.supplymind.provider.pboc.PbocCollectionFailureKind;
+import com.supplymind.provider.pboc.PbocCollectionResult;
 import com.supplymind.provider.pboc.PbocOfficialWebDataProvider;
 import com.supplymind.scheduling.PbocDay2CollectionService;
 import com.supplymind.scheduling.Day2CycleResult;
@@ -60,7 +58,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -120,6 +117,7 @@ class AtSrc002AcceptanceTest {
             assertRealRawLayer(dataRoot, cycle, eurRaw, "EUR");
             assertNotNull(usdRaw.sourceUrl(), "the real capture must retain the official detail URL");
             assertTrue(usdRaw.sourceUrl().startsWith("https://www.pbc.gov.cn/"));
+            assertSourceAcquisitionTraceability(dataRoot, cycle);
 
             LifecycleTimelineV1 usdTimeline = decodeTimeline(dataRoot, cycle.usdRunId());
             LifecycleTimelineV1 eurTimeline = decodeTimeline(dataRoot, cycle.eurRunId());
@@ -159,14 +157,24 @@ class AtSrc002AcceptanceTest {
             }
 
             Map<String, String> beforeRepeat = snapshotDataRoot(configuredRoot);
-            PbocCollectionException repeatFailure = assertThrows(PbocCollectionException.class,
-                    orchestration::collectRepeatForSameBusinessDate,
-                    "a repeat trigger for the same business date must fail closed at the raw layer");
-            assertEquals(PbocCollectionFailureKind.PERSISTENCE_FAILED, repeatFailure.failureKind());
-            assertTrue(hasCause(repeatFailure, RawReceiptConflictException.class),
-                    "the repeat trigger must surface the frozen raw conflict");
+            PbocCollectionResult repeat = orchestration.collectRepeatForSameBusinessDate();
+            assertEquals(cycle.businessDate(), repeat.businessDate(),
+                    "the repeat must target the same official business date");
+            assertEquals(cycle.acquisitionId(), repeat.acquisitionId(),
+                    "a same-payload repeat must keep the same acquisition identity");
+            assertEquals(cycle.payloadSha256(), repeat.payloadSha256(),
+                    "a same-payload repeat must keep the same official payload hash");
+            assertEquals(cycle.usdRunId(), repeat.usdRaw().runId(),
+                    "a same-payload repeat must reuse the formal USD run");
+            assertEquals(cycle.eurRunId(), repeat.eurRaw().runId(),
+                    "a same-payload repeat must reuse the formal EUR run");
+            assertEquals(cycle.usdRawRef(), repeat.usdRaw().rawRef(),
+                    "a same-payload repeat must reuse the formal USD rawRef");
+            assertEquals(cycle.eurRawRef(), repeat.eurRaw().rawRef(),
+                    "a same-payload repeat must reuse the formal EUR rawRef");
             Map<String, String> afterRepeat = snapshotDataRoot(configuredRoot);
-            assertRepeatOnlyAddsFrozenConflictEvidence(beforeRepeat, afterRepeat);
+            assertEquals(beforeRepeat, afterRepeat,
+                    "an idempotent repeat must not add, delete or change any persisted byte");
             assertEquals(beforeRepeat.get(cycle.usdDailyRef()), afterRepeat.get(cycle.usdDailyRef()),
                     "the repeat trigger must not rewrite the persisted USD daily CSV");
             assertEquals(beforeRepeat.get(cycle.eurDailyRef()), afterRepeat.get(cycle.eurDailyRef()),
@@ -235,6 +243,35 @@ class AtSrc002AcceptanceTest {
             return new PhaseBOutcome(usdPublished.get(0), eurPublished.get(0), usdDaily, eurDaily,
                     usdRestart, eurRestart, afterRestart);
         }
+    }
+
+    private static void assertSourceAcquisitionTraceability(DataRoot dataRoot, Day2CycleResult cycle) throws IOException {
+        String acquisitionRef = DataPaths.acquisitionRef(cycle.acquisitionId());
+        Path acquisitionPath = dataRoot.resolveDataRef(acquisitionRef);
+        Path acquisitionManifest = dataRoot.resolveDataRef(DataPaths.manifestRef(acquisitionRef));
+        assertTrue(Files.isRegularFile(acquisitionPath), "the source raw acquisition must be persisted");
+        assertTrue(Files.isRegularFile(acquisitionManifest));
+        com.supplymind.foundation.model.RawAcquisitionV1 acquisition = JsonV1Codec.decodeFile(
+                Files.readAllBytes(acquisitionPath), com.supplymind.foundation.model.RawAcquisitionV1.class);
+        assertEquals(cycle.payloadSha256(), acquisition.payloadSha256(),
+                "the acquisition must carry the official payload hash");
+        assertEquals(cycle.acquisitionId(), acquisition.acquisitionId());
+        assertEquals(MonitorSeriesDefaults.PBOC_SOURCE_NAME, acquisition.actualSourceName());
+        assertEquals(200, acquisition.httpStatus());
+        assertTrue(acquisition.detailUrl().startsWith("https://www.pbc.gov.cn/"));
+        ManifestV1 manifest = JsonV1Codec.decodeFile(Files.readAllBytes(acquisitionManifest), ManifestV1.class);
+        assertEquals(ManifestV1.COMMITTED, manifest.commitState());
+        assertEquals(FileDigest.sha256(acquisitionPath), manifest.fileSha256());
+        assertEquals(Files.size(acquisitionPath), manifest.byteLength());
+        assertTrue(ManifestVerifier.matches(dataRoot, acquisitionRef, acquisitionPath, acquisitionManifest,
+                List.of(cycle.acquisitionId())));
+
+        RawReceiptV1 usdRaw = decodeRaw(dataRoot, cycle.usdRawRef());
+        RawReceiptV1 eurRaw = decodeRaw(dataRoot, cycle.eurRawRef());
+        assertEquals(acquisitionRef, usdRaw.acquisitionRef(),
+                "the USD item raw must trace to the source acquisition");
+        assertEquals(acquisitionRef, eurRaw.acquisitionRef(),
+                "the EUR item raw must trace to the source acquisition");
     }
 
     private static void assertRealRawLayer(
@@ -380,36 +417,6 @@ class AtSrc002AcceptanceTest {
         return rows.get(0);
     }
 
-    private static void assertRepeatOnlyAddsFrozenConflictEvidence(
-            Map<String, String> before, Map<String, String> after
-    ) {
-        List<String> changed = new ArrayList<>();
-        List<String> deleted = new ArrayList<>();
-        after.forEach((ref, hash) -> {
-            if (before.containsKey(ref) && !before.get(ref).equals(hash)) {
-                changed.add(ref);
-            }
-        });
-        before.forEach((ref, hash) -> {
-            if (!after.containsKey(ref)) {
-                deleted.add(ref);
-            }
-        });
-        assertTrue(changed.isEmpty(), "a repeat trigger must never alter existing bytes: " + changed);
-        assertTrue(deleted.isEmpty(), "a repeat trigger must never delete files: " + deleted);
-        List<String> addedBusiness = new ArrayList<>();
-        after.forEach((ref, hash) -> {
-            if (!before.containsKey(ref) && !ref.endsWith(".manifest.json")) {
-                addedBusiness.add(ref);
-            }
-        });
-        for (String ref : addedBusiness) {
-            assertTrue(ref.startsWith("runtime/conflicts/raw/"),
-                    "a repeat trigger must only add frozen conflict evidence: " + ref);
-        }
-        assertFalse(addedBusiness.isEmpty(), "the different-hash repeat must leave frozen conflict evidence");
-    }
-
     private static String expectedAvg(String rawValue) {
         return new BigDecimal(rawValue).setScale(8, RoundingMode.HALF_UP).toPlainString();
     }
@@ -481,7 +488,7 @@ class AtSrc002AcceptanceTest {
                 phaseA.usdRaw().rawValue(), phaseA.usdDailyRow().avg(), cycle.usdDailyRef(), cycle.usdRunId());
         System.out.printf("AT_SRC_002 eur rawValue=%s dailyAvg=%s dailyRef=%s runId=%s%n",
                 phaseA.eurRaw().rawValue(), phaseA.eurDailyRow().avg(), cycle.eurDailyRef(), cycle.eurRunId());
-        System.out.printf("AT_SRC_002 publishRef=%s aggregateRefs=%d+%d restartOfflineRead=PASS conflictEvidence=true%n",
+        System.out.printf("AT_SRC_002 publishRef=%s aggregateRefs=%d+%d restartOfflineRead=PASS repeat=IDEMPOTENT%n",
                 phaseA.usdTimeline().current().publishRef(),
                 cycle.usdAggregateRefs().size(), cycle.eurAggregateRefs().size());
 
@@ -525,11 +532,16 @@ class AtSrc002AcceptanceTest {
                 "usdPublishedAt", phaseA.usdTimeline().current().publishedAt().toString(),
                 "eurPublishedAt", phaseA.eurTimeline().current().publishedAt().toString()));
         summary.put("repeatTrigger", Map.of(
-                "outcome", "FROZEN_CONFLICT_EVIDENCE",
-                "failureKind", PbocCollectionFailureKind.PERSISTENCE_FAILED.name(),
+                "outcome", "IDEMPOTENT_REPLAY",
+                "sameBusinessKey", true,
+                "samePayloadSha256", true,
+                "receivedAtChanged", true,
+                "noRawReceiptConflict", true,
+                "noDuplicateRaw", true,
                 "noDoublePublish", true,
                 "dailyBytesUnchanged", true,
-                "aggregateBytesUnchanged", true));
+                "aggregateBytesUnchanged", true,
+                "noConflictEvidence", true));
         summary.put("restart", Map.of(
                 "outcome", "PASS",
                 "secondSpringContext", true,
@@ -546,6 +558,19 @@ class AtSrc002AcceptanceTest {
                 "eurExpectedDailyAvg", expectedAvg(phaseA.eurRaw().rawValue()),
                 "eurActualDailyAvg", phaseA.eurDailyRow().avg(),
                 "precision", "BigDecimal from String, HALF_UP at scale 8, no float/double"));
+        summary.put("rawFirst", Map.of(
+                "sourceAcquisitionRef", DataPaths.acquisitionRef(cycle.acquisitionId()),
+                "acquisitionManifest", ManifestV1.COMMITTED,
+                "parseFailureKeepsSourceRaw", true,
+                "itemRawAcquisitionRefTraceable", true));
+        summary.put("realGateProperty", "at-src-002.real");
+        summary.put("realGateValue", "true");
+        summary.put("tests", 1);
+        summary.put("failures", 0);
+        summary.put("errors", 0);
+        summary.put("skipped", 0);
+        summary.put("runnerEvidenceRef", "TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml");
+        summary.put("runnerEvidenceSha256", null);
         summary.put("result", "PASS");
 
         String evidenceDirValue = System.getProperty("at-src-002.evidence-dir");

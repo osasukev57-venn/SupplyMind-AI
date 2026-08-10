@@ -58,8 +58,31 @@ data/runtime/conflicts/raw/<itemId>/YYYY-MM/<runId>/<conflictId>.json
 | payloadSha256 | 对解码后的完整原始实体字节计算的 64 位小写 SHA-256 |
 | matchAnchor | nullable item 级自动解析锚点 |
 | updatedAt | 必填 ISO-8601 offset datetime，创建时等于 receivedAt，之后永不改写 |
+| acquisitionRef | nullable string（DEC-056 新增）；外部 HTTP provider 必填，逐字等于按 acquisitionId 导出的 `raw/source/<acquisitionId>.json`；manual/local_import/synthetic_demo 可为 null。item RawReceipt 通过它追溯 source-level Raw Acquisition 原始 HTTP payload |
 
 PBOC USD/CNY 与 EUR/CNY 的 `rawCurrency` 都是 `CNY`；`baseCurrency` 仅由配置显式表达，单位分别为 `CNY/1 USD`、`CNY/1 EUR`。RawReceipt 不含 `processingStage` 或 `validationStatus`。
+
+## RawAcquisitionV1（DEC-056 新增，source-level raw envelope）
+
+`data/raw/source/<acquisitionId>.json`，表示"外部响应原件"，是解析前持久化的不可变 source 证据；不含任何解析后 item 字段（businessDate/rawValue/matchAnchor 只属于 item 级 RawReceiptV1）。稳定字段顺序为：
+
+| 字段 | 类型/约束 |
+|---|---|
+| schemaVersion | 字符串，固定 `"1.0"` |
+| acquisitionRef | 必填，逐字等于按 acquisitionId 导出的 `raw/source/<acquisitionId>.json` |
+| acquisitionId | 必填 string，解析前可由 detail URL 公告段 + payloadSha256 派生（同一公告同一 payload 重取不变） |
+| mode, providerType, accessMethod | 必填合法 wire 值，provider/access 一一匹配 |
+| configVersion | 必填正整数 |
+| actualSourceName | 必填真实来源显示名 |
+| listUrl, detailUrl | 必填绝对 http(s) URL |
+| httpStatus | 外部 HTTP provider 必填 integer |
+| contentType | 必填非空 string |
+| receivedAt | 必填 ISO-8601 offset datetime（observation metadata，单独不得造成业务冲突） |
+| payloadEncoding | 固定 `base64` |
+| payloadBase64 | 完整原始 HTTP detail 实体字节的 base64 |
+| payloadSha256 | 对解码后完整原始实体字节计算的 64 位小写 SHA-256 |
+
+重取同一 acquisitionId（同公告同 payload）：复用既有 acquisition，绝不改写（receivedAt 变更不改变证据字节）。
 
 ## LifecycleTimelineV1 与 CandidateV1
 
@@ -110,5 +133,7 @@ DirtyMarkerV1 顶层稳定字段：`schemaVersion`、`transactionId`、`transact
 Raw 的 `YYYY/MM` 与 quarantine 的 `YYYY-MM` 均按 `receivedAt` 在 Asia/Shanghai 的年月路由，不按 sourceBusinessDate 路由。raw、quarantine 与 history 都是 CREATE_NEW：相同完整业务文件 hash 是幂等，异 hash 绝不覆盖。
 
 当既有 raw 的完整业务文件 hash 与 incoming hash 不同，原 raw/manifest 保持不变，并 CREATE_NEW 写入 `runtime/conflicts/raw/<itemId>/YYYY-MM/<runId>/<conflictId>.json` 与相邻 manifest。RawConflictEvidenceV1 字段顺序固定为：`schemaVersion`（固定 `"1.0"`）、`conflictId`、`itemId`、`runId`、`existingRawRef`、`existingFileSha256`、`incomingFileSha256`、`incomingReceipt`（完整 RawReceiptV1 对象）、`detectedAt`。写完后必须抛出明确冲突，incoming 不得进入正常链路。
+
+DEC-056 业务键冲突语义：相同 stable business key（provider+item+businessDate）+ 相同 `payloadSha256` = **IDEMPOTENT REPLAY**（复用既有正式 rawRef/runId/timeline，不重写、不重复、不抛冲突、不重复 publish；`receivedAt` 属 observation metadata，单独不得造成业务冲突；`fileSha256` 只用于文件完整性与 manifest 校验，业务幂等/冲突一律以 business key + payloadSha256 判定）。相同 business key + 不同 `payloadSha256` = **CONFLICT**：保留原正式 raw，写同构 RawConflictEvidenceV1 证据（`existingRawRef` 指向被保留的原 raw；incoming receipt 的 rawRef 因 runId 含不同 payload hash 可与 existingRawRef 不同——证据身份以 itemId+runId 校验），fail-closed，不继续 publish/daily/aggregate。
 
 DirtyMarker canonical 为 `runtime/dirty/<transactionId>.json`；其专用候选固定为 `runtime/dirty/.<transactionId>.json.marker.tmp` 与 `.marker.bak`。业务/manifest target tmp 为 `.<完整目标文件名>.<transactionId>.tmp`，bak 为同名 `.bak`。目标顺序固定为业务文件先于 manifest；全部 target 到 `MANIFEST_COMMITTED` 后才可将 transactionPhase 改为 COMMITTED。恢复只接受同 transactionId、schema 有效、不可变字段逐字一致、revision 单调无缺口的 canonical/tmp/bak 候选；最高 revision 并列而字节不同、字段漂移、跳号或回退均保留证据并 fail-closed。

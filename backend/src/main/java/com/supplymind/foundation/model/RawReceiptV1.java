@@ -12,7 +12,8 @@ import java.util.Base64;
         "configVersion", "actualSourceName", "sourceUrl", "sourceReference", "itemId",
         "sourceBusinessDateRaw", "sourceBusinessDate", "sourcePublishedAtRaw", "sourcePublishedAt",
         "receivedAt", "inputAt", "rawValue", "rawUnit", "rawCurrency", "operatorRef", "httpStatus",
-        "contentType", "payloadEncoding", "payloadBase64", "payloadSha256", "matchAnchor", "updatedAt"
+        "contentType", "payloadEncoding", "payloadBase64", "payloadSha256", "matchAnchor", "updatedAt",
+        "acquisitionRef"
 })
 public record RawReceiptV1(
         String schemaVersion,
@@ -43,7 +44,8 @@ public record RawReceiptV1(
         String payloadBase64,
         String payloadSha256,
         String matchAnchor,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        String acquisitionRef
 ) {
     private static final ZoneId ASIA_SHANGHAI = ZoneId.of("Asia/Shanghai");
 
@@ -88,6 +90,9 @@ public record RawReceiptV1(
         String calculatedHash = sha256Bytes(payload);
         if (!payloadSha256.equals(calculatedHash)) {
             throw new SchemaValidationException("payloadSha256 must hash decoded payload bytes");
+        }
+        if (acquisitionRef != null) {
+            ModelRules.relativeDataRef(acquisitionRef, "acquisitionRef");
         }
     }
 
