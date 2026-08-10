@@ -45,11 +45,18 @@ public final class MaterialRouteResolver {
         String activeProviderId = null;
         RouteTier activeTier = null;
 
+        // Eager config validation: every configured candidate must exist in the registry,
+        // regardless of tier progression (fail-closed on any absent provider).
         for (MaterialRouteConfigV1.TierCandidates tier : config.tiers()) {
             for (String providerId : tier.providerIds()) {
-                DataProvider provider = registry.find(providerId)
-                        .orElseThrow(() -> new ProviderRouteException(
-                                "Material route config references an unknown provider: " + providerId));
+                registry.find(providerId).orElseThrow(() -> new ProviderRouteException(
+                        "Material route config references an unknown provider: " + providerId));
+            }
+        }
+
+        for (MaterialRouteConfigV1.TierCandidates tier : config.tiers()) {
+            for (String providerId : tier.providerIds()) {
+                DataProvider provider = registry.require(providerId);
                 ProviderSourceProfile profile = provider.profile();
                 CandidateUnavailability unavailability =
                         availability(profile, tier.tier(), dataKind, authorizationProbe.unavailability(
