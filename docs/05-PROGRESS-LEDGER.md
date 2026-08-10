@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 2 收口完成（D1-T01～D1-T05 均`DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`，Git 基线 `day1-complete`；D2-T01～D2-T05 均`DONE`；AT-SRC-002=`PASS`；Day 2=`COMPLETE`；DEC-050～056 生效且 DEC-056 implementation=`PASS`；下一任务 D3-T01=`READY`（未开始），原材料开发=`READY_NOT_STARTED`）  
+> 当前阶段：Day 3（D1-T01～D1-T05、D2-T01～D2-T05 均`DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`；DEC-050～056 生效；D3-T01=`REVIEW_PENDING`（实施完成，等待第二方 R1 Review）；D3-T02=`NOT_STARTED`）  
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -56,19 +56,19 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 2 |
-| 当前任务编号 | D2-T05 PBOC调度、幂等、重启端到端硬门（`TaskExecutionStatus=DONE`，`statusReason=DUAL_REVIEW_PASS_DEC056_AT_SRC_002_PASS_20260810`；AT-SRC-002=`PASS`、DEC-056 implementation=`PASS`）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01～D2-T05 均为`TaskExecutionStatus=DONE`；Day 1 Gate=`PASS`、Day 1=`COMPLETE`；Day 2=`COMPLETE`（冻结 Gate 全部满足：D2-T01～D2-T05=`DONE`、AT-SRC-002=`PASS`、双币真实全链闭环+重启读取）；DEC-050～056 生效，DEC-056 implementation=`PASS`。 |
+| 当前任务编号 | D3-T01 六类DataProvider端口、注册表与来源模型（`TaskExecutionStatus=REVIEW_PENDING`，`statusReason=D3T01_PROVIDER_PORT_REGISTRY_IMPLEMENTED_20260810`；等待第二方 R1 Review）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01～D2-T05 均为`TaskExecutionStatus=DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`、DEC-050～056 生效（DEC-056 implementation=`PASS`）。D3-T01 已实施：统一端口 `DataProvider`（profile/supportedItemIds/collect→统一 RawRecord `ProviderCollectOutcome`）、来源能力模型 `ProviderSourceProfile`（providerType+current/history能力+actualSourceName+accessMethod，routeDecision 边界归配置）、注册表 `DataProviderRegistry`（唯一 identity、重复拒绝、未知 fail-closed、按能力/目标筛选、Spring Bean 动态注册 `ProviderRegistryConfiguration`）；PBOC Provider 最小适配统一端口，采集/校验/发布/daily/aggregate 语义零改动；六类冻结类别由既有 `ProviderType` 枚举表达，未新建平行框架。 |
 | 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）、DEC-053（arithmetic-mean-v1接受版本化默认）、DEC-054（weekday-asia-shanghai-v1接受版本化默认）、DEC-055（aggregate.calculatedAt=max(daily.updatedAt)确定性语义）、DEC-056（raw-first acquisition boundary + 业务键幂等 + AT runner 证据保存）已生效 |
 | 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS）；D2-T03（Implementation Review PASS + EXT Gate PASS，commit=607e859）；D2-T04（1ac8233→1178307，Sol/Second-party Final Delta Review 双PASS，commit=1178307）；D2-T05（24d24b6→2b7d2f4→a482087→79680ec，Sol+Second-party 最终双PASS，commit=79680ec）。 |
-| 正在进行任务 | 无。 |
-| 阻塞项 | 无（Day 2 冻结 Gate 全部满足；D2-T05 技术 Review 收口 `DONE`）。 |
-| 最近验收结果 | D2-T01～D2-T05=`DONE`；D2-T05 全历程：24d24b6（CHANGES_REQUESTED：raw-first FAIL/idempotency ambiguity/runner evidence 不足）→ Fact Adjudication→DEC-056→2b7d2f4（CHANGES_REQUESTED：强制追溯/decodeHtml 契约/evidence 自动化/状态唯一）→a482087（CHANGES_REQUESTED：仅剩 summary UTF-8 encoding MAJOR）→79680ec（Sol UTF-8 Evidence Finding Review=`PASS`、Second-party UTF-8 Delta Review=`PASS`）；AT-SRC-002 正式=`PASS`（真实 gated 1/1/0/0/0，businessDate=2026-08-10，USD=6.7884→6.78840000、EUR=7.8171→7.81710000，runner XML=`6e9d7c50…2e1b8`，AUTO_XML_PARSE）；Day 2=`COMPLETE`。 |
+| 正在进行任务 | D3-T01（`TaskExecutionStatus=REVIEW_PENDING`，实施完成，等待第二方 R1 Review 收口 DONE）。 |
+| 阻塞项 | D3-T01 Review 门禁待第二方单审。D3-T02 及后续材料任务冻结依赖 D3-T01 Review 收口，不得提前领取。 |
+| 最近验收结果 | D2-T01～D2-T05=`DONE`；AT-SRC-002=`PASS`；D3-T01 实施完成（统一端口/注册表/来源能力模型/统一 RawRecord；PBOC 适配零语义改动），自测 8/8 + PBOC 契约 7/7 + 定向回归全绿 + 全量 39 classes/185 tests/0 failures/0 errors/7 skipped；提交第二方 R1 Review。 |
 | 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 计算/日历口径已接受版本化默认（DEC-053/054）；weekday-asia-shanghai-v1 不构成完整法定节假日/调休/停报/特殊交易日日历，未来以新 calendarVersion 升级。 |
-| 下一任务 | D3-T01 六类DataProvider端口、注册表与来源模型（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`，冻结输入 D2-T05 通过证据/数据字典/来源能力要求已满足）；可领取但本轮不实施。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；全套 176 项测试（38 classes，0 failures，0 errors，7 skipped 门禁）+ 真实联网 AT-SRC-002 双币端到端验收（surefire gated 1/1，runner XML 已固化）通过（前序已固定并通过 Review 的运行结果，本轮未重跑）。 |
-| 最近一次Git提交 | 本轮将提交 `docs: close D2-T05 and Day 2 gate`；前序 checkpoint=`79680ec`（UTF-8 Evidence Fix，Sol+Second-party 双PASS）。 |
+| 下一任务 | D3-T02 材料三层路由与AuthorizedApi能力（`NOT_STARTED`；依赖 D3-T01 Review 收口，本轮不领取/不实施）。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；全套 185 项测试（39 classes，0 failures，0 errors，7 skipped 门禁）通过（D3-T01 后最新全量回归；未重跑真实联网 AT-SRC-002——未改动其正式数据语义）。 |
+| 最近一次Git提交 | 本轮将提交 `feat: implement D3-T01 provider registry`；前序 checkpoint=`fa8b580`（进度锚点刷新，Day 2 COMPLETE 基线）。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，D2-T05 + Day 2 最终状态收口：D2-T05=`DONE`（24d24b6→DEC-056→2b7d2f4→a482087→79680ec，Sol Final Review=`PASS`、Second-party Final Review=`PASS`、BLOCKER/MAJOR=无）；AT-SRC-002=`PASS`；DEC-056 implementation=`PASS`；Day 2=`COMPLETE`（冻结 Gate 全部满足）；下一任务 D3-T01=`READY`（未开始）；原材料开发=`READY_NOT_STARTED`；未修改生产代码/测试/Evidence，未重新联网，未开始 Day 3。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，D3-T01（R1）实施：统一端口 `DataProvider`、来源能力模型 `ProviderSourceProfile`、统一 RawRecord `ProviderCollectOutcome`、注册表 `DataProviderRegistry` + Spring 动态注册；PBOC Provider 最小适配（profile/supportedItemIds/collect），采集/校验/发布/daily/aggregate 语义零改动；未执行真实材料采集（SMM/Asian Metal/ADC12/AZ91D 均未访问），未修改正式数据 Gate/计算规则；D3-T01=`REVIEW_PENDING`（等待第二方 R1 Review）、Day 3=`NOT_COMPLETE`；未开始 D3-T02。 |
 | 最后更新时间 | 2026-08-10（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照

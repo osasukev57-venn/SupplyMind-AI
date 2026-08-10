@@ -1,8 +1,11 @@
 package com.supplymind.provider.pboc;
 
 import com.supplymind.foundation.codec.JsonV1Codec;
+import com.supplymind.foundation.model.AccessMethod;
 import com.supplymind.foundation.model.LifecycleTimelineV1;
+import com.supplymind.foundation.model.MonitorSeriesDefaults;
 import com.supplymind.foundation.model.ProcessingStage;
+import com.supplymind.foundation.model.ProviderType;
 import com.supplymind.foundation.model.RawReceiptV1;
 import com.supplymind.foundation.model.ValidationStatus;
 import com.supplymind.foundation.storage.AtomicFileStore;
@@ -34,6 +37,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -241,6 +245,44 @@ class PbocOfficialWebDataProviderContractTest {
                     .filter(path -> !path.getFileName().toString().endsWith(".manifest.json"))
                     .count();
         }
+    }
+
+    @Test
+    void pbocImplementsTheUnifiedD3T01DataProviderPortWithoutSemanticChange() throws Exception {
+        byte[] listEntity = fixtureBytes("announcement-list-normal.html");
+        byte[] detailEntity = fixtureBytes("announcement-detail-normal.html");
+        FixtureTransport transport = successfulTransport(listEntity, detailEntity);
+        TestHarness harness = initializedHarness(transport);
+        com.supplymind.provider.DataProvider port = harness.provider();
+
+        com.supplymind.provider.ProviderSourceProfile profile = port.profile();
+        assertEquals(com.supplymind.provider.pboc.PbocOfficialWebDataProvider.PROVIDER_ID, profile.providerId());
+        assertEquals(ProviderType.OFFICIAL_WEB, profile.providerType());
+        assertEquals(AccessMethod.PUBLIC_OFFICIAL_HTML, profile.accessMethod());
+        assertEquals(EXPECTED_SOURCE_NAME, profile.actualSourceName());
+        assertTrue(profile.supportsCurrentData());
+        assertFalse(profile.supportsHistoryData(),
+                "the PBOC provider fetches the latest announcement only; history is local persistence");
+        assertEquals(Set.of(MonitorSeriesDefaults.USD_CNY_ITEM_ID, MonitorSeriesDefaults.EUR_CNY_ITEM_ID),
+                port.supportedItemIds());
+
+        com.supplymind.provider.ProviderCollectOutcome rejected = port.collect(
+                new com.supplymind.provider.ProviderCollectRequest(List.of("MAT.ADC12.SMM")));
+        assertEquals(Map.of("MAT.ADC12.SMM", "UNSUPPORTED_TARGET"), rejected.rejectedItemIds());
+        assertTrue(rejected.raws().isEmpty());
+        assertEquals(0, transport.requestedUris().size(),
+                "an all-unsupported request must be rejected without any network access");
+
+        com.supplymind.provider.ProviderCollectOutcome outcome = port.collect(
+                new com.supplymind.provider.ProviderCollectRequest(
+                        List.of(MonitorSeriesDefaults.USD_CNY_ITEM_ID, "MAT.AZ91D.X")));
+        assertEquals(2, outcome.raws().size());
+        assertEquals(2, outcome.timelines().size());
+        assertEquals(Map.of("MAT.AZ91D.X", "UNSUPPORTED_TARGET"), outcome.rejectedItemIds());
+        assertEquals(2, transport.requestedUris().size());
+        assertEquals(independentSha256(detailEntity), outcome.payloadSha256());
+        assertEquals("2026-08-10", outcome.businessDate());
+        assertEquals("pboc-official-web", outcome.providerId());
     }
 
     private TestHarness initializedHarness(FixtureTransport transport) {

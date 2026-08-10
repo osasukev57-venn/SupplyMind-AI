@@ -22,9 +22,12 @@ import com.supplymind.foundation.storage.FileTransactionTarget;
 import com.supplymind.foundation.storage.ManifestFactory;
 import com.supplymind.foundation.storage.ManifestVerifier;
 import com.supplymind.foundation.storage.RawAcquisitionStore;
-import com.supplymind.foundation.storage.RawConflictEvidenceV1;
 import com.supplymind.foundation.storage.RawReceiptConflictException;
 import com.supplymind.foundation.storage.RawReceiptStore;
+import com.supplymind.provider.DataProvider;
+import com.supplymind.provider.ProviderCollectOutcome;
+import com.supplymind.provider.ProviderCollectRequest;
+import com.supplymind.provider.ProviderSourceProfile;
 
 import java.io.IOException;
 import java.net.URI;
@@ -33,10 +36,13 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -47,10 +53,16 @@ import java.util.function.Consumer;
  * same business key fails closed with frozen conflict evidence. It never retries, validates, publishes, calculates,
  * or invokes another Provider type.
  */
-public final class PbocOfficialWebDataProvider {
+public final class PbocOfficialWebDataProvider implements DataProvider {
 
     public static final URI ANNOUNCEMENT_LIST_URI = URI.create(
             "https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/index.html");
+
+    /** D3-T01 registry-unique provider identity. */
+    public static final String PROVIDER_ID = "pboc-official-web";
+
+    private static final Set<String> SUPPORTED_ITEM_IDS = Set.of(
+            MonitorSeriesDefaults.USD_CNY_ITEM_ID, MonitorSeriesDefaults.EUR_CNY_ITEM_ID);
 
     private final DataRoot dataRoot;
     private final RawReceiptStore rawReceiptStore;
@@ -79,6 +91,47 @@ public final class PbocOfficialWebDataProvider {
         this.transport = Objects.requireNonNull(transport, "transport");
         this.parser = Objects.requireNonNull(parser, "parser");
         this.diagnostics = Objects.requireNonNull(diagnostics, "diagnostics");
+    }
+
+    @Override
+    public ProviderSourceProfile profile() {
+        return ProviderSourceProfile.of(
+                PROVIDER_ID,
+                ProviderType.OFFICIAL_WEB,
+                AccessMethod.PUBLIC_OFFICIAL_HTML,
+                MonitorSeriesDefaults.PBOC_SOURCE_NAME,
+                ANNOUNCEMENT_LIST_URI.toString(),
+                true,
+                false);
+    }
+
+    @Override
+    public Set<String> supportedItemIds() {
+        return SUPPORTED_ITEM_IDS;
+    }
+
+    @Override
+    public ProviderCollectOutcome collect(ProviderCollectRequest request) {
+        Objects.requireNonNull(request, "request");
+        Map<String, String> rejected = new LinkedHashMap<>();
+        for (String itemId : request.itemIds()) {
+            if (!SUPPORTED_ITEM_IDS.contains(itemId)) {
+                rejected.put(itemId, "UNSUPPORTED_TARGET");
+            }
+        }
+        if (rejected.size() == request.itemIds().size()) {
+            return ProviderCollectOutcome.rejectedOnly(PROVIDER_ID, rejected);
+        }
+        PbocCollectionResult result = collectLatestAnnouncement();
+        return new ProviderCollectOutcome(
+                SchemaV1.VERSION,
+                PROVIDER_ID,
+                result.acquisitionId(),
+                result.businessDate(),
+                result.payloadSha256(),
+                List.of(result.usdRaw(), result.eurRaw()),
+                List.of(result.usdTimeline(), result.eurTimeline()),
+                rejected);
     }
 
     public PbocCollectionResult collectLatestAnnouncement() {
