@@ -276,7 +276,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T06 ADC12/AZ91D合规接入闭环
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`。冻结依赖任务 D3-T02、D3-T03、D3-T04、D3-T05 均=`DONE`；输入（D3-T02至D3-T05、材料规格和 AT-SRC-001/005至008）属任务执行期收集/执行，不构成领取阻断；EXT-04/EXT-10/EXT-11=`OPEN_EXTERNAL_NON_BLOCKING`（docs/01：仅局部影响对应源自动采集能力，不阻塞 P0，不阻断本任务领取）；已具备领取/实施条件，尚未开始实施。READY≠开始。
+- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D3T06_MATERIAL_SOURCE_CLOSURE_20260810`。Day3 合规接入闭环已通过集成验收（`MaterialDay3AcceptanceTest` 4/4，全生产路径）：四条 P0 序列（SMM/Asian Metal × ADC12/AZ91D）路由均确定性落 `FALLBACK_MANUAL`/`manual-material`（fallbackReason 记录 credentials_missing；FREE_PUBLIC 保持 D3-T03 `NO_APPROVED_SOURCE`；Synthetic 恒非候选；PBOC 排除）；Manual ADC12/AZ91D 闭环至 `PARSED+PENDING`（幂等/修订保留/operator 审计）；LocalImport CSV/XLSX 双标的受理至 RECEIVED+PENDING；PENDING 经既有 Publish/Daily/Aggregate/PublishedQuery 门禁全部 BLOCKED；AT-SRC-001=PASS（Day3 部分）、AT-SRC-005=DAY3_PARTIAL_PASS、AT-SRC-006=N/A_APPROVED_FALLBACK、AT-SRC-007=DAY3_PARTIAL_PASS、AT-SRC-008=PASS；未产生 VERIFIED/PUBLISHED、未实现 D4 校验/发布；Evidence=`docs/evidence/D3-T06/`；等待第二方 R1+ Review；不得在 Review 前自行 DONE。
 - **任务目标：** 对SMM意图×ADC12/AZ91D、Asian Metal意图×ADC12/AZ91D四个P0监测序列分别选择并运行合法指定源、FreePublic或Manual中的一条非synthetic链路；itemId稳定标识来源意图×材料，actualSourceName始终记录实际来源。
 - **对应需求：** SUP-03、SUP-06至SUP-08、F04-F07、H08。
 - **输入：** D3-T02至D3-T05、材料规格和AT-SRC-001/005至008。
