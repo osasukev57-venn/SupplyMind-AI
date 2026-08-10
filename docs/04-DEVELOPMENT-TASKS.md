@@ -248,7 +248,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T04 ManualDataProvider与数据治理门禁
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`；`statusReason=DEC-057_EFFECTIVE_R2_FINAL_PASS`。DEC-057 已正式生效（R2 Candidate=`e7d1022`，Sol R2 Final Review=`PASS`、Second-party R2 Final Review=`PASS`，BLOCKER/MAJOR=无，BUSINESS_DECISION_REQUIRED=NO）；已具备领取/实施条件，尚未开始实施（代码未实施，不得标 REVIEW_PENDING/DONE）。READY≠开始。
+- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D3T04_MANUAL_INTAKE_IMPLEMENTED_20260810`。DEC-057 边界已实现：`ManualMaterialIntakeService`（受控提交→immutable raw→RECEIVED+PENDING→`manual-material-normalization-v1` 机械标准化→PARSED+PENDING 后停止）、`ManualMaterialSubmission`（客户端无 operatorRef 字段，operator 来自认证上下文 `OperatorContext`）、`ManualDataProvider`（标准 DataProvider：MANUAL 身份、collect 显式 MANUAL_INTAKE_REQUIRED、不伪造数据）；same key+same content=IDEMPOTENT（含 operatorRef 内容哈希，服务端时间不参与）、same key+different content=NEW_PENDING_VERSION（旧 raw/timeline 永久保留）；PENDING 经既有 Publish Gate 负向验证不可见；未产生 VERIFIED/VERIFIED_WITH_NOTICE/PUBLISHED，未执行材料业务 validation/daily/aggregate（DEFERRED_TO_D4_T01）；AT-SRC-007 Day3 部分满足；等待第二方 R1+ Review；不得在 Review 前自行 DONE。
 - **任务目标：** 提供手工受控提交入口（DEC-057 后边界）：Manual提交 → immutable raw → 独立初始`RECEIVED+PENDING` LifecycleRecord → 机械标准化（`manual-material-normalization-v1`，仅确定性字段/格式处理）→ `PARSED+PENDING` → 既有 Publish Gate 负向验证；并实现真实来源追踪、operator审计、幂等、修订候选保留、版本审计。~~原条款（双维校验、PUBLISHED+VERIFIED类发布、加工）已由 DEC-057 superseded~~：材料业务validation/正式publish/daily/aggregate 属 D4-T01~D4-T04。
 - **对应需求：** SUP-03、SUP-05、SUP-06、SUP-07、F04-F07、H08、EXT-11。（阶段职责按 DEC-057 拆分：Day 3 受理与治理边界；Day 4 正式validation/publish/加工/聚合。）
 - **输入：** Manual字段schema、材料配置、`manual-material-normalization-v1` 规则。

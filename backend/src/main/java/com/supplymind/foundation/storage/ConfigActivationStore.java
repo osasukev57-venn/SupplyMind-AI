@@ -30,6 +30,15 @@ public final class ConfigActivationStore {
         this.clock = Objects.requireNonNull(clock, "clock");
     }
 
+    /** Read-only access to the currently active configuration (used by D3-T04 manual intake). */
+    public MonitorSeriesConfigV1 readActiveConfig() {
+        Path active = dataRoot.resolveDataRef(DataPaths.configActiveRef());
+        if (!Files.isRegularFile(active)) {
+            throw new StorageException("No active monitor-series configuration exists");
+        }
+        return decodeActive(active);
+    }
+
     /** Creates the formal two-item PBOC default only if no active configuration exists. */
     public MonitorSeriesConfigV1 ensureInitialDefault() {
         Path active = dataRoot.resolveDataRef(DataPaths.configActiveRef());
