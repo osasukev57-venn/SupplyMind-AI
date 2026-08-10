@@ -114,7 +114,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D1-T05 PBOC双币raw闭环冒烟门禁
 
-- **优先级/状态：** P0-最高 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=REAL_PBOC_DUAL_CURRENCY_RAW_SMOKE_GATE_EVIDENCE_RESUBMITTED_AFTER_REVIEW_FIX_20260809`。Sol Review BLOCKER（重启读取未真实启动第二个Spring Context）已修复并重新运行门禁；等待技术负责人重新Review；执行人不得自行改为`DONE`。
+- **优先级/状态：** P0-最高 / `TaskExecutionStatus=DONE`；`statusReason=REVIEW_PASS_DAY1_GATE_COMPLETE_20260809`。真实双币 raw 闭环冒烟门禁 Review 通过并随 Day 1 收口（BLOCKER 修复、重跑与 Review 历史见 docs/05 与 D1-T05 evidence）；Day 1=`COMPLETE`、Git 基线 `day1-complete`。
 - **任务目标：** 在Day1结束前证明两个币种真实获取、raw可检查、重复执行幂等和失败可诊断。
 - **对应需求：** SUP-01、SUP-02、F03、F07。
 - **输入：** D1-T03、D1-T04和独立data目录。
@@ -891,6 +891,6 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ## 推荐启动顺序
 
-- D1-T04 已通过 Sol 技术负责人和 OpenCode 独立 Review，状态为 `DONE`；D1-T05可由项目方确认后领取，但当前仍为`NOT_STARTED`。
-- D1-T02、D1-T03、D1-T04均已由Review为`DONE`；D1-T05尚未实施，AT-SRC-002及Day 1/Day 2总门禁仍未通过。
+- D1-T04 已通过 Sol 技术负责人和 OpenCode 独立 Review，状态为 `DONE`；D1-T05 亦已完成 Review 收口为 `DONE`（Day 1=`COMPLETE`，Git 基线 `day1-complete`）。
+- D1-T01～D1-T05 均已由 Review 为`DONE`；Day 1=`COMPLETE`；D2-T01～D2-T05 均`DONE`；AT-SRC-002=`PASS`、DEC-056 implementation=`PASS`、Day 2=`COMPLETE`；下一正式任务 D3-T01=`READY_NOT_STARTED`。
 - P1/P2仅在P0验收全绿、Day 8功能冻结未被破坏且仍有时间时启动。
