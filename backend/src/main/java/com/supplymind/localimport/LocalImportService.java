@@ -310,18 +310,13 @@ public final class LocalImportService {
     /**
      * Row content equality over the immutable row payload. For CSV the payload is the exact
      * original record span and is parsed back; for XLSX the payload is the original full file
-     * bytes, so equality uses the structured business fields persisted on the item raw.
-     * Server-generated time and the import identity never participate.
+     * bytes, so the matching row is re-located inside that immutable XLSX and ALL business
+     * content fields (including the declared actualSourceName) are compared. Server-generated
+     * time and the import identity never participate.
      */
     private static boolean sameRowContent(LocalImportRow row, RawReceiptV1 existing, boolean xlsxSource) {
         if (xlsxSource) {
-            return row.itemId().equals(existing.itemId())
-                    && row.businessDate().equals(existing.sourceBusinessDate())
-                    && row.value().equals(existing.rawValue())
-                    && row.unit().equals(existing.rawUnit())
-                    && row.currency().equals(existing.rawCurrency())
-                    && row.sourceReference().equals(existing.sourceReference())
-                    && java.util.Objects.equals(row.sourceUrl(), existing.sourceUrl());
+            return sameXlsxRowContent(row, existing);
         }
         try {
             byte[] payload = Base64.getDecoder().decode(existing.payloadBase64());
@@ -344,6 +339,49 @@ public final class LocalImportService {
         } catch (RuntimeException exception) {
             return false;
         }
+    }
+
+    /**
+     * Relocates the business row inside the immutable XLSX payload of an existing item raw and
+     * compares every frozen business content field, including the declared actualSourceName.
+     */
+    private static boolean sameXlsxRowContent(LocalImportRow row, RawReceiptV1 existing) {
+        try {
+            byte[] xlsxBytes = Base64.getDecoder().decode(existing.payloadBase64());
+            try (Workbook workbook = WorkbookFactory.create(new ByteArrayInputStream(xlsxBytes))) {
+                Sheet sheet = workbook.getNumberOfSheets() == 0 ? null : workbook.getSheetAt(0);
+                if (sheet == null) {
+                    return false;
+                }
+                DataFormatter formatter = new DataFormatter();
+                for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+                    Row candidateRow = sheet.getRow(rowIndex);
+                    if (candidateRow == null) {
+                        continue;
+                    }
+                    List<String> fields = readRowAsStrings(sheet, candidateRow, formatter);
+                    if (fields == null || fields.size() != LocalImportCsvParser.TEMPLATE_HEADER.size()) {
+                        continue;
+                    }
+                    if (!row.itemId().equals(fields.get(1))
+                            || !row.businessDate().equals(fields.get(2))) {
+                        continue;
+                    }
+                    String sourceUrl = fields.get(8);
+                    return row.schemaVersion().equals(fields.get(0))
+                            && row.value().equals(fields.get(3))
+                            && row.unit().equals(fields.get(4))
+                            && row.currency().equals(fields.get(5))
+                            && row.actualSourceName().equals(fields.get(6))
+                            && row.sourceReference().equals(fields.get(7))
+                            && java.util.Objects.equals(
+                            row.sourceUrl(), sourceUrl == null || sourceUrl.isBlank() ? null : sourceUrl);
+                }
+            }
+        } catch (IOException | RuntimeException exception) {
+            return false;
+        }
+        return false;
     }
 
     private static String stripTerminator(String record) {

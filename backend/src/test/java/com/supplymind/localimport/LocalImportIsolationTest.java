@@ -268,6 +268,45 @@ class LocalImportIsolationTest {
     }
 
     @Test
+    void xlsxDifferentDeclaredSourceNameIsANewPendingVersionNotAReplay() throws IOException {
+        Harness harness = harness();
+        byte[] xlsxA = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "19850.50", "元/吨", "CNY", "SOURCE_A厂报价单", "ref-same", ""}
+        });
+        byte[] xlsxB = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "19850.50", "元/吨", "CNY", "SOURCE_B厂报价单", "ref-same", ""}
+        });
+        LocalImportResult first = harness.service().importFile(xlsxA);
+        LocalImportResult second = harness.service().importFile(xlsxB);
+
+        assertEquals(LocalImportResult.ImportMode.NEW, first.accepted().get(0).mode());
+        assertEquals(LocalImportResult.ImportMode.NEW, second.accepted().get(0).mode(),
+                "the same stable key with a different declared actualSourceName must create a new pending version");
+        assertFalse(first.accepted().get(0).runId().equals(second.accepted().get(0).runId()),
+                "new business content must get a new run identity");
+        assertEquals(2, localImportRawCount(harness.root(), IMP_ADC12));
+        assertTrue(Files.isRegularFile(harness.root().resolveDataRef(
+                        DataPaths.stagingRef(first.accepted().get(0).runId()))),
+                "the old version must be preserved");
+        LifecycleTimelineV1 oldTimeline = harness.timelineStore().read(first.accepted().get(0).runId());
+        assertEquals(ProcessingStage.RECEIVED, oldTimeline.current().processingStage());
+        assertEquals(ValidationStatus.PENDING, oldTimeline.current().validationStatus());
+        assertTrue(oldTimeline.records().stream().noneMatch(s -> s.validationStatus() == ValidationStatus.CONFLICT),
+                "no CONFLICT may be produced for a source-name revision");
+
+        RawReceiptV1 secondRaw = decodeRaw(harness.root(), second.accepted().get(0).rawRef());
+        assertArrayEquals(xlsxB, Base64.getDecoder().decode(secondRaw.payloadBase64()),
+                "the new version item raw must keep the ORIGINAL_FULL_FILE_BYTES semantics");
+        assertEquals(FileDigest.sha256(xlsxB), secondRaw.payloadSha256());
+
+        LocalImportResult replay = harness.service().importFile(xlsxB);
+        assertEquals(LocalImportResult.ImportMode.IDEMPOTENT_REUSE, replay.accepted().get(0).mode(),
+                "the identical file (same source name and content) must still replay idempotently");
+    }
+
+    @Test
     void xlsxNumericValueCellIsRejectedToPreventDoublePollution() throws IOException {
         Harness harness = harness();
         byte[] xlsx = buildXlsxWithNumericValue("IMP.ADC12.001", 19850.5);
