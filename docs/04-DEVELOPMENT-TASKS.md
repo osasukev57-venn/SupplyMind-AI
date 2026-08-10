@@ -206,7 +206,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T01 六类DataProvider端口、注册表与来源模型
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D3T01_PROVIDER_PORT_REGISTRY_IMPLEMENTED_20260810`。六类统一端口（`DataProvider`）、来源能力模型（`ProviderSourceProfile`：providerType/current-history能力/actualSourceName/accessMethod，routeDecision 边界归配置）、注册表（`DataProviderRegistry`：唯一 identity/按 id 查找/能力与目标筛选/重复拒绝/未知 fail-closed/Spring 动态注册）与统一 RawRecord（`ProviderCollectOutcome`）已实现；PBOC Provider 最小适配统一端口且不改采集/校验/发布/daily/aggregate 语义；DoD 满足（上层无厂商 DTO/URL、六类身份不丢失、Provider 不直写聚合或调用 LLM）；等待第二方 R1 Review；不得在 Review 前自行 DONE。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=R1_REVIEW_PASS_20260810`。implementation commit=`86c8e3f`；Review Level=R1；第二方 R1 Review=`PASS`（BLOCKER=无、MAJOR=无、BUSINESS_DECISION_REQUIRED=无、R2_REQUIRED=NO）；技术 DoD=`PASS`；支持状态收口=`YES`。
 - **任务目标：** 定义OfficialWeb、AuthorizedApi、FreePublic、Manual、LocalImport、SyntheticDemo六类逻辑入口和统一RawRecord。
 - **对应需求：** SUP-03至SUP-08、F02、F04-F07、H07、H08。
 - **输入：** D2-T05通过证据、数据字典和来源能力要求。
@@ -220,7 +220,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T02 材料三层路由与AuthorizedApi能力
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`。冻结依赖 D3-T01=`DONE`（Provider 能力矩阵/来源能力模型已就绪）；输入（公开条款/授权、材料规格、Provider 能力矩阵）属任务执行期收集，不构成领取阻断；EXT-04=`OPEN_EXTERNAL_NON_BLOCKING`（docs/01：仅局部影响指定源自动采集能力，不阻塞 P0，不阻断本任务领取）；已具备领取/实施条件，尚未开始实施。READY≠开始。
 - **任务目标：** 对SMM/Asian Metal逐项判断合法自动能力，并为ADC12/AZ91D形成受控三层路由。
 - **对应需求：** SUP-03、SUP-08、F04、F05、EXT-04。
 - **输入：** 公开条款/授权、材料规格、Provider能力矩阵。
