@@ -53,9 +53,11 @@ class FreePublicSourceSurveyTest {
         FreePublicSourceSurvey asianMetal = FreePublicSourceSurvey.of(
                 "asian-metal-cn", "亚洲金属网（Asian Metal）", "https://www.asianmetal.com.cn/", INVESTIGATED_AT,
                 null, "SSL_HANDSHAKE_TERMINATED", null, false, false, false, false,
-                SourceVerdict.NOT_APPROVED,
-                "NO_PUBLIC_INTERFACE: 正常公开 HTTPS 访问被服务端终止握手（Remote host terminated the handshake），"
-                        + "无法取得公开价格接口事实");
+                SourceVerdict.UNVERIFIED,
+                "ACCESS_UNVERIFIED: 本次调查尝试正常公开 HTTPS 访问时出现 TLS/HTTPS 握手失败"
+                        + "（Remote host terminated the handshake），未取得足以判断该来源 ADC12/AZ91D"
+                        + "免费公开报价/接口能力的页面事实；不能据此确认其存在或不存在公开接口，"
+                        + "当前证据不足以批准为 FreePublic 来源");
         FreePublicSourceSurvey ccmn = FreePublicSourceSurvey.of(
                 "ccmn-cn", "长江有色金属网（CCMN）", "https://www.ccmn.cn/", INVESTIGATED_AT,
                 200, null, 175755, true, false, false, false,
@@ -76,9 +78,30 @@ class FreePublicSourceSurveyTest {
         assertEquals(FreePublicSurveyReport.NO_APPROVED_SOURCE, report.conclusion());
         assertEquals(FreePublicSurveyReport.ROUTE_MANUAL, report.routeConclusion());
         assertEquals(4, report.surveys().size());
-        assertTrue(report.surveys().stream().allMatch(s -> s.verdict() == SourceVerdict.NOT_APPROVED));
+        assertTrue(report.surveys().stream().noneMatch(s -> s.verdict() == SourceVerdict.APPROVED));
         assertEquals(2, report.targetReasons().size());
         assertNotNull(report.investigatedAt());
+    }
+
+    @Test
+    void asianMetalTlsFailureIsUnverifiedNeverNoPublicInterfaceOrApproved() {
+        FreePublicSourceSurvey asianMetal = FreePublicSourceSurvey.of(
+                "asian-metal-cn", "亚洲金属网（Asian Metal）", "https://www.asianmetal.com.cn/", INVESTIGATED_AT,
+                null, "SSL_HANDSHAKE_TERMINATED", null, false, false, false, false,
+                SourceVerdict.UNVERIFIED,
+                "ACCESS_UNVERIFIED: 本次调查 TLS/HTTPS 握手失败，页面事实不足，不能确认公开接口能力");
+
+        assertEquals(SourceVerdict.UNVERIFIED, asianMetal.verdict());
+        assertFalse(asianMetal.verdict() == SourceVerdict.APPROVED,
+                "an unverified source must never be approved");
+        assertFalse(asianMetal.reason().contains("NO_PUBLIC_INTERFACE"),
+                "a TLS/handshake failure must not be escalated to a site-level NO_PUBLIC_INTERFACE claim");
+        assertTrue(asianMetal.reason().contains("ACCESS_UNVERIFIED"));
+
+        FreePublicSurveyReport report = FreePublicSurveyReport.noApprovedSource(
+                INVESTIGATED_AT, List.of(asianMetal), Map.of("MAT.AZ91D.AM", "evidence insufficient"));
+        assertEquals(FreePublicSurveyReport.NO_APPROVED_SOURCE, report.conclusion(),
+                "no approved source still means the overall survey conclusion stays NO_APPROVED_SOURCE");
     }
 
     @Test

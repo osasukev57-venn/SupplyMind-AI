@@ -234,7 +234,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T03 FreePublicDataProvider与真实来源追踪
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D3T03_NO_APPROVED_SOURCE_SURVEY_20260810`。真实公开来源调查完成（仅正常公开 HTTPS 访问，2026-08-10T18:50）：SMM（会员制价格区）、Asian Metal（公开 HTTPS 握手被拒）、CCMN（具体报价会员制）、100ppi（仅壳页）均 NOT_APPROVED → 结论 `NO_APPROVED_SOURCE`（冻结 DoD 路径 B：URL/条款调查 + 转 Manual 路由仍满足 DoD，不编造适配器）；未实现 FreePublicDataProvider（NOT_IMPLEMENTED_WITH_REASON）；调查模型 `FreePublicSourceSurvey`/`FreePublicSurveyReport`（结论一致性 fail-closed）、三层路由 FREE_PUBLIC 不可用→MANUAL 显式降级、配置引用不存在 Provider fail-closed（resolver 急切校验）；未访问受限内容、未伪造数据、未修改 Validation/Publish Gate；证据=`docs/evidence/D3-T03/`；等待第二方 R1+ Review；不得在 Review 前自行 DONE。
+- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D3T03_NO_APPROVED_SOURCE_SURVEY_20260810`。真实公开来源调查完成（仅正常公开 HTTPS 访问，2026-08-10T18:50）：SMM（会员制价格区）、CCMN（具体报价会员制）、100ppi（仅壳页）均 NOT_APPROVED，Asian Metal（公开 HTTPS 握手失败）UNVERIFIED（本次调查证据不足，未确认公开接口能力，不批准）→ 结论 `NO_APPROVED_SOURCE`（冻结 DoD 路径 B：URL/条款调查 + 转 Manual 路由仍满足 DoD，不编造适配器）；未实现 FreePublicDataProvider（NOT_IMPLEMENTED_WITH_REASON）；调查模型 `FreePublicSourceSurvey`/`FreePublicSurveyReport`（结论一致性 fail-closed，`SourceVerdict.UNVERIFIED` 中性证据不足状态）、三层路由 FREE_PUBLIC 不可用→MANUAL 显式降级、配置引用不存在 Provider fail-closed（resolver 急切校验）；未访问受限内容、未伪造数据、未修改 Validation/Publish Gate；证据=`docs/evidence/D3-T03/`；等待第二方 R1+ Review；不得在 Review 前自行 DONE。
 - **任务目标：** 接入项目方认可、无需绕限制的同类免费公开材料信源，并保留真实站名和引用。
 - **对应需求：** SUP-03、SUP-07、F04-F07、EXT-10。
 - **输入：** 候选免费源URL/条款、ADC12/AZ91D规格映射。

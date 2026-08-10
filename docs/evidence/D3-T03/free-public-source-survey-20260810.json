@@ -35,8 +35,8 @@
       "publicStructuredPriceInterface" : false,
       "adc12Match" : false,
       "az91dMatch" : false,
-      "verdict" : "NOT_APPROVED",
-      "reason" : "NO_PUBLIC_INTERFACE: normal public HTTPS access terminated by the remote host during TLS handshake (Remote host terminated the handshake); no public price interface facts obtainable"
+      "verdict" : "UNVERIFIED",
+      "reason" : "ACCESS_UNVERIFIED: 本次调查尝试正常公开 HTTPS 访问时出现 TLS/HTTPS 握手失败（Remote host terminated the handshake），未取得足以判断该来源 ADC12/AZ91D 免费公开报价/接口能力的页面事实；不能据此确认其存在或不存在公开接口，当前证据不足以批准为 FreePublic 来源"
     },
     {
       "sourceKey" : "ccmn-cn",
