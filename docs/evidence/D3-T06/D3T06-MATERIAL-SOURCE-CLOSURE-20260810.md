@@ -23,9 +23,12 @@
 - 四条 P0 序列均获得确定性、可解释、可审计的合法路由；切换不静默（fallbackReason 记录）；PBOC 被排除在材料路由外；SyntheticDemo 恒非候选。
 - "至少一条非 synthetic 路线完成 raw 到已验证文件链"的 Day4 verified 部分：DEC-057 拆分后属 D4-T01/D4-T02；Day3 完成 raw→PARSED+PENDING 受理链（见 AT-SRC-007）。商业自动能力 N/A 未扩散为整体 P0 BLOCKED。
 
-## AT-SRC-006 FreePublic 全链 —— N/A_APPROVED_FALLBACK（Day3）
+## AT-SRC-006 FreePublic 全链 —— BLOCKED（Day3；无获认可免费公开来源）
 
-- D3-T03 调查无获认可免费源（NO_APPROVED_SOURCE，证据 `docs/evidence/D3-T03/`）；FreePublic 层为空，替代路线由 AT-SRC-007（Manual）证明；不绕过任何访问限制。
+- 冻结 testcase（FreePublicDataProvider 自动获取→校验→VERIFIED 发布→daily/aggregate→页面字段变化模拟）当前无法合法执行：D3-T03 调查无获认可免费源（`NO_APPROVED_SOURCE`，证据 `docs/evidence/D3-T03/`），FreePublic 层为空，属既有外部依赖 EXT-10=`OPEN_EXTERNAL_NON_BLOCKING`（未创建新外部依赖）。
+- 状态依据 docs/03 §3 `BLOCKED`：任何认可数据路线缺失，无法合法执行；不是 PASS。
+- 技术事实区分：路由合法性（routeDecision/fallbackReason 可审计）、无伪造来源、Manual 合法替代链存在——由 AT-SRC-001（PASS）、AT-SRC-005（DAY3_PARTIAL_PASS）、AT-SRC-007（DAY3_PARTIAL_PASS）证明；**不**因其他测试证明 fallback 而把 AT-SRC-006 记为 PASS。
+- 不绕过任何访问限制；无伪造自动来源。
 
 ## AT-SRC-007 ManualDataProvider 治理与门禁 —— DAY3_PARTIAL_PASS
 
@@ -41,11 +44,20 @@
 - XLSX：同两标的经 POI 文本单元格 → RECEIVED+PENDING；XLSX Source/Item Raw=ORIGINAL_FULL_FILE_BYTES、Item Raw SHA=source 原始 SHA（D3-T05 冻结语义保持）。
 - PENDING 门禁：PublishedQueryService 空、daily 无行、aggregate 无文件。
 
-## AT-SRC-008 来源不可冒充与跨出口一致性 —— PASS（现有正式边界）
+## AT-SRC-008 来源不可冒充与跨出口一致性 —— DAY3_PARTIAL_PASS
 
-- 故意伪标：Manual 提交声明 actualSourceName="SMM官方页面报价（人工录入声明）" → providerType 恒 MANUAL、raw/candidate 身份恒"人工录入（Manual）"，声明来源仅作为用户声明/引用保留（declaredSourceName/sourceReference），未被转换为 OfficialWeb/FreePublic。
-- SyntheticDemo：身份恒 SYNTHETIC_DEMO、正式查询不可见；正式无数据（PRIMARY/FREE_PUBLIC/MANUAL 均不可用）→ ROUTE_UNAVAILABLE，绝不自动补 synthetic 材料价格。
-- 数据进入方式（providerType/accessMethod）与实际依据（actualSourceName/sourceReference/sourceUrl）全链分离。
+### Day3 已验证范围（真实执行）
+
+- 故意伪标：Manual 提交声明 actualSourceName="SMM官方页面报价（人工录入声明）" → providerType 恒 MANUAL、raw/candidate 身份恒"人工录入（Manual）"，声明来源仅作为用户声明/引用保留（declaredSourceName/sourceReference），未被转换为 OfficialWeb/FreePublic（预期 2、3 的 Day3 部分）。
+- SyntheticDemo：身份恒 SYNTHETIC_DEMO、正式查询不可见；正式无数据（PRIMARY/FREE_PUBLIC/MANUAL 均不可用）→ ROUTE_UNAVAILABLE，绝不自动补 synthetic 材料价格（预期 2 的 Day3 部分）。
+- 数据进入方式（providerType/accessMethod）与实际依据（actualSourceName/sourceReference/sourceUrl）全链分离（预期 1 的 raw/API/现有文件出口部分）。
+
+### 未验证范围（冻结 testcase 依赖后续实现/出口）
+
+- Dashboard、预警（warning）、Agent 报告、EvidencePack 未实现：跨出口全量一致性（raw/daily/API/UI/预警/EvidencePack/Agent 逐项对账，预期 1 与证据"跨出口字段对账表、页面/预警/Agent 截图"）尚不能执行；不得视为已验证。
+- daily 级出口一致性：Day3 材料无已验证数据，daily 无行，无法执行 daily 出口对账。
+- 预期 4（Agent 引用实际来源、不按用户提示改写）：依赖 Agent 实现，Day3 未执行。
+- 结论：裸 PASS 不成立；本状态为 `DAY3_PARTIAL_PASS`（与 AT-SRC-005/007 同一冻结合法模式），完整 PASS 待对应出口实现后由后续 Day 窗口执行。
 
 ## 外部依赖
 
