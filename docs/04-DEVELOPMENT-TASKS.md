@@ -262,7 +262,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T05 LocalImport与SyntheticDemo隔离
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`。冻结依赖任务 D3-T01、D1-T03 均=`DONE`；输入（导入模板、数据字典、黄金场景和固定种子）属任务执行期收集，不构成领取阻断；无 OPEN 的 BLOCKING 外部依赖（C 类模式边界为冻结架构约束，非领取阻断）；已具备领取/实施条件，尚未开始实施。READY≠开始。
+- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D3T05_LOCAL_IMPORT_SYNTHETIC_ISOLATION_IMPLEMENTED_20260810`。已实现：`LocalImportService`（冻结 UTF-8 CSV 模板——列复用 D3-T04 冻结字段集；严格 UTF-8/无 BOM/无 CR，引号感知解析；结构失败全文件 fail-closed，逐行错误输出；合法行→immutable raw（payload=原始导入文件（子集）字节，docs/01 L354）→RECEIVED+PENDING，不自动 VERIFIED/PUBLISHED（docs/01 L211：LocalImport 须与自动源一样过标准化/校验/发布门禁；材料校验属 D4-T01）；same key+same content 幂等、different content 新版本保留）、`LocalImportDataProvider`（LOCAL_IMPORT 标准端口）、`SyntheticDemoDataProvider`（SYNTHETIC_DEMO，固定 seed+scenario version 确定性，不落正式存储、不进正式查询、不作路由候选/fallback，正式无数据=ROUTE_UNAVAILABLE）；LocalImport 与 Synthetic 身份严格分离；未修改 Publish Gate/正式数据 Gate；等待第二方 R1+ Review；不得在 Review 前自行 DONE。
 - **任务目标：** 支持合法CSV/XLSX导入与可复现演示数据，并严格区分真实导入和synthetic。
 - **对应需求：** F04-F07、H08、C类模式边界。
 - **输入：** 导入模板、数据字典、黄金场景和固定种子。
