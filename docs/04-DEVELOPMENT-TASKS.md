@@ -188,7 +188,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D2-T05 PBOC调度、幂等、重启端到端硬门
 
-- **优先级/状态：** P0-最高 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=DEC056_ROUND2_FIX_AT_SRC_002_PASS_CANDIDATE_20260810`。DEC-056 Round 2 已实施：Finding A item→source 追溯强制（RawAcquisitionLinkVerifier 生产路径执行）、Finding B decodeHtml 失败契约、Finding C runner→summary 自动证据流水线（无硬编码 runner 计数）、Finding D 实时状态唯一；AT-SRC-002 修复后正式重跑=`PASS_CANDIDATE`（真实联网 businessDate=2026-08-10 USD=6.7884/EUR=7.8171，surefire 1/1，runner XML 固化，awaiting fixed-commit Review）；等待 Sol/Second-party Review 收口 DONE；不得在 Review 前自行 DONE。
+- **优先级/状态：** P0-最高 / `TaskExecutionStatus=DONE`；`statusReason=DUAL_REVIEW_PASS_DEC056_AT_SRC_002_PASS_20260810`。实现链：initial implementation=`24d24b6`（首轮 Review=`CHANGES_REQUESTED`：raw-first FAIL / idempotency ambiguity / runner evidence 不足）→ Fact Adjudication 落 `DEC-056` → Findings Fix=`2b7d2f4`（Review=`CHANGES_REQUESTED`：强制追溯/decodeHtml 契约/evidence 自动化/状态唯一）→ traceability/evidence fix=`a482087`（Review=`CHANGES_REQUESTED`：仅剩 summary UTF-8 encoding MAJOR）→ UTF-8 final fix=`79680ec`（Sol UTF-8 Evidence Finding Review=`PASS`、Second-party UTF-8 Delta Review=`PASS`）；AT-SRC-002 正式=`PASS`（真实 gated 1/1/0/0/0，businessDate=2026-08-10 USD=6.7884/EUR=7.8171，runner XML=`6e9d7c50…2e1b8`）；DEC-056 implementation=`PASS`；BLOCKER/MAJOR=无；Day 2 退出条件满足。
 - **任务目标：** 完成真实定时/立即采集、raw先写、校验、发布、daily、聚合和重启读取的双币端到端验收。
 - **对应需求：** SUP-01、SUP-02、F02、F03、H01-H03。
 - **输入：** D1-T04、D2-T01至D2-T04、AT-SRC-002。
@@ -206,7 +206,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T01 六类DataProvider端口、注册表与来源模型
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`。冻结输入 D2-T05 通过证据、数据字典与来源能力要求均已满足（D2-T05=`DONE`、AT-SRC-002=`PASS`、Day 2=`COMPLETE`）；已具备领取/实施条件，尚未开始实施。READY≠开始；本轮不实施。
 - **任务目标：** 定义OfficialWeb、AuthorizedApi、FreePublic、Manual、LocalImport、SyntheticDemo六类逻辑入口和统一RawRecord。
 - **对应需求：** SUP-03至SUP-08、F02、F04-F07、H07、H08。
 - **输入：** D2-T05通过证据、数据字典和来源能力要求。
