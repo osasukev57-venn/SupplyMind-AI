@@ -3,7 +3,7 @@
 > 文档性质：跨窗口可独立执行的任务清单  
 > 规范版本：v1.4（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
-> 当前进度锚点：`D1-T01`、`D1-T02`、`D1-T03`已完成并通过技术负责人 Code Review；`AT-FILE-000=PASS`，v1.4编码前基线已冻结；`D1-T04`当前为`READY`，等待项目方领取确认。
+> 当前进度锚点：Day 1 与 Day 2 已完成（D1-T01～D1-T05、D2-T01～D2-T05 均`DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`；AT-SRC-002=`PASS`、DEC-056 implementation=`PASS`）；下一正式任务：`D3-T01` 六类DataProvider端口、注册表与来源模型，`readyState=READY`、`TaskExecutionStatus=NOT_STARTED`。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
 ## 1. 新窗口执行协议
