@@ -220,7 +220,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T02 材料三层路由与AuthorizedApi能力
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D3T02_MATERIAL_ROUTING_IMPLEMENTED_20260810`。冻结三层受控降级（DEC-037：合法指定源自动→同类免费公开信源→Manual）已实现：`MaterialRouteResolver`（仅经 `DataProviderRegistry` 发现候选；逐候选记录层级与可用性原因；每次降级记录 routeDecision/fallbackReason/实际来源；current/history 能力过滤；未知 provider/无合法候选/不支持目标 fail-closed）、路由模型（`MaterialRouteConfigV1`/`MaterialRouteDecision`/`RouteTier`/`CandidateUnavailability`/`RouteAcceptance`，routeDecision 归配置边界）、AuthorizedApi 能力边界（`ApiAuthorizationProbe`：默认 NOT_CONFIGURED，无真实凭证不标 AVAILABLE，secret 不入代码/日志/Evidence）；Manual/LocalImport 仅作路由候选边界，未做录入 UI；SyntheticDemo 显式排除出正式路由；未访问任何真实材料网站；DoD 满足；等待第二方 R1+ Review；不得在 Review 前自行 DONE。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=R1_REVIEW_PASS_20260810`。implementation commit=`ee7cbc7`；Review Level=R1+；第二方 R1+ Review=`PASS`（BLOCKER=无、MAJOR=无、BUSINESS_DECISION_REQUIRED=无、R2_REQUIRED=NO）；技术 DoD=`PASS`；支持状态收口=`YES`。任务级 PASS，不代表 Day 3 阶段 Gate 已通过（阶段 Acceptance 待 Day 3 收尾统一执行）。
 - **任务目标：** 对SMM/Asian Metal逐项判断合法自动能力，并为ADC12/AZ91D形成受控三层路由。
 - **对应需求：** SUP-03、SUP-08、F04、F05、EXT-04。
 - **输入：** 公开条款/授权、材料规格、Provider能力矩阵。
@@ -234,7 +234,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T03 FreePublicDataProvider与真实来源追踪
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`。冻结依赖任务 D3-T01、D3-T02 均=`DONE`；输入（候选免费源URL/条款、ADC12/AZ91D规格映射）属任务执行期收集，不构成领取阻断；EXT-10=`OPEN_EXTERNAL_NON_BLOCKING`（docs/01：仅局部影响 FreePublic 适配能力，不阻塞 P0；D3-T02 DoD 允许以 `NO_APPROVED_SOURCE` 调查结论+转 Manual 路由仍标 `DONE`）；已具备领取/实施条件，尚未开始实施。READY≠开始。
 - **任务目标：** 接入项目方认可、无需绕限制的同类免费公开材料信源，并保留真实站名和引用。
 - **对应需求：** SUP-03、SUP-07、F04-F07、EXT-10。
 - **输入：** 候选免费源URL/条款、ADC12/AZ91D规格映射。
