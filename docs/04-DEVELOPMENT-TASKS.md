@@ -234,7 +234,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T03 FreePublicDataProvider与真实来源追踪
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D3T03_NO_APPROVED_SOURCE_SURVEY_20260810`。真实公开来源调查完成（仅正常公开 HTTPS 访问，2026-08-10T18:50）：SMM（会员制价格区）、CCMN（具体报价会员制）、100ppi（仅壳页）均 NOT_APPROVED，Asian Metal（公开 HTTPS 握手失败）UNVERIFIED（本次调查证据不足，未确认公开接口能力，不批准）→ 结论 `NO_APPROVED_SOURCE`（冻结 DoD 路径 B：URL/条款调查 + 转 Manual 路由仍满足 DoD，不编造适配器）；未实现 FreePublicDataProvider（NOT_IMPLEMENTED_WITH_REASON）；调查模型 `FreePublicSourceSurvey`/`FreePublicSurveyReport`（结论一致性 fail-closed，`SourceVerdict.UNVERIFIED` 中性证据不足状态）、三层路由 FREE_PUBLIC 不可用→MANUAL 显式降级、配置引用不存在 Provider fail-closed（resolver 急切校验）；未访问受限内容、未伪造数据、未修改 Validation/Publish Gate；证据=`docs/evidence/D3-T03/`；等待第二方 R1+ Review；不得在 Review 前自行 DONE。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=R1_REVIEW_PASS_AFTER_FIX_20260810`。implementation=`0fbe48d`；finding fix=`2c7398d`（唯一 MAJOR：Asian Metal TLS/HTTPS 握手失败被过度表述为 NO_PUBLIC_INTERFACE → 修正为 `SourceVerdict.UNVERIFIED`：本次调查证据不足，不能据此确认存在或不存在公开接口，当前不能批准）；Review Level=R1+；initial Review=`CHANGES_REQUESTED`；Finding Delta Re-Review=`PASS`（BLOCKER=无、MAJOR=无 after fix、R2_REQUIRED=NO）；technical DoD=`PASS`；支持状态收口=`YES`。FreePublic 调查结果=`NO_APPROVED_SOURCE`（SMM/CCMN/100ppi=NOT_APPROVED，Asian Metal=UNVERIFIED）；Manual fallback=`PASS`。任务级 PASS，不代表 Day 3 阶段 Gate 已通过（阶段 Acceptance 待 Day 3 收尾统一执行）。
 - **任务目标：** 接入项目方认可、无需绕限制的同类免费公开材料信源，并保留真实站名和引用。
 - **对应需求：** SUP-03、SUP-07、F04-F07、EXT-10。
 - **输入：** 候选免费源URL/条款、ADC12/AZ91D规格映射。
@@ -248,7 +248,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T04 ManualDataProvider与数据治理门禁
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`。冻结依赖任务 D3-T01、D2-T01、D2-T02 均=`DONE`；输入（Manual字段schema、材料配置、校验规则）属任务执行期收集，不构成领取阻断；EXT-11=`OPEN_EXTERNAL_NON_BLOCKING`（docs/01：仅局部影响 Manual 复核能力，不阻塞 P0，不阻断本任务领取）；已具备领取/实施条件，尚未开始实施。READY≠开始。
 - **任务目标：** 提供手工填写入口，并强制记录来源字段、不可变raw + 独立初始`RECEIVED+PENDING` LifecycleRecord、双维校验、PUBLISHED+VERIFIED类发布、加工和版本审计。
 - **对应需求：** SUP-03、SUP-05、SUP-06、SUP-07、F04-F07、H08、EXT-11。
 - **输入：** Manual字段schema、材料配置、校验规则。
