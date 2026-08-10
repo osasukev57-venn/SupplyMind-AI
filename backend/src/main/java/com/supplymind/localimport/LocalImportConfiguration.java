@@ -32,11 +32,20 @@ public class LocalImportConfiguration {
     LocalImportService localImportService(
             DataRoot dataRoot,
             RawReceiptStore rawReceiptStore,
+            LocalImportFileStore importFileStore,
             TimelineStore timelineStore,
             LocalImportCsvParser parser,
             Clock foundationClock
     ) {
-        return new LocalImportService(dataRoot, rawReceiptStore, timelineStore, parser, foundationClock);
+        return new LocalImportService(
+                dataRoot, rawReceiptStore, importFileStore, timelineStore, parser, foundationClock);
+    }
+
+    @Bean
+    LocalImportFileStore localImportFileStore(
+            DataRoot dataRoot, AtomicFileStore fileStore, Clock foundationClock
+    ) {
+        return new LocalImportFileStore(dataRoot, fileStore, foundationClock);
     }
 
     @Bean

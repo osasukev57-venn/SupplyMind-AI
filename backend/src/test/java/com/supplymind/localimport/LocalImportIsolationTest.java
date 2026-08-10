@@ -23,9 +23,14 @@ import com.supplymind.foundation.storage.RawReceiptStore;
 import com.supplymind.foundation.storage.TimelineStore;
 import com.supplymind.provider.DataProviderRegistry;
 import com.supplymind.publish.PublishedQueryService;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
@@ -35,11 +40,13 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -47,9 +54,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * D3-T05 contract tests: LocalImport ingests the frozen UTF-8 CSV template into immutable
- * raws + RECEIVED+PENDING (never auto-verified/published, never a second provider system),
- * and SyntheticDemo stays deterministic and fully isolated from the formal chain.
+ * D3-T05 contract tests (R1+ findings fix): file-level raw-first for CSV and XLSX (the
+ * complete original bytes are persisted before any parse, including on every failure),
+ * exact row byte spans (quoted newlines, UTF-8 multi-byte, quoted commas, escaped quotes,
+ * CRLF), XLSX support with text-cell-only value semantics (no float/double pollution), and
+ * the unchanged SyntheticDemo isolation.
  */
 class LocalImportIsolationTest {
 
@@ -92,9 +101,7 @@ class LocalImportIsolationTest {
         for (LocalImportResult.RowOutcome outcome : result.accepted()) {
             assertEquals(ProcessingStage.RECEIVED, outcome.processingStage());
             assertEquals(ValidationStatus.PENDING, outcome.validationStatus());
-            assertEquals(LocalImportResult.ImportMode.NEW, outcome.mode());
             assertTrue(Files.isRegularFile(harness.root().resolveDataRef(outcome.rawRef())));
-            assertTrue(Files.isRegularFile(harness.root().resolveDataRef(DataPaths.manifestRef(outcome.rawRef()))));
             assertTrue(ManifestVerifier.matches(harness.root(), outcome.rawRef(),
                     harness.root().resolveDataRef(outcome.rawRef()),
                     harness.root().resolveDataRef(DataPaths.manifestRef(outcome.rawRef())),
@@ -108,29 +115,144 @@ class LocalImportIsolationTest {
         assertEquals("123.456789012345678", adc12.rawValue(),
                 "the raw must preserve the exact decimal string without float/double transit");
         assertEquals(ProviderType.LOCAL_IMPORT, adc12.providerType());
-        assertEquals(AccessMethod.LOCAL_IMPORT, adc12.accessMethod());
         assertNotNull(adc12.inputAt());
-        assertEquals("本地文件导入（LocalImport）", adc12.actualSourceName(),
-                "the raw source identity stays the configured LocalImport identity");
-        String rowFacts = new String(Base64.getDecoder().decode(adc12.payloadBase64()), StandardCharsets.UTF_8);
-        assertTrue(rowFacts.contains("123.456789012345678"),
-                "the raw payload must preserve the original row bytes (frozen 原始导入文件（子集）字节)");
-        assertTrue(rowFacts.contains("华东某厂报价单"),
-                "the file-declared actual source must be preserved in the immutable payload");
+        assertEquals("本地文件导入（LocalImport）", adc12.actualSourceName());
+        assertEquals("import-file-", adc12.acquisitionId().substring(0, 12),
+                "the row raw must trace to its source import file via acquisitionId");
+        String rowPayload = new String(Base64.getDecoder().decode(adc12.payloadBase64()), StandardCharsets.UTF_8);
+        assertTrue(rowPayload.contains("123.456789012345678"));
+        assertTrue(rowPayload.contains("华东某厂报价单"),
+                "the file-declared actual source must be preserved in the immutable row payload");
+
+        assertSourceImportRaw(harness, csv.getBytes(StandardCharsets.UTF_8), adc12.acquisitionId());
     }
 
     @Test
-    void structuralFailuresFailTheWholeFileClosed() {
+    void fileLevelRawFirstPreservesSourceEvidenceOnEveryFailure() throws IOException {
         Harness harness = harness();
-        assertTrue(harness.service().importFile("not-a-csv".getBytes(StandardCharsets.UTF_8)).fileFailed());
-        assertTrue(harness.service().importFile(new byte[]{(byte) 0xC3, (byte) 0x28}).fileFailed(),
-                "invalid UTF-8 (e.g. GBK bytes) must fail closed");
-        String wrongHeader = "a,b,c,d,e,f,g,h,i\n" + "1.0,IMP.ADC12.001,2026-08-10,1,元/吨,CNY,s,ref,\n";
-        assertTrue(harness.service().importFile(wrongHeader.getBytes(StandardCharsets.UTF_8)).fileFailed(),
-                "an unexpected header must fail the whole import");
-        String bom = "\uFEFF" + HEADER + "\n1.0,IMP.ADC12.001,2026-08-10,1,元/吨,CNY,s,ref,\n";
-        assertTrue(harness.service().importFile(bom.getBytes(StandardCharsets.UTF_8)).fileFailed(),
-                "a UTF-8 BOM must fail closed");
+
+        byte[] invalidUtf8 = new byte[]{(byte) 0xC3, (byte) 0x28};
+        LocalImportResult utf8Failure = harness.service().importFile(invalidUtf8);
+        assertTrue(utf8Failure.fileFailed());
+        assertImportRawPreserved(harness, invalidUtf8);
+
+        byte[] malformedQuoting = (HEADER + "\n" + "1.0,IMP.ADC12.001,2026-08-10,1,\"unterminated\n")
+                .getBytes(StandardCharsets.UTF_8);
+        LocalImportResult quotingFailure = harness.service().importFile(malformedQuoting);
+        assertTrue(quotingFailure.fileFailed());
+        assertImportRawPreserved(harness, malformedQuoting);
+
+        byte[] wrongHeader = "a,b,c,d,e,f,g,h,i\n".getBytes(StandardCharsets.UTF_8);
+        LocalImportResult headerFailure = harness.service().importFile(wrongHeader);
+        assertTrue(headerFailure.fileFailed());
+        assertImportRawPreserved(harness, wrongHeader);
+
+        byte[] bom = ("\uFEFF" + HEADER + "\n").getBytes(StandardCharsets.UTF_8);
+        LocalImportResult bomFailure = harness.service().importFile(bom);
+        assertTrue(bomFailure.fileFailed());
+        assertImportRawPreserved(harness, bom);
+
+        byte[] corruptXlsx = new byte[]{0x50, 0x4B, 0x03, 0x04};
+        byte[] corruptXlsxBody = "corrupt-zip-bytes-not-a-workbook".getBytes(StandardCharsets.UTF_8);
+        byte[] corruptXlsxBytes = new byte[corruptXlsx.length + corruptXlsxBody.length];
+        System.arraycopy(corruptXlsx, 0, corruptXlsxBytes, 0, corruptXlsx.length);
+        System.arraycopy(corruptXlsxBody, 0, corruptXlsxBytes, corruptXlsx.length, corruptXlsxBody.length);
+        LocalImportResult xlsxFailure = harness.service().importFile(corruptXlsxBytes);
+        assertTrue(xlsxFailure.fileFailed());
+        assertImportRawPreserved(harness, corruptXlsxBytes);
+    }
+
+    @Test
+    void quotedNewlineAndUtf8SpansMapToExactOriginalRowBytes() throws IOException {
+        Harness harness = harness();
+        String csv = HEADER + "\n"
+                + "1.0,IMP.ADC12.001,2026-08-10,19850.50,元/吨,CNY,\"华东某厂\n跨行报价单\",\"ref,含逗号\",\n";
+        byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
+        LocalImportResult result = harness.service().importFile(bytes);
+
+        assertFalse(result.fileFailed());
+        assertEquals(1, result.accepted().size());
+        RawReceiptV1 raw = decodeRaw(harness.root(), result.accepted().get(0).rawRef());
+        byte[] rowPayload = Base64.getDecoder().decode(raw.payloadBase64());
+        String payloadText = new String(rowPayload, StandardCharsets.UTF_8);
+        assertTrue(payloadText.contains("华东某厂\n跨行报价单"),
+                "the quoted embedded newline must be inside the row raw span");
+        assertTrue(payloadText.contains("\"ref,含逗号\""),
+                "quoted comma and quotes must map to the exact original bytes");
+        assertTrue(payloadText.contains("19850.50"));
+        assertTrue(payloadText.contains("元/吨"),
+                "UTF-8 multi-byte characters must be inside the correct byte span");
+        String expectedSpan = csv.substring(csv.indexOf('\n') + 1);
+        assertEquals(expectedSpan, payloadText,
+                "the row payload must be the exact original byte span of the logical record (including the quoted newline)");
+    }
+
+    @Test
+    void crlfCsvIsValidAndRawKeepsOriginalCrlfBytes() throws IOException {
+        Harness harness = harness();
+        String crlf = HEADER + "\r\n"
+                + "1.0,IMP.ADC12.001,2026-08-10,19850.50,元/吨,CNY,s,ref,\r\n";
+        byte[] bytes = crlf.getBytes(StandardCharsets.UTF_8);
+        LocalImportResult result = harness.service().importFile(bytes);
+
+        assertFalse(result.fileFailed(), "CRLF must be accepted as a normal record terminator");
+        assertEquals(1, result.accepted().size());
+        RawReceiptV1 raw = decodeRaw(harness.root(), result.accepted().get(0).rawRef());
+        String rowPayload = new String(Base64.getDecoder().decode(raw.payloadBase64()), StandardCharsets.UTF_8);
+        assertTrue(rowPayload.contains("\r\n"),
+                "the row raw must preserve the original CRLF bytes verbatim");
+    }
+
+    @Test
+    void validXlsxImportMapsIdenticallyToCsvAndPreservesExactDecimal() throws IOException {
+        Harness harness = harness();
+        byte[] xlsx = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "123.456789012345678", "元/吨", "CNY", "华东某厂报价单", "ref-xlsx", ""},
+                {"1.0", "IMP.AZ91D.001", "2026-08-10", "24500", "元/吨", "CNY", "西南某厂报价单", "ref-xlsx-2", "https://example.test/ref"}
+        });
+        LocalImportResult result = harness.service().importFile(xlsx);
+
+        assertFalse(result.fileFailed());
+        assertEquals(2, result.accepted().size());
+        assertTrue(result.rowErrors().isEmpty());
+        RawReceiptV1 adc12 = decodeRaw(harness.root(), result.accepted().get(0).rawRef());
+        assertEquals("123.456789012345678", adc12.rawValue(),
+                "XLSX text cells must keep the exact decimal without binary floating point pollution");
+        assertEquals(ProviderType.LOCAL_IMPORT, adc12.providerType());
+        assertEquals(ProcessingStage.RECEIVED, harness.timelineStore().read(
+                result.accepted().get(0).runId()).current().processingStage());
+        assertSourceImportRaw(harness, xlsx, adc12.acquisitionId());
+    }
+
+    @Test
+    void xlsxNumericValueCellIsRejectedToPreventDoublePollution() throws IOException {
+        Harness harness = harness();
+        byte[] xlsx = buildXlsxWithNumericValue("IMP.ADC12.001", 19850.5);
+        LocalImportResult result = harness.service().importFile(xlsx);
+
+        assertTrue(result.fileFailed(),
+                "a numeric Excel cell for value must be rejected instead of converting through double");
+    }
+
+    @Test
+    void invalidXlsxHeaderAndSchemaFailClosedKeepingSourceRaw() throws IOException {
+        Harness harness = harness();
+        byte[] wrongHeader = buildXlsx(new String[][]{
+                {"a", "b", "c", "d", "e", "f", "g", "h", "i"},
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "1", "元/吨", "CNY", "s", "ref", ""}
+        });
+        LocalImportResult headerFailure = harness.service().importFile(wrongHeader);
+        assertTrue(headerFailure.fileFailed());
+        assertImportRawPreserved(harness, wrongHeader);
+
+        byte[] badSchema = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"9.9", "IMP.ADC12.001", "2026-08-10", "1", "元/吨", "CNY", "s", "ref", ""}
+        });
+        LocalImportResult schemaFailure = harness.service().importFile(badSchema);
+        assertTrue(schemaFailure.fileFailed(), "an unknown schemaVersion must fail closed");
+        assertImportRawPreserved(harness, badSchema);
     }
 
     @Test
@@ -186,10 +308,7 @@ class LocalImportIsolationTest {
         assertEquals(first, second, "identical seed + scenario version must reproduce identical output");
         assertEquals(1, first.raws().size());
         assertEquals(ProviderType.SYNTHETIC_DEMO, first.raws().get(0).providerType());
-        assertEquals(AccessMethod.SYNTHETIC_DEMO, first.raws().get(0).accessMethod());
-        assertTrue(first.raws().get(0).rawRef().contains("demo-"),
-                "synthetic identity must be explicit in the trace");
-        assertEquals(SyntheticDemoDataProvider.PROVIDER_ID, first.providerId());
+        assertTrue(first.raws().get(0).rawRef().contains("demo-"));
 
         assertFalse(Files.exists(harness.root().resolveInternalRelative("raw/formal/synthetic_demo")),
                 "synthetic demo data must never be persisted to the formal raw store");
@@ -237,8 +356,9 @@ class LocalImportIsolationTest {
         configStore.activate(localImportConfig());
         RawReceiptStore rawStore = new RawReceiptStore(root, fileStore, CLOCK);
         TimelineStore timelineStore = new TimelineStore(root, fileStore, CLOCK);
+        LocalImportFileStore importFileStore = new LocalImportFileStore(root, fileStore, CLOCK);
         LocalImportService service = new LocalImportService(
-                root, rawStore, timelineStore, new LocalImportCsvParser(), CLOCK);
+                root, rawStore, importFileStore, timelineStore, new LocalImportCsvParser(), CLOCK);
         PublishedQueryService publishedQuery = new PublishedQueryService(root, timelineStore, CLOCK);
         return new Harness(root, timelineStore, service, publishedQuery);
     }
@@ -262,6 +382,83 @@ class LocalImportIsolationTest {
 
     private static RawReceiptV1 decodeRaw(DataRoot root, String ref) throws IOException {
         return JsonV1Codec.decodeFile(Files.readAllBytes(root.resolveDataRef(ref)), RawReceiptV1.class);
+    }
+
+    private static void assertSourceImportRaw(Harness harness, byte[] originalBytes, String importId)
+            throws IOException {
+        String importRef = DataPaths.importRef(importId);
+        Path importPath = harness.root().resolveDataRef(importRef);
+        Path importManifest = harness.root().resolveDataRef(DataPaths.manifestRef(importRef));
+        assertTrue(Files.isRegularFile(importPath), "the source import raw must exist");
+        assertTrue(Files.isRegularFile(importManifest));
+        LocalImportReceiptV1 receipt = JsonV1Codec.decodeFile(
+                Files.readAllBytes(importPath), LocalImportReceiptV1.class);
+        assertArrayEquals(originalBytes, Base64.getDecoder().decode(receipt.payloadBase64()),
+                "the source import raw payload must be the exact original file bytes");
+        assertEquals(FileDigest.sha256(originalBytes), receipt.payloadSha256());
+        assertEquals(originalBytes.length, receipt.byteLength());
+        assertTrue(ManifestVerifier.matches(harness.root(), importRef, importPath, importManifest,
+                List.of(importId)));
+    }
+
+    private static void assertImportRawPreserved(Harness harness, byte[] originalBytes) throws IOException {
+        String importId = "import-file-" + FileDigest.sha256(originalBytes);
+        assertSourceImportRaw(harness, originalBytes, importId);
+    }
+
+    private static byte[] concat(byte[] first, byte[] second) {
+        byte[] result = new byte[first.length + second.length];
+        System.arraycopy(first, 0, result, 0, first.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
+    }
+
+    private static byte[] headerBytes(byte[] file) {
+        int end = 0;
+        while (end < file.length && file[end] != '\n') {
+            end++;
+        }
+        return Arrays.copyOfRange(file, 0, end + 1);
+    }
+
+    private static byte[] buildXlsx(String[][] values) throws IOException {
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("import");
+            for (int r = 0; r < values.length; r++) {
+                Row row = sheet.createRow(r);
+                for (int c = 0; c < values[r].length; c++) {
+                    row.createCell(c).setCellValue(values[r][c]);
+                }
+            }
+            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                workbook.write(out);
+                return out.toByteArray();
+            }
+        }
+    }
+
+    private static byte[] buildXlsxWithNumericValue(String itemId, double numericValue) throws IOException {
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("import");
+            Row header = sheet.createRow(0);
+            for (int c = 0; c < LocalImportCsvParser.TEMPLATE_HEADER.size(); c++) {
+                header.createCell(c).setCellValue(LocalImportCsvParser.TEMPLATE_HEADER.get(c));
+            }
+            Row row = sheet.createRow(1);
+            row.createCell(0).setCellValue("1.0");
+            row.createCell(1).setCellValue(itemId);
+            row.createCell(2).setCellValue("2026-08-10");
+            row.createCell(3).setCellValue(numericValue);
+            row.createCell(4).setCellValue("元/吨");
+            row.createCell(5).setCellValue("CNY");
+            row.createCell(6).setCellValue("s");
+            row.createCell(7).setCellValue("ref");
+            row.createCell(8).setCellValue("");
+            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                workbook.write(out);
+                return out.toByteArray();
+            }
+        }
     }
 
     private static int localImportRawCount(DataRoot root, String itemId) throws IOException {

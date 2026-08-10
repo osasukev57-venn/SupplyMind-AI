@@ -98,6 +98,11 @@ final class ManifestDerivedFieldsVerifier {
             JsonV1Codec.decodeFile(dataBytes, MonitorSeriesConfigV1.class);
             return jsonFields(List.of());
         }
+        if (dataRef.startsWith("raw/import/")) {
+            com.supplymind.localimport.LocalImportReceiptV1 receipt = JsonV1Codec.decodeFile(
+                    dataBytes, com.supplymind.localimport.LocalImportReceiptV1.class);
+            return jsonFields(List.of(receipt.importId()));
+        }
         if (dataRef.startsWith("raw/source/")) {
             RawAcquisitionV1 acquisition = JsonV1Codec.decodeFile(dataBytes, RawAcquisitionV1.class);
             return jsonFields(List.of(acquisition.acquisitionId()));
