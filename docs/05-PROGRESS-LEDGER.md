@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 3（D1-T01～D1-T05、D2-T01～D2-T05、D3-T01、D3-T02、D3-T03 均`DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`；DEC-050～056 已生效；DEC-057 已登记（DOCUMENTATION_IMPLEMENTED，REVIEW_PENDING，尚未正式生效）；D3-T04=`NOT_STARTED`/`NOT_READY`（DEC-057 文档一致性 Review 待过）；Day 3 阶段 Gate 未执行）  
+> 当前阶段：Day 3（D1-T01～D1-T05、D2-T01～D2-T05、D3-T01、D3-T02、D3-T03 均`DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`；DEC-050～056 已生效；DEC-057=`EFFECTIVE`（e7d1022，R2 Final 双 PASS）；D3-T04=`NOT_STARTED`/`READY`，未开始；Day 3 阶段 Gate 未执行）  
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -56,19 +56,19 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 2 |
-| 当前任务编号 | D3-T04 ManualDataProvider与数据治理门禁（`TaskExecutionStatus=NOT_STARTED`、`readyState=NOT_READY`；`statusReason=DEC-057_CHANGE_REQUEST_DOCUMENTED_REVIEW_PENDING`）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01～D2-T05、D3-T01、D3-T02、D3-T03 均为`TaskExecutionStatus=DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`、DEC-050～056 已生效（DEC-056 implementation=`PASS`）；DEC-057 已登记为 `DOCUMENTATION_IMPLEMENTED`/`REVIEW_PENDING`（尚未正式 EFFECTIVE）。D3-T04 领取时触发 BUSINESS_DECISION_REQUIRED（材料 Manual 无冻结规则可达 VERIFIED 类）；Sol R2 裁决=`CHANGE_REQUEST_REQUIRED`；`DEC-057`（Manual Material Intake, Revision, Validation and Review Boundary）：D3-T04 最大生命周期=`PARSED+PENDING`，材料 validationVersion=`DEFERRED_TO_D4_T01`，Manual 正式链职责移至 D4-T01~D4-T04，Publish Gate 不变；DEC-057 正式 R2 Final Review 通过前 D3-T04 不得重新 `READY`。 |
+| 当前任务编号 | D3-T04 ManualDataProvider与数据治理门禁（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`；`statusReason=DEC-057_EFFECTIVE_R2_FINAL_PASS`）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01～D2-T05、D3-T01、D3-T02、D3-T03 均为`TaskExecutionStatus=DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`、DEC-050～056 已生效（DEC-056 implementation=`PASS`）；DEC-057=`EFFECTIVE`（R2 Candidate=`e7d1022`，Sol R2 Final Review=`PASS`、Second-party R2 Final Review=`PASS`，BLOCKER/MAJOR=无，BUSINESS_DECISION_REQUIRED=NO；DOCUMENTATION_IMPLEMENTED/REVIEW_PENDING 为历史记录）。D3-T04 边界（DEC-057）：最大生命周期=`PARSED+PENDING`，MUST NOT 产生 VERIFIED/VERIFIED_WITH_NOTICE/PUBLISHED、不执行材料业务validation/daily/aggregate；normalizationVersion=`manual-material-normalization-v1`；材料 validationVersion=`DEFERRED_TO_D4_T01`；Manual 正式链职责属 D4-T01~D4-T04；Publish Gate 不变。 |
 | 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）、DEC-053（arithmetic-mean-v1接受版本化默认）、DEC-054（weekday-asia-shanghai-v1接受版本化默认）、DEC-055（aggregate.calculatedAt=max(daily.updatedAt)确定性语义）、DEC-056（raw-first acquisition boundary + 业务键幂等 + AT runner 证据保存）已生效 |
 | 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS）；D2-T03（Implementation Review PASS + EXT Gate PASS，commit=607e859）；D2-T04（1ac8233→1178307，Sol/Second-party Final Delta Review 双PASS，commit=1178307）；D2-T05（24d24b6→2b7d2f4→a482087→79680ec，Sol+Second-party 最终双PASS，commit=79680ec）。 |
-| 正在进行任务 | 无（D3-T04 待 DEC-057 文档一致性 Review 通过后重新 READY 方可领取）。 |
-| 阻塞项 | DEC-057 文档一致性 Review 未通过 → D3-T04 `NOT_READY`（不得开始实施）。EXT-04/EXT-10/EXT-11=`OPEN_EXTERNAL_NON_BLOCKING`（不阻塞 P0/领取）。 |
-| 最近验收结果 | D2-T01～D2-T05=`DONE`；AT-SRC-002=`PASS`；D3-T01（86c8e3f）、D3-T02（ee7cbc7）、D3-T03（0fbe48d→2c7398d）均 R1/R1+ Review=`PASS` 收口 `DONE`。D3-T04 领取触发 BUSINESS_DECISION_REQUIRED → Sol R2=`CHANGE_REQUEST_REQUIRED` → `DEC-057` 登记（D3-T04 边界收窄至 `PARSED+PENDING`；材料校验/发布/加工/聚合移至 D4-T01~T04；AT-SRC-007 分阶段；Day 3 Gate 同步；Publish Gate 与最终 P0 要求不变）。 |
+| 正在进行任务 | 无。 |
+| 阻塞项 | 无（DEC-057=`EFFECTIVE`，D3-T04 已重新 `READY`，可领取实施）。EXT-04/EXT-10/EXT-11=`OPEN_EXTERNAL_NON_BLOCKING`（不阻塞 P0/领取）。 |
+| 最近验收结果 | D2-T01～D2-T05=`DONE`；AT-SRC-002=`PASS`；D3-T01（86c8e3f）、D3-T02（ee7cbc7）、D3-T03（0fbe48d→2c7398d）均 R1/R1+ Review=`PASS` 收口 `DONE`。DEC-057 R2 Final Review（e7d1022）：Sol=`PASS`、Second-party=`PASS`、BLOCKER/MAJOR=无、BUSINESS_DECISION_REQUIRED=NO → DEC-057=`EFFECTIVE`、D3-T04 重新 `READY`（NOT_STARTED）。 |
 | 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 计算/日历口径已接受版本化默认（DEC-053/054）；weekday-asia-shanghai-v1 不构成完整法定节假日/调休/停报/特殊交易日日历，未来以新 calendarVersion 升级。EXT-04/EXT-10/EXT-11 外部确认项（OPEN_EXTERNAL_NON_BLOCKING）；材料免费公开源调查结论=NO_APPROVED_SOURCE；材料正式校验/发布/加工依赖 Day 4（D4-T01~T04）。 |
-| 下一任务 | D3-T04（`NOT_STARTED`/`NOT_READY`）：等待 DEC-057 文档一致性 Review 通过后重新 `READY` 方可领取实施；本窗口不实施。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；全套 207 项测试（41 classes，0 failures，0 errors，7 skipped 门禁）通过（D3-T03 finding fix 后全量回归，前序已固定；本轮纯文档）。 |
-| 最近一次Git提交 | 本轮将提交 `docs: record DEC-057 manual validation boundary`；前序 checkpoint=`c50d590`（D3-T03 R0 收口）。 |
+| 下一任务 | D3-T04（`NOT_STARTED`/`READY`）：DEC-057=`EFFECTIVE`，已具备领取/实施条件（边界：最大生命周期=`PARSED+PENDING`）；本窗口不实施，等待领取。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；全套 207 项测试（41 classes，0 failures，0 errors，7 skipped 门禁）通过（D3-T03 finding fix 后全量回归，前序已固定；本轮纯状态激活）。 |
+| 最近一次Git提交 | 本轮将提交 `docs: activate DEC-057 and ready D3-T04`；前序 checkpoint=`e7d1022`（DEC-057 状态措辞修正，R2 Final Candidate）。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，DEC-057 / D3-T04 Change Request 文档实施（R2_CHANGE_IMPLEMENTATION）：正式登记 `DEC-057`（Manual Material Intake, Revision, Validation and Review Boundary；D3-T04 最大生命周期=`PARSED+PENDING`、材料 validationVersion=`DEFERRED_TO_D4_T01`、`manual-material-normalization-v1`、单操作人 operatorRef 规则、sourceReference 必填/sourceUrl 可空、修订新版本保留、Publish Gate 不变）；同步 docs/04（D3-T04 新边界+DoD、D4-T01/D4-T02 职责）、docs/03（AT-SRC-007 分阶段 Day3_PARTIAL_Day4_FULL）、docs/01（Day 3 Gate 边界）；docs/02 无实际冲突未改；docs/00 最终 P0 要求未降；D3-T04=`NOT_STARTED`/`NOT_READY`（DEC-057 Review 通过前不 READY）、DEC-057=`REVIEW_PENDING`、Day 3=`NOT_COMPLETE`；未修改生产代码/测试/Evidence，未实施 D3-T04。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，DEC-057 R0 Effectivation + D3-T04 Ready Closure：R2 Final Review（e7d1022）Sol=`PASS`、Second-party=`PASS`（BLOCKER/MAJOR=无、BUSINESS_DECISION_REQUIRED=NO）→ DEC-057=`EFFECTIVE`（DOCUMENTATION_IMPLEMENTED/REVIEW_PENDING 保留为历史）、D3-T04=`NOT_STARTED`/`READY`（statusReason=DEC-057_EFFECTIVE_R2_FINAL_PASS，边界不变：最大生命周期=`PARSED+PENDING`，禁止 VERIFIED/PUBLISHED/材料业务validation/daily/aggregate）；Day 3=`NOT_COMPLETE`；未修改 DEC-057 本体/D3-T04 技术边界/AT-SRC-007/Day3 Gate/生产代码/测试/Evidence，未实施 D3-T04。 |
 | 最后更新时间 | 2026-08-10（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照
