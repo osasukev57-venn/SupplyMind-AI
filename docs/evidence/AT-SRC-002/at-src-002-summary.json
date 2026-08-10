@@ -4,7 +4,7 @@
     "javaRuntime":  "17.0.19",
     "springBootVersion":  "3.3.6",
     "dataRoot":  "D:\\Dev\\Temp\\opencode\\at-src-002-run-round2",
-    "realSource":  "涓浗浜烘皯閾惰瀹樼綉锛堟巿鏉冧腑鍥藉姹囦氦鏄撲腑蹇冨叕甯冿級",
+    "realSource":  "中国人民银行官网（授权中国外汇交易中心公布）",
     "businessDate":  "2026-08-10",
     "acquisitionId":  "pboc-acq-2026081009005136814-d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",
     "payloadSha256":  "d7d03779bc630b8df6c2dffc02d3937f4ef4f7051022c41764724f828e30544a",

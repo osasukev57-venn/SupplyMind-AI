@@ -170,3 +170,13 @@ AT-SRC-002 = **PASS_CANDIDATE**（DEC-056 修复后真实双币全链正式运�
 | summary | `at-src-002-summary.json`（AUTO_XML_PARSE 生成） |
 
 AT-SRC-002（Round 2 正式）= **PASS_CANDIDATE**（awaiting fixed-commit Review）。
+
+---
+
+## 最终 Evidence Encoding Fix（2026-08-10，commit 待提交）
+
+- 已确认 MAJOR 修复：`at-src-002-summary.json` 的 `realSource`（中文）此前因 capture 脚本用 PowerShell 默认 ANSI 读取 UTF-8 runtime facts 而乱码（双编码）。
+- 修复：`capture-at-src-002-evidence.ps1` 全部改为显式确定性 .NET API——严格 UTF-8 读取（`UTF8Encoding(throwOnInvalidBytes=true)`，非法 UTF-8 fail-closed）+ UTF-8 no-BOM 写出（`File.WriteAllText`），JSON/XML 一律不依赖控制台 code page/ANSI/GBK；新增 fail-closed round-trip 不变式（summary.realSource 必须与 runtime facts.realSource 逐字符一致，否则不写 summary）；新增 `-SelfTest` 编码契约自测（含中文 realSource，逐字符断言）。
+- 使用既有真实 runner XML（tracked，SHA 未变 `6e9d7c50…2e1b8`）+ 既有真实 runtime facts 重新执行修复后 pipeline（本轮为 evidence 转换编码缺陷，非采集/处理缺陷，未重新联网）；runner 计数仍为 AUTO_XML_PARSE（1/0/0/0），result 由计数自动推导=PASS。
+- 核验：summary.realSource == runtime facts.realSource（码点逐一一致，`中国人民银行官网（授权中国外汇交易中心公布）`）；summary 为合法 UTF-8 可解析。
+- 状态不变：D2-T05=`REVIEW_PENDING`、AT-SRC-002=`PASS_CANDIDATE`（awaiting fixed-commit Review）、Day 2=`NOT_COMPLETE`、原材料开发=`NOT_ALLOWED`。

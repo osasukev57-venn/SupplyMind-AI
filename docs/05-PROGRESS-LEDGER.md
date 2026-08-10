@@ -66,9 +66,9 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 计算/日历口径已接受版本化默认（DEC-053/054）；weekday-asia-shanghai-v1 不构成完整法定节假日/调休/停报/特殊交易日日历，未来以新 calendarVersion 升级。 |
 | 下一任务 | D2-T05 Review 通过后收口 `DONE` → Day 2 Gate closure 评审（候选 PASS）→ 按冻结 Gate 进入 Day 3 前须满足 AT-SRC-002 已 PASS 且 Day 2 收口；本窗口不开始 Day 3/原材料。 |
 | 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；全套 176 项测试（38 classes，0 failures，0 errors，7 skipped 门禁）+ 真实联网 AT-SRC-002 双币端到端验收（surefire gated 1/1，runner XML 已固化）通过。 |
-| 最近一次Git提交 | 本轮将提交 `fix: enforce D2-T05 traceability and evidence invariants`；前序 checkpoint=`2b7d2f4`（DEC-056 Round 1 Fix，已判 Finding A/B/C/D CHANGES_REQUESTED）。 |
+| 最近一次Git提交 | 本轮将提交 `fix: preserve UTF-8 in AT-SRC-002 evidence`（修复已确认 MAJOR：summary realSource 编码乱码；capture 流水线改为严格 UTF-8 读/UTF-8 no-BOM 写 + round-trip fail-closed 不变式 + `-SelfTest` 契约；复用真实 runner XML/runtime facts 重生成，SHA 未变）；前序 checkpoint=`a482087`（DEC-056 Round 2，Finding A/B/C/D 已关闭）。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，D2-T05 DEC-056 Findings Closure Round 2（Sol CHANGES_REQUESTED）：Finding A 强制 item→source 追溯（RawAcquisitionLinkVerifier 由 RawReceiptStore 生产保存路径调用，canonical DataPaths 路径/存在/manifest COMMITTED+verify/acquisitionId/payload identity/source identity，5 类负向测试）；Finding B decodeHtml 失败契约（真实命中 decodeHtml stage=HTTP，acquisition 保留、downstream none；parseDetail 失败契约并存）；Finding C 证据流水线（测试只产 runtime facts，runner 计数/SHA/result 由 `capture-at-src-002-evidence.ps1` 从 tracked Surefire XML 自动解析推导，禁止硬编码）；Finding D 实时状态唯一（AT-SRC-002=`PASS_CANDIDATE`、D2-T05=`REVIEW_PENDING`、Day 2=`NOT_COMPLETE`、原材料=`NOT_ALLOWED`，回归数字更新为 176/38）；未新增 Decision；未开始 Day 3。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，D2-T05 最终 Evidence Encoding Fix：已确认 MAJOR（summary JSON realSource 中文乱码）修复——capture 脚本显式严格 UTF-8 读/UTF-8 no-BOM 写（.NET API，不依赖 ANSI/GBK/code page）、非法 UTF-8 fail-closed、round-trip 不变式（summary.realSource==runtime facts.realSource 逐字符）、`-SelfTest` 编码契约；复用已核验真实 runner XML（SHA 不变）+ runtime facts 重生成 summary（AUTO_XML_PARSE 1/0/0/0，result 自动推导）；D2-T05=`REVIEW_PENDING`、AT-SRC-002=`PASS_CANDIDATE`（awaiting fixed-commit Review）、Day 2=`NOT_COMPLETE`、原材料开发=`NOT_ALLOWED`；未修改生产代码/DEC/验收标准；未开始 Day 3。 |
 | 最后更新时间 | 2026-08-10（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照
