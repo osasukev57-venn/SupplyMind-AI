@@ -107,7 +107,7 @@ public final class LocalImportService {
                 rowErrors.add(new LocalImportCsvParser.RowError(rowNumber, rowError));
                 continue;
             }
-            Optional<LocalImportResult.RowOutcome> replay = findIdempotentReplay(row);
+            Optional<LocalImportResult.RowOutcome> replay = findIdempotentReplay(row, false);
             if (replay.isPresent()) {
                 accepted.add(replay.get());
                 continue;
@@ -168,13 +168,14 @@ public final class LocalImportService {
                 rowErrors.add(new LocalImportCsvParser.RowError(rowNumber, rowError));
                 continue;
             }
-            Optional<LocalImportResult.RowOutcome> replay = findIdempotentReplay(row);
+            Optional<LocalImportResult.RowOutcome> replay = findIdempotentReplay(row, true);
             if (replay.isPresent()) {
                 accepted.add(replay.get());
                 continue;
             }
-            byte[] rowPayload = JsonV1Codec.encodeFile(row);
-            accepted.add(persistRow(row, config, importId, receivedAt, rowNumber, rowPayload));
+            // DEC-057/L354: the item raw payload is the ORIGINAL FULL XLSX file bytes; the
+            // parsed cell facts are derived evidence and never a raw payload.
+            accepted.add(persistRow(row, config, importId, receivedAt, rowNumber, originalBytes));
         }
         return new LocalImportResult(null, accepted, rowErrors);
     }
@@ -266,7 +267,7 @@ public final class LocalImportService {
         return null;
     }
 
-    private Optional<LocalImportResult.RowOutcome> findIdempotentReplay(LocalImportRow row) {
+    private Optional<LocalImportResult.RowOutcome> findIdempotentReplay(LocalImportRow row, boolean xlsxSource) {
         Path itemDir = dataRoot.resolveInternalRelative("raw/formal/local_import/" + row.itemId());
         if (!Files.isDirectory(itemDir)) {
             return Optional.empty();
@@ -283,7 +284,7 @@ public final class LocalImportService {
                     if (!row.businessDate().equals(existing.sourceBusinessDate())) {
                         continue;
                     }
-                    if (sameRowContent(row, existing)) {
+                    if (sameRowContent(row, existing, xlsxSource)) {
                         String runId = existing.runId();
                         Path timelinePath = dataRoot.resolveDataRef(DataPaths.stagingRef(runId));
                         if (!Files.isRegularFile(timelinePath)) {
@@ -306,8 +307,22 @@ public final class LocalImportService {
         return Optional.empty();
     }
 
-    /** Row content equality over the immutable row payload (server time / import id excluded). */
-    private static boolean sameRowContent(LocalImportRow row, RawReceiptV1 existing) {
+    /**
+     * Row content equality over the immutable row payload. For CSV the payload is the exact
+     * original record span and is parsed back; for XLSX the payload is the original full file
+     * bytes, so equality uses the structured business fields persisted on the item raw.
+     * Server-generated time and the import identity never participate.
+     */
+    private static boolean sameRowContent(LocalImportRow row, RawReceiptV1 existing, boolean xlsxSource) {
+        if (xlsxSource) {
+            return row.itemId().equals(existing.itemId())
+                    && row.businessDate().equals(existing.sourceBusinessDate())
+                    && row.value().equals(existing.rawValue())
+                    && row.unit().equals(existing.rawUnit())
+                    && row.currency().equals(existing.rawCurrency())
+                    && row.sourceReference().equals(existing.sourceReference())
+                    && java.util.Objects.equals(row.sourceUrl(), existing.sourceUrl());
+        }
         try {
             byte[] payload = Base64.getDecoder().decode(existing.payloadBase64());
             String text = new String(payload, StandardCharsets.UTF_8);

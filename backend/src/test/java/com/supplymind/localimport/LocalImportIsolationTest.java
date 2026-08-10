@@ -216,13 +216,55 @@ class LocalImportIsolationTest {
         assertFalse(result.fileFailed());
         assertEquals(2, result.accepted().size());
         assertTrue(result.rowErrors().isEmpty());
+        String sourceImportId = "import-file-" + FileDigest.sha256(xlsx);
+        String expectedPayloadSha = FileDigest.sha256(xlsx);
+        String expectedImportRef = DataPaths.importRef(sourceImportId);
+        for (LocalImportResult.RowOutcome outcome : result.accepted()) {
+            RawReceiptV1 raw = decodeRaw(harness.root(), outcome.rawRef());
+            assertEquals(sourceImportId, raw.acquisitionId(),
+                    "every XLSX item raw must trace to the same immutable source import");
+            assertEquals(expectedPayloadSha, raw.payloadSha256(),
+                    "the XLSX item raw payload SHA must equal SHA256 of the original full XLSX bytes");
+            assertArrayEquals(xlsx, Base64.getDecoder().decode(raw.payloadBase64()),
+                    "the XLSX item raw payload must be the ORIGINAL FULL XLSX file bytes");
+            assertEquals(ProcessingStage.RECEIVED, harness.timelineStore().read(
+                    outcome.runId()).current().processingStage());
+        }
         RawReceiptV1 adc12 = decodeRaw(harness.root(), result.accepted().get(0).rawRef());
         assertEquals("123.456789012345678", adc12.rawValue(),
                 "XLSX text cells must keep the exact decimal without binary floating point pollution");
-        assertEquals(ProviderType.LOCAL_IMPORT, adc12.providerType());
-        assertEquals(ProcessingStage.RECEIVED, harness.timelineStore().read(
-                result.accepted().get(0).runId()).current().processingStage());
-        assertSourceImportRaw(harness, xlsx, adc12.acquisitionId());
+        assertEquals("ref-xlsx", adc12.sourceReference());
+        RawReceiptV1 az91d = decodeRaw(harness.root(), result.accepted().get(1).rawRef());
+        assertEquals("24500", az91d.rawValue());
+        assertEquals("https://example.test/ref", az91d.sourceUrl());
+        assertTrue(Files.isRegularFile(harness.root().resolveDataRef(expectedImportRef)));
+        assertSourceImportRaw(harness, xlsx, sourceImportId);
+    }
+
+    @Test
+    void xlsxSameFileReimportIsIdempotentAndDifferentContentKeepsVersions() throws IOException {
+        Harness harness = harness();
+        byte[] xlsxA = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "19850.50", "元/吨", "CNY", "s", "ref", ""}
+        });
+        LocalImportResult first = harness.service().importFile(xlsxA);
+        LocalImportResult replay = harness.service().importFile(xlsxA);
+
+        assertEquals(LocalImportResult.ImportMode.NEW, first.accepted().get(0).mode());
+        assertEquals(LocalImportResult.ImportMode.IDEMPOTENT_REUSE, replay.accepted().get(0).mode());
+        assertEquals(first.accepted().get(0).runId(), replay.accepted().get(0).runId());
+        assertEquals(1, localImportRawCount(harness.root(), IMP_ADC12));
+
+        byte[] xlsxB = buildXlsx(new String[][]{
+                LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
+                {"1.0", "IMP.ADC12.001", "2026-08-10", "20000.00", "元/吨", "CNY", "s", "ref", ""}
+        });
+        LocalImportResult revision = harness.service().importFile(xlsxB);
+        assertEquals(LocalImportResult.ImportMode.NEW, revision.accepted().get(0).mode());
+        assertEquals(2, localImportRawCount(harness.root(), IMP_ADC12));
+        assertTrue(Files.isRegularFile(harness.root().resolveDataRef(
+                DataPaths.stagingRef(first.accepted().get(0).runId()))));
     }
 
     @Test
