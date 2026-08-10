@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 3（D1-T01～D1-T05、D2-T01～D2-T05、D3-T01、D3-T02、D3-T03、D3-T04 均`DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`；DEC-050～056 已生效；DEC-057=`EFFECTIVE`；D3-T05=`REVIEW_PENDING`（实施完成，等待第二方 R1+ Review）；D3-T06=`NOT_STARTED`；Day 3 阶段 Gate 未执行）  
+> 当前阶段：Day 3（D1-T01～D1-T05、D2-T01～D2-T05、D3-T01～D3-T05 均`DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`；DEC-050～056 已生效；DEC-057=`EFFECTIVE`；D3-T06=`NOT_STARTED`/`READY`，未开始；Day 3 阶段 Gate 未执行）  
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -56,19 +56,19 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 字段 | 当前值 |
 |---|---|
 | 当前开发日 | Day 2 |
-| 当前任务编号 | D3-T05 LocalImport与SyntheticDemo隔离（`TaskExecutionStatus=REVIEW_PENDING`，`statusReason=D3T05_XLSX_ITEM_IDEMPOTENCY_UNAMBIGUOUS_20260810`；a6168bf Delta Review 唯一 MAJOR（同 key 多行重定位歧义）已修复，等待第二方 R1+ 复审）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01～D2-T05、D3-T01、D3-T02、D3-T03、D3-T04 均为`TaskExecutionStatus=DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`、DEC-050～056 已生效（DEC-056 implementation=`PASS`）；DEC-057=`EFFECTIVE`。D3-T05：XLSX 幂等不再重解析旧 XLSX raw——`RawReceiptV1` 新增 nullable `declaredSourceName`（实现层字段补全，FILE-SCHEMA-V1 已同步），XLSX item raw 持久化每行声明来源；same key 多行（值/声明来源/引用不同）各建独立 pending 版本、不互相 dedupe、行序无关（内容判定）；same key+same 9 字段=IDEMPOTENT_REUSE、任一字段不同=NEW_PENDING_VERSION；XLSX item raw 仍 ORIGINAL_FULL_FILE_BYTES；CSV/Synthetic/Publish Gate 不变。D3-T06=`NOT_STARTED`。 |
+| 当前任务编号 | D3-T05 LocalImport与SyntheticDemo隔离（`TaskExecutionStatus=DONE`，`statusReason=R1_REVIEW_PASS_20260810`；implementation chain=0e8165c→f4dc00f→19f2069→a6168bf→c6ec283、Final Review=`PASS`、BLOCKER/MAJOR=无、R2_REQUIRED=NO）。 |
+| 当前任务状态 | D1-T01～D1-T05、D2-T01～D2-T05、D3-T01、D3-T02、D3-T03、D3-T04、D3-T05 均为`TaskExecutionStatus=DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`、AT-SRC-002=`PASS`、DEC-050～056 已生效（DEC-056 implementation=`PASS`）；DEC-057=`EFFECTIVE`。D3-T05 核心事实保留：CSV+XLSX 支持、source raw 先于解析（malformed 保留源证据）、XLSX Source/Item Raw=ORIGINAL_FULL_FILE_BYTES、CSV Item Raw=逻辑记录精确字节 span、LOCAL_IMPORT 身份、SyntheticDemo=SYNTHETIC_DEMO（不进正式查询/不自动 fallback/fixed seed 确定性）、Publish Gate=UNCHANGED、LocalImport 不自动 VERIFIED/PUBLISHED。D3-T06=`NOT_STARTED`/`READY`（冻结依赖 D3-T02~T05 均 DONE）。 |
 | 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）、DEC-053（arithmetic-mean-v1接受版本化默认）、DEC-054（weekday-asia-shanghai-v1接受版本化默认）、DEC-055（aggregate.calculatedAt=max(daily.updatedAt)确定性语义）、DEC-056（raw-first acquisition boundary + 业务键幂等 + AT runner 证据保存）已生效 |
 | 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS）；D2-T03（Implementation Review PASS + EXT Gate PASS，commit=607e859）；D2-T04（1ac8233→1178307，Sol/Second-party Final Delta Review 双PASS，commit=1178307）；D2-T05（24d24b6→2b7d2f4→a482087→79680ec，Sol+Second-party 最终双PASS，commit=79680ec）。 |
-| 正在进行任务 | D3-T05（`TaskExecutionStatus=REVIEW_PENDING`，实施完成，等待第二方 R1+ Review 收口 DONE）。 |
-| 阻塞项 | D3-T05 Review 门禁待第二方单审。D3-T06 及后续任务冻结依赖 D3-T05 Review 收口，不得提前领取。EXT-04/EXT-10/EXT-11=`OPEN_EXTERNAL_NON_BLOCKING`（不阻塞 P0/领取）。 |
-| 最近验收结果 | D2-T01～D2-T05=`DONE`；AT-SRC-002=`PASS`；D3-T01（86c8e3f）、D3-T02（ee7cbc7）、D3-T03（0fbe48d→2c7398d）、D3-T04（9611c66）均 R1/R1+ Review=`PASS` 收口 `DONE`；DEC-057=`EFFECTIVE`；D3-T05 首审=CHANGES_REQUESTED（XLSX/file-level raw-first/row-level raw）→ fix 完成（CSV+XLSX 双格式、`LocalImportReceiptV1` 源证据先于解析、行 span 精确字节、CRLF 合法），自测 13/13 + 全量 43 classes/233 tests/0 failures/0 errors/7 skipped；等待第二方 R1+ 复审。 |
+| 正在进行任务 | 无。 |
+| 阻塞项 | 无（D3-T05 Final Review=`PASS` 已收口 `DONE`）。D3-T06 可领取（READY）但未开始。EXT-04/EXT-10/EXT-11=`OPEN_EXTERNAL_NON_BLOCKING`（不阻塞 P0/领取）。 |
+| 最近验收结果 | D2-T01～D2-T05=`DONE`；AT-SRC-002=`PASS`；D3-T01（86c8e3f）、D3-T02（ee7cbc7）、D3-T03（0fbe48d→2c7398d）、D3-T04（9611c66）、D3-T05（c6ec283）均 R1/R1+ Review=`PASS` 收口 `DONE`；DEC-057=`EFFECTIVE`；D3-T05 历经 4 轮 Finding Fix（XLSX/file-level raw-first/row span/幂等歧义）Final Review=`PASS`；全量 43 classes/238 tests/0 failures/0 errors/7 skipped。 |
 | 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 计算/日历口径已接受版本化默认（DEC-053/054）；weekday-asia-shanghai-v1 不构成完整法定节假日/调休/停报/特殊交易日日历，未来以新 calendarVersion 升级。EXT-04/EXT-10/EXT-11 外部确认项（OPEN_EXTERNAL_NON_BLOCKING）；材料免费公开源调查结论=NO_APPROVED_SOURCE；材料正式校验/发布/加工依赖 Day 4（D4-T01~T04）。 |
-| 下一任务 | D3-T06 ADC12/AZ91D合规接入闭环（`NOT_STARTED`；依赖 D3-T05 Review 收口，本轮不领取/不实施）。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；全套 238 项测试（43 classes，0 failures，0 errors，7 skipped 门禁）通过（D3-T05 XLSX 无歧义幂等修复后最新全量回归；未重跑真实联网 AT-SRC-002——未改动其正式数据语义）。 |
-| 最近一次Git提交 | 本轮将提交 `fix: make XLSX item idempotency unambiguous`；前序 checkpoint=`a6168bf`（actualSourceName 参与 XLSX 幂等，Delta Review 唯一 MAJOR）。 |
+| 下一任务 | D3-T06 ADC12/AZ91D合规接入闭环（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`：冻结依赖 D3-T02~D3-T05 均 DONE；EXT-04/10/11 均 NON_BLOCKING）；可领取但本窗口不实施。 |
+| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6；全套 238 项测试（43 classes，0 failures，0 errors，7 skipped 门禁）通过（D3-T05 最终全量回归结果，前序已固定）。 |
+| 最近一次Git提交 | 本轮将提交 `docs: close D3-T05 after R1 review`；前序 checkpoint=`c6ec283`（D3-T05 Final Identity+Shared Schema Delta，Final Review=`PASS`）。 |
 | 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，D3-T05 Final XLSX Identity Finding Fix：a6168bf Delta Review 唯一 MAJOR=同 key 多行重定位歧义（sameXlsxRowContent 重开旧 XLSX+itemId/businessDate 取首行匹配）已修复——移除任何对旧 XLSX 的重新解析；`RawReceiptV1` 新增 nullable `declaredSourceName`（实现层字段补全：XLSX 每行持久化声明来源；CSV 保持 payload span 语义字段为 null；不改变冻结业务字段集合/Raw payload 语义；FILE-SCHEMA-V1 同步；golden 契约与 marker fixture 同步）；幂等=existing item 自身持久化结构化状态 vs incoming 行，全部 9 业务字段比较（schemaVersion/itemId/businessDate/value/unit/currency/actualSourceName/sourceReference/sourceUrl，importId/时间不参与）；same key 多行各建独立版本、行序无关、不依赖 first-match；同内容=IDEMPOTENT_REUSE、任一字段不同=NEW_PENDING_VERSION（旧版本保留、无 CONFLICT/VERIFIED/PUBLISHED）；XLSX item raw 仍 ORIGINAL_FULL_FILE_BYTES/SHA=source 原始 SHA；CSV/Synthetic/Publish Gate 全部保持；D3-T05=`REVIEW_PENDING`（等待第二方 R1+ 复审）、Day 3=`NOT_COMPLETE`；未开始 D3-T06。 |
+| 最后更新人/窗口 | OpenCode实施工程师窗口，D3-T05 R0 最终状态收口：`DONE`（c6ec283，Final Identity + Shared Schema Delta Review=`PASS`，BLOCKER/MAJOR=无、R2_REQUIRED=NO；任务级 PASS，Day 3 阶段 Gate 待收尾统一执行）；核心事实保留（CSV+XLSX、raw-first、XLSX Source/Item Raw=ORIGINAL_FULL_FILE_BYTES、CSV Item Raw=精确字节 span、LOCAL_IMPORT/SYNTHETIC_DEMO 身份、Synthetic 隔离/无 fallback/fixed seed 确定性、Publish Gate=UNCHANGED、LocalImport 不自动 VERIFIED/PUBLISHED）；D3-T06=`NOT_STARTED`/`READY`（冻结依赖 D3-T02~T05 均 DONE，EXT 均 NON_BLOCKING）；Day 3=`NOT_COMPLETE`；未开始 D3-T06，未修改生产代码/测试/Evidence，未调用 Sol。 |
 | 最后更新时间 | 2026-08-10（Asia/Shanghai） |
 
 ## 4. 外部阻塞快照

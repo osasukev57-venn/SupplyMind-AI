@@ -262,7 +262,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T05 LocalImport与SyntheticDemo隔离
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D3T05_IMPORT_RAW_HANDLING_COMPLETED_20260810`。R1+ Review=`CHANGES_REQUESTED`（MAJOR：XLSX 漏实现、file-level raw-first 缺失、row-level raw 完整字节语义）已修复：CSV+XLSX 双格式支持（Apache POI，XLSX 文本单元格精确 decimal、非文本单元格文件级拒绝防 double 污染）；file-level raw-first（`LocalImportReceiptV1` 完整原始文件 bytes 先于任何解析持久化+COMMITTED manifest，任何失败均保留源证据）；row-level raw payload=逻辑记录精确原始字节 span（引号内换行/UTF-8 多字节/quoted comma/escaped quote/CRLF 全保留）；CRLF 合法化（不再因 \r\n 全文件拒绝，raw 保留原始 CRLF）；BOM 拒绝保持冻结；Partial Import/幂等/SyntheticDemo 隔离保持；等待第二方 R1+ 复审；不得在 Review 前自行 DONE。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=R1_REVIEW_PASS_20260810`。implementation chain=`0e8165c→f4dc00f→19f2069→a6168bf→c6ec283`；最终技术 Candidate=`c6ec283`；Review Level=R1+；Final Identity + Shared Schema Delta Review=`PASS`（原 Finding=RESOLVED、BLOCKER=无、MAJOR=无、BUSINESS_DECISION_REQUIRED=无、R2_REQUIRED=NO）；Technical DoD=`PASS`；支持状态收口=`YES`。核心事实保留：CSV 与 XLSX 均支持；source raw 先于解析（malformed 输入保留源证据）；XLSX Source/Item Raw=ORIGINAL_FULL_FILE_BYTES、CSV Item Raw=逻辑记录精确字节 span；LocalImport 身份=LOCAL_IMPORT；SyntheticDemo=SYNTHETIC_DEMO（不进入正式查询、不自动 fallback、Golden Scenario 确定性 fixed seed）；Publish Gate=UNCHANGED、LocalImport 不得自动 VERIFIED/PUBLISHED。任务级 PASS，不代表 Day 3 阶段 Gate 已通过。
 - **任务目标：** 支持合法CSV/XLSX导入与可复现演示数据，并严格区分真实导入和synthetic。
 - **对应需求：** F04-F07、H08、C类模式边界。
 - **输入：** 导入模板、数据字典、黄金场景和固定种子。
@@ -276,7 +276,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D3-T06 ADC12/AZ91D合规接入闭环
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`。冻结依赖任务 D3-T02、D3-T03、D3-T04、D3-T05 均=`DONE`；输入（D3-T02至D3-T05、材料规格和 AT-SRC-001/005至008）属任务执行期收集/执行，不构成领取阻断；EXT-04/EXT-10/EXT-11=`OPEN_EXTERNAL_NON_BLOCKING`（docs/01：仅局部影响对应源自动采集能力，不阻塞 P0，不阻断本任务领取）；已具备领取/实施条件，尚未开始实施。READY≠开始。
 - **任务目标：** 对SMM意图×ADC12/AZ91D、Asian Metal意图×ADC12/AZ91D四个P0监测序列分别选择并运行合法指定源、FreePublic或Manual中的一条非synthetic链路；itemId稳定标识来源意图×材料，actualSourceName始终记录实际来源。
 - **对应需求：** SUP-03、SUP-06至SUP-08、F04-F07、H08。
 - **输入：** D3-T02至D3-T05、材料规格和AT-SRC-001/005至008。
