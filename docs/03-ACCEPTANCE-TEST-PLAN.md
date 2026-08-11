@@ -332,6 +332,22 @@ GD-07用于AT-SRC-005至AT-SRC-008；每个文件生成SHA-256并固定期望状
   4. 若任一标的三条路线均不可执行，则该标的和整体材料P0为BLOCKED。
 - 证据：路由配置版本、能力矩阵、fallbackReason、当前/历史任务、P0判定表；存入AT-SRC-005。
 
+#### 阶段子用例（DEC-058 跨阶段 Acceptance 状态模型）
+
+- **AT-SRC-005-D3（Stage=Day 3）**：
+  - Parent Case：AT-SRC-005（父用例保持完整端到端语义，当前`NOT_RUN`）。
+  - 前置条件：AT-SRC-001 完成；六类Provider能力矩阵可用；四条P0序列进入生产默认配置。
+  - 执行：对四个P0来源意图×材料序列（MAT.ADC12.SMM、MAT.ADC12.AM、MAT.AZ91D.SMM、MAT.AZ91D.AM）按PRIMARY→FREE_PUBLIC→MANUAL顺序评估并记录routeDecision/fallbackReason；通过生产启动路径（active config→Provider Registry→MaterialRoutePlanService→MaterialRouteResolver）解析。
+  - 预期（Day3范围）：每条序列恰有一个当前生效合法non-synthetic路线且切换不静默（fallbackReason可审计）；PRIMARY=`NOT_CONFIGURED`（credentials_missing）、FREE_PUBLIC=`NO_APPROVED_SOURCE`（无获认可免费源）、selected=`FALLBACK_MANUAL`/`manual-material`；商业自动能力N/A不扩散为整体P0 BLOCKED；无伪造、无Synthetic正式候选。
+  - 不得包含：raw→VALIDATED、VERIFIED、PUBLISHED、daily、aggregate（属 Day4 范围）。
+  - 证据：route matrix、routeDecision/fallbackReason、生产配置与Registry证据；存入AT-SRC-005-D3。
+  - AcceptanceStatus：`PASS`（Day3 已完整满足自身预期）。
+- **AT-SRC-005-D4（Stage=Day 4）**：
+  - Parent Case：AT-SRC-005。
+  - 范围：预期2"至少一条非synthetic路线完成raw到已验证文件链"（材料 validation→VALIDATED→VERIFIED类，负责人 D4-T01/D4-T02，DEC-057）。
+  - AcceptanceStatus：`NOT_RUN`（未实施）。
+- 父用例 AT-SRC-005 仅在所有 mandatory stage subcases（含 AT-SRC-005-D3、AT-SRC-005-D4）PASS 并完成完整 evidence reconciliation 后才允许 `PASS`；Day 3 Gate 只引用 AT-SRC-005-D3。
+
 ### AT-SRC-006 FreePublicDataProvider全链与真实来源
 
 - 对应需求：SRC-02、SRC-04、H01、H02、PUB-01、PER-01。
@@ -369,6 +385,22 @@ GD-07用于AT-SRC-005至AT-SRC-008；每个文件生成SHA-256并固定期望状
   5. 页面显示实际来源和"手工录入"，不显示成指定商业网站自动数据。
 - 证据：表单截图、Manual raw、状态时间线（RECEIVED+PENDING→PARSED+PENDING→Day4 VALIDATED→PUBLISHED）、隔离记录、daily/aggregate、版本审计；存入AT-SRC-007（Day 3 部分与 Day 4 部分分阶段归档）。
 
+#### 阶段子用例（DEC-058 跨阶段 Acceptance 状态模型）
+
+- **AT-SRC-007-D3（Stage=Day 3）**：
+  - Parent Case：AT-SRC-007（父用例保持完整端到端语义，当前`NOT_RUN`）。
+  - 前置条件：ManualDataProvider 和表单可用；`manual-material-normalization-v1` 规则固定；业务标的已配置。
+  - 执行：提交合法材料值，完成 Manual intake→immutable raw→RECEIVED+PENDING→机械标准化→PARSED+PENDING；检查必填来源元数据、operatorRef（认证上下文）、幂等、修订版本保留及 PENDING 正式出口不可见。
+  - 预期（Day3范围）：合法记录最多`PARSED+PENDING`；无 VERIFIED/VERIFIED_WITH_NOTICE/PUBLISHED；sourceReference 非空、sourceUrl 可空；same key+same content=IDEMPOTENT_REUSE、same key+different content=NEW_PENDING_VERSION（旧 raw/timeline/operator 审计保留）；PENDING 被既有 Publish Gate 及 PublishedQuery/Daily/Aggregate 拒绝。
+  - 不得包含：材料业务validation、VERIFIED、PUBLISHED、daily、aggregate（属 Day4 范围）。
+  - 证据：Manual raw、状态时间线、隔离记录、版本审计；存入AT-SRC-007-D3。
+  - AcceptanceStatus：`PASS`（Day3 已完整满足自身预期）。
+- **AT-SRC-007-D4（Stage=Day 4）**：
+  - Parent Case：AT-SRC-007。
+  - 范围：完整正式链（材料 validation→VALIDATED→VERIFIED/VERIFIED_WITH_NOTICE→PUBLISHED→daily→aggregate；负责人 D4-T01~D4-T04，DEC-057）。
+  - AcceptanceStatus：`NOT_RUN`（未实施）。
+- 父用例 AT-SRC-007 仅在所有 mandatory stage subcases（含 AT-SRC-007-D3、AT-SRC-007-D4）PASS 并完成完整 evidence reconciliation 后才允许 `PASS`；Day 3 Gate 只引用 AT-SRC-007-D3。
+
 ### AT-SRC-008 来源不可冒充与跨出口一致性
 
 - 对应需求：SRC-04、H02、AI-01。
@@ -385,6 +417,26 @@ GD-07用于AT-SRC-005至AT-SRC-008；每个文件生成SHA-256并固定期望状
   3. 展示名称不能覆盖血缘字段，故意伪标记录被拒绝或标为冲突。
   4. Agent引用实际来源，不根据用户提示改写来源。
 - 证据：跨出口字段对账表、拒绝结果、页面/预警/Agent截图、EvidencePack；存入AT-SRC-008。
+
+#### 阶段子用例（DEC-058 跨阶段 Acceptance 状态模型）
+
+- **AT-SRC-008-D3（Stage=Day 3）**：
+  - Parent Case：AT-SRC-008（父用例保持完整端到端语义，当前`NOT_RUN`）。
+  - 前置条件：Manual、LocalImport、Synthetic 测试记录可用；现有已实现出口（raw、API/PublishedQuery、PENDING 门禁）可检查。
+  - 执行：提交故意伪标记录（如 actualSourceName 含 SMM）；执行 LocalImport/Synthetic；检查 providerType/accessMethod 与 actual source 分离、Synthetic 身份与正式隔离。
+  - 预期（Day3范围）：进入方式（providerType/accessMethod）与实际依据（actualSourceName/declaredSourceName/sourceReference/sourceUrl）全链分离；Manual/LocalImport 声明来源不得改变 provider identity（伪标 SMM 恒为 MANUAL/LOCAL_IMPORT）；Synthetic 身份恒 SYNTHETIC_DEMO 且正式查询不可见、不自动 fallback；当前已实现出口 source identity 一致。
+  - 不得包含：Dashboard、warning、Agent、EvidencePack 完整跨出口对账、Agent 引用来源、daily 级出口对账（属后续阶段范围）。
+  - 证据：跨出口字段对账表（已实现出口）、拒绝结果；存入AT-SRC-008-D3。
+  - AcceptanceStatus：`PASS`（Day3 已完整满足自身预期）。
+- **AT-SRC-008-D4（Stage=Day 4）**：
+  - Parent Case：AT-SRC-008。
+  - 范围：材料 daily/aggregate 正式出口后的 daily 级来源一致性对账（负责人 D4-T03/D4-T04）。
+  - AcceptanceStatus：`NOT_RUN`（未实施）。
+- **AT-SRC-008-DX（Stage=后续出口日）**：
+  - Parent Case：AT-SRC-008。
+  - 范围：Dashboard（D7-T02）、warning（D5-T05）、Agent（D6-T01~T04）、EvidencePack（D6-T02）完整跨出口全量一致性及预期4（Agent 引用实际来源、不按用户提示改写来源）。
+  - AcceptanceStatus：`NOT_RUN`（未实施）。
+- 父用例 AT-SRC-008 仅在所有 mandatory stage subcases（含 AT-SRC-008-D3、AT-SRC-008-D4、AT-SRC-008-DX）PASS 并完成完整 evidence reconciliation 后才允许 `PASS`；Day 3 Gate 只引用 AT-SRC-008-D3。
 
 ### AT-PUB-001 合法数据通过发布门禁
 
@@ -938,7 +990,7 @@ GD-07用于AT-SRC-005至AT-SRC-008；每个文件生成SHA-256并固定期望状
 |---|---|---|
 | Day 1 | 补充说明、PBOC字段与真实获取、raw JSON | D1-T02补证完成不等于Day1退出；**Day1退出仅以**EUR/CNY、USD/CNY真实OfficialWeb采集均生成可追溯raw为准，失败证据不得通过门禁 |
 | Day 2 | PBOC标准化、校验、PUBLISHED+VERIFIED类、daily/aggregate CSV、历史与聚合 | AT-SRC-002 PASS；两个币种重启后可读；任一币种未到daily持久化不得退出 |
-| Day 3 | 六类Provider、材料三层路由、FreePublic、Manual、LocalImport/Synthetic | AT-SRC-001/005/008通过；四个来源意图×材料序列各有non-synthetic路线；指定源不可用仅条件N/A |
+| Day 3 | 六类Provider、材料三层路由、FreePublic、Manual、LocalImport/Synthetic | AT-SRC-001=PASS、AT-SRC-005-D3=PASS、AT-SRC-008-D3=PASS（DEC-058 阶段子用例；父用例 AT-SRC-005/008 保持`NOT_RUN`至后续阶段完成）；AT-SRC-007-D3=PASS（Manual 保底路线）；四个来源意图×材料序列各有non-synthetic路线；指定源不可用仅条件N/A（AT-SRC-006=`BLOCKED`，EXT-10 非阻断） |
 | Day 4 | 全Provider校验门禁、加工、五级聚合和来源治理 | AT-PUB、AT-PREC、AT-AGG及选定AT-SRC-006/007通过；GD-01至GD-07均有SHA-256 |
 | Day 5 | 轮转、跨文件/跨年、动态配置、回填和预警 | AT-TIME、AT-XR、AT-CFG、AT-ALT后端路径通过 |
 | Day 6 | 受控工具、EvidencePack、LLM抽象和Java模板降级 | 工具不重算业务值；报告引用actualSourceName；Cloud故障仍产出模板报告 |
