@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 4（Day 1/2/3=`COMPLETE`；D1-T01～T05、D2-T01～T05、D3-T01～T06 均`DONE`；DEC-050～057 已生效、DEC-058=`EFFECTIVE`、DEC-059=`EFFECTIVE`；**Day4 Development Tasks=`ALL_DONE`**（D4-T01~T05 实施完成，任务级 DONE 待阶段大审收口）；**Day4 Final Acceptance=`PASS`**（实施侧，Evidence=`docs/evidence/Day4/DAY4-INTEGRATION-20260811.md`）；DAY4_STAGE_CANDIDATE 已冻结；Day4 Stage Review=`PENDING`、Day 4=`NOT_COMPLETE`；Stage Gate 未收口）  
+> 当前阶段：Day 4（Day 1/2/3=`COMPLETE`；D1-T01～T05、D2-T01～T05、D3-T01～T06 均`DONE`；DEC-050～057 已生效、DEC-058=`EFFECTIVE`、DEC-059=`EFFECTIVE`；**Day4 Development Tasks=`ALL_DONE`**（D4-T01~T05 实施完成）；**Day4 Final Acceptance=`PASS`**（实施侧，Evidence=`docs/evidence/Day4/DAY4-INTEGRATION-20260811.md`）；最新 Stage Fix Candidate=`590ee52`（DAY4_FINAL_FIX_CANDIDATE）；Day4 Stage Review=`PENDING_DELTA_REVIEW`、Day 4=`NOT_COMPLETE`；Stage Gate 未收口）  
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
