@@ -1,6 +1,7 @@
 package com.supplymind.localimport;
 
 import com.supplymind.foundation.model.AccessMethod;
+import com.supplymind.foundation.model.Mode;
 import com.supplymind.foundation.model.ProviderType;
 import com.supplymind.foundation.model.RawReceiptV1;
 import com.supplymind.foundation.model.SchemaV1;
@@ -19,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 
 /**
@@ -66,24 +66,22 @@ public final class SyntheticDemoDataProvider implements DataProvider {
         Objects.requireNonNull(request, "request");
         List<RawReceiptV1> raws = new ArrayList<>();
         Map<String, String> rejected = new LinkedHashMap<>();
-        Random seeded = new Random(DEMO_SEED.hashCode() ^ SCENARIO_VERSION.hashCode());
         OffsetDateTime scenarioTime = OffsetDateTime.parse("2026-08-10T09:30:00+08:00");
-        for (String itemId : request.itemIds()) {
+        for (String itemId : request.itemIds().stream().sorted().toList()) {
             if (!supportedItemIds.contains(itemId)) {
                 rejected.put(itemId, "UNSUPPORTED_TARGET");
                 continue;
             }
-            long demoValue = 10000 + seeded.nextInt(50000);
-            String value = demoValue + "." + String.format("%02d", seeded.nextInt(100));
+            String value = deterministicValue(itemId);
             String runId = "demo-" + itemId + "-20260810-" + SCENARIO_VERSION;
             String rawRef = RawReceiptV1.deriveRawRef(
-                    com.supplymind.foundation.model.Mode.FORMAL, ProviderType.SYNTHETIC_DEMO,
+                    Mode.DEMO, ProviderType.SYNTHETIC_DEMO,
                     itemId, scenarioTime, runId);
             byte[] payload = ("SCENARIO=" + SCENARIO_VERSION + ";SEED=" + DEMO_SEED + ";ITEM=" + itemId)
                     .getBytes(StandardCharsets.UTF_8);
             RawReceiptV1 demoRaw = new RawReceiptV1(
                     SchemaV1.VERSION, rawRef, "demo-acq-" + SCENARIO_VERSION, runId,
-                    com.supplymind.foundation.model.Mode.FORMAL, ProviderType.SYNTHETIC_DEMO,
+                    Mode.DEMO, ProviderType.SYNTHETIC_DEMO,
                     AccessMethod.SYNTHETIC_DEMO, 1, SOURCE_NAME, null,
                     "SCENARIO=" + SCENARIO_VERSION, itemId, "2026-08-10", "2026-08-10",
                     null, null, scenarioTime, null, value, "元/吨", "CNY",
@@ -100,5 +98,16 @@ public final class SyntheticDemoDataProvider implements DataProvider {
 
     public static Set<String> defaultScenarioItems() {
         return Set.of(SCENARIO_ITEMS.split(","));
+    }
+
+    private static String deterministicValue(String itemId) {
+        String stableInput = "SCENARIO=" + SCENARIO_VERSION
+                + ";SEED=" + DEMO_SEED
+                + ";ITEM=" + itemId
+                + ";BUSINESS_DATE=2026-08-10";
+        String digest = FileDigest.sha256(stableInput.getBytes(StandardCharsets.UTF_8));
+        long major = 10_000L + (Long.parseLong(digest.substring(0, 8), 16) % 50_000L);
+        int minor = Integer.parseInt(digest.substring(8, 12), 16) % 100;
+        return major + "." + String.format(java.util.Locale.ROOT, "%02d", minor);
     }
 }
