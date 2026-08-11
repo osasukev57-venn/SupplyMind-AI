@@ -1,0 +1,17 @@
+{
+  "fixtureId": "GD-03",
+  "fixtureKind": "TEST_CONTRACT_FIXTURE",
+  "executionState": "READY_FOR_D4_TESTS",
+  "notProductionEvidence": true,
+  "publishGateCases": [
+    {"case": "REQUIRED_VALUE_EMPTY", "expected": "REJECT_OR_PENDING_NEVER_PUBLISHED"},
+    {"case": "NEGATIVE_PRICE", "expected": "REJECTED_NEVER_PUBLISHED"},
+    {"case": "CURRENCY_MISMATCH", "expected": "REJECTED_NEVER_PUBLISHED"},
+    {"case": "UNIT_MISMATCH", "expected": "REJECTED_NEVER_PUBLISHED"},
+    {"case": "BUSINESS_DATE_UNPARSABLE", "expected": "REJECTED_NEVER_PUBLISHED"},
+    {"case": "SAME_BUSINESS_KEY_IDENTICAL", "expected": "IDEMPOTENT_NO_ADDITIONAL_PUBLICATION"},
+    {"case": "SAME_BUSINESS_KEY_VALUE_CONFLICT", "expected": "CONFLICT_NEVER_OVERWRITE_PUBLISHED"},
+    {"case": "RAW_SHA256_TAMPERED_AFTER_FIRST_VALIDATION", "expected": "NOT_PUBLISHABLE_AUDIT_EVENT"},
+    {"case": "OUTSIDE_CONFIGURED_CHANGE_RANGE", "expected": "MANUAL_REVIEW_NEVER_AUTO_PUBLISHED"}
+  ]
+}

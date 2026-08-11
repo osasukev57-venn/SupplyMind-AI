@@ -1,0 +1,26 @@
+{
+  "fixtureId": "GD-02",
+  "fixtureKind": "TEST_CONTRACT_FIXTURE",
+  "executionState": "READY_FOR_D4_TESTS",
+  "notProductionEvidence": true,
+  "nonTerminatingDecimal": {
+    "rawValues": ["100.1", "100.2", "100.2"],
+    "exactSum": "300.5",
+    "validCount": 3,
+    "calculationVersion": "arithmetic-mean-v1",
+    "calculationScale": 8,
+    "displayScale": 8,
+    "roundingMode": "HALF_UP",
+    "expectedAverage": "100.16666667"
+  },
+  "largeAndTiny": {
+    "rawValues": ["999999999999.123456789", "0.000000001"],
+    "exactSum": "999999999999.123456790"
+  },
+  "contract": [
+    "raw decimals are parsed with new BigDecimal(String)",
+    "sum and validCount are persisted before division",
+    "aggregation never uses display-rounded values",
+    "contract output uses toPlainString without scientific notation"
+  ]
+}

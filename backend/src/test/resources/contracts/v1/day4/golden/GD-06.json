@@ -1,0 +1,12 @@
+{
+  "fixtureId": "GD-06",
+  "fixtureKind": "TEST_CONTRACT_FIXTURE",
+  "executionState": "PENDING_IMPLEMENTATION",
+  "notProductionEvidence": true,
+  "precondition": "one full year of published daily/month/quarter/halfyear/year files already exists",
+  "faultScenarios": {
+    "cloudLlm": ["DNS_FAILURE", "CONNECTION_TIMEOUT", "HTTP_429", "HTTP_5XX"],
+    "officialSource": ["CONNECTION_FAILURE", "RESPONSE_TIMEOUT"]
+  },
+  "note": "This fixture defines future fault-injection inputs only; it does not claim an unimplemented recovery result."
+}

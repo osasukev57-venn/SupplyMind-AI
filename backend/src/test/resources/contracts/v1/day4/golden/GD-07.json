@@ -1,0 +1,17 @@
+{
+  "fixtureId": "GD-07",
+  "fixtureKind": "TEST_CONTRACT_FIXTURE",
+  "executionState": "PENDING_IMPLEMENTATION",
+  "notProductionEvidence": true,
+  "governanceCases": [
+    {"case": "FREE_PUBLIC_MATERIAL", "required": ["actual website name", "URL", "license reference", "complete specification mapping"], "state": "PENDING_APPROVED_SOURCE"},
+    {"case": "MANUAL_VALID", "requestFields": ["actualSourceName", "itemId", "businessDate", "value", "unit", "currency", "sourceReference"], "authenticatedContextFields": ["operatorRef"], "serverGenerated": ["inputAt", "receivedAt", "updatedAt", "accessMethod=manual"]},
+    {"case": "MANUAL_MISSING_ACTUAL_SOURCE_NAME", "expected": "REJECT"},
+    {"case": "MANUAL_WRONG_UNIT", "expected": "REJECT"},
+    {"case": "MANUAL_FUTURE_BUSINESS_DATE", "expected": "REJECT"},
+    {"case": "FREE_PUBLIC_MISLABELLED_AS_SMM", "expected": "REJECT_OR_CONFLICT"},
+    {"case": "SYNTHETIC_SAME_VALUE", "expected": "DEMO_ONLY_NEVER_FORMAL"}
+  ],
+  "acceptanceTargets": ["AT-SRC-005", "AT-SRC-006", "AT-SRC-007", "AT-SRC-008"],
+  "note": "Every future execution artifact requires an independent SHA-256 and fixed expected provenance/visibility; this descriptor is not a material source record."
+}
