@@ -1,10 +1,13 @@
 package com.supplymind.publish;
 
 import com.supplymind.foundation.codec.JsonV1Codec;
+import com.supplymind.foundation.model.AccessMethod;
 import com.supplymind.foundation.model.LifecycleSnapshotV1;
 import com.supplymind.foundation.model.LifecycleTimelineV1;
 import com.supplymind.foundation.model.ManifestV1;
+import com.supplymind.foundation.model.Mode;
 import com.supplymind.foundation.model.ProcessingStage;
+import com.supplymind.foundation.model.ProviderType;
 import com.supplymind.foundation.model.RawReceiptV1;
 import com.supplymind.foundation.model.ValidationStatus;
 import com.supplymind.foundation.storage.DataPaths;
@@ -57,7 +60,10 @@ public final class PublishedQueryService {
                     || !candidate.businessDate().equals(businessDate.toString())) {
                 continue;
             }
-            records.add(recordOf(timeline, referenceDate));
+            PublishedRecord record = recordOf(timeline, referenceDate);
+            if (record != null) {
+                records.add(record);
+            }
         }
         records.sort(Comparator.comparing(PublishedRecord::publishedAt)
                 .thenComparing(PublishedRecord::runId));
@@ -78,6 +84,9 @@ public final class PublishedQueryService {
                 continue;
             }
             PublishedRecord record = recordOf(timeline, referenceDate);
+            if (record == null) {
+                continue;
+            }
             if (latest == null || isNewer(record, latest)) {
                 latest = record;
             }
@@ -99,8 +108,17 @@ public final class PublishedQueryService {
 
     private PublishedRecord recordOf(LifecycleTimelineV1 timeline, LocalDate referenceDate) {
         RawReceiptV1 raw = readRaw(timeline.rawRef(), timeline.runId());
+        if (!isFormalBusinessRaw(raw)) {
+            return null;
+        }
         String rawFileSha256 = readRawFileSha256(timeline.rawRef());
         return PublishedRecord.of(timeline, raw, rawFileSha256, referenceDate);
+    }
+
+    private static boolean isFormalBusinessRaw(RawReceiptV1 raw) {
+        return raw.mode() == Mode.FORMAL
+                && raw.providerType() != ProviderType.SYNTHETIC_DEMO
+                && raw.accessMethod() != AccessMethod.SYNTHETIC_DEMO;
     }
 
     private static boolean isPublishedEligible(LifecycleSnapshotV1 snapshot) {
