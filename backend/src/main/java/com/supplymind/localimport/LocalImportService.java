@@ -46,9 +46,11 @@ import java.util.stream.Stream;
  * D3-T05 controlled LocalImport entry, raw-first for both frozen formats (CSV and XLSX):
  * the complete original file bytes are persisted as an immutable source-level import receipt
  * with a COMMITTED manifest BEFORE any decode/parse. Format is detected from the bytes (ZIP
- * magic = XLSX), never from the file name. Each accepted row becomes an item-level raw whose
- * payload is the exact original byte span of the logical record (CSV) or the deterministic
- * cell facts of the record (XLSX). LocalImport is never auto-verified or auto-published.
+ * magic = XLSX), never from the file name. Each accepted CSV row becomes an item-level raw whose
+ * payload is the exact original byte span of the logical record. For XLSX, both the source raw
+ * and each item raw contain the original uploaded full file bytes. Structured row/cell fields are
+ * derived parsing/identity evidence only and are never raw bytes. LocalImport is never
+ * auto-verified or auto-published.
  */
 public final class LocalImportService {
 

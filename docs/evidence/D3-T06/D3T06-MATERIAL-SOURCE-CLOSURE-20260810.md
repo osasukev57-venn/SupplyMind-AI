@@ -68,3 +68,25 @@ EXT-04 / EXT-10 / EXT-11 = `OPEN_EXTERNAL_NON_BLOCKING`（保持；SMM/Asian Met
 - 未产生 material VERIFIED/PUBLISHED；未实现材料校验/范围/future/stale/规格可比性/unit-currency 业务判断/source trust（DEFERRED_TO_D4_T01）；未实现 D4 validation/publish/daily/aggregate 正式链。
 - Publish Gate/ProcessingStage/ValidationStatus 未修改；PBOC 正式路径未触碰（无需重跑真实联网 AT-SRC-002）。
 - 无伪造材料价格、无 fixture 冒充真实采集、无 synthetic 伪装真实。
+
+## SUPERSEDED / ERRATUM — provenance correction appended 2026-08-11
+
+This append-only erratum preserves the historical execution text above; it does not rewrite or
+delete the original D3-T06 evidence.
+
+- **Original Evidence Date:** 2026-08-10.
+- **Original Candidate/Context:** D3-T06 Day3 material-source closure evidence, executed with
+  `MaterialDay3AcceptanceTest` (4/4 PASS at that time).
+- **Old recorded behavior:** the historical execution text recorded Manual raw/candidate
+  `actualSourceName` as `人工录入（Manual）`; the user-declared source was retained only as declared
+  source/reference evidence. This is retained as the historical fact of that run.
+- **Superseded By:** `37c711c` (provenance behavior correction), integrated in `1a42e0d`; the
+  current errata base is `5c3f6ca`.
+- **Current effective behavior (not a claim about the 2026-08-10 execution):**
+  - **Manual:** `providerType` / `accessMethod` remain `MANUAL`; `actualSourceName` is the
+    user-declared real source.
+  - **LocalImport:** `providerType` / `accessMethod` remain `LOCAL_IMPORT`; `actualSourceName`
+    is the file-declared real source.
+- **Current evidence reference:**
+  `docs/evidence/Day3/DAY3-FINAL-ACCEPTANCE-V2-20260811.md`, together with `37c711c`,
+  `1a42e0d`, and `5c3f6ca`.
