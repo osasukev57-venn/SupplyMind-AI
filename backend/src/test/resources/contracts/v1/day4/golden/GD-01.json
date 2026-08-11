@@ -1,0 +1,58 @@
+{
+  "fixtureId": "GD-01",
+  "fixtureKind": "TEST_CONTRACT_FIXTURE",
+  "executionState": "READY_FOR_D4_TESTS",
+  "notProductionEvidence": true,
+  "calculationContext": {
+    "calculationVersion": "arithmetic-mean-v1",
+    "calculationScale": 12,
+    "displayScale": 9,
+    "roundingMode": "HALF_UP",
+    "calendarVersion": "golden-calendar-v1"
+  },
+  "eurCny": {
+    "itemId": "FX.EUR.CNY.GOLDEN",
+    "unit": "CNY/1 EUR",
+    "currency": "CNY",
+    "targetDays": [10, 20],
+    "rawObservationOffsets": ["-0.000000001", "0", "+0.000000001"],
+    "monthlyDailyTargets": [
+      {"month": 1, "day10": "7.009000010", "day20": "7.011000010", "monthly": "7.010000010"},
+      {"month": 2, "day10": "7.019000020", "day20": "7.021000020", "monthly": "7.020000020"},
+      {"month": 3, "day10": "7.029000030", "day20": "7.031000030", "monthly": "7.030000030"},
+      {"month": 4, "day10": "7.039000040", "day20": "7.041000040", "monthly": "7.040000040"},
+      {"month": 5, "day10": "7.049000050", "day20": "7.051000050", "monthly": "7.050000050"},
+      {"month": 6, "day10": "7.059000060", "day20": "7.061000060", "monthly": "7.060000060"},
+      {"month": 7, "day10": "7.069000070", "day20": "7.071000070", "monthly": "7.070000070"},
+      {"month": 8, "day10": "7.079000080", "day20": "7.081000080", "monthly": "7.080000080"},
+      {"month": 9, "day10": "7.089000090", "day20": "7.091000090", "monthly": "7.090000090"},
+      {"month": 10, "day10": "7.099000100", "day20": "7.101000100", "monthly": "7.100000100"},
+      {"month": 11, "day10": "7.109000110", "day20": "7.111000110", "monthly": "7.110000110"},
+      {"month": 12, "day10": "7.119000120", "day20": "7.121000120", "monthly": "7.120000120"}
+    ],
+    "expectedPeriods": [
+      {"period": "2025-Q1", "persist12": "7.020000020000", "display9": "7.020000020"},
+      {"period": "2025-Q2", "persist12": "7.050000050000", "display9": "7.050000050"},
+      {"period": "2025-Q3", "persist12": "7.080000080000", "display9": "7.080000080"},
+      {"period": "2025-Q4", "persist12": "7.110000110000", "display9": "7.110000110"},
+      {"period": "2025-H1", "persist12": "7.035000035000", "display9": "7.035000035"},
+      {"period": "2025-H2", "persist12": "7.095000095000", "display9": "7.095000095"},
+      {"period": "2025", "persist12": "7.065000065000", "display9": "7.065000065"}
+    ]
+  },
+  "az91d": {
+    "itemId": "MAT.AZ91D.GOLDEN",
+    "unit": "CNY/t",
+    "currency": "CNY",
+    "rawValueFormula": "12000 + 1000 * corresponding EUR/CNY fixture raw value",
+    "expectedPeriods": [
+      {"period": "2025-Q1", "persist12": "19020.000020000000", "display9": "19020.000020000"},
+      {"period": "2025-Q2", "persist12": "19050.000050000000", "display9": "19050.000050000"},
+      {"period": "2025-Q3", "persist12": "19080.000080000000", "display9": "19080.000080000"},
+      {"period": "2025-Q4", "persist12": "19110.000110000000", "display9": "19110.000110000"},
+      {"period": "2025-H1", "persist12": "19035.000035000000", "display9": "19035.000035000"},
+      {"period": "2025-H2", "persist12": "19095.000095000000", "display9": "19095.000095000"},
+      {"period": "2025", "persist12": "19065.000065000000", "display9": "19065.000065000"}
+    ]
+  }
+}
