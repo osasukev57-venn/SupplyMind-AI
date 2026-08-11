@@ -5,6 +5,8 @@
 > Failed Candidate（历史保留）：`ab28a6c`（V1，Stage Review=`CHANGES_REQUESTED`）——本 V2 重新执行，不 amend/不重写/不删除其 Evidence。
 > Lane A=`37c711c`（第二方 Review=PASS）；Lane B=`ab42a48`（第二方 Review=PASS）；integration/combined verification base=`13a1fc2`→`1a42e0d`。
 > 冻结依据：docs/01 §15 Day3 行与 Day3 Gate（DEC-057 边界）、docs/03 §3 Acceptance Status 定义与 §8 Day3 退出条件、docs/02 §9 正式验收门禁、DEC-037/050/056/057、FILE-SCHEMA-V1、docs/evidence/Day3/DAY3-STAGE-FINDING-FIX-INTEGRATION-20260811.md。
+>
+> 【历史审计标注】（2026-08-11 追加，不改写原执行事实）：本 Evidence 属于 **STAGE_REVIEW_CHANGES_REQUESTED Candidate `5c3f6ca`**（V2 Stage Review=CHANGES_REQUESTED）。其父用例状态表达（AT-SRC-005/007/008 以"PASS（Scope=Day3 部分）"表示）为 DEC-058 落地前的阶段表达，已被 **DEC-058（Parent Case + Stage-scoped Subcases）** 取代：父用例当前=`NOT_RUN`、阶段子用例 `AT-SRC-005-D3/007-D3/008-D3`=`PASS`。真实执行事实与数据不变，保留作审计历史。
 
 ## 1. Regression（真实执行，Java 17.0.19，base=1a42e0d）
 
