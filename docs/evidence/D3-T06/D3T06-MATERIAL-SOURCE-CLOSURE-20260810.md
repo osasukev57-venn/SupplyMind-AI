@@ -11,7 +11,7 @@
 - FreePublic：D3-T03 冻结结论 `NO_APPROVED_SOURCE`（SMM/Asian Metal/CCMN/100ppi 调查）保持，不虚构可用 provider。
 - 每个标的 routeDecision/fallbackReason/生效时间由 `MaterialRouteDecision` 可审计保存。
 
-## AT-SRC-005 ADC12/AZ91D 三层路由与 P0 判定 —— DAY3_PARTIAL_PASS（正式 verified 链属 Day4）
+## AT-SRC-005 ADC12/AZ91D 三层路由与 P0 判定 —— PASS（Scope=Day3 部分；正式 verified 链属 Day4）
 
 | 序列（来源意图×材料） | selected tier | selected provider | fallbackReason | synthetic excluded |
 |---|---|---|---|---|
@@ -27,10 +27,10 @@
 
 - 冻结 testcase（FreePublicDataProvider 自动获取→校验→VERIFIED 发布→daily/aggregate→页面字段变化模拟）当前无法合法执行：D3-T03 调查无获认可免费源（`NO_APPROVED_SOURCE`，证据 `docs/evidence/D3-T03/`），FreePublic 层为空，属既有外部依赖 EXT-10=`OPEN_EXTERNAL_NON_BLOCKING`（未创建新外部依赖）。
 - 状态依据 docs/03 §3 `BLOCKED`：任何认可数据路线缺失，无法合法执行；不是 PASS。
-- 技术事实区分：路由合法性（routeDecision/fallbackReason 可审计）、无伪造来源、Manual 合法替代链存在——由 AT-SRC-001（PASS）、AT-SRC-005（DAY3_PARTIAL_PASS）、AT-SRC-007（DAY3_PARTIAL_PASS）证明；**不**因其他测试证明 fallback 而把 AT-SRC-006 记为 PASS。
+- 技术事实区分：路由合法性（routeDecision/fallbackReason 可审计）、无伪造来源、Manual 合法替代链存在——由 AT-SRC-001（PASS）、AT-SRC-005（PASS，Scope=Day3 部分）、AT-SRC-007（PASS，Scope=Day3 部分）证明；**不**因其他测试证明 fallback 而把 AT-SRC-006 记为 PASS。
 - 不绕过任何访问限制；无伪造自动来源。
 
-## AT-SRC-007 ManualDataProvider 治理与门禁 —— DAY3_PARTIAL_PASS
+## AT-SRC-007 ManualDataProvider 治理与门禁 —— PASS（Scope=Day3 部分；Day4 部分未执行）
 
 - ADC12（MAT.ADC12.SMM）：Manual submission → immutable raw → RECEIVED+PENDING → `manual-material-normalization-v1` → **PARSED+PENDING**（value=19850.50 原样，声明来源/引用/operatorRef 保留）。
 - AZ91D（MAT.AZ91D.AM）：同上 → **PARSED+PENDING**（value=24500）。
@@ -44,7 +44,7 @@
 - XLSX：同两标的经 POI 文本单元格 → RECEIVED+PENDING；XLSX Source/Item Raw=ORIGINAL_FULL_FILE_BYTES、Item Raw SHA=source 原始 SHA（D3-T05 冻结语义保持）。
 - PENDING 门禁：PublishedQueryService 空、daily 无行、aggregate 无文件。
 
-## AT-SRC-008 来源不可冒充与跨出口一致性 —— DAY3_PARTIAL_PASS
+## AT-SRC-008 来源不可冒充与跨出口一致性 —— PASS（Scope=Day3 部分）
 
 ### Day3 已验证范围（真实执行）
 
@@ -57,7 +57,7 @@
 - Dashboard、预警（warning）、Agent 报告、EvidencePack 未实现：跨出口全量一致性（raw/daily/API/UI/预警/EvidencePack/Agent 逐项对账，预期 1 与证据"跨出口字段对账表、页面/预警/Agent 截图"）尚不能执行；不得视为已验证。
 - daily 级出口一致性：Day3 材料无已验证数据，daily 无行，无法执行 daily 出口对账。
 - 预期 4（Agent 引用实际来源、不按用户提示改写）：依赖 Agent 实现，Day3 未执行。
-- 结论：裸 PASS 不成立；本状态为 `DAY3_PARTIAL_PASS`（与 AT-SRC-005/007 同一冻结合法模式），完整 PASS 待对应出口实现后由后续 Day 窗口执行。
+- 结论：裸完整 PASS 不成立；本状态为 `PASS`（Scope=Day3 部分，与 AT-SRC-005/007 同一冻结合法阶段表达：冻结 Status token + 独立 Scope 说明），完整 PASS 待对应出口实现后由后续 Day 窗口执行。
 
 ## 外部依赖
 

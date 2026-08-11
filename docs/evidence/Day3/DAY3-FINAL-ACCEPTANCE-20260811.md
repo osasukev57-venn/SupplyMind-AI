@@ -4,6 +4,8 @@
 > Candidate base：`integration/day3 @ ba9d706`（working tree clean，Acceptance 前固定）。
 > 执行方式：全量 Maven regression 真实执行（Java 17.0.19，`mvnw test`）+ 既有阶段 Acceptance 测试（`MaterialDay3AcceptanceTest` 等）逐项核对；冻结依据：docs/01 §15 Day 3 行与 Day 3 Gate（DEC-057 边界）、docs/03 §8 Day 3 退出条件、docs/02 §9 正式验收门禁、DEC-037/050/056/057。
 > 本 Evidence 不写 "Day 3 COMPLETE"：Stage Review（Sol + 第二方）尚未执行。
+>
+> 【历史审计标注】（2026-08-11 追加，不改写原执行事实）：本 Evidence 属于 **FAILED_STAGE_CANDIDATE `ab28a6c`**（Sol Stage Review=`CHANGES_REQUESTED`）。其 Acceptance 状态表达（含 `DAY3_PARTIAL_PASS`、`REUSED_VERIFIED_EVIDENCE`）为命名空间清理前的历史表述，已由 `DAY3-STAGE-FINDING-FIX-INTEGRATION-20260811.md` 与后续 Day3 Final Acceptance V2 取代；真实执行事实与数据不变，保留作审计历史。
 
 ## 1. Candidate base 与任务状态
 
