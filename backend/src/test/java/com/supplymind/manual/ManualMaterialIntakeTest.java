@@ -444,8 +444,8 @@ class ManualMaterialIntakeTest {
         assertEquals(OPERATOR, raw.operatorRef());
         assertEquals("2026-08-10", raw.sourceBusinessDate());
         assertNotNull(raw.inputAt());
-        assertEquals("人工录入（Manual）", raw.actualSourceName(),
-                "the raw source identity must stay the configured Manual identity, never the user-declared source");
+        assertEquals("某供应商报价单（测试）", raw.actualSourceName(),
+                "the raw actual source must be the user-declared actual source, never the Manual ingress label");
         ManualMaterialSubmission submittedFacts = JsonV1Codec.decodeFile(
                 Base64.getDecoder().decode(raw.payloadBase64()), ManualMaterialSubmission.class);
         assertEquals("某供应商报价单（测试）", submittedFacts.actualSourceName(),
