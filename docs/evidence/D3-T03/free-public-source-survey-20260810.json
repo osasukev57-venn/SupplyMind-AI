@@ -1,0 +1,70 @@
+{
+  "gate" : "D3-T03 free-public material source investigation",
+  "executedAt" : "2026-08-10T18:50+08:00",
+  "javaRuntime" : "17.0.19",
+  "method" : "normal public HTTPS GET only; default JDK HttpClient; no credentials, no bypass, no anti-scraping evasion",
+  "conclusion" : "NO_APPROVED_SOURCE",
+  "routeConclusion" : "FREE_PUBLIC_UNAVAILABLE_ROUTE_MANUAL",
+  "targetReasons" : {
+    "MAT.ADC12.SMM" : "MEMBER_ONLY/NO_PUBLIC_INTERFACE: no approved free-public source with verifiable ADC12 semantics",
+    "MAT.AZ91D.AM" : "NO_APPROVED_SOURCE: no free-public source presenting an AZ91D quote"
+  },
+  "surveys" : [
+    {
+      "sourceKey" : "smm-cn",
+      "actualSourceName" : "上海有色网（SMM）",
+      "sourceUrl" : "https://www.smm.cn/",
+      "httpStatus" : 200,
+      "accessFailure" : null,
+      "publicPageBytes" : 827611,
+      "requiresLoginOrMembership" : true,
+      "publicStructuredPriceInterface" : false,
+      "adc12Match" : false,
+      "az91dMatch" : false,
+      "verdict" : "NOT_APPROVED",
+      "reason" : "MEMBER_ONLY: public homepage visible; structured price data requires membership login; no public structured ADC12/AZ91D quote with verifiable grade/unit/delivery/business-date semantics"
+    },
+    {
+      "sourceKey" : "asian-metal-cn",
+      "actualSourceName" : "亚洲金属网（Asian Metal）",
+      "sourceUrl" : "https://www.asianmetal.com.cn/",
+      "httpStatus" : null,
+      "accessFailure" : "SSL_HANDSHAKE_TERMINATED",
+      "publicPageBytes" : null,
+      "requiresLoginOrMembership" : false,
+      "publicStructuredPriceInterface" : false,
+      "adc12Match" : false,
+      "az91dMatch" : false,
+      "verdict" : "UNVERIFIED",
+      "reason" : "ACCESS_UNVERIFIED: 本次调查尝试正常公开 HTTPS 访问时出现 TLS/HTTPS 握手失败（Remote host terminated the handshake），未取得足以判断该来源 ADC12/AZ91D 免费公开报价/接口能力的页面事实；不能据此确认其存在或不存在公开接口，当前证据不足以批准为 FreePublic 来源"
+    },
+    {
+      "sourceKey" : "ccmn-cn",
+      "actualSourceName" : "长江有色金属网（CCMN）",
+      "sourceUrl" : "https://www.ccmn.cn/",
+      "httpStatus" : 200,
+      "accessFailure" : null,
+      "publicPageBytes" : 175755,
+      "requiresLoginOrMembership" : true,
+      "publicStructuredPriceInterface" : false,
+      "adc12Match" : false,
+      "az91dMatch" : false,
+      "verdict" : "NOT_APPROVED",
+      "reason" : "MEMBER_ONLY: public homepage shows aluminum/magnesium sections; specific ADC12/AZ91D quotes require membership; no public structured quote semantics verifiable"
+    },
+    {
+      "sourceKey" : "100ppi-com",
+      "actualSourceName" : "生意社（100ppi）",
+      "sourceUrl" : "https://www.100ppi.com/",
+      "httpStatus" : 200,
+      "accessFailure" : null,
+      "publicPageBytes" : 660,
+      "requiresLoginOrMembership" : false,
+      "publicStructuredPriceInterface" : false,
+      "adc12Match" : false,
+      "az91dMatch" : false,
+      "verdict" : "NOT_APPROVED",
+      "reason" : "NO_PUBLIC_INTERFACE: public homepage returns only a ~660 byte bootstrap shell page; no parseable public price data"
+    }
+  ]
+}

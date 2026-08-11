@@ -13,7 +13,7 @@ import java.util.Base64;
         "sourceBusinessDateRaw", "sourceBusinessDate", "sourcePublishedAtRaw", "sourcePublishedAt",
         "receivedAt", "inputAt", "rawValue", "rawUnit", "rawCurrency", "operatorRef", "httpStatus",
         "contentType", "payloadEncoding", "payloadBase64", "payloadSha256", "matchAnchor", "updatedAt",
-        "acquisitionRef"
+        "acquisitionRef", "declaredSourceName"
 })
 public record RawReceiptV1(
         String schemaVersion,
@@ -45,7 +45,8 @@ public record RawReceiptV1(
         String payloadSha256,
         String matchAnchor,
         OffsetDateTime updatedAt,
-        String acquisitionRef
+        String acquisitionRef,
+        String declaredSourceName
 ) {
     private static final ZoneId ASIA_SHANGHAI = ZoneId.of("Asia/Shanghai");
 
@@ -93,6 +94,9 @@ public record RawReceiptV1(
         }
         if (acquisitionRef != null) {
             ModelRules.relativeDataRef(acquisitionRef, "acquisitionRef");
+        }
+        if (declaredSourceName != null) {
+            ModelRules.nonBlank(declaredSourceName, "declaredSourceName");
         }
     }
 

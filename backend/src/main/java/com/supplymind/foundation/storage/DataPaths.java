@@ -44,6 +44,12 @@ public final class DataPaths {
         return "raw/source/" + acquisitionId + ".json";
     }
 
+    /** D3-T05 source-level immutable import file evidence path, derived from the importId. */
+    public static String importRef(String importId) {
+        requireIdentifier(importId, "importId");
+        return "raw/import/" + importId + ".json";
+    }
+
     public static String quarantineRef(String itemId, OffsetDateTime receivedAt, String runId) {
         requireIdentifier(itemId, "itemId");
         requireIdentifier(runId, "runId");
@@ -196,6 +202,10 @@ public final class DataPaths {
             return true;
         }
         if (segments.length == 3 && segments[0].equals("raw") && segments[1].equals("source")
+                && segments[2].matches("[A-Za-z0-9._-]+\\.json")) {
+            return true;
+        }
+        if (segments.length == 3 && segments[0].equals("raw") && segments[1].equals("import")
                 && segments[2].matches("[A-Za-z0-9._-]+\\.json")) {
             return true;
         }

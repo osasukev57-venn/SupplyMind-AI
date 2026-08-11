@@ -30,7 +30,19 @@ public final class ConfigActivationStore {
         this.clock = Objects.requireNonNull(clock, "clock");
     }
 
-    /** Creates the formal two-item PBOC default only if no active configuration exists. */
+    /** Read-only access to the currently active configuration (used by D3-T04 manual intake). */
+    public MonitorSeriesConfigV1 readActiveConfig() {
+        Path active = dataRoot.resolveDataRef(DataPaths.configActiveRef());
+        if (!Files.isRegularFile(active)) {
+            throw new StorageException("No active monitor-series configuration exists");
+        }
+        return decodeActive(active);
+    }
+
+    /**
+     * Creates the production delivery default (PBOC pair + the four P0 material sequences on
+     * their frozen Manual route) only if no active configuration exists.
+     */
     public MonitorSeriesConfigV1 ensureInitialDefault() {
         Path active = dataRoot.resolveDataRef(DataPaths.configActiveRef());
         if (Files.isRegularFile(active)) {
@@ -39,7 +51,7 @@ public final class ConfigActivationStore {
             return existing;
         }
         OffsetDateTime now = OffsetDateTime.now(clock);
-        MonitorSeriesConfigV1 initial = MonitorSeriesDefaults.initialPboc(now);
+        MonitorSeriesConfigV1 initial = MonitorSeriesDefaults.initialDay3(now);
         activateNewOrIdempotent(initial, JsonV1Codec.encodeFile(initial), now);
         return initial;
     }

@@ -137,7 +137,7 @@ class RawAcquisitionLinkVerifierTest {
                 receipt.operatorRef(), receipt.httpStatus(), receipt.contentType(), "base64",
                 Base64.getEncoder().encodeToString(differentPayload),
                 JsonV1Codec.sha256LowerHex(differentPayload), receipt.matchAnchor(), receipt.updatedAt(),
-                receipt.acquisitionRef());
+                receipt.acquisitionRef(), null);
         StorageException failure = assertThrows(StorageException.class, () -> root.rawStore().store(mismatched));
         assertTrue(failure.getMessage().contains("payload identity"),
                 "a payload identity mismatch must fail closed: " + failure.getMessage());
@@ -201,7 +201,7 @@ class RawAcquisitionLinkVerifierTest {
                 OffsetDateTime.parse("2026-08-10T09:25:38+08:00"), OffsetDateTime.parse("2026-08-10T02:00:00+08:00"),
                 null, "6.7884", "CNY/1 USD", "CNY", null, 200, "text/html; charset=utf-8", "base64",
                 Base64.getEncoder().encodeToString(PAYLOAD), PAYLOAD_SHA, "1美元对人民币",
-                OffsetDateTime.parse("2026-08-10T02:00:00+08:00"), DataPaths.acquisitionRef(ACQ_ID));
+                OffsetDateTime.parse("2026-08-10T02:00:00+08:00"), DataPaths.acquisitionRef(ACQ_ID), null);
     }
 
     private static RawReceiptV1 withRef(RawReceiptV1 receipt, String acquisitionRef) {
@@ -213,7 +213,7 @@ class RawAcquisitionLinkVerifierTest {
                 receipt.receivedAt(), receipt.inputAt(), receipt.rawValue(), receipt.rawUnit(), receipt.rawCurrency(),
                 receipt.operatorRef(), receipt.httpStatus(), receipt.contentType(), receipt.payloadEncoding(),
                 receipt.payloadBase64(), receipt.payloadSha256(), receipt.matchAnchor(), receipt.updatedAt(),
-                acquisitionRef);
+                acquisitionRef, null);
     }
 
     private TestRoot initializedRoot() throws IOException {

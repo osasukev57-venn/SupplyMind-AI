@@ -186,10 +186,12 @@ public final class RawReceiptStore {
                         + receipt.configVersion());
             }
             MonitorSeriesItemV1 item = history.requireItem(receipt.itemId());
+            // Provider identity (providerType/accessMethod) is configuration-owned and must
+            // match the immutable snapshot; the per-record actualSourceName is the declared
+            // actual source of that record and legitimately differs from the config label.
             if (history.mode() != receipt.mode()
                     || item.providerType() != receipt.providerType()
-                    || item.accessMethod() != receipt.accessMethod()
-                    || !item.actualSourceName().equals(receipt.actualSourceName())) {
+                    || item.accessMethod() != receipt.accessMethod()) {
                 throw new StorageException("RawReceipt source identity does not match its immutable configVersion snapshot");
             }
         } catch (IOException exception) {

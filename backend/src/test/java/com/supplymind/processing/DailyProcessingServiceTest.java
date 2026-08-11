@@ -678,7 +678,8 @@ class DailyProcessingServiceTest {
                 JsonV1Codec.sha256LowerHex(payload),
                   "1美元对人民币",
                   RECEIVED_AT,
-                  DataPaths.acquisitionRef("acq-" + runId)
+                  DataPaths.acquisitionRef("acq-" + runId),
+                  null
           );
     }
 

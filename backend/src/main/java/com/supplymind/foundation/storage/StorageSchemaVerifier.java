@@ -22,6 +22,12 @@ final class StorageSchemaVerifier {
                 throw new StorageException("config/history reference must match MonitorSeriesConfigV1.configVersion: "
                         + dataRef);
             }
+        } else if (dataRef.startsWith("raw/import/")) {
+            com.supplymind.localimport.LocalImportReceiptV1 receipt = JsonV1Codec.decodeFile(
+                    bytes, com.supplymind.localimport.LocalImportReceiptV1.class);
+            if (!dataRef.equals(receipt.importRef())) {
+                throw new StorageException("LocalImportReceiptV1.importRef must match its atomic target: " + dataRef);
+            }
         } else if (dataRef.startsWith("raw/source/")) {
             RawAcquisitionV1 acquisition = JsonV1Codec.decodeFile(bytes, RawAcquisitionV1.class);
             if (!dataRef.equals(acquisition.acquisitionRef())) {

@@ -2,14 +2,17 @@ package com.supplymind.processing;
 
 import com.supplymind.foundation.codec.CsvV1Codec;
 import com.supplymind.foundation.codec.JsonV1Codec;
+import com.supplymind.foundation.model.AccessMethod;
 import com.supplymind.foundation.model.DailyInputRefV1;
 import com.supplymind.foundation.model.DailyRecordV1;
 import com.supplymind.foundation.model.LifecycleSnapshotV1;
 import com.supplymind.foundation.model.LifecycleTimelineV1;
 import com.supplymind.foundation.model.ManifestV1;
+import com.supplymind.foundation.model.Mode;
 import com.supplymind.foundation.model.MonitorSeriesConfigV1;
 import com.supplymind.foundation.model.MonitorSeriesItemV1;
 import com.supplymind.foundation.model.ProcessingStage;
+import com.supplymind.foundation.model.ProviderType;
 import com.supplymind.foundation.model.RawReceiptV1;
 import com.supplymind.foundation.model.ValidationStatus;
 import com.supplymind.foundation.storage.AtomicFileStore;
@@ -109,6 +112,9 @@ public final class DailyProcessingService {
                 continue;
             }
             RawReceiptV1 raw = readRaw(timeline.rawRef(), runId);
+            if (!isFormalBusinessRaw(raw)) {
+                continue;
+            }
             MonitorSeriesConfigV1 config = VersionedConfigReader.readVersion(dataRoot, raw.configVersion());
             MonitorSeriesItemV1 item = config.requireItem(raw.itemId());
             OffsetDateTime publishedAt = current.publishedAt();
@@ -177,5 +183,11 @@ public final class DailyProcessingService {
 
     private OffsetDateTime now() {
         return OffsetDateTime.now(clock);
+    }
+
+    private static boolean isFormalBusinessRaw(RawReceiptV1 raw) {
+        return raw.mode() == Mode.FORMAL
+                && raw.providerType() != ProviderType.SYNTHETIC_DEMO
+                && raw.accessMethod() != AccessMethod.SYNTHETIC_DEMO;
     }
 }
