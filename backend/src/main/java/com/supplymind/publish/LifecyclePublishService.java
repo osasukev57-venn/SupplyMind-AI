@@ -5,6 +5,8 @@ import com.supplymind.foundation.model.LifecycleSnapshotV1;
 import com.supplymind.foundation.model.LifecycleTimelineV1;
 import com.supplymind.foundation.model.ManifestV1;
 import com.supplymind.foundation.model.Mode;
+import com.supplymind.foundation.model.MonitorSeriesConfigV1;
+import com.supplymind.foundation.model.MonitorSeriesItemV1;
 import com.supplymind.foundation.model.ProcessingStage;
 import com.supplymind.foundation.model.QuarantineProjectionV1;
 import com.supplymind.foundation.model.RawReceiptV1;
@@ -17,6 +19,7 @@ import com.supplymind.foundation.storage.StorageException;
 import com.supplymind.foundation.storage.TimelineStore;
 import com.supplymind.validation.MaterialCandidateValidatorV2;
 import com.supplymind.validation.PbocBasicValidator;
+import com.supplymind.validation.VersionedConfigReader;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -63,11 +66,12 @@ public final class LifecyclePublishService {
         if (current.processingStage() == ProcessingStage.VALIDATED
                 && (current.validationStatus() == ValidationStatus.VERIFIED
                 || current.validationStatus() == ValidationStatus.VERIFIED_WITH_NOTICE)) {
-            if (!isCurrentlyAllowedValidationVersion(current.validationVersion())) {
-                return outcome(timeline, PublishOutcome.PublishAction.NOT_READY, null);
-            }
             RawReceiptV1 raw = readRaw(timeline.rawRef(), runId);
             if (raw.mode() != Mode.FORMAL) {
+                return outcome(timeline, PublishOutcome.PublishAction.NOT_READY, null);
+            }
+            String allowedVersion = allowedVersionFor(raw);
+            if (allowedVersion == null || !allowedVersion.equals(current.validationVersion())) {
                 return outcome(timeline, PublishOutcome.PublishAction.NOT_READY, null);
             }
             OffsetDateTime publishedAt = now();
@@ -97,23 +101,31 @@ public final class LifecyclePublishService {
         return outcome(timeline, PublishOutcome.PublishAction.NOT_READY, null);
     }
 
+    /**
+     * D4-FINAL-NARROW: the allowed validation version is bound to the authoritative business
+     * type from the monitor-series config metadata (rateKind), never derived from the client
+     * declared validationVersion and never hard-coded from itemId strings. A material item
+     * only accepts material-basic-validation-v2; an exchange-rate (PBOC) item only accepts
+     * pboc-basic-validation-v1. Unresolvable config metadata fails closed (never publishable).
+     */
+    private String allowedVersionFor(RawReceiptV1 raw) {
+        try {
+            MonitorSeriesConfigV1 config = VersionedConfigReader.readVersion(dataRoot, raw.configVersion());
+            MonitorSeriesItemV1 item = config.requireItem(raw.itemId());
+            return "material".equals(item.rateKind())
+                    ? MaterialCandidateValidatorV2.VALIDATION_VERSION
+                    : PbocBasicValidator.VALIDATION_VERSION;
+        } catch (RuntimeException exception) {
+            return null;
+        }
+    }
+
     private static boolean isTerminalFailure(LifecycleSnapshotV1 snapshot) {
         return (snapshot.processingStage() == ProcessingStage.RECEIVED
                 && snapshot.validationStatus() == ValidationStatus.REJECTED)
                 || (snapshot.processingStage() == ProcessingStage.VALIDATED
                 && (snapshot.validationStatus() == ValidationStatus.REJECTED
                 || snapshot.validationStatus() == ValidationStatus.CONFLICT));
-    }
-
-    /**
-     * D4-R2 whitelist: only the currently formal validation versions may be published. For
-     * materials that is exactly material-basic-validation-v2; the historical
-     * material-basic-validation-v1, unknown/future/blank versions are all refused - never an
-     * "anything that is not v1" rule. PBOC keeps its own frozen version.
-     */
-    private static boolean isCurrentlyAllowedValidationVersion(String validationVersion) {
-        return PbocBasicValidator.VALIDATION_VERSION.equals(validationVersion)
-                || MaterialCandidateValidatorV2.VALIDATION_VERSION.equals(validationVersion);
     }
 
     private static PublishOutcome outcome(

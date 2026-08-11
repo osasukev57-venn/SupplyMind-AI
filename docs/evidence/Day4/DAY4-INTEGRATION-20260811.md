@@ -13,7 +13,8 @@
 
 - `material-basic-validation-v2`=当前正式材料 validationVersion；`material-basic-validation-v1` 仅历史保留（语义未改、不得用于新发布——publish 门禁强制拒绝）。
 - MonitorSeriesItemV1 新增显式 `materialValidation`（MaterialValidationConfigV1：valueMinExclusive="0"、valueMaxInclusive=null、staleThresholdDays=7、canonicalSpecCode、acceptedSpecAliases=[]）；材料 item 缺失配置=构造 fail-closed（配置激活 fail-closed）；非材料 item 不得携带。
-- 校验（确定性顺序）：CONFIG_MISSING→mode→item/Provider 身份→来源字段一致性（payload 声明↔raw↔candidate）→payload 完整性→unit/currency→future date→spec normalized-exact（NFKC+trim+ASCII uppercase vs canonicalSpecCode；aliases=[] 不推定等价）→value（<=valueMinExclusive REJECTED；valueMaxInclusive=null 无上限）→stale（calendarAgeDays>7=VERIFIED_WITH_NOTICE；==7 不 stale；不回退 DEC-050 30 日）→duplicate（NOTICE）/conflict（CONFLICT）。
+- 校验（确定性顺序，历史执行记录；顺序语义已由 R2 修正，见下方 CURRENT EFFECTIVE RULE）：CONFIG_MISSING→mode→item/Provider 身份→来源字段一致性（payload 声明↔raw↔candidate）→payload 完整性→unit/currency→future date→spec normalized-exact（NFKC+trim+ASCII uppercase vs canonicalSpecCode；aliases=[] 不推定等价）→value（<=valueMinExclusive REJECTED；valueMaxInclusive=null 无上限）→stale（calendarAgeDays>7=VERIFIED_WITH_NOTICE；==7 不 stale；不回退 DEC-050 30 日）→duplicate（NOTICE）/conflict（CONFLICT）。
+- **CURRENT EFFECTIVE RULE（supersede 上一条校验顺序中的 stale/duplicate/conflict 相对顺序）**：duplicate/conflict 判定先于 stale notice——同业务键不可兼容事实（同键异值）=`CONFLICT/VALUE_CONFLICT`（无论 age）；同键同值=保留 `DUPLICATE_OBSERVATION` notice（即使 age>7，duplicate 信息不丢失）；stale（calendarAgeDays>7）仅在通过 required fields/value/unit/currency/spec/source identity/future/conflict 全部合法性判断后，才把 VERIFIED 提升为 `VERIFIED_WITH_NOTICE/STALE_BUSINESS_DATE`；stale 绝不把 REJECTED/CONFLICT 覆盖成 VERIFIED 类（MaterialCandidateValidatorV2，`fix: close Day4 stage review findings`）。
 - 四个 P0 series（MAT.ADC12.SMM/AM、MAT.AZ91D.SMM/AM）在 MonitorSeriesDefaults.initialDay3 显式携带配置。
 
 ## 2. T01~T04 实现与测试

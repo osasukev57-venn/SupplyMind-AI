@@ -70,6 +70,7 @@ class MaterialPublishGateTest {
     private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-08-10T02:00:00Z"), ZoneOffset.UTC);
     private static final OffsetDateTime NOW = OffsetDateTime.parse("2026-08-10T02:00:00+08:00");
     private static final OffsetDateTime LATE = OffsetDateTime.parse("2026-08-10T12:00:00+08:00");
+    private static final OffsetDateTime MID = OffsetDateTime.parse("2026-08-10T08:00:00+08:00");
     private static final String ADC12_SMM = "MAT.ADC12.SMM";
     private static final String IMP_ADC12 = "IMP.ADC12.001";
     private static final String FREE_ADC12 = "FREE.ADC12.001";
@@ -143,6 +144,47 @@ class MaterialPublishGateTest {
         PublishOutcome outcome = harness.publish().process(runId);
         assertEquals(PublishOutcome.PublishAction.PUBLISHED, outcome.action());
         assertEquals(1, harness.publishedQuery().findPublished(FREE_ADC12, LocalDate.parse("2026-08-10")).size());
+    }
+
+    @Test
+    void materialWithPbocValidationVersionIsNeverPublished() throws IOException {
+        Harness harness = harness();
+        ManualIntakeOutcome intake = harness.manual().submit(ManualMaterialSubmission.of(
+                ADC12_SMM, "2026-08-10", "19850.50", "元/吨", "CNY",
+                "华东某厂报价单（测试）", "报价单号A-20260810", null));
+        appendValidatedSnapshot(harness, intake.runId(), "pboc-basic-validation-v1");
+        PublishOutcome outcome = harness.publish().process(intake.runId());
+        assertEquals(PublishOutcome.PublishAction.NOT_READY, outcome.action(),
+                "a material record declaring the PBOC validation version must be blocked");
+        assertEquals(3, harness.timelineStore().read(intake.runId()).current().recordVersion());
+    }
+
+    @Test
+    void pbocWithMaterialValidationVersionIsNeverPublished() throws IOException {
+        Harness harness = harness();
+        String runId = "pboc-forged-material-001";
+        RawReceiptV1 raw = pbocRaw(runId);
+        ingestHttp(harness, raw);
+        appendForgedValidatedSnapshot(harness, runId, "material-basic-validation-v2");
+
+        PublishOutcome outcome = harness.publish().process(runId);
+        assertEquals(PublishOutcome.PublishAction.NOT_READY, outcome.action(),
+                "a PBOC record declaring the material validation version must be blocked");
+        assertEquals(3, harness.timelineStore().read(runId).current().recordVersion());
+    }
+
+    @Test
+    void pbocWithPbocValidationVersionIsPublished() throws IOException {
+        Harness harness = harness();
+        String runId = "pboc-legit-001";
+        RawReceiptV1 raw = pbocRaw(runId);
+        ingestHttp(harness, raw);
+        appendForgedValidatedSnapshot(harness, runId, "pboc-basic-validation-v1");
+
+        PublishOutcome outcome = harness.publish().process(runId);
+        assertEquals(PublishOutcome.PublishAction.PUBLISHED, outcome.action(),
+                "the PBOC item must keep publishing with its own frozen validation version");
+        assertEquals(4, harness.timelineStore().read(runId).current().recordVersion());
     }
 
     @Test
@@ -252,6 +294,48 @@ class MaterialPublishGateTest {
                 validationVersion, LATE, null, null, LATE));
     }
 
+    private static void appendForgedValidatedSnapshot(Harness harness, String runId, String validationVersion)
+            throws IOException {
+        LifecycleTimelineV1 timeline = harness.timelineStore().read(runId);
+        CandidateV1 candidate = new com.supplymind.validation.PbocCandidateStandardizer()
+                .standardize(JsonV1Codec.decodeFile(
+                        Files.readAllBytes(harness.root().resolveDataRef(timeline.rawRef())), RawReceiptV1.class))
+                .candidate();
+        harness.timelineStore().append(runId, new LifecycleSnapshotV1(
+                2, ProcessingStage.PARSED, ValidationStatus.PENDING, candidate, null, null, null, null, null, MID));
+        harness.timelineStore().append(runId, new LifecycleSnapshotV1(
+                3, ProcessingStage.VALIDATED, ValidationStatus.VERIFIED, candidate, null,
+                validationVersion, MID, null, null, MID));
+    }
+
+    private static RawReceiptV1 pbocRaw(String runId) {
+        byte[] payload = "{\"fixture\":\"pboc publish gate\",\"usd\":\"7.0000\"}"
+                .getBytes(StandardCharsets.UTF_8);
+        OffsetDateTime receivedAt = NOW;
+        String acquisitionId = "pboc-acq-" + runId;
+        return new RawReceiptV1(
+                "1.0", RawReceiptV1.deriveRawRef(Mode.FORMAL, ProviderType.OFFICIAL_WEB,
+                        "FX.USD.CNY.PBOC_MID", receivedAt, runId),
+                acquisitionId, runId, Mode.FORMAL,
+                ProviderType.OFFICIAL_WEB, AccessMethod.PUBLIC_OFFICIAL_HTML, 1,
+                "中国人民银行官网（授权中国外汇交易中心公布）", "https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/index.html",
+                "pboc-ref-" + runId, "FX.USD.CNY.PBOC_MID",
+                "2026-08-10", "2026-08-10", null, receivedAt, receivedAt, null,
+                "7.0000", "CNY/1 USD", "CNY", null, 200, "text/html; charset=UTF-8", "base64",
+                Base64.getEncoder().encodeToString(payload),
+                com.supplymind.foundation.storage.FileDigest.sha256(payload),
+                null, receivedAt,
+                com.supplymind.foundation.storage.DataPaths.acquisitionRef(acquisitionId), null);
+    }
+
+    private static void ingestHttp(Harness harness, RawReceiptV1 raw) throws IOException {
+        new com.supplymind.foundation.storage.RawAcquisitionStore(
+                harness.root(), new AtomicFileStore(harness.root(), new DirtyMarkerCodec()), CLOCK)
+                .store(com.supplymind.foundation.model.DomainFixtures.acquisitionFor(raw));
+        harness.rawStore().store(raw);
+        harness.timelineStore().createInitial(raw.runId(), raw.rawRef(), raw.receivedAt());
+    }
+
     private static void writeRawDirectly(Harness harness, RawReceiptV1 raw) throws IOException {
         byte[] rawBytes = JsonV1Codec.encodeFile(raw);
         ManifestV1 manifest = ManifestFactory.json(raw.rawRef(), rawBytes, List.of(raw.runId()), NOW);
@@ -296,6 +380,12 @@ class MaterialPublishGateTest {
                 RouteDecision.FALLBACK_FREE_PUBLIC, "FREE_PUBLIC_FALLBACK", "ADC12"));
         items.add(item(DEMO_ADC12, "SyntheticDemo", ProviderType.SYNTHETIC_DEMO, AccessMethod.SYNTHETIC_DEMO,
                 RouteDecision.SYNTHETIC_DEMO, null, "ADC12"));
+        items.add(new MonitorSeriesItemV1(
+                "FX.USD.CNY.PBOC_MID", "美元/人民币中间价", true, "PBOC", ProviderType.OFFICIAL_WEB,
+                AccessMethod.PUBLIC_OFFICIAL_HTML, "中国人民银行官网（授权中国外汇交易中心公布）",
+                RouteDecision.PRIMARY, null, NOW, null, "USD", "1美元对人民币", "人民币汇率中间价",
+                "arithmetic-mean-v1", 8, 4, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                "CNY", "USD", "CNY/1 USD", null));
         return new MonitorSeriesConfigV1("1.0", 1, Mode.FORMAL, NOW, items);
     }
 
