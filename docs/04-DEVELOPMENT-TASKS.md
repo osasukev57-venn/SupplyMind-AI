@@ -368,7 +368,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D5-T01 文件轮转与系统时间变化检测
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 实施完成，待阶段统一大审；`statusReason=D5T01_TIME_ROTATION_20260812`）。TimeStateV1/TimeStateStore/TimeRotationService：月/季/半年/年边界、前跳、回拨、重启恢复；AT-TIME-001/002 后端=PASS（003/004 属 D10-T02）。
 - **任务目标：** 在跨期、Windows休眠恢复、时间前跳和回拨时创建正确分区并保持幂等。
 - **对应需求：** H05、F11。
 - **输入：** Clock抽象、业务日期、time-state、文件契约。
@@ -382,7 +382,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D5-T02 跨文件与跨年度历史查询
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 实施完成，待阶段统一大审；`statusReason=D5T02_HISTORY_QUERY_20260812`）。HistoryQueryService：跨年 merge/dedupe/sort、missing/corrupt/conflict 显式报告；AT-XR-001/002=PASS。
 - **任务目标：** 根据日期范围定位多个月度文件，完成读取、拼接、业务键去重、排序、过滤和缺失说明。
 - **对应需求：** H06、F12、H01。
 - **输入：** 多月daily/aggregate文件、查询条件。
@@ -396,7 +396,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D5-T03 动态监测标的与联动配置
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 实施完成，待阶段统一大审；`statusReason=D5T03_DYNAMIC_CONFIG_20260812`）。ConfigManagementService：ADD/ENABLE/DISABLE/REPLACE（复用 ConfigActivationStore 原子激活）；H07/H09=PASS；AT-CFG-001/002/004=PASS。
 - **任务目标：** 运行时新增、停用和替换series，联动Provider、Scheduler、预警、成本方案和面板配置。
 - **对应需求：** H07、H09、F13。
 - **输入：** monitor-series配置、Provider能力、依赖关系。
@@ -410,7 +410,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D5-T04 新标的历史回填与任务状态
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 实施完成，待阶段统一大审；`statusReason=D5T04_BACKFILL_20260812`）。BackfillOrchestrator：WAITING/AWAITING_MANUAL_INPUT/RUNNING/PARTIAL_SUCCESS/SUCCEEDED/FAILED+检查点；H08=PASS；AT-CFG-003 覆盖。
 - **任务目标：** 新增series后按选定Provider获取或等待输入当日数据，并执行历史回填、校验、每日和聚合重算。
 - **对应需求：** H08、H09、F02、F12、F13、SUP-03、SUP-06。
 - **输入：** Provider当前/历史能力、Manual输入状态、回填范围、series配置。
@@ -424,7 +424,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D5-T05 最小规则预警与持久化
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 实施完成，待阶段统一大审；`statusReason=D5T05_WARNING_20260812`）。WarningService：确定性规则+BigDecimal+warning/YYYY-MM 持久化；EXT-07/08 未确认→显式 TEST/DEMO 规则；AT-ALT-001=PASS。
 - **任务目标：** 用Java确定性规则生成价格/汇率变化、成本影响和数据质量预警，并持久化证据。
 - **对应需求：** F10、项目题目、EXT-07、EXT-08。
 - **输入：** 已验证指标、alert-rules、cost-plans、完整率。
