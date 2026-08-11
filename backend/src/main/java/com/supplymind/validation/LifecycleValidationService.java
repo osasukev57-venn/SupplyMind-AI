@@ -45,7 +45,7 @@ public final class LifecycleValidationService {
     private final PbocCandidateStandardizer standardizer = new PbocCandidateStandardizer();
     private final PbocBasicValidator validator = new PbocBasicValidator();
     private final MaterialCandidateStandardizer materialStandardizer = new MaterialCandidateStandardizer();
-    private final MaterialCandidateValidator materialValidator = new MaterialCandidateValidator();
+    private final MaterialCandidateValidatorV2 materialValidator = new MaterialCandidateValidatorV2();
 
     public LifecycleValidationService(DataRoot dataRoot, TimelineStore timelineStore, Clock clock) {
         this.dataRoot = Objects.requireNonNull(dataRoot, "dataRoot");
@@ -96,7 +96,7 @@ public final class LifecycleValidationService {
                 3, ProcessingStage.VALIDATED, verdict.validationStatus(), candidate,
                 verdict.reasonCode(),
                 isMaterial(item)
-                        ? MaterialCandidateValidator.VALIDATION_VERSION
+                        ? MaterialCandidateValidatorV2.VALIDATION_VERSION
                         : PbocBasicValidator.VALIDATION_VERSION,
                 validatedAt, null, null, validatedAt));
         return ValidationOutcome.of(validated);

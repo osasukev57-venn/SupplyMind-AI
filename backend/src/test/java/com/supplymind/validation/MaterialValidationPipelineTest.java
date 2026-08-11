@@ -3,6 +3,7 @@ package com.supplymind.validation;
 import com.supplymind.foundation.codec.JsonV1Codec;
 import com.supplymind.foundation.model.AccessMethod;
 import com.supplymind.foundation.model.CandidateV1;
+import com.supplymind.foundation.model.MaterialValidationConfigV1;
 import com.supplymind.foundation.model.Mode;
 import com.supplymind.foundation.model.MonitorSeriesConfigV1;
 import com.supplymind.foundation.model.MonitorSeriesItemV1;
@@ -52,16 +53,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * D4-T01 material validation pipeline acceptance (DEC-057 §6/§7 scope): Manual ADC12/AZ91D and
- * LocalImport CSV/XLSX material rows go through the same gate as every provider, advancing
+ * D4-T01 material validation pipeline acceptance (DEC-057 §6/§7 + DEC-059): Manual ADC12/AZ91D
+ * and LocalImport CSV/XLSX material rows go through the same gate as every provider, advancing
  * PARSED+PENDING -> VALIDATED with deterministic VERIFIED / VERIFIED_WITH_NOTICE / REJECTED /
- * CONFLICT verdicts. No PUBLISHED is produced (publication belongs to D4-T02), no bypass exists,
- * old valid versions are never overwritten, Synthetic DEMO never leaks into the formal chain,
- * and the declared source name can never change provider identity.
- *
- * <p>Decision-gated checks (no frozen numeric values in the plan/DEC-057/DEC-050 scope for
- * materials): numeric value range, staleness threshold and spec comparability (EXT-02
- * OPEN_EXTERNAL) - deliberately NOT fabricated here and reported as the D4-T01 gap.
+ * CONFLICT verdicts under material-basic-validation-v2 (value > valueMinExclusive,
+ * staleThresholdDays=7 notice, normalized-exact spec). No PUBLISHED is produced (publication
+ * belongs to D4-T02), no bypass exists, old valid versions are never overwritten, Synthetic
+ * DEMO never leaks into the formal chain, and the declared source name can never change
+ * provider identity. material-basic-validation-v1 is preserved as history only.
  */
 class MaterialValidationPipelineTest {
 
@@ -359,6 +358,139 @@ class MaterialValidationPipelineTest {
         assertNull(timeline.current().publishRef());
     }
 
+    @Test
+    void valueBoundaryZeroAndNegativeAreRejectedOutOfRange() throws IOException {
+        Harness harness = harness();
+        ValidationOutcome zero = harness.validation().process(harness.manual().submit(
+                ManualMaterialSubmission.of(ADC12_SMM, "2026-08-10", "0", "元/吨", "CNY",
+                        "华东某厂报价单（测试）", "报价单号A-20260810", null)).runId());
+        assertValidated(zero, ValidationStatus.REJECTED, ValidationReasonCodes.OUT_OF_RANGE,
+                "0", "2026-08-10");
+        ValidationOutcome negative = harness.validation().process(harness.manual().submit(
+                ManualMaterialSubmission.of(ADC12_SMM, "2026-08-10", "-1.5", "元/吨", "CNY",
+                        "华东某厂报价单（测试）", "报价单号A-20260810", null)).runId());
+        assertValidated(negative, ValidationStatus.REJECTED, ValidationReasonCodes.OUT_OF_RANGE,
+                "-1.5", "2026-08-10");
+    }
+
+    @Test
+    void staleBoundarySevenDaysIsNotStaleAndEightDaysIsNotice() throws IOException {
+        Harness harness = harness();
+        ValidationOutcome ageSeven = harness.validation().process(harness.manual().submit(
+                ManualMaterialSubmission.of(ADC12_SMM, "2026-08-03", "19850.50", "元/吨", "CNY",
+                        "华东某厂报价单（测试）", "报价单号A-20260810", null)).runId());
+        assertValidated(ageSeven, ValidationStatus.VERIFIED, null, "19850.50", "2026-08-03");
+        ValidationOutcome ageEight = harness.validation().process(harness.manual().submit(
+                ManualMaterialSubmission.of(ADC12_SMM, "2026-08-02", "19850.50", "元/吨", "CNY",
+                        "华东某厂报价单（测试）", "报价单号A-20260810", null)).runId());
+        assertValidated(ageEight, ValidationStatus.VERIFIED_WITH_NOTICE,
+                ValidationReasonCodes.STALE_BUSINESS_DATE, "19850.50", "2026-08-02");
+    }
+
+    @Test
+    void missingMaterialValidationConfigFailsConstructionFailClosed() {
+        assertThrows(SchemaValidationException.class, () -> new MonitorSeriesItemV1(
+                ADC12_SMM, ADC12_SMM, true, "SMM", ProviderType.MANUAL, AccessMethod.MANUAL,
+                "人工录入（Manual）", RouteDecision.FALLBACK_MANUAL, "MANUAL_FALLBACK", NOW, null,
+                "ADC12", "material-field-key", "material",
+                "arithmetic-mean-v1", 2, 2, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                "CNY", "CNY", "元/吨", null),
+                "a material item without its explicit DEC-059 materialValidation config must fail closed");
+        assertThrows(SchemaValidationException.class, () -> new MonitorSeriesItemV1(
+                "FX.USD.CNY.PBOC_MID", "美元/人民币中间价", true, "PBOC", ProviderType.OFFICIAL_WEB,
+                AccessMethod.PUBLIC_OFFICIAL_HTML, "中国人民银行官网（授权中国外汇交易中心公布）",
+                RouteDecision.PRIMARY, null, NOW, null, "USD", "1美元对人民币", "人民币汇率中间价",
+                "arithmetic-mean-v1", 8, 4, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                "CNY", "USD", "CNY/1 USD",
+                new MaterialValidationConfigV1("0", null, 7, "USD", List.of())),
+                "a non-material item must not carry materialValidation config");
+    }
+
+    @Test
+    void normalizedSpecMatchingAndUnknownSpecRejected() throws IOException {
+        Harness harness = harness();
+        ValidationOutcome normalized = harness.validation().process(harness.manual().submit(
+                ManualMaterialSubmission.of(ADC12_SMM, "2026-08-10", "19850.50", "元/吨", "CNY",
+                        "华东某厂报价单（测试）", "报价单号A-20260810", null)).runId());
+        assertValidated(normalized, ValidationStatus.VERIFIED, null, "19850.50", "2026-08-10");
+
+        MonitorSeriesItemV1 unknown = new MonitorSeriesItemV1(
+                "MAT.ADC12X.SMM", "MAT.ADC12X.SMM", true, "SMM", ProviderType.MANUAL, AccessMethod.MANUAL,
+                "人工录入（Manual）", RouteDecision.FALLBACK_MANUAL, "MANUAL_FALLBACK", NOW, null,
+                "ADC12X", "material-field-key", "material",
+                "arithmetic-mean-v1", 2, 2, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                "CNY", "CNY", "元/吨",
+                new MaterialValidationConfigV1("0", null, 7, "ADC12", List.of()));
+        Harness secondHarness = harness();
+        secondHarness.configStore().activate(replaceItem(materialConfig(), unknown));
+        ManualIntakeOutcome intake = secondHarness.manual().submit(ManualMaterialSubmission.of(
+                "MAT.ADC12X.SMM", "2026-08-10", "19850.50", "元/吨", "CNY",
+                "华东某厂报价单（测试）", "报价单号A-20260810", null));
+        ValidationOutcome outcome = secondHarness.validation().process(intake.runId());
+        assertValidated(outcome, ValidationStatus.REJECTED, ValidationReasonCodes.SPEC_MISMATCH,
+                "19850.50", "2026-08-10");
+    }
+
+    @Test
+    void aliasesAreNeverImplied() throws IOException {
+        Harness harness = harness();
+        MonitorSeriesItemV1 hyphenated = new MonitorSeriesItemV1(
+                "MAT.ADC-12.SMM", "MAT.ADC-12.SMM", true, "SMM", ProviderType.MANUAL, AccessMethod.MANUAL,
+                "人工录入（Manual）", RouteDecision.FALLBACK_MANUAL, "MANUAL_FALLBACK", NOW, null,
+                "ADC-12", "material-field-key", "material",
+                "arithmetic-mean-v1", 2, 2, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                "CNY", "CNY", "元/吨",
+                new MaterialValidationConfigV1("0", null, 7, "ADC12", List.of()));
+        Harness secondHarness = harness();
+        secondHarness.configStore().activate(replaceItem(materialConfig(), hyphenated));
+        ManualIntakeOutcome intake = secondHarness.manual().submit(ManualMaterialSubmission.of(
+                "MAT.ADC-12.SMM", "2026-08-10", "19850.50", "元/吨", "CNY",
+                "华东某厂报价单（测试）", "报价单号A-20260810", null));
+        ValidationOutcome outcome = secondHarness.validation().process(intake.runId());
+        assertValidated(outcome, ValidationStatus.REJECTED, ValidationReasonCodes.SPEC_MISMATCH,
+                "19850.50", "2026-08-10");
+    }
+
+    @Test
+    void az91dValueAndStaleFollowTheSameRules() throws IOException {
+        Harness harness = harness();
+        ValidationOutcome zero = harness.validation().process(harness.manual().submit(
+                ManualMaterialSubmission.of(AZ91D_AM, "2026-08-10", "0", "元/吨", "CNY",
+                        "西南某厂报价单（测试）", "报价单号B-20260810", null)).runId());
+        assertValidated(zero, ValidationStatus.REJECTED, ValidationReasonCodes.OUT_OF_RANGE,
+                "0", "2026-08-10");
+        ValidationOutcome stale = harness.validation().process(harness.manual().submit(
+                ManualMaterialSubmission.of(AZ91D_AM, "2026-08-02", "24500", "元/吨", "CNY",
+                        "西南某厂报价单（测试）", "报价单号B-20260810", null)).runId());
+        assertValidated(stale, ValidationStatus.VERIFIED_WITH_NOTICE,
+                ValidationReasonCodes.STALE_BUSINESS_DATE, "24500", "2026-08-02");
+    }
+
+    @Test
+    void v1ValidationVersionIsPreservedAsHistoryOnly() {
+        assertEquals("material-basic-validation-v1", MaterialCandidateValidator.VALIDATION_VERSION,
+                "material-basic-validation-v1 must stay frozen as the historical version string");
+        assertEquals("material-basic-validation-v2", MaterialCandidateValidatorV2.VALIDATION_VERSION);
+    }
+
+    private static MonitorSeriesConfigV1 replaceItem(MonitorSeriesConfigV1 config, MonitorSeriesItemV1 replacement) {
+        List<MonitorSeriesItemV1> items = new ArrayList<>();
+        boolean replaced = false;
+        for (MonitorSeriesItemV1 item : config.items()) {
+            if (item.itemId().equals(replacement.itemId())) {
+                items.add(replacement);
+                replaced = true;
+            } else {
+                items.add(item);
+            }
+        }
+        if (!replaced) {
+            items.add(replacement);
+        }
+        return new MonitorSeriesConfigV1(config.schemaVersion(), config.configVersion() + 1,
+                config.mode(), config.updatedAt().plusMinutes(1), items);
+    }
+
     private static void assertValidated(
             ValidationOutcome outcome,
             ValidationStatus status,
@@ -370,8 +502,8 @@ class MaterialValidationPipelineTest {
         assertEquals(status, outcome.validationStatus());
         assertEquals(reasonCode, outcome.reasonCode());
         assertEquals(3, outcome.recordVersion());
-        assertEquals(MaterialCandidateValidator.VALIDATION_VERSION, outcome.validationVersion(),
-                "materials must use the distinct material validation version, never pboc-basic-validation-v1");
+        assertEquals(MaterialCandidateValidatorV2.VALIDATION_VERSION, outcome.validationVersion(),
+                "materials must use the official material-basic-validation-v2, never pboc-basic-validation-v1");
         assertNotNull(outcome.validatedAt());
         assertNotNull(outcome.candidate());
         if (value != null) {
@@ -400,7 +532,7 @@ class MaterialValidationPipelineTest {
                 root, rawStore, new LocalImportFileStore(root, fileStore, CLOCK), timelineStore,
                 new LocalImportCsvParser(), CLOCK);
         LifecycleValidationService validation = new LifecycleValidationService(root, timelineStore, CLOCK);
-        return new Harness(root, rawStore, timelineStore, manual, importService, validation);
+        return new Harness(root, configStore, rawStore, timelineStore, manual, importService, validation);
     }
 
     private static MonitorSeriesConfigV1 materialConfig() {
@@ -429,7 +561,8 @@ class MaterialValidationPipelineTest {
                 "人工录入（Manual）", routeDecision, fallbackReason, NOW, null,
                 externalCode, "material-field-key", "material",
                 "arithmetic-mean-v1", 2, 2, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
-                "CNY", "CNY", "元/吨");
+                "CNY", "CNY", "元/吨",
+                new MaterialValidationConfigV1("0", null, 7, externalCode, List.of()));
     }
 
     private static RawReceiptV1 materialRaw(
@@ -521,6 +654,7 @@ class MaterialValidationPipelineTest {
 
     private record Harness(
             DataRoot root,
+            ConfigActivationStore configStore,
             RawReceiptStore rawStore,
             TimelineStore timelineStore,
             ManualMaterialIntakeService manual,

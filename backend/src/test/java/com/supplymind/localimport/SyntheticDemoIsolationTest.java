@@ -172,7 +172,7 @@ class SyntheticDemoIsolationTest {
                 AccessMethod.SYNTHETIC_DEMO, actualSourceName, RouteDecision.SYNTHETIC_DEMO,
                 null, AT, null, itemId, "synthetic-demo-field", "synthetic-demo",
                 "arithmetic-mean-v1", 8, 4, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
-                "CNY", "CNY", "元/吨");
+                "CNY", "CNY", "元/吨", null);
     }
 
     private static void appendPublishedSyntheticTimeline(TimelineStore timelineStore, RawReceiptV1 raw) {

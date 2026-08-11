@@ -13,6 +13,8 @@ public final class ValidationReasonCodes {
     public static final String OUT_OF_RANGE = "OUT_OF_RANGE";
     public static final String DUPLICATE_OBSERVATION = "DUPLICATE_OBSERVATION";
     public static final String VALUE_CONFLICT = "VALUE_CONFLICT";
+    public static final String SPEC_MISMATCH = "SPEC_MISMATCH";
+    public static final String CONFIG_MISSING = "CONFIG_MISSING";
 
     private ValidationReasonCodes() {
     }
