@@ -10,21 +10,21 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /** Small, dependency-free guards used by the immutable v1 schema records. */
-final class ModelRules {
-    static final Pattern SAFE_ID = Pattern.compile("[A-Za-z0-9._-]+");
-    static final Pattern SHA_256 = Pattern.compile("[0-9a-f]{64}");
+public final class ModelRules {
+    public static final Pattern SAFE_ID = Pattern.compile("[A-Za-z0-9._-]+");
+    public static final Pattern SHA_256 = Pattern.compile("[0-9a-f]{64}");
 
     private ModelRules() {
     }
 
-    static <T> T required(T value, String name) {
+    public static <T> T required(T value, String name) {
         if (value == null) {
             throw new SchemaValidationException(name + " is required");
         }
         return value;
     }
 
-    static String nonBlank(String value, String name) {
+    public static String nonBlank(String value, String name) {
         required(value, name);
         if (value.isBlank()) {
             throw new SchemaValidationException(name + " must not be blank");
@@ -32,14 +32,14 @@ final class ModelRules {
         return value;
     }
 
-    static String schemaVersion(String value) {
+    public static String schemaVersion(String value) {
         if (!SchemaV1.VERSION.equals(value)) {
             throw new SchemaValidationException("schemaVersion must be the string \"1.0\"");
         }
         return value;
     }
 
-    static String id(String value, String name) {
+    public static String id(String value, String name) {
         nonBlank(value, name);
         if (!SAFE_ID.matcher(value).matches()) {
             throw new SchemaValidationException(name + " must match " + SAFE_ID.pattern());
@@ -47,32 +47,32 @@ final class ModelRules {
         return value;
     }
 
-    static int positive(int value, String name) {
+    public static int positive(int value, String name) {
         if (value <= 0) {
             throw new SchemaValidationException(name + " must be positive");
         }
         return value;
     }
 
-    static long nonNegative(long value, String name) {
+    public static long nonNegative(long value, String name) {
         if (value < 0) {
             throw new SchemaValidationException(name + " must not be negative");
         }
         return value;
     }
 
-    static int nonNegative(int value, String name) {
+    public static int nonNegative(int value, String name) {
         if (value < 0) {
             throw new SchemaValidationException(name + " must not be negative");
         }
         return value;
     }
 
-    static LocalDate isoDate(LocalDate value, String name) {
+    public static LocalDate isoDate(LocalDate value, String name) {
         return required(value, name);
     }
 
-    static String isoDateText(String value, String name) {
+    public static String isoDateText(String value, String name) {
         nonBlank(value, name);
         try {
             LocalDate parsed = LocalDate.parse(value);
@@ -85,11 +85,11 @@ final class ModelRules {
         return value;
     }
 
-    static OffsetDateTime dateTime(OffsetDateTime value, String name) {
+    public static OffsetDateTime dateTime(OffsetDateTime value, String name) {
         return required(value, name);
     }
 
-    static String sha256(String value, String name) {
+    public static String sha256(String value, String name) {
         nonBlank(value, name);
         if (!SHA_256.matcher(value).matches()) {
             throw new SchemaValidationException(name + " must be 64 lowercase hexadecimal characters");
@@ -97,7 +97,7 @@ final class ModelRules {
         return value;
     }
 
-    static String relativeDataRef(String value, String name) {
+    public static String relativeDataRef(String value, String name) {
         nonBlank(value, name);
         if (value.indexOf('\\') >= 0 || value.startsWith("/") || value.startsWith("//")
                 || value.matches("^[A-Za-z]:.*") || value.contains("//")) {
@@ -112,7 +112,7 @@ final class ModelRules {
         return value;
     }
 
-    static String httpUrl(String value, String name) {
+    public static String httpUrl(String value, String name) {
         nonBlank(value, name);
         try {
             URI uri = new URI(value);
@@ -126,7 +126,7 @@ final class ModelRules {
         }
     }
 
-    static void providerPair(ProviderType providerType, AccessMethod accessMethod) {
+    public static void providerPair(ProviderType providerType, AccessMethod accessMethod) {
         required(providerType, "providerType");
         required(accessMethod, "accessMethod");
         boolean valid = switch (providerType) {
@@ -142,7 +142,7 @@ final class ModelRules {
         }
     }
 
-    static <T> List<T> immutableList(List<T> value, String name) {
+    public static <T> List<T> immutableList(List<T> value, String name) {
         required(value, name);
         if (value.stream().anyMatch(Objects::isNull)) {
             throw new SchemaValidationException(name + " must not contain null values");
