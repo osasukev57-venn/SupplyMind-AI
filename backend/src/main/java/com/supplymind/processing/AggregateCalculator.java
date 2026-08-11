@@ -157,7 +157,8 @@ public final class AggregateCalculator {
                 first.unit(),
                 sourceFingerprint,
                 inputRefs,
-                deterministicCalculatedAt(inputs)
+                deterministicCalculatedAt(inputs),
+                first.canonicalSpecCode()
         );
     }
 
@@ -171,6 +172,7 @@ public final class AggregateCalculator {
             com.supplymind.foundation.model.AccessMethod accessMethod,
             com.supplymind.foundation.model.ValidationStatus validationStatus,
             String validationVersion,
+            String canonicalSpecCode,
             String currency,
             String unit,
             String calculationVersion,
@@ -184,7 +186,7 @@ public final class AggregateCalculator {
             return new AggregateGroupKey(
                     grain, periodStart, periodEnd,
                     row.itemId(), row.providerType(), row.actualSourceName(), row.accessMethod(),
-                    row.validationStatus(), row.validationVersion(),
+                    row.validationStatus(), row.validationVersion(), row.canonicalSpecCode(),
                     row.currency(), row.unit(),
                     row.calculationVersion(), row.calculationScale(), row.displayScale(),
                     row.roundingMode(), row.calendarVersion());

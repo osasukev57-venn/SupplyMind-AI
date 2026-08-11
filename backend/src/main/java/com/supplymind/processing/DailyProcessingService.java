@@ -142,7 +142,10 @@ public final class DailyProcessingService {
                     item.displayScale(),
                     item.roundingMode(),
                     item.calendarVersion(),
-                    publishedAt));
+                    publishedAt,
+                    item.materialValidation() == null
+                            ? null
+                            : item.materialValidation().canonicalSpecCode()));
         }
         inputs.sort(Comparator.comparing(DailyInput::runId));
         return List.copyOf(inputs);

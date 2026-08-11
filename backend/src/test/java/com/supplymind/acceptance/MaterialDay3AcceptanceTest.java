@@ -411,22 +411,28 @@ class MaterialDay3AcceptanceTest {
         OffsetDateTime now = OffsetDateTime.parse("2026-08-10T02:00:00+08:00");
         List<MonitorSeriesItemV1> items = new ArrayList<>();
         for (String itemId : FOUR_SEQUENCES) {
+            String externalCode = itemId.substring(itemId.indexOf('.') + 1, itemId.lastIndexOf('.'));
             items.add(new MonitorSeriesItemV1(
                     itemId, itemId, true, itemId.endsWith(".SMM") ? "SMM" : "Asian Metal",
                     ProviderType.MANUAL, AccessMethod.MANUAL, "人工录入（Manual）",
                     RouteDecision.FALLBACK_MANUAL, "MANUAL_FALLBACK", now, null,
-                    itemId.substring(itemId.indexOf('.') + 1, itemId.lastIndexOf('.')),
+                    externalCode,
                     "material-field-key", "material",
                     "arithmetic-mean-v1", 2, 2, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
-                    "CNY", "CNY", "元/吨"));
+                    "CNY", "CNY", "元/吨",
+                    new com.supplymind.foundation.model.MaterialValidationConfigV1(
+                            "0", null, 7, externalCode, List.of())));
         }
         for (String itemId : List.of("IMP.ADC12.001", "IMP.AZ91D.001")) {
+            String externalCode = itemId.substring(4, 9);
             items.add(new MonitorSeriesItemV1(
                     itemId, itemId, true, "SMM/供应商", ProviderType.LOCAL_IMPORT,
                     AccessMethod.LOCAL_IMPORT, "本地文件导入（LocalImport）", RouteDecision.DIRECT_LOCAL_IMPORT,
-                    null, now, null, itemId.substring(4, 9), "material-field-key", "material",
+                    null, now, null, externalCode, "material-field-key", "material",
                     "arithmetic-mean-v1", 2, 2, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
-                    "CNY", "CNY", "元/吨"));
+                    "CNY", "CNY", "元/吨",
+                    new com.supplymind.foundation.model.MaterialValidationConfigV1(
+                            "0", null, 7, externalCode, List.of())));
         }
         return new MonitorSeriesConfigV1("1.0", 1, Mode.FORMAL, now, items);
     }

@@ -38,15 +38,23 @@ public final class CsvV1Codec {
             "schemaVersion", "businessDate", "itemId", "providerType", "actualSourceName", "accessMethod",
             "processingStage", "validationStatus", "validationVersion", "configVersions", "calculationVersion",
             "calculationScale", "displayScale", "roundingMode", "calendarVersion", "sum", "validCount", "avg",
-            "expectedCount", "missingCount", "complete", "currency", "unit", "inputRefs", "updatedAt"
+            "expectedCount", "missingCount", "complete", "currency", "unit", "inputRefs", "updatedAt",
+            "canonicalSpecCode"
     );
     public static final List<String> AGGREGATE_HEADER = List.of(
             "schemaVersion", "grain", "periodStart", "periodEnd", "itemId", "providerType", "actualSourceName",
             "accessMethod", "validationStatus", "validationVersion", "configVersions", "calculationVersion",
             "calculationScale", "displayScale", "roundingMode", "calendarVersion", "sum", "validCount", "avg",
             "min", "max", "expectedCount", "missingCount", "complete", "qualityStatus", "currency", "unit",
-            "sourceFingerprint", "inputRefs", "calculatedAt"
+            "sourceFingerprint", "inputRefs", "calculatedAt", "canonicalSpecCode"
     );
+
+    /**
+     * DEC-059/M3: legacy v1.4 files were written without the trailing canonicalSpecCode column;
+     * they stay readable (canonicalSpecCode decodes as null). Only the modern header is written.
+     */
+    private static final int LEGACY_DAILY_HEADER_SIZE = DAILY_HEADER.size() - 1;
+    private static final int LEGACY_AGGREGATE_HEADER_SIZE = AGGREGATE_HEADER.size() - 1;
 
     private static final CSVFormat WRITE_FORMAT = CSVFormat.RFC4180.builder()
             .setRecordSeparator("\r\n")
@@ -68,7 +76,8 @@ public final class CsvV1Codec {
                         Integer.toString(row.calculationScale()), Integer.toString(row.displayScale()), row.roundingMode().name(),
                         row.calendarVersion(), row.sum(), Integer.toString(row.validCount()), row.avg(),
                         Integer.toString(row.expectedCount()), Integer.toString(row.missingCount()), Boolean.toString(row.complete()),
-                        row.currency(), row.unit(), JsonV1Codec.encodeCompact(row.inputRefs()), row.updatedAt().toString()
+                        row.currency(), row.unit(), JsonV1Codec.encodeCompact(row.inputRefs()), row.updatedAt().toString(),
+                        row.canonicalSpecCode() == null ? "" : row.canonicalSpecCode()
                 );
             }
             printer.flush();
@@ -91,7 +100,8 @@ public final class CsvV1Codec {
                         row.roundingMode().name(), row.calendarVersion(), row.sum(), Integer.toString(row.validCount()), row.avg(),
                         row.min(), row.max(), Integer.toString(row.expectedCount()), Integer.toString(row.missingCount()),
                         Boolean.toString(row.complete()), row.qualityStatus().wireValue(), row.currency(), row.unit(),
-                        row.sourceFingerprint(), JsonV1Codec.encodeCompact(row.inputRefs()), row.calculatedAt().toString()
+                        row.sourceFingerprint(), JsonV1Codec.encodeCompact(row.inputRefs()), row.calculatedAt().toString(),
+                        row.canonicalSpecCode() == null ? "" : row.canonicalSpecCode()
                 );
             }
             printer.flush();
@@ -103,10 +113,11 @@ public final class CsvV1Codec {
 
     public static List<DailyRecordV1> decodeDaily(byte[] utf8Bytes) {
         List<CSVRecord> records = parse(utf8Bytes, DAILY_HEADER, "daily");
+        boolean legacy = records.get(0).size() == LEGACY_DAILY_HEADER_SIZE;
         List<DailyRecordV1> rows = new ArrayList<>();
         for (int index = 1; index < records.size(); index++) {
             CSVRecord row = records.get(index);
-            requireColumnCount(row, DAILY_HEADER, "daily");
+            requireColumnCount(row, legacy ? LEGACY_DAILY_HEADER_SIZE : DAILY_HEADER.size(), "daily");
             rows.add(new DailyRecordV1(
                     value(row, 0), value(row, 1), value(row, 2), ProviderType.fromWireValue(value(row, 3)), value(row, 4),
                     AccessMethod.fromWireValue(value(row, 5)), ProcessingStage.fromWireValue(value(row, 6)),
@@ -115,7 +126,8 @@ public final class CsvV1Codec {
                     roundingMode(value(row, 13)), value(row, 14), value(row, 15), strictInt(value(row, 16), "validCount"),
                     value(row, 17), strictInt(value(row, 18), "expectedCount"), strictInt(value(row, 19), "missingCount"),
                     strictBoolean(value(row, 20), "complete"), value(row, 21), value(row, 22),
-                    JsonV1Codec.decodeCompactList(value(row, 23), DailyInputRefV1.class), offsetDateTime(value(row, 24), "updatedAt")
+                    JsonV1Codec.decodeCompactList(value(row, 23), DailyInputRefV1.class), offsetDateTime(value(row, 24), "updatedAt"),
+                    legacy ? null : nullable(value(row, 25))
             ));
         }
         ensureSorted(rows, DailyRecordV1.ORDER, "daily CSV rows");
@@ -124,10 +136,11 @@ public final class CsvV1Codec {
 
     public static List<AggregateRecordV1> decodeAggregate(byte[] utf8Bytes) {
         List<CSVRecord> records = parse(utf8Bytes, AGGREGATE_HEADER, "aggregate");
+        boolean legacy = records.get(0).size() == LEGACY_AGGREGATE_HEADER_SIZE;
         List<AggregateRecordV1> rows = new ArrayList<>();
         for (int index = 1; index < records.size(); index++) {
             CSVRecord row = records.get(index);
-            requireColumnCount(row, AGGREGATE_HEADER, "aggregate");
+            requireColumnCount(row, legacy ? LEGACY_AGGREGATE_HEADER_SIZE : AGGREGATE_HEADER.size(), "aggregate");
             rows.add(new AggregateRecordV1(
                     value(row, 0), AggregateGrain.fromWireValue(value(row, 1)), value(row, 2), value(row, 3), value(row, 4),
                     ProviderType.fromWireValue(value(row, 5)), value(row, 6), AccessMethod.fromWireValue(value(row, 7)),
@@ -138,7 +151,8 @@ public final class CsvV1Codec {
                     strictInt(value(row, 22), "missingCount"), strictBoolean(value(row, 23), "complete"),
                     QualityStatus.fromWireValue(value(row, 24)), value(row, 25), value(row, 26), value(row, 27),
                     JsonV1Codec.decodeCompactList(value(row, 28), AggregateInputRefV1.class),
-                    offsetDateTime(value(row, 29), "calculatedAt")
+                    offsetDateTime(value(row, 29), "calculatedAt"),
+                    legacy ? null : nullable(value(row, 30))
             ));
         }
         ensureSorted(rows, AggregateRecordV1.ORDER, "aggregate CSV rows");
@@ -166,16 +180,27 @@ public final class CsvV1Codec {
             if (records.isEmpty()) {
                 throw new SchemaValidationException(type + " CSV must have exactly one fixed header row");
             }
-            requireColumnCount(records.get(0), expectedHeader, type + " header");
-            for (int index = 0; index < expectedHeader.size(); index++) {
-                if (!expectedHeader.get(index).equals(records.get(0).get(index))) {
-                    throw new SchemaValidationException(type + " CSV header differs from frozen v1 header at column " + index);
-                }
+            CSVRecord header = records.get(0);
+            boolean modern = header.size() == expectedHeader.size() && headerMatches(header, expectedHeader);
+            boolean legacy = header.size() == expectedHeader.size() - 1
+                    && headerMatches(header, expectedHeader.subList(0, expectedHeader.size() - 1));
+            if (!modern && !legacy) {
+                throw new SchemaValidationException(
+                        type + " CSV header differs from the frozen v1 header (or its legacy form)");
             }
             return records;
         } catch (IOException exception) {
             throw new SchemaValidationException("Invalid RFC 4180 " + type + " CSV: " + exception.getMessage());
         }
+    }
+
+    private static boolean headerMatches(CSVRecord header, List<String> expected) {
+        for (int index = 0; index < expected.size(); index++) {
+            if (!expected.get(index).equals(header.get(index))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static String decodeStrictCsvText(byte[] utf8Bytes, String type) {
@@ -211,10 +236,14 @@ public final class CsvV1Codec {
         return content;
     }
 
-    private static void requireColumnCount(CSVRecord row, List<String> header, String type) {
-        if (row.size() != header.size()) {
-            throw new SchemaValidationException(type + " has " + row.size() + " fields; expected " + header.size());
+    private static void requireColumnCount(CSVRecord row, int expectedCount, String type) {
+        if (row.size() != expectedCount) {
+            throw new SchemaValidationException(type + " has " + row.size() + " fields; expected " + expectedCount);
         }
+    }
+
+    private static String nullable(String value) {
+        return value == null || value.isEmpty() ? null : value;
     }
 
     private static String value(CSVRecord record, int index) {

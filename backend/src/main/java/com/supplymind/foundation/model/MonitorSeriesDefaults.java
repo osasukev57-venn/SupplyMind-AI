@@ -91,7 +91,8 @@ public final class MonitorSeriesDefaults {
                 CALENDAR_VERSION,
                 "CNY",
                 baseCurrency,
-                unit
+                unit,
+                null
         );
     }
 
@@ -124,7 +125,8 @@ public final class MonitorSeriesDefaults {
                 CALENDAR_VERSION,
                 "CNY",
                 "CNY",
-                "元/吨"
+                "元/吨",
+                new MaterialValidationConfigV1("0", null, 7, externalCode, List.of())
         );
     }
 }

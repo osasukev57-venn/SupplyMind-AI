@@ -40,7 +40,8 @@ public record AggregateRecordV1(
         String unit,
         String sourceFingerprint,
         List<AggregateInputRefV1> inputRefs,
-        OffsetDateTime calculatedAt
+        OffsetDateTime calculatedAt,
+        String canonicalSpecCode
 ) {
     public static final Comparator<AggregateRecordV1> ORDER = Comparator
             .comparing((AggregateRecordV1 record) -> record.grain().wireValue())
@@ -52,6 +53,7 @@ public record AggregateRecordV1(
             .thenComparing(record -> record.accessMethod().wireValue())
             .thenComparing(record -> record.validationStatus().wireValue())
             .thenComparing(AggregateRecordV1::validationVersion)
+            .thenComparing(record -> specOrEmpty(record.canonicalSpecCode()))
             .thenComparing(AggregateRecordV1::calculationVersion)
             .thenComparingInt(AggregateRecordV1::calculationScale)
             .thenComparingInt(AggregateRecordV1::displayScale)
@@ -116,6 +118,13 @@ public record AggregateRecordV1(
             throw new SchemaValidationException("aggregate inputRefs must cover exactly validCount daily inputs");
         }
         ModelRules.dateTime(calculatedAt, "calculatedAt");
+        if (canonicalSpecCode != null) {
+            ModelRules.nonBlank(canonicalSpecCode, "canonicalSpecCode");
+        }
+    }
+
+    private static String specOrEmpty(String canonicalSpecCode) {
+        return canonicalSpecCode == null ? "" : canonicalSpecCode;
     }
 
     private static List<Integer> canonicalConfigVersions(List<Integer> configVersions) {

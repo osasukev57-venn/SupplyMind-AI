@@ -640,7 +640,8 @@ class DailyProcessingServiceTest {
                     item.accessMethod(), item.actualSourceName(), item.routeDecision(), item.fallbackReason(),
                     item.routeEffectiveAt(), item.supersedesItemId(), item.externalCode(), item.sourceFieldKey(),
                     item.rateKind(), item.calculationVersion(), calculationScale, displayScale,
-                    item.roundingMode(), item.calendarVersion(), item.currency(), item.baseCurrency(), item.unit()));
+                    item.roundingMode(), item.calendarVersion(), item.currency(), item.baseCurrency(), item.unit(),
+                    null));
         }
         return new MonitorSeriesConfigV1(SchemaV1.VERSION, version, Mode.FORMAL, RECEIVED_AT.plusHours(1), items);
     }
@@ -711,7 +712,8 @@ class DailyProcessingServiceTest {
                 4,
                 RoundingMode.HALF_UP,
                 "weekday-asia-shanghai-v1",
-                OffsetDateTime.parse(publishedAt));
+                OffsetDateTime.parse(publishedAt),
+                null);
     }
 
     private static byte[] fixtureBytes(String name) throws IOException {

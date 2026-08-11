@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
         "itemId", "displayName", "enabled", "sourceIntent", "providerType", "accessMethod", "actualSourceName",
         "routeDecision", "fallbackReason", "routeEffectiveAt", "supersedesItemId", "externalCode",
         "sourceFieldKey", "rateKind", "calculationVersion", "calculationScale", "displayScale", "roundingMode",
-        "calendarVersion", "currency", "baseCurrency", "unit"
+        "calendarVersion", "currency", "baseCurrency", "unit", "materialValidation"
 })
 public record MonitorSeriesItemV1(
         String itemId,
@@ -34,7 +34,8 @@ public record MonitorSeriesItemV1(
         String calendarVersion,
         String currency,
         String baseCurrency,
-        String unit
+        String unit,
+        MaterialValidationConfigV1 materialValidation
 ) {
     public MonitorSeriesItemV1 {
         ModelRules.id(itemId, "itemId");
@@ -61,6 +62,18 @@ public record MonitorSeriesItemV1(
             if (itemId.equals(supersedesItemId)) {
                 throw new SchemaValidationException("supersedesItemId must not equal itemId");
             }
+        }
+        // DEC-059: a material item must carry its explicit materialValidation config (no
+        // implicit runtime defaults; missing config fails construction = activation fail-closed);
+        // non-material items must not carry one.
+        boolean material = "material".equals(rateKind);
+        if (material && materialValidation == null) {
+            throw new SchemaValidationException(
+                    "material items require an explicit materialValidation config (DEC-059): " + itemId);
+        }
+        if (!material && materialValidation != null) {
+            throw new SchemaValidationException(
+                    "materialValidation config is only legal for material items: " + itemId);
         }
     }
 

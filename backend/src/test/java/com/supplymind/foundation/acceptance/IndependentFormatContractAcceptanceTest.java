@@ -62,11 +62,11 @@ class IndependentFormatContractAcceptanceTest {
     private static final String DAILY_HEADER = "schemaVersion,businessDate,itemId,providerType,actualSourceName,accessMethod,"
             + "processingStage,validationStatus,validationVersion,configVersions,calculationVersion,calculationScale,"
             + "displayScale,roundingMode,calendarVersion,sum,validCount,avg,expectedCount,missingCount,complete,"
-            + "currency,unit,inputRefs,updatedAt";
+            + "currency,unit,inputRefs,updatedAt,canonicalSpecCode";
     private static final String AGGREGATE_HEADER = "schemaVersion,grain,periodStart,periodEnd,itemId,providerType,"
             + "actualSourceName,accessMethod,validationStatus,validationVersion,configVersions,calculationVersion,"
             + "calculationScale,displayScale,roundingMode,calendarVersion,sum,validCount,avg,min,max,expectedCount,"
-            + "missingCount,complete,qualityStatus,currency,unit,sourceFingerprint,inputRefs,calculatedAt";
+            + "missingCount,complete,qualityStatus,currency,unit,sourceFingerprint,inputRefs,calculatedAt,canonicalSpecCode";
     private static final Pattern SCIENTIFIC_DECIMAL = Pattern.compile(".*\\d(?:\\.\\d+)?[eE][+-]?\\d+.*", Pattern.DOTALL);
 
     @Test
@@ -83,8 +83,8 @@ class IndependentFormatContractAcceptanceTest {
                 "Daily CSV must use the independently hand-frozen UTF-8/no-BOM/CRLF contract bytes");
         assertArrayEquals(expectedAggregate, actualAggregate,
                 "Aggregate CSV must use the independently hand-frozen UTF-8/no-BOM/CRLF contract bytes");
-        assertEquals("4f2281f461d06fcc2f2d93b2b613f755e1d0a29d25fbf38ad30d90bd0d52285e", sha256(actualDaily));
-        assertEquals("8d71d924ca18c18c0cbdaf91002898399735b4b04e427eb6640c432a691cc87d", sha256(actualAggregate));
+        assertEquals("2077d1d2ba45bf21c7e21e648b4a8bc7077c3e107006bcff971bc4d66f29305f", sha256(actualDaily));
+        assertEquals("ea6de076114fd4b15b5e889556fcbb8fe463cc26dd3d2309170c5e648b3cf14e", sha256(actualAggregate));
 
         String dailyText = new String(actualDaily, StandardCharsets.UTF_8);
         String aggregateText = new String(actualAggregate, StandardCharsets.UTF_8);
@@ -163,7 +163,8 @@ class IndependentFormatContractAcceptanceTest {
                 AccessMethod.SYNTHETIC_DEMO, ProcessingStage.PUBLISHED, ValidationStatus.VERIFIED, "contract-v1",
                 List.of(2, 1), "arithmetic-mean-v1", 12, 9, RoundingMode.HALF_UP, "fixture-calendar-v1",
                 "100.0", 1, "100.000000000000", 1, 0, true, "CNY", "CNY/1 EUR",
-                List.of(dailyInput("run-eur-a", "FX.EUR.CNY.INDEPENDENT")), at("2026-08-03T04:05:06+08:00")
+                List.of(dailyInput("run-eur-a", "FX.EUR.CNY.INDEPENDENT")), at("2026-08-03T04:05:06+08:00"),
+                null
         );
     }
 
@@ -174,7 +175,8 @@ class IndependentFormatContractAcceptanceTest {
                 List.of(2, 1), "arithmetic-mean-v1", 12, 9, RoundingMode.HALF_UP, "fixture-calendar-v1",
                 "99999999999.123456790", 2, "49999999999.561728395000", 2, 0, true, "CNY", "CNY/1 USD",
                 List.of(dailyInput("run-usd-b", "FX.USD.CNY.INDEPENDENT"), dailyInput("run-usd-a", "FX.USD.CNY.INDEPENDENT")),
-                at("2026-08-03T04:05:07+08:00")
+                at("2026-08-03T04:05:07+08:00"),
+                null
         );
     }
 
@@ -187,7 +189,8 @@ class IndependentFormatContractAcceptanceTest {
                 1, 0, true, QualityStatus.COMPLETE, "CNY", "CNY/1 EUR", SOURCE_FINGERPRINT,
                 List.of(aggregateInput("FX.EUR.CNY.INDEPENDENT", "2026-08-01",
                         "f28ce85ac5d329aaf0d73b7c894dbf603e8aee22490cf256278c3c5b1268655c")),
-                at("2026-08-03T04:05:08+08:00")
+                at("2026-08-03T04:05:08+08:00"),
+                null
         );
     }
 
@@ -204,7 +207,8 @@ class IndependentFormatContractAcceptanceTest {
                                 "05a0e2fcfb8040b67911c282b45c3faf961132ae070bb680a02f8df61ebc5842"),
                         aggregateInput("FX.USD.CNY.INDEPENDENT", "2026-08-02",
                                 "f57765ba847221e4bec249a11d932dbd11f453289df279f9c313b500e7015dd2")
-                ), at("2026-08-03T04:05:09+08:00")
+                ), at("2026-08-03T04:05:09+08:00"),
+                null
         );
     }
 

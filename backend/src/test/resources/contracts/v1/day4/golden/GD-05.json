@@ -1,0 +1,26 @@
+{
+  "fixtureId": "GD-05",
+  "fixtureKind": "TEST_CONTRACT_FIXTURE",
+  "executionState": "PENDING_IMPLEMENTATION",
+  "notProductionEvidence": true,
+  "controlledBusinessDate": "2026-01-10",
+  "initialConfiguration": {
+    "enabled": ["EUR/CNY", "USD/CNY", "SMM×ADC12", "SMM×AZ91D", "Asian Metal×ADC12", "Asian Metal×AZ91D"],
+    "absent": ["GBP/CNY"],
+    "replacementMaterial": {
+      "identifier": "MAT-REPL-01",
+      "selection": "REQUESTER_SPECIFIES_BEFORE_EXECUTION",
+      "requiredDistinctNewItems": ["SMM intent", "Asian Metal intent"],
+      "disabledButRetained": ["SMM×AZ91D", "Asian Metal×AZ91D"],
+      "unchanged": ["SMM×ADC12", "Asian Metal×ADC12"]
+    }
+  },
+  "requiredFixtureCoverage": [
+    "GBP current data on 2026-01-10",
+    "GBP and MAT-REPL-01 history from 2025-12-20 to 2026-01-09",
+    "completed historical batch",
+    "interrupted resumable historical batch",
+    "duplicate historical batch"
+  ],
+  "note": "No approved GBP or material source/value is invented by this fixture."
+}

@@ -241,7 +241,8 @@ class ManifestDerivedFieldsVerifierTest {
                         "raw/test/synthetic_demo/" + ITEM_ID + "/2026/08/" + runId + ".json",
                         4
                 )),
-                AT
+                AT,
+                null
         );
     }
 
@@ -278,7 +279,8 @@ class ManifestDerivedFieldsVerifierTest {
                 "CNY/1 TEST",
                 sourceFingerprint,
                 List.of(new AggregateInputRefV1(dailyRef, "2026-08-10", "validation-contract-v1", dailyFileSha256)),
-                AT
+                AT,
+                null
         );
     }
 

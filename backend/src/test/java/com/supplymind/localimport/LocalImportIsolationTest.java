@@ -555,13 +555,15 @@ class LocalImportIsolationTest {
                         AccessMethod.LOCAL_IMPORT, "本地文件导入（LocalImport）", RouteDecision.DIRECT_LOCAL_IMPORT,
                         null, now, null, "ADC12", "material-field-key", "material",
                         "arithmetic-mean-v1", 2, 2, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
-                        "CNY", "CNY", "元/吨"),
+                        "CNY", "CNY", "元/吨",
+                        new com.supplymind.foundation.model.MaterialValidationConfigV1("0", null, 7, "ADC12", List.of())),
                 new MonitorSeriesItemV1(
                         IMP_AZ91D, "AZ91D镁合金锭（本地导入）", true, "Asian Metal/供应商", ProviderType.LOCAL_IMPORT,
                         AccessMethod.LOCAL_IMPORT, "本地文件导入（LocalImport）", RouteDecision.DIRECT_LOCAL_IMPORT,
                         null, now, null, "AZ91D", "material-field-key", "material",
                         "arithmetic-mean-v1", 2, 2, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
-                        "CNY", "CNY", "元/吨")));
+                        "CNY", "CNY", "元/吨",
+                        new com.supplymind.foundation.model.MaterialValidationConfigV1("0", null, 7, "AZ91D", List.of()))));
     }
 
     private static RawReceiptV1 decodeRaw(DataRoot root, String ref) throws IOException {
