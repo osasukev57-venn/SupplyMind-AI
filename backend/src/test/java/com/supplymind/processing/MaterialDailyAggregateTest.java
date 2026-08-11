@@ -48,6 +48,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -158,6 +159,92 @@ class MaterialDailyAggregateTest {
         assertTrue(result.rows().stream().noneMatch(row -> row.avg().equals("0") || row.avg().equals("0.00")));
     }
 
+    @Test
+    void sameItemIdDifferentCanonicalSpecAcrossConfigVersionsNeverMixInDailyOrAggregate() throws IOException {
+        Harness harness = harness();
+        ManualIntakeOutcome v1Run = harness.manual().submit(ManualMaterialSubmission.of(
+                ADC12_SMM, "2026-08-10", "19850.50", "元/吨", "CNY",
+                "华东某厂报价单（测试）", "报价单号A-20260810", null));
+        harness.validation().process(v1Run.runId());
+        assertEquals(PublishOutcome.PublishAction.PUBLISHED, harness.publish().process(v1Run.runId()).action());
+
+        MonitorSeriesItemV1 reSpecified = new MonitorSeriesItemV1(
+                ADC12_SMM, ADC12_SMM, true, "SMM", ProviderType.MANUAL, AccessMethod.MANUAL,
+                "人工录入（Manual）", RouteDecision.FALLBACK_MANUAL, "MANUAL_FALLBACK", NOW, null,
+                "AZ91D", "material-field-key", "material",
+                "arithmetic-mean-v1", 2, 2, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                "CNY", "CNY", "元/吨",
+                new MaterialValidationConfigV1("0", null, 7, "AZ91D", List.of()));
+        MonitorSeriesConfigV1 v2 = new MonitorSeriesConfigV1("1.0", 2, Mode.FORMAL, NOW.plusHours(1),
+                java.util.stream.Stream.concat(
+                        materialConfig().items().stream()
+                                .filter(item -> !item.itemId().equals(ADC12_SMM)),
+                        java.util.stream.Stream.of(reSpecified)).toList());
+        harness.configStore().activate(v2);
+
+        ManualIntakeOutcome v2Run = harness.manual().submit(ManualMaterialSubmission.of(
+                ADC12_SMM, "2026-08-10", "19850.50", "元/吨", "CNY",
+                "华东某厂报价单（测试）", "报价单号A2-20260810", null));
+        harness.validation().process(v2Run.runId());
+        assertEquals(PublishOutcome.PublishAction.PUBLISHED, harness.publish().process(v2Run.runId()).action());
+
+        DailyResult daily = harness.daily().processMonth(ADC12_SMM, YearMonth.of(2026, 8));
+        assertEquals(2, daily.rows().size(),
+                "same itemId/date/source with different canonicalSpecCode must produce two separate daily groups");
+        assertTrue(daily.rows().stream().map(DailyRecordV1::canonicalSpecCode).distinct().count() == 2,
+                "each daily row must persist its own canonicalSpecCode lineage");
+        assertTrue(daily.rows().stream().anyMatch(row -> "ADC12".equals(row.canonicalSpecCode())
+                && row.avg().equals("19850.50")));
+        assertTrue(daily.rows().stream().anyMatch(row -> "AZ91D".equals(row.canonicalSpecCode())
+                && row.avg().equals("19850.50")));
+
+        harness.aggregate().processYear(ADC12_SMM, 2026);
+        List<String> monthRows = java.nio.file.Files.readAllLines(harness.root().resolveDataRef(
+                "processed/aggregate/" + ADC12_SMM + "/month/2026.csv"), StandardCharsets.UTF_8);
+        assertEquals(3, monthRows.size(),
+                "header + two spec-distinct aggregate rows; cross-spec mixing is forbidden");
+        assertFalse(monthRows.get(1).equals(monthRows.get(2)),
+                "different canonical specs must never enter the same aggregate row");
+        assertTrue(monthRows.get(1).endsWith("ADC12") || monthRows.get(1).endsWith("AZ91D"),
+                "aggregate rows must carry their canonicalSpecCode lineage");
+        assertTrue(monthRows.get(2).endsWith("ADC12") || monthRows.get(2).endsWith("AZ91D"));
+    }
+
+    @Test
+    void legacyDailyFileWithoutCanonicalSpecColumnRemainsReadable() throws IOException {
+        Harness harness = harness();
+        publish(harness, ADC12_SMM, "2026-08-10", "19850.50", "华东某厂报价单（测试）");
+        harness.daily().processMonth(ADC12_SMM, YearMonth.of(2026, 8));
+        String modern = Files.readString(harness.root().resolveDataRef(
+                DataPaths.dailyRef(ADC12_SMM, YearMonth.of(2026, 8))), StandardCharsets.UTF_8);
+        String legacy = stripTrailingColumn(modern, "canonicalSpecCode");
+
+        List<DailyRecordV1> rows = CsvV1Codec.decodeDaily(legacy.getBytes(StandardCharsets.UTF_8));
+        assertEquals(1, rows.size());
+        assertNull(rows.get(0).canonicalSpecCode(),
+                "a legacy v1.4 daily file without the canonicalSpecCode column must decode with null spec");
+        assertEquals("19850.50", rows.get(0).avg());
+        assertEquals("2026-08-10", rows.get(0).businessDate());
+    }
+
+    private static String stripTrailingColumn(String csv, String columnName) {
+        List<String> lines = new ArrayList<>(java.util.Arrays.asList(csv.split("\r\n")));
+        String header = lines.get(0);
+        assertTrue(header.endsWith("," + columnName), "expected a trailing " + columnName + " column");
+        lines.set(0, header.substring(0, header.length() - columnName.length() - 1));
+        List<String> stripped = new ArrayList<>();
+        stripped.add(header.substring(0, header.length() - columnName.length() - 1));
+        for (int index = 1; index < lines.size(); index++) {
+            String line = lines.get(index);
+            if (line.isEmpty()) {
+                continue;
+            }
+            int lastComma = line.lastIndexOf(',');
+            stripped.add(lastComma < 0 ? line : line.substring(0, lastComma));
+        }
+        return String.join("\r\n", stripped) + "\r\n";
+    }
+
     private static void publish(Harness harness, String itemId, String businessDate, String value,
                                 String declaredSource) throws IOException {
         ManualIntakeOutcome intake = harness.manual().submit(ManualMaterialSubmission.of(
@@ -169,7 +256,8 @@ class MaterialDailyAggregateTest {
     }
 
     private Harness harness() {
-        DataRoot root = DataRoot.forTest(temporaryDirectory.resolve("d4-t03-t04 root"));
+        DataRoot root = DataRoot.forTest(temporaryDirectory.resolve(
+                "d4-t03-t04 root " + System.nanoTime()));
         AtomicMoveSupport.probeOrFail(root);
         AtomicFileStore fileStore = new AtomicFileStore(root, new DirtyMarkerCodec());
         ConfigActivationStore configStore = new ConfigActivationStore(root, fileStore, CLOCK);
@@ -184,7 +272,7 @@ class MaterialDailyAggregateTest {
                 new QuarantineStore(root, fileStore, CLOCK), CLOCK);
         DailyProcessingService daily = new DailyProcessingService(root, timelineStore, fileStore, CLOCK);
         AggregateProcessingService aggregate = new AggregateProcessingService(root, fileStore, CLOCK);
-        return new Harness(root, manual, validation, publish, daily, aggregate);
+        return new Harness(root, configStore, manual, validation, publish, daily, aggregate);
     }
 
     private static MonitorSeriesConfigV1 materialConfig() {
@@ -206,6 +294,7 @@ class MaterialDailyAggregateTest {
 
     private record Harness(
             DataRoot root,
+            ConfigActivationStore configStore,
             ManualMaterialIntakeService manual,
             LifecycleValidationService validation,
             LifecyclePublishService publish,

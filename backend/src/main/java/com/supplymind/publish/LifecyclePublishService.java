@@ -15,7 +15,8 @@ import com.supplymind.foundation.storage.ManifestVerifier;
 import com.supplymind.foundation.storage.QuarantineStore;
 import com.supplymind.foundation.storage.StorageException;
 import com.supplymind.foundation.storage.TimelineStore;
-import com.supplymind.validation.MaterialCandidateValidator;
+import com.supplymind.validation.MaterialCandidateValidatorV2;
+import com.supplymind.validation.PbocBasicValidator;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -62,7 +63,7 @@ public final class LifecyclePublishService {
         if (current.processingStage() == ProcessingStage.VALIDATED
                 && (current.validationStatus() == ValidationStatus.VERIFIED
                 || current.validationStatus() == ValidationStatus.VERIFIED_WITH_NOTICE)) {
-            if (MaterialCandidateValidator.VALIDATION_VERSION.equals(current.validationVersion())) {
+            if (!isCurrentlyAllowedValidationVersion(current.validationVersion())) {
                 return outcome(timeline, PublishOutcome.PublishAction.NOT_READY, null);
             }
             RawReceiptV1 raw = readRaw(timeline.rawRef(), runId);
@@ -102,6 +103,17 @@ public final class LifecyclePublishService {
                 || (snapshot.processingStage() == ProcessingStage.VALIDATED
                 && (snapshot.validationStatus() == ValidationStatus.REJECTED
                 || snapshot.validationStatus() == ValidationStatus.CONFLICT));
+    }
+
+    /**
+     * D4-R2 whitelist: only the currently formal validation versions may be published. For
+     * materials that is exactly material-basic-validation-v2; the historical
+     * material-basic-validation-v1, unknown/future/blank versions are all refused - never an
+     * "anything that is not v1" rule. PBOC keeps its own frozen version.
+     */
+    private static boolean isCurrentlyAllowedValidationVersion(String validationVersion) {
+        return PbocBasicValidator.VALIDATION_VERSION.equals(validationVersion)
+                || MaterialCandidateValidatorV2.VALIDATION_VERSION.equals(validationVersion);
     }
 
     private static PublishOutcome outcome(

@@ -161,6 +161,23 @@ class MaterialPublishGateTest {
     }
 
     @Test
+    void unknownAndFutureValidationVersionsAreNeverPublishedEvenIfSnapshotsClaimVerified() throws IOException {
+        for (String forgedVersion : List.of(
+                "material-basic-validation-v3", "unknown-version", "random-version")) {
+            Harness harness = harness();
+            ManualIntakeOutcome intake = harness.manual().submit(ManualMaterialSubmission.of(
+                    ADC12_SMM, "2026-08-10", "19850.50", "元/吨", "CNY",
+                    "华东某厂报价单（测试）", "报价单号A-20260810", null));
+            appendValidatedSnapshot(harness, intake.runId(), forgedVersion);
+            PublishOutcome outcome = harness.publish().process(intake.runId());
+            assertEquals(PublishOutcome.PublishAction.NOT_READY, outcome.action(),
+                    "only the currently formal material validation version may be published: " + forgedVersion);
+            assertEquals(3, harness.timelineStore().read(intake.runId()).current().recordVersion(),
+                    "a forged VALIDATED+VERIFIED snapshot with an unknown version must never advance to PUBLISHED");
+        }
+    }
+
+    @Test
     void pendingRejectedAndConflictMaterialAreNeverPublished() throws IOException {
         Harness harness = harness();
         ManualIntakeOutcome pending = harness.manual().submit(ManualMaterialSubmission.of(
@@ -247,7 +264,8 @@ class MaterialPublishGateTest {
     }
 
     private Harness harness() {
-        DataRoot root = DataRoot.forTest(temporaryDirectory.resolve("d4-t02 publish root"));
+        DataRoot root = DataRoot.forTest(temporaryDirectory.resolve(
+                "d4-t02 publish root " + System.nanoTime()));
         AtomicMoveSupport.probeOrFail(root);
         AtomicFileStore fileStore = new AtomicFileStore(root, new DirtyMarkerCodec());
         ConfigActivationStore configStore = new ConfigActivationStore(root, fileStore, CLOCK);

@@ -294,7 +294,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D4-T01 全Provider标准化与校验规则
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 实施完成，待 Day4 阶段统一大审；`statusReason=D4T01_MATERIAL_VALIDATION_IMPLEMENTED_20260811`）。材料 validationVersion=`material-basic-validation-v1`（独立于 pboc-basic-validation-v1，DEC-057 §6/§7 范围）；Manual/LocalImport/FreePublic 材料经同一 validation gate 推进 `PARSED→VALIDATED`（VERIFIED/VERIFIED_WITH_NOTICE/REJECTED/CONFLICT），不产生 PUBLISHED（属 D4-T02）；LocalImport 材料标准化版本=`local-import-material-normalization-v1`；决策缺口（不发明阈值，待 Sol 裁决）：材料 value 范围、stale 阈值、spec 兼容规则（EXT-02=OPEN_EXTERNAL）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 实施完成，待 Day4 阶段统一大审；`statusReason=D4T01_MATERIAL_VALIDATION_IMPLEMENTED_20260811`）。**DEC-059=`EFFECTIVE`**：当前正式材料 validationVersion=`material-basic-validation-v2`（value>0、staleThresholdDays=7 的 NATURAL_DAY 边界、spec normalized-exact canonicalSpecCode、缺配置 fail-closed；`material-basic-validation-v1` 仅作历史 superseded，不得用于新发布）；Manual/LocalImport/FreePublic 材料经同一 validation gate 推进 `PARSED→VALIDATED`（VERIFIED/VERIFIED_WITH_NOTICE/REJECTED/CONFLICT），不产生 PUBLISHED（属 D4-T02）；LocalImport 材料标准化版本=`local-import-material-normalization-v1`；冲突判定先于 stale notice（同键异值=CONFLICT，stale 不覆盖 REJECTED/CONFLICT）。
 - **任务目标：** 将Day2 PBOC基础校验推广到六类Provider，覆盖来源、日期、单位、规格、范围、重复、时效和冲突。DEC-057 职责边界：MUST 新增独立材料 validationVersion，MUST NOT 复用 `pboc-basic-validation-v1` 验证材料（DEC-050 仅适用 PBOC）；负责冻结并实现 ADC12/AZ91D 及来源意图规格、unit/currency、数值范围、businessDate/future date/stale、来源字段一致性、重复、修订、冲突，并确定性产生 `VERIFIED`/`VERIFIED_WITH_NOTICE`/`REJECTED`/`CONFLICT`。
 - **对应需求：** SUP-06、SUP-07、F06、F07、H02。
 - **输入：** D3-T06各类raw、validation-rules和Series定义。

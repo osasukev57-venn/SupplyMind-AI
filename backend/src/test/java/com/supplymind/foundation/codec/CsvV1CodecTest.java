@@ -57,7 +57,7 @@ class CsvV1CodecTest {
                 "7.123456789000", 1, 0, true, QualityStatus.COMPLETE, "CNY", "CNY/1 USD", fingerprint,
                 List.of(new AggregateInputRefV1(
                         "processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv", "2026-08-10", "validation-test-v1",
-                        "b".repeat(64))), OffsetDateTime.parse("2026-08-20T10:00:00+08:00"));
+                        "b".repeat(64))), OffsetDateTime.parse("2026-08-20T10:00:00+08:00"), null);
 
         byte[] csv = CsvV1Codec.encodeAggregate(List.of(aggregate));
         String text = new String(csv, StandardCharsets.UTF_8);
@@ -76,7 +76,8 @@ class CsvV1CodecTest {
                 "golden-calendar-v1", "7.123456789000", 1, "7.123456789000", 1, 0, true, "CNY", "CNY/1 USD",
                 List.of(new DailyInputRefV1(runId,
                         "raw/test/synthetic_demo/FX.USD.CNY.PBOC_MID/2026/08/" + runId + ".json", 4)),
-                OffsetDateTime.parse("2026-08-20T10:00:00+08:00")
+                OffsetDateTime.parse("2026-08-20T10:00:00+08:00"),
+                null
         );
     }
 }

@@ -467,6 +467,67 @@ class MaterialValidationPipelineTest {
     }
 
     @Test
+    void conflictTakesPrecedenceOverStaleNotice() throws IOException {
+        Harness harness = harness();
+        ManualIntakeOutcome first = harness.manual().submit(ManualMaterialSubmission.of(
+                ADC12_SMM, "2026-08-02", "19850.50", "元/吨", "CNY",
+                "华东某厂报价单（测试）", "报价单号A-20260810", null));
+        ValidationOutcome firstValidated = harness.validation().process(first.runId());
+        assertEquals(ValidationStatus.VERIFIED_WITH_NOTICE, firstValidated.validationStatus(),
+                "age=8 alone is a stale notice");
+        assertEquals(ValidationReasonCodes.STALE_BUSINESS_DATE, firstValidated.reasonCode());
+
+        ManualIntakeOutcome conflicting = harness.manual().submit(ManualMaterialSubmission.of(
+                ADC12_SMM, "2026-08-02", "19900.00", "元/吨", "CNY",
+                "华东某厂报价单（测试）", "报价单号A-20260810", null));
+        ValidationOutcome conflict = harness.validation().process(conflicting.runId());
+        assertValidated(conflict, ValidationStatus.CONFLICT, ValidationReasonCodes.VALUE_CONFLICT,
+                "19900.00", "2026-08-02");
+    }
+
+    @Test
+    void duplicateKeepsItsNoticeEvenWhenAlsoStale() throws IOException {
+        Harness harness = harness();
+        ManualIntakeOutcome first = harness.manual().submit(ManualMaterialSubmission.of(
+                ADC12_SMM, "2026-08-02", "19850.50", "元/吨", "CNY",
+                "华东某厂报价单（测试）", "报价单号A-20260810", null));
+        harness.validation().process(first.runId());
+        ManualIntakeOutcome duplicate = harness.manual().submit(ManualMaterialSubmission.of(
+                ADC12_SMM, "2026-08-02", "19850.50", "元/吨", "CNY",
+                "华东某厂报价单（测试）", "报价单号A-20260810", "https://example.test/ref"));
+        ValidationOutcome outcome = harness.validation().process(duplicate.runId());
+        assertEquals(ValidationStatus.VERIFIED_WITH_NOTICE, outcome.validationStatus());
+        assertEquals(ValidationReasonCodes.DUPLICATE_OBSERVATION, outcome.reasonCode(),
+                "the duplicate observation notice must not be lost to the stale notice");
+    }
+
+    @Test
+    void invalidSpecAndInvalidUnitStayRejectedEvenWhenStale() throws IOException {
+        Harness harness = harness();
+        MonitorSeriesItemV1 unknownSpec = new MonitorSeriesItemV1(
+                "MAT.ADC12X.SMM", "MAT.ADC12X.SMM", true, "SMM", ProviderType.MANUAL, AccessMethod.MANUAL,
+                "人工录入（Manual）", RouteDecision.FALLBACK_MANUAL, "MANUAL_FALLBACK", NOW, null,
+                "ADC12X", "material-field-key", "material",
+                "arithmetic-mean-v1", 2, 2, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                "CNY", "CNY", "元/吨",
+                new MaterialValidationConfigV1("0", null, 7, "ADC12", List.of()));
+        Harness specHarness = harness();
+        specHarness.configStore().activate(replaceItem(materialConfig(), unknownSpec));
+        ValidationOutcome spec = specHarness.validation().process(specHarness.manual().submit(
+                ManualMaterialSubmission.of("MAT.ADC12X.SMM", "2026-08-02", "19850.50", "元/吨", "CNY",
+                        "华东某厂报价单（测试）", "报价单号A-20260810", null)).runId());
+        assertValidated(spec, ValidationStatus.REJECTED, ValidationReasonCodes.SPEC_MISMATCH,
+                "19850.50", "2026-08-02");
+
+        Harness unitHarness = harness();
+        ValidationOutcome unit = unitHarness.validation().process(unitHarness.manual().submit(
+                ManualMaterialSubmission.of(ADC12_SMM, "2026-08-02", "19850.50", "元/公斤", "CNY",
+                        "华东某厂报价单（测试）", "报价单号A-20260810", null)).runId());
+        assertValidated(unit, ValidationStatus.REJECTED, ValidationReasonCodes.UNIT_MISMATCH,
+                "19850.50", "2026-08-02");
+    }
+
+    @Test
     void v1ValidationVersionIsPreservedAsHistoryOnly() {
         assertEquals("material-basic-validation-v1", MaterialCandidateValidator.VALIDATION_VERSION,
                 "material-basic-validation-v1 must stay frozen as the historical version string");
@@ -518,7 +579,8 @@ class MaterialValidationPipelineTest {
     }
 
     private Harness harness() {
-        DataRoot root = DataRoot.forTest(temporaryDirectory.resolve("d4-t01 pipeline root"));
+        DataRoot root = DataRoot.forTest(temporaryDirectory.resolve(
+                "d4-t01 pipeline root " + System.nanoTime()));
         AtomicMoveSupport.probeOrFail(root);
         AtomicFileStore fileStore = new AtomicFileStore(root, new DirtyMarkerCodec());
         ConfigActivationStore configStore = new ConfigActivationStore(root, fileStore, CLOCK);

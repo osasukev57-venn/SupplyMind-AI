@@ -6,6 +6,8 @@
 > 冻结依据：docs/01 §15 Day4 行与 Day3 Gate 延伸、docs/03 §8 Day4 退出条件、DEC-057（§6-§9 职责边界）、DEC-058（阶段子用例）、DEC-059（材料校验规则）、FILE-SCHEMA-V1、CALCULATION-RULES、GD-01~GD-07。
 >
 > 【Stage Candidate 追加】（2026-08-11，集成至 integration/day4）：OpenCode Core `2ebe8c6` 与 Terra Extended Harness `562d437` 已并入 integration/day4（merge=`0ce512f`）；Terra `WAIT_PRODUCTION_CONFIG`（unit/currency 映射）已绑定生产默认配置并启用（MaterialBasicValidationV2ContractHarnessTest 5/5）；3 个原 PENDING_IMPLEMENTATION 测试（AT-SRC-005-D4/007-D4/008-D4 入口）前置已存在，已启用并真实执行（FutureMaterialDay4ContractTest 3/3）；最终回归 60 classes/311 tests/0 failures/0 errors/7 skipped（7 项全为真实联网/真实 raw 门禁，无 Day4 核心测试跳过）；Day4 Gate（实施侧）=PASS；DAY4_STAGE_CANDIDATE 已形成并冻结。
+>
+> 【R2 Stage Fix 追加】（2026-08-11，`fix: close Day4 stage review findings`）：Candidate `a9fe94a` Sol Stage Review=`CHANGES_REQUESTED`（4×MAJOR，本轮修复）：1) publish 门禁改为正式版本白名单（material 仅 material-basic-validation-v2；v1/未知/未来版本伪造 VALIDATED+VERIFIED 也 NOT_READY；PBOC 自有版本不受影响）；2) conflict 判定先于 stale notice（同键异值 age>7=CONFLICT；同键同值 age>7 保留 DUPLICATE 信息；invalid spec/unit+stale 仍 REJECTED）；3) 生产 DailyGroupKey/AggregateGroupKey 加入 canonicalSpecCode（daily/aggregate CSV 新增 canonicalSpecCode 列并保留行级血缘；同 itemId/日期/来源不同 spec=独立 group 绝不混算；旧文件无该列仍可读，spec=null）；4) docs/04 同步 DEC-059（v2=当前正式、v1=历史 superseded）。**最终回归 60 classes/317 tests/0 failures/0 errors/7 skipped**（真实执行；此前 55/298/0/0/10 为 D4-T05 集成历史运行，已被本最终运行 supersede）。
 
 ## 1. DEC-059（T01）
 

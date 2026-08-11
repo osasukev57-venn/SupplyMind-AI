@@ -145,7 +145,7 @@ class DirtyMarkerAndProcessedCodecAcceptanceTest {
                 "arithmetic-mean-v1", 12, 9, RoundingMode.HALF_UP, "golden-calendar-v1",
                 value, 1, scaleTwelve(value), 1, 0, true, "CNY",
                 itemId.contains("EUR") ? "CNY/1 EUR" : "CNY/1 USD",
-                List.of(new DailyInputRefV1(runId, rawRef, 4)), AT
+                List.of(new DailyInputRefV1(runId, rawRef, 4)), AT, null
         );
     }
 
@@ -161,7 +161,7 @@ class DirtyMarkerAndProcessedCodecAcceptanceTest {
                 daily.avg(), daily.avg(), daily.avg(), daily.expectedCount(), daily.missingCount(), daily.complete(),
                 QualityStatus.COMPLETE, daily.currency(), daily.unit(), fingerprint,
                 List.of(new AggregateInputRefV1(dailyRef, daily.businessDate(), daily.validationVersion(),
-                        FileDigest.sha256("synthetic-daily-file".getBytes(StandardCharsets.UTF_8)))), AT
+                        FileDigest.sha256("synthetic-daily-file".getBytes(StandardCharsets.UTF_8)))), AT, null
         );
     }
 

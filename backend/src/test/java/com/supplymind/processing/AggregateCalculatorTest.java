@@ -345,9 +345,10 @@ class AggregateCalculatorTest {
                 0,
                 true,
                 "CNY",
-                "CNY/1 USD",
-                refs,
-                OffsetDateTime.parse("2026-01-06T09:00+08:00"));
+                 "CNY/1 USD",
+                 refs,
+                 OffsetDateTime.parse("2026-01-06T09:00+08:00"),
+                 null);
     }
 
     private static DailyRecordV1 daily(
@@ -395,8 +396,9 @@ class AggregateCalculatorTest {
                 0,
                 true,
                 "CNY",
-                "CNY/1 USD",
-                refs,
-                updatedAt == null ? null : OffsetDateTime.parse(updatedAt));
+                 "CNY/1 USD",
+                 refs,
+                 updatedAt == null ? null : OffsetDateTime.parse(updatedAt),
+                 null);
     }
 }

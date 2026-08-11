@@ -34,7 +34,8 @@ public record DailyRecordV1(
         String currency,
         String unit,
         List<DailyInputRefV1> inputRefs,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        String canonicalSpecCode
 ) {
     public static final Comparator<DailyRecordV1> ORDER = Comparator
             .comparing(DailyRecordV1::businessDate)
@@ -44,6 +45,7 @@ public record DailyRecordV1(
             .thenComparing(record -> record.accessMethod().wireValue())
             .thenComparing(record -> record.validationStatus().wireValue())
             .thenComparing(DailyRecordV1::validationVersion)
+            .thenComparing(record -> specOrEmpty(record.canonicalSpecCode()))
             .thenComparing(DailyRecordV1::calculationVersion)
             .thenComparingInt(DailyRecordV1::calculationScale)
             .thenComparingInt(DailyRecordV1::displayScale)
@@ -91,6 +93,13 @@ public record DailyRecordV1(
             throw new SchemaValidationException("daily inputRefs must cover exactly validCount PUBLISHED inputs");
         }
         ModelRules.dateTime(updatedAt, "updatedAt");
+        if (canonicalSpecCode != null) {
+            ModelRules.nonBlank(canonicalSpecCode, "canonicalSpecCode");
+        }
+    }
+
+    private static String specOrEmpty(String canonicalSpecCode) {
+        return canonicalSpecCode == null ? "" : canonicalSpecCode;
     }
 
     private static List<Integer> canonicalConfigVersions(List<Integer> configVersions) {

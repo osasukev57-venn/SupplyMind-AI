@@ -712,7 +712,8 @@ class DailyProcessingServiceTest {
                 4,
                 RoundingMode.HALF_UP,
                 "weekday-asia-shanghai-v1",
-                OffsetDateTime.parse(publishedAt));
+                OffsetDateTime.parse(publishedAt),
+                null);
     }
 
     private static byte[] fixtureBytes(String name) throws IOException {

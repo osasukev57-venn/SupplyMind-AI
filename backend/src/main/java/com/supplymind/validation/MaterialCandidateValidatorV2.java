@@ -29,8 +29,10 @@ import java.util.Objects;
  * presence (fail-closed CONFIG_MISSING), mode, item identity, provider identity,
  * source-field consistency, field integrity, unit, currency, future business date, spec
  * normalized-exact, value (value &lt;= valueMinExclusive REJECTED; valueMaxInclusive=null
- * means no upper bound), staleness (calendarAgeDays &gt; staleThresholdDays -&gt;
- * VERIFIED_WITH_NOTICE), then duplicate/conflict.
+ * means no upper bound), duplicate/conflict adjudication (same-key incompatible facts are
+ * CONFLICT before any notice), then staleness (calendarAgeDays &gt; staleThresholdDays -&gt;
+ * VERIFIED_WITH_NOTICE). Stale never upgrades REJECTED/CONFLICT into a VERIFIED class, and a
+ * duplicate observation keeps its DUPLICATE_OBSERVATION notice even when also stale.
  *
  * <p>Spec identity is item-owned: the frozen record schemas carry no per-record spec field,
  * so the declared spec is the item's externalCode normalized via Unicode NFKC, trim and ASCII
@@ -119,11 +121,10 @@ public final class MaterialCandidateValidatorV2 {
         }
 
         long calendarAgeDays = ChronoUnit.DAYS.between(businessDate, today);
-        if (calendarAgeDays > rules.staleThresholdDays()) {
-            return new ValidationVerdict(ValidationStatus.VERIFIED_WITH_NOTICE,
-                    ValidationReasonCodes.STALE_BUSINESS_DATE);
-        }
 
+        // D4-R2: duplicate/conflict adjudication comes before the stale notice - a same-key
+        // incompatible fact must be CONFLICT even when stale, and stale must never upgrade a
+        // REJECTED/CONFLICT record into a VERIFIED-class outcome.
         boolean duplicate = false;
         for (CandidateV1 other : otherObservations) {
             int comparison = new BigDecimal(other.value()).compareTo(value);
@@ -135,6 +136,10 @@ public final class MaterialCandidateValidatorV2 {
         if (duplicate) {
             return new ValidationVerdict(ValidationStatus.VERIFIED_WITH_NOTICE,
                     ValidationReasonCodes.DUPLICATE_OBSERVATION);
+        }
+        if (calendarAgeDays > rules.staleThresholdDays()) {
+            return new ValidationVerdict(ValidationStatus.VERIFIED_WITH_NOTICE,
+                    ValidationReasonCodes.STALE_BUSINESS_DATE);
         }
         return new ValidationVerdict(ValidationStatus.VERIFIED, null);
     }

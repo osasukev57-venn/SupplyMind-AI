@@ -29,7 +29,8 @@ public record DailyInput(
         int displayScale,
         RoundingMode roundingMode,
         String calendarVersion,
-        OffsetDateTime publishedAt
+        OffsetDateTime publishedAt,
+        String canonicalSpecCode
 ) {
     public DailyInput {
         Objects.requireNonNull(itemId, "itemId");

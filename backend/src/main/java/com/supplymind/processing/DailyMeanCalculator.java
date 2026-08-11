@@ -116,7 +116,8 @@ public final class DailyMeanCalculator {
                 first.currency(),
                 first.unit(),
                 inputRefs,
-                deterministicUpdatedAt(inputs)
+                deterministicUpdatedAt(inputs),
+                first.canonicalSpecCode()
         );
     }
 
@@ -128,6 +129,7 @@ public final class DailyMeanCalculator {
             AccessMethod accessMethod,
             ValidationStatus validationStatus,
             String validationVersion,
+            String canonicalSpecCode,
             String currency,
             String unit,
             String calculationVersion,
@@ -145,6 +147,7 @@ public final class DailyMeanCalculator {
                     input.accessMethod(),
                     input.validationStatus(),
                     input.validationVersion(),
+                    input.canonicalSpecCode(),
                     input.currency(),
                     input.unit(),
                     input.calculationVersion(),
