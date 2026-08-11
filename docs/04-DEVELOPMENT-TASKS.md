@@ -308,7 +308,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D4-T02 全Provider统一发布门禁
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 实施完成，待阶段统一大审；`statusReason=D4T02_UNIFIED_PUBLISH_GATE_20260811`）。统一门禁=仅 VALIDATED+VERIFIED 类且 material-basic-validation-v2（v1 新材料禁止发布）且 Mode=FORMAL 才 PUBLISHED；Manual/LocalImport/FreePublic 无旁路；Synthetic DEMO 永不发布。
 - **任务目标：** 强制加工、查询、预警和Agent只能访问PUBLISHED+两种VERIFIED状态。DEC-057 职责边界：在 D4-T01 已产生 `VALIDATED+VERIFIED` 类结果后进行正式发布。
 - **对应需求：** SUP-06、F06、H01、H02。
 - **输入：** D4-T01结果、真实/演示模式和来源策略。
@@ -322,7 +322,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D4-T03 全Provider每日加工与持久化
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 实施完成，待阶段统一大审；`statusReason=D4T03_MATERIAL_DAILY_20260811`）。材料 PUBLISHED+VERIFIED 类经通用 daily 服务按月写 CSV（冻结表头/inputRefs/上下文；缺失不补 0；cross-source 分行）。
 - **任务目标：** 将D2-T03推广到材料路线，从已验证同来源同规格样本计算daily并按月写文件。
 - **对应需求：** H01、H02、F08、SUP-06。
 - **输入：** D4-T02记录、不可变配置history、追加式计算规则和业务日历。
@@ -336,7 +336,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D4-T04 月/季/半年/年聚合与持久化
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 实施完成，待阶段统一大审；`statusReason=D4T04_MATERIAL_AGGREGATE_20260811`）。材料四级 aggregate 从合法 daily 重建（sourceFingerprint/inputRefs/configVersions；无展示舍入回写；cross-context 不误聚合）。
 - **任务目标：** 从有效daily重算自然月、季度、半年和年度指标，并分别写aggregate CSV。
 - **对应需求：** H01、H02、F09。
 - **输入：** D4-T03 daily、自然周期规则和精度配置。
@@ -350,7 +350,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D4-T05 黄金数据、来源治理与发布集成门禁
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 集成完成，待阶段统一大审；`statusReason=D4T05_DAY4_INTEGRATION_20260811`）。GD-01~07 SHA 清单、AT-PUB/PREC/AGG 契约 harness、AT-SRC-005-D4/007-D4/008-D4 真实执行（Evidence=`docs/evidence/Day4/DAY4-INTEGRATION-20260811.md`）。
 - **任务目标：** 在Day5前证明数值精度、Manual门禁、来源真实性和五级文件完整。
 - **对应需求：** H01、H02、F06-F09、SUP-05至SUP-08。
 - **输入：** GD-01至GD-07、D4-T01至D4-T04。
