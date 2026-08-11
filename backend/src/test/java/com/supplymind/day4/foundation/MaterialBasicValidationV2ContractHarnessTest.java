@@ -1,13 +1,18 @@
 package com.supplymind.day4.foundation;
 
+import com.supplymind.foundation.model.MaterialValidationConfigV1;
+import com.supplymind.foundation.model.Mode;
+import com.supplymind.foundation.model.MonitorSeriesConfigV1;
+import com.supplymind.foundation.model.MonitorSeriesDefaults;
+import com.supplymind.foundation.model.MonitorSeriesItemV1;
 import com.supplymind.foundation.model.ValidationStatus;
 import com.supplymind.validation.ValidationReasonCodes;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.text.Normalizer;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -16,11 +21,15 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * DEC-059 reference oracle for future D4-T01 production tests.  It contains no material source,
- * unit, or currency mapping and never invokes the unimplemented material validation service.
+ * DEC-059 reference oracle for the material validation contract. The value/stale/spec checks
+ * are the frozen decision oracle; the unit/currency exact mapping is bound to the merged
+ * production configuration (MonitorSeriesDefaults.initialDay3) - no hard-coded material
+ * unit or currency appears in this lane.
  */
 class MaterialBasicValidationV2ContractHarnessTest {
 
@@ -71,10 +80,27 @@ class MaterialBasicValidationV2ContractHarnessTest {
         assertEquals(ValidationStatus.REJECTED, validateSpec("AZ91"));
     }
 
-    @Disabled("WAIT_PRODUCTION_CONFIG: DEC-059 exact material unit/currency mapping must be read data-driven after production config merge")
     @Test
-    void unitAndCurrencyExactMappingWillBeBoundToMergedProductionConfiguration() {
-        // Deliberately no hard-coded ADC12/AZ91D unit or currency appears in this lane.
+    void unitAndCurrencyExactMappingIsBoundToMergedProductionConfiguration() {
+        MonitorSeriesConfigV1 productionDefault = MonitorSeriesDefaults.initialDay3(
+                OffsetDateTime.parse("2026-08-11T12:00:00+08:00"));
+        assertEquals(Mode.FORMAL, productionDefault.mode());
+
+        for (String itemId : List.of(
+                MonitorSeriesDefaults.ADC12_SMM_ITEM_ID, MonitorSeriesDefaults.ADC12_AM_ITEM_ID,
+                MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID, MonitorSeriesDefaults.AZ91D_AM_ITEM_ID)) {
+            MonitorSeriesItemV1 item = productionDefault.requireItem(itemId);
+            MaterialValidationConfigV1 rules = item.materialValidation();
+            assertNotNull(rules, itemId + " must carry its explicit DEC-059 materialValidation config");
+            assertEquals("0", rules.valueMinExclusive(), itemId + " valueMinExclusive");
+            assertNull(rules.valueMaxInclusive(), itemId + " has no upper bound");
+            assertEquals(7, rules.staleThresholdDays(), itemId + " staleThresholdDays");
+            assertEquals(List.of(), rules.acceptedSpecAliases(), itemId + " aliases stay empty");
+            String canonical = item.externalCode().equals("ADC12") ? "ADC12" : "AZ91D";
+            assertEquals(canonical, rules.canonicalSpecCode(), itemId + " canonicalSpecCode matches the item spec");
+            assertEquals("元/吨", item.unit(), itemId + " unit mapping");
+            assertEquals("CNY", item.currency(), itemId + " currency mapping");
+        }
     }
 
     private static void assertDecision(BigDecimal value, ValidationStatus expectedStatus, String expectedReason) {
