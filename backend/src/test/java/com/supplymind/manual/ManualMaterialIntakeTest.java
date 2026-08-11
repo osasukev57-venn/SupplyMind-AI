@@ -4,6 +4,7 @@ import com.supplymind.foundation.codec.JsonV1Codec;
 import com.supplymind.foundation.model.AccessMethod;
 import com.supplymind.foundation.model.LifecycleTimelineV1;
 import com.supplymind.foundation.model.ManifestV1;
+import com.supplymind.foundation.model.MaterialValidationConfigV1;
 import com.supplymind.foundation.model.Mode;
 import com.supplymind.foundation.model.MonitorSeriesConfigV1;
 import com.supplymind.foundation.model.MonitorSeriesItemV1;
@@ -414,7 +415,7 @@ class ManualMaterialIntakeTest {
                 AccessMethod.PUBLIC_OFFICIAL_HTML, "中国人民银行官网（授权中国外汇交易中心公布）",
                 RouteDecision.PRIMARY, null, now, null, "USD", "1美元对人民币", "FX",
                 "arithmetic-mean-v1", 8, 4, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
-                "CNY", "USD", "CNY/1 USD");
+                "CNY", "USD", "CNY/1 USD", null);
         return new MonitorSeriesConfigV1("1.0", 1, Mode.FORMAL, now, List.of(adc12, az91d, usd));
     }
 
@@ -427,7 +428,8 @@ class ManualMaterialIntakeTest {
                 "人工录入（Manual）", RouteDecision.FALLBACK_MANUAL, "MANUAL_FALLBACK", now, null,
                 externalCode, "material-field-key", "material",
                 "arithmetic-mean-v1", 2, 2, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
-                "CNY", "CNY", unit);
+                "CNY", "CNY", unit,
+                new MaterialValidationConfigV1("0", null, 7, externalCode, List.of()));
     }
 
     private static ManualMaterialSubmission submission(String itemId, String value) {

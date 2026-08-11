@@ -456,7 +456,8 @@ class PbocValidationPipelineTest {
                         item.accessMethod(), item.actualSourceName(), item.routeDecision(), item.fallbackReason(),
                         item.routeEffectiveAt(), item.supersedesItemId(), item.externalCode(), item.sourceFieldKey(),
                         item.rateKind(), item.calculationVersion(), item.calculationScale(), item.displayScale(),
-                        item.roundingMode(), item.calendarVersion(), item.currency(), item.baseCurrency(), unit));
+                        item.roundingMode(), item.calendarVersion(), item.currency(), item.baseCurrency(), unit,
+                        null));
             } else {
                 items.add(item);
             }

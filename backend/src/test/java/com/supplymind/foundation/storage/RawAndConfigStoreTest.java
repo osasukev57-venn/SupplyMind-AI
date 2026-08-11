@@ -113,7 +113,8 @@ class RawAndConfigStoreTest {
                         "golden-calendar-v1",
                         "CNY",
                         "TEST",
-                        "CNY/1 TEST"
+                        "CNY/1 TEST",
+                        null
                 ))
         );
     }

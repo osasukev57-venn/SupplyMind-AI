@@ -4,6 +4,7 @@ import com.supplymind.foundation.codec.JsonV1Codec;
 import com.supplymind.foundation.model.LifecycleSnapshotV1;
 import com.supplymind.foundation.model.LifecycleTimelineV1;
 import com.supplymind.foundation.model.ManifestV1;
+import com.supplymind.foundation.model.Mode;
 import com.supplymind.foundation.model.ProcessingStage;
 import com.supplymind.foundation.model.QuarantineProjectionV1;
 import com.supplymind.foundation.model.RawReceiptV1;
@@ -14,6 +15,7 @@ import com.supplymind.foundation.storage.ManifestVerifier;
 import com.supplymind.foundation.storage.QuarantineStore;
 import com.supplymind.foundation.storage.StorageException;
 import com.supplymind.foundation.storage.TimelineStore;
+import com.supplymind.validation.MaterialCandidateValidator;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -60,6 +62,13 @@ public final class LifecyclePublishService {
         if (current.processingStage() == ProcessingStage.VALIDATED
                 && (current.validationStatus() == ValidationStatus.VERIFIED
                 || current.validationStatus() == ValidationStatus.VERIFIED_WITH_NOTICE)) {
+            if (MaterialCandidateValidator.VALIDATION_VERSION.equals(current.validationVersion())) {
+                return outcome(timeline, PublishOutcome.PublishAction.NOT_READY, null);
+            }
+            RawReceiptV1 raw = readRaw(timeline.rawRef(), runId);
+            if (raw.mode() != Mode.FORMAL) {
+                return outcome(timeline, PublishOutcome.PublishAction.NOT_READY, null);
+            }
             OffsetDateTime publishedAt = now();
             LifecycleSnapshotV1 published = new LifecycleSnapshotV1(
                     4,

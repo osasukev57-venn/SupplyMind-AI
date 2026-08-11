@@ -29,10 +29,13 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * D2-T01 entry point: RECEIVED+PENDING -> PARSED+PENDING (CandidateV1) -> VALIDATED
- * (VERIFIED / VERIFIED_WITH_NOTICE / REJECTED / CONFLICT), or RECEIVED+REJECTED when
- * standardization fails. Reprocessing is idempotent: terminal and VALIDATED runs are no-ops,
- * and an identical current snapshot is never appended twice.
+ * D2-T01 entry point (extended by D4-T01): RECEIVED+PENDING -> PARSED+PENDING (CandidateV1) ->
+ * VALIDATED (VERIFIED / VERIFIED_WITH_NOTICE / REJECTED / CONFLICT), or RECEIVED+REJECTED when
+ * standardization fails. D4-T01 dispatches by configured item kind: PBOC items keep
+ * pboc-basic-validation-v1, material items (rateKind=material) use the distinct
+ * material-basic-validation-v1 and the material standardizer, so Manual/LocalImport/FreePublic
+ * material rows go through the same gate with no bypass. Reprocessing is idempotent: terminal
+ * and VALIDATED runs are no-ops, and an identical current snapshot is never appended twice.
  */
 public final class LifecycleValidationService {
 
@@ -41,6 +44,8 @@ public final class LifecycleValidationService {
     private final Clock clock;
     private final PbocCandidateStandardizer standardizer = new PbocCandidateStandardizer();
     private final PbocBasicValidator validator = new PbocBasicValidator();
+    private final MaterialCandidateStandardizer materialStandardizer = new MaterialCandidateStandardizer();
+    private final MaterialCandidateValidatorV2 materialValidator = new MaterialCandidateValidatorV2();
 
     public LifecycleValidationService(DataRoot dataRoot, TimelineStore timelineStore, Clock clock) {
         this.dataRoot = Objects.requireNonNull(dataRoot, "dataRoot");
@@ -61,7 +66,9 @@ public final class LifecycleValidationService {
             RawReceiptV1 raw = readRaw(timeline.rawRef(), runId);
             MonitorSeriesConfigV1 config = VersionedConfigReader.readVersion(dataRoot, raw.configVersion());
             MonitorSeriesItemV1 item = config.requireItem(raw.itemId());
-            StandardizationResult standardized = standardizer.standardize(raw);
+            StandardizationResult standardized = isMaterial(item)
+                    ? materialStandardizer.standardize(raw)
+                    : standardizer.standardize(raw);
             if (standardized.candidate() == null) {
                 LifecycleTimelineV1 rejected = timelineStore.append(runId, new LifecycleSnapshotV1(
                         2, ProcessingStage.RECEIVED, ValidationStatus.REJECTED, null,
@@ -81,12 +88,23 @@ public final class LifecycleValidationService {
         MonitorSeriesItemV1 item = config.requireItem(raw.itemId());
         LocalDate today = OffsetDateTime.now(clock).atZoneSameInstant(DataPaths.SHANGHAI).toLocalDate();
         List<CandidateV1> others = scanOtherCandidates(timeline.runId(), candidate);
-        ValidationVerdict verdict = validator.validate(raw, candidate, item, config.mode(), today, others);
+        ValidationVerdict verdict = isMaterial(item)
+                ? materialValidator.validate(raw, candidate, item, config.mode(), today, others)
+                : validator.validate(raw, candidate, item, config.mode(), today, others);
         OffsetDateTime validatedAt = now();
         LifecycleTimelineV1 validated = timelineStore.append(runId, new LifecycleSnapshotV1(
                 3, ProcessingStage.VALIDATED, verdict.validationStatus(), candidate,
-                verdict.reasonCode(), PbocBasicValidator.VALIDATION_VERSION, validatedAt, null, null, validatedAt));
+                verdict.reasonCode(),
+                isMaterial(item)
+                        ? MaterialCandidateValidatorV2.VALIDATION_VERSION
+                        : PbocBasicValidator.VALIDATION_VERSION,
+                validatedAt, null, null, validatedAt));
         return ValidationOutcome.of(validated);
+    }
+
+    /** D4-T01 dispatch: material items carry rateKind "material"; PBOC items use the FX rate kind. */
+    private static boolean isMaterial(MonitorSeriesItemV1 item) {
+        return "material".equals(item.rateKind());
     }
 
     private static boolean isTerminalOrValidated(LifecycleSnapshotV1 snapshot) {
