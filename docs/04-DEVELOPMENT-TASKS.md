@@ -3,7 +3,7 @@
 > 文档性质：跨窗口可独立执行的任务清单  
 > 规范版本：v1.4（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
-> 当前进度锚点：Day 1 与 Day 2 已完成（D1-T01～D1-T05、D2-T01～D2-T05 均`DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`；AT-SRC-002=`PASS`、DEC-056 implementation=`PASS`）；Day 3 开发任务 D3-T01～D3-T06 全部`DONE`、Day 3 Development Tasks=`COMPLETE`；Day3 Final Acceptance V1（candidate=`ab28a6c`）在 Sol Stage Review 为 `CHANGES_REQUESTED`（FAILED_STAGE_CANDIDATE）；Lane A（`37c711c`，四P0生产配置/Manual·LocalImport provenance/XLSX MIME）与 Lane B（`ab42a48`，Synthetic Mode/formal isolation/确定性）已第二方 Review=`PASS` 并合并至 `integration/day3`（`13a1fc2`）；Stage Findings=`FIXED_PENDING_REACCEPTANCE`；Day3 Final Acceptance V2=`PENDING`；Day 3=`NOT_COMPLETE`（阶段 Acceptance/Stage Review 未收口）。
+> 当前进度锚点：Day 1 与 Day 2 已完成（D1-T01～D1-T05、D2-T01～D2-T05 均`DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`；AT-SRC-002=`PASS`、DEC-056 implementation=`PASS`）；Day 3 开发任务 D3-T01～D3-T06 全部`DONE`、Day 3 Development Tasks=`COMPLETE`；Day3 Final Acceptance V1（candidate=`ab28a6c`）Sol Stage Review=`CHANGES_REQUESTED`（FAILED_STAGE_CANDIDATE，历史保留）；Lane A（`37c711c`）/Lane B（`ab42a48`）已第二方 Review=`PASS` 并集成；**Day3 Final Acceptance V2（base=`1a42e0d`）=`PASS`**（Stage Findings=`RESOLVED`，Evidence=`docs/evidence/Day3/DAY3-FINAL-ACCEPTANCE-V2-20260811.md`，Candidate V2 已冻结）；Day3 Stage Review（V2）=`PENDING`；Day 3=`NOT_COMPLETE`（Stage Gate 未收口）。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
 ## 1. 新窗口执行协议
@@ -892,5 +892,5 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 ## 推荐启动顺序
 
 - D1-T04 已通过 Sol 技术负责人和 OpenCode 独立 Review，状态为 `DONE`；D1-T05 亦已完成 Review 收口为 `DONE`（Day 1=`COMPLETE`，Git 基线 `day1-complete`）。
-- D1-T01～D1-T05 均已由 Review 为`DONE`；Day 1=`COMPLETE`；D2-T01～D2-T05 均`DONE`；AT-SRC-002=`PASS`、DEC-056 implementation=`PASS`、Day 2=`COMPLETE`；D3-T01～D3-T06 均`DONE`、Day 3 Development Tasks=`COMPLETE`；Day3 Final Acceptance V1（`ab28a6c`）=`CHANGES_REQUESTED`（FAILED_STAGE_CANDIDATE，Lane A `37c711c`/Lane B `ab42a48` 已合并修复）；Day3 Final Acceptance V2=`PENDING`、Day 3=`NOT_COMPLETE`。
+- D1-T01～D1-T05 均已由 Review 为`DONE`；Day 1=`COMPLETE`；D2-T01～D2-T05 均`DONE`；AT-SRC-002=`PASS`、DEC-056 implementation=`PASS`、Day 2=`COMPLETE`；D3-T01～D3-T06 均`DONE`、Day 3 Development Tasks=`COMPLETE`；Day3 Final Acceptance V1（`ab28a6c`）=`CHANGES_REQUESTED`（FAILED_STAGE_CANDIDATE，历史保留）；Lane A `37c711c`/Lane B `ab42a48` 修复集成后 **Day3 Final Acceptance V2=`PASS`**（Candidate V2 已冻结，Evidence=`docs/evidence/Day3/DAY3-FINAL-ACCEPTANCE-V2-20260811.md`）；Day3 Stage Review（V2）=`PENDING`、Day 3=`NOT_COMPLETE`。
 - P1/P2仅在P0验收全绿、Day 8功能冻结未被破坏且仍有时间时启动。
