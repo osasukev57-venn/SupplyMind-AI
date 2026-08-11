@@ -116,7 +116,8 @@ class LocalImportIsolationTest {
                 "the raw must preserve the exact decimal string without float/double transit");
         assertEquals(ProviderType.LOCAL_IMPORT, adc12.providerType());
         assertNotNull(adc12.inputAt());
-        assertEquals("本地文件导入（LocalImport）", adc12.actualSourceName());
+        assertEquals("华东某厂报价单", adc12.actualSourceName(),
+                "the raw actual source must be the file-declared actual source, never the LocalImport ingress label");
         assertEquals("import-file-", adc12.acquisitionId().substring(0, 12),
                 "the row raw must trace to its source import file via acquisitionId");
         String rowPayload = new String(Base64.getDecoder().decode(adc12.payloadBase64()), StandardCharsets.UTF_8);

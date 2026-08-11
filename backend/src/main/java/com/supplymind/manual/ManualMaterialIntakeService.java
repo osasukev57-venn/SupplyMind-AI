@@ -90,7 +90,7 @@ public final class ManualMaterialIntakeService {
         RawReceiptV1 raw = new RawReceiptV1(
                 SchemaV1.VERSION, rawRef, "manual-acq-" + contentHash, runId, Mode.FORMAL,
                 ProviderType.MANUAL, AccessMethod.MANUAL, config.configVersion(),
-                item.actualSourceName(), submission.sourceUrl(),
+                submission.actualSourceName(), submission.sourceUrl(),
                 submission.sourceReference(), submission.itemId(),
                 submission.businessDate(), submission.businessDate(), null, null,
                 receivedAt, receivedAt, submission.value(), submission.unit(),
@@ -114,7 +114,7 @@ public final class ManualMaterialIntakeService {
         }
 
         CandidateV1 candidate = normalization.candidate(
-                submission.itemId(), item.actualSourceName(), ProviderType.MANUAL, AccessMethod.MANUAL);
+                submission.itemId(), submission.actualSourceName(), ProviderType.MANUAL, AccessMethod.MANUAL);
         LifecycleSnapshotV1 parsed = new LifecycleSnapshotV1(
                 2, ProcessingStage.PARSED, ValidationStatus.PENDING, candidate,
                 null, null, null, null, null, receivedAt);

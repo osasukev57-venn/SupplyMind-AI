@@ -74,9 +74,15 @@ class FoundationStartupAcceptanceTest {
                     Files.readAllBytes(active), MonitorSeriesConfigV1.class);
             assertEquals(1, configuration.configVersion());
             assertEquals(Mode.FORMAL, configuration.mode());
-            assertEquals(List.of(MonitorSeriesDefaults.EUR_CNY_ITEM_ID, MonitorSeriesDefaults.USD_CNY_ITEM_ID),
+            assertEquals(List.of(
+                            MonitorSeriesDefaults.EUR_CNY_ITEM_ID, MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+                            MonitorSeriesDefaults.ADC12_AM_ITEM_ID, MonitorSeriesDefaults.ADC12_SMM_ITEM_ID,
+                            MonitorSeriesDefaults.AZ91D_AM_ITEM_ID, MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID),
                     configuration.items().stream().map(MonitorSeriesItemV1::itemId).toList());
-            for (MonitorSeriesItemV1 item : configuration.items()) {
+            List<MonitorSeriesItemV1> pbocItems = configuration.items().stream()
+                    .filter(item -> item.providerType() == ProviderType.OFFICIAL_WEB).toList();
+            assertEquals(2, pbocItems.size());
+            for (MonitorSeriesItemV1 item : pbocItems) {
                 assertTrue(item.enabled());
                 assertEquals("PBOC", item.sourceIntent());
                 assertEquals(ProviderType.OFFICIAL_WEB, item.providerType());
@@ -95,6 +101,25 @@ class FoundationStartupAcceptanceTest {
                 assertEquals("CNY", item.currency());
                 assertNotNull(item.baseCurrency());
                 assertTrue(item.unit().startsWith("CNY/1 "));
+            }
+            List<MonitorSeriesItemV1> materialItems = configuration.items().stream()
+                    .filter(item -> item.providerType() == ProviderType.MANUAL).toList();
+            assertEquals(List.of(
+                            MonitorSeriesDefaults.ADC12_AM_ITEM_ID, MonitorSeriesDefaults.ADC12_SMM_ITEM_ID,
+                            MonitorSeriesDefaults.AZ91D_AM_ITEM_ID, MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID),
+                    materialItems.stream().map(MonitorSeriesItemV1::itemId).toList());
+            for (MonitorSeriesItemV1 item : materialItems) {
+                assertTrue(item.enabled());
+                assertTrue(item.sourceIntent().equals("SMM") || item.sourceIntent().equals("Asian Metal"));
+                assertEquals(ProviderType.MANUAL, item.providerType());
+                assertEquals(AccessMethod.MANUAL, item.accessMethod());
+                assertEquals(MonitorSeriesDefaults.MANUAL_INGRESS_SOURCE_NAME, item.actualSourceName());
+                assertEquals(RouteDecision.FALLBACK_MANUAL, item.routeDecision());
+                assertEquals(MonitorSeriesDefaults.MATERIAL_FALLBACK_REASON, item.fallbackReason());
+                assertEquals(configuration.updatedAt(), item.routeEffectiveAt());
+                assertEquals("material", item.rateKind());
+                assertEquals("CNY", item.currency());
+                assertEquals("元/吨", item.unit());
             }
             MonitorSeriesItemV1 usd = configuration.requireItem(MonitorSeriesDefaults.USD_CNY_ITEM_ID);
             MonitorSeriesItemV1 eur = configuration.requireItem(MonitorSeriesDefaults.EUR_CNY_ITEM_ID);

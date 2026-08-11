@@ -52,6 +52,12 @@ import java.util.stream.Stream;
  */
 public final class LocalImportService {
 
+    /** Frozen media type for the CSV import format. */
+    public static final String CONTENT_TYPE_CSV = "text/csv";
+    /** Frozen media type for the XLSX (OOXML spreadsheet) import format. */
+    public static final String CONTENT_TYPE_XLSX =
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
     private final DataRoot dataRoot;
     private final RawReceiptStore rawReceiptStore;
     private final LocalImportFileStore importFileStore;
@@ -113,7 +119,8 @@ public final class LocalImportService {
                 continue;
             }
             byte[] rowPayload = parsed.rowSpans().get(index).bytes();
-            accepted.add(persistRow(row, config, importId, receivedAt, rowNumber, rowPayload, null));
+            accepted.add(persistRow(row, config, importId, receivedAt, rowNumber, rowPayload, null,
+                    CONTENT_TYPE_CSV));
         }
         return new LocalImportResult(null, accepted, rowErrors);
     }
@@ -177,7 +184,7 @@ public final class LocalImportService {
             // parsed cell facts are derived evidence and never a raw payload. The declared
             // source name is persisted as structured item state for unambiguous idempotency.
             accepted.add(persistRow(row, config, importId, receivedAt, rowNumber, originalBytes,
-                    row.actualSourceName()));
+                    row.actualSourceName(), CONTENT_TYPE_XLSX));
         }
         return new LocalImportResult(null, accepted, rowErrors);
     }
@@ -213,20 +220,20 @@ public final class LocalImportService {
             OffsetDateTime receivedAt,
             int rowNumber,
             byte[] rowPayload,
-            String declaredSourceName
+            String declaredSourceName,
+            String contentType
     ) {
         String contentHash = FileDigest.sha256(JsonV1Codec.encodeFile(row));
         String runId = "import-" + row.itemId() + "-" + row.businessDate().replace("-", "") + "-" + contentHash;
         String rawRef = RawReceiptV1.deriveRawRef(Mode.FORMAL, ProviderType.LOCAL_IMPORT,
                 row.itemId(), receivedAt, runId);
-        MonitorSeriesItemV1 item = config.requireItem(row.itemId());
         RawReceiptV1 raw = new RawReceiptV1(
                 SchemaV1.VERSION, rawRef, importId, runId, Mode.FORMAL,
                 ProviderType.LOCAL_IMPORT, AccessMethod.LOCAL_IMPORT, config.configVersion(),
-                item.actualSourceName(), row.sourceUrl(), row.sourceReference(), row.itemId(),
+                row.actualSourceName(), row.sourceUrl(), row.sourceReference(), row.itemId(),
                 row.businessDate(), row.businessDate(), null, null,
                 receivedAt, receivedAt, row.value(), row.unit(), row.currency(),
-                null, null, "text/csv", "base64",
+                null, null, contentType, "base64",
                 Base64.getEncoder().encodeToString(rowPayload),
                 FileDigest.sha256(rowPayload), null, receivedAt, null, declaredSourceName);
         rawReceiptStore.store(raw);

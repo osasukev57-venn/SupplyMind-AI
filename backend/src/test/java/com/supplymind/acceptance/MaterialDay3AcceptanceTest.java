@@ -1,11 +1,13 @@
 package com.supplymind.acceptance;
 
+import com.supplymind.foundation.codec.JsonV1Codec;
 import com.supplymind.foundation.model.AccessMethod;
 import com.supplymind.foundation.model.Mode;
 import com.supplymind.foundation.model.MonitorSeriesConfigV1;
 import com.supplymind.foundation.model.MonitorSeriesItemV1;
 import com.supplymind.foundation.model.ProcessingStage;
 import com.supplymind.foundation.model.ProviderType;
+import com.supplymind.foundation.model.RawReceiptV1;
 import com.supplymind.foundation.model.RouteDecision;
 import com.supplymind.foundation.model.ValidationStatus;
 import com.supplymind.foundation.storage.AtomicFileStore;
@@ -152,6 +154,15 @@ class MaterialDay3AcceptanceTest {
                 harness.timelineStore().read(adc12.runId()).current().candidate().normalizationVersion());
         assertEquals("19850.50", harness.timelineStore().read(adc12.runId()).current().candidate().value());
         assertEquals("24500", harness.timelineStore().read(az91d.runId()).current().candidate().value());
+        assertEquals("华东某厂报价单（测试）",
+                harness.timelineStore().read(adc12.runId()).current().candidate().actualSourceName(),
+                "the candidate must carry the user-declared actual source, never the Manual ingress label");
+        RawReceiptV1 adc12Raw = decodeRaw(harness.root(), adc12.rawRef());
+        assertEquals("华东某厂报价单（测试）", adc12Raw.actualSourceName(),
+                "the raw actual source must be the user-declared actual source");
+        assertEquals(ProviderType.MANUAL, adc12Raw.providerType(),
+                "declaring any source name must never change the MANUAL provider identity");
+        assertEquals(AccessMethod.MANUAL, adc12Raw.accessMethod());
 
         ManualIntakeOutcome replay = harness.manual().submit(ManualMaterialSubmission.of(
                 ADC12_SMM, "2026-08-10", "19850.50", "元/吨", "CNY",
@@ -195,6 +206,13 @@ class MaterialDay3AcceptanceTest {
             assertEquals(ProcessingStage.RECEIVED, outcome.processingStage());
             assertEquals(ValidationStatus.PENDING, outcome.validationStatus());
         }
+        RawReceiptV1 csvAdc12Raw = decodeRaw(harness.root(), csvResult.accepted().get(0).rawRef());
+        assertEquals("华东某厂CSV报价单", csvAdc12Raw.actualSourceName(),
+                "the CSV raw must carry the file-declared actual source, never the LocalImport ingress label");
+        assertEquals(ProviderType.LOCAL_IMPORT, csvAdc12Raw.providerType());
+        assertEquals(AccessMethod.LOCAL_IMPORT, csvAdc12Raw.accessMethod());
+        assertEquals(com.supplymind.localimport.LocalImportService.CONTENT_TYPE_CSV, csvAdc12Raw.contentType(),
+                "a CSV import raw must record the CSV media type");
 
         byte[] xlsx = buildXlsx(new String[][]{
                 LocalImportCsvParser.TEMPLATE_HEADER.toArray(new String[0]),
@@ -208,6 +226,14 @@ class MaterialDay3AcceptanceTest {
             assertEquals(ProcessingStage.RECEIVED, outcome.processingStage());
             assertEquals(ValidationStatus.PENDING, outcome.validationStatus());
         }
+        RawReceiptV1 xlsxAdc12Raw = decodeRaw(harness.root(), xlsxResult.accepted().get(0).rawRef());
+        assertEquals("华东某厂XLSX报价单", xlsxAdc12Raw.actualSourceName(),
+                "the XLSX raw must carry the file-declared actual source, never the LocalImport ingress label");
+        assertEquals("华东某厂XLSX报价单", xlsxAdc12Raw.declaredSourceName(),
+                "the XLSX item-own declared source state must stay aligned with the row declaration");
+        assertEquals(ProviderType.LOCAL_IMPORT, xlsxAdc12Raw.providerType());
+        assertEquals(com.supplymind.localimport.LocalImportService.CONTENT_TYPE_XLSX, xlsxAdc12Raw.contentType(),
+                "an XLSX import raw must record the OOXML spreadsheet media type, not text/csv");
         assertEquals(0, harness.published().findPublished("IMP.ADC12.001", LocalDate.parse("2026-08-10")).size(),
                 "PENDING LocalImport must be invisible to the business read model");
         assertEquals(0, harness.published().findPublished("IMP.AZ91D.001", LocalDate.parse("2026-08-10")).size());
@@ -250,6 +276,33 @@ class MaterialDay3AcceptanceTest {
                 "formal no-data must be NO_DATA, never an automatic synthetic fallback");
         System.out.println("AT_SRC_008 sourceIdentitySeparation=PASS syntheticExcluded=PASS"
                 + " noDataNoAutoSynthetic=PASS");
+    }
+
+    @Test
+    void oldRawReceiptWithoutDeclaredSourceNameStaysReadable() throws IOException {
+        Harness harness = harness();
+        ManualIntakeOutcome manual = harness.manual().submit(ManualMaterialSubmission.of(
+                ADC12_SMM, "2026-08-10", "19850.50", "元/吨", "CNY",
+                "华东某厂报价单（测试）", "报价单号A-20260810", null));
+        RawReceiptV1 raw = decodeRaw(harness.root(), manual.rawRef());
+        assertNull(raw.declaredSourceName(),
+                "Manual raws carry no declaredSourceName by design");
+        String serialized = new String(com.supplymind.foundation.codec.JsonV1Codec.encodeFile(raw),
+                StandardCharsets.UTF_8);
+        String legacyJson = serialized.replaceFirst(",\\s*\"declaredSourceName\"\\s*:\\s*null", "");
+        assertTrue(legacyJson.length() < serialized.length(),
+                "the legacy simulation must actually drop the declaredSourceName field");
+        RawReceiptV1 legacy = JsonV1Codec.decodeFile(
+                legacyJson.getBytes(StandardCharsets.UTF_8), RawReceiptV1.class);
+        assertNull(legacy.declaredSourceName());
+        assertEquals("华东某厂报价单（测试）", legacy.actualSourceName(),
+                "a pre-D3-T05 raw without declaredSourceName must decode with its actual source intact");
+        assertEquals(ProviderType.MANUAL, legacy.providerType());
+        assertEquals("19850.50", legacy.rawValue());
+    }
+
+    private static RawReceiptV1 decodeRaw(DataRoot root, String rawRef) throws IOException {
+        return JsonV1Codec.decodeFile(Files.readAllBytes(root.resolveDataRef(rawRef)), RawReceiptV1.class);
     }
 
     private static MaterialRouteConfigV1 routeConfig(String itemId, String intent) {
