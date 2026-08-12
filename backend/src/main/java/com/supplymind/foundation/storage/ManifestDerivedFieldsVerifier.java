@@ -90,7 +90,9 @@ final class ManifestDerivedFieldsVerifier {
                 || dataRef.startsWith("raw/")
                 || dataRef.startsWith("staging/")
                 || dataRef.startsWith("quarantine/")
-                || dataRef.startsWith("runtime/conflicts/raw/");
+                || dataRef.startsWith("runtime/conflicts/raw/")
+                || dataRef.startsWith("runtime/jobs/active/")
+                || dataRef.startsWith("warning/");
     }
 
     private static DerivedFields deriveJson(String dataRef, byte[] dataBytes) {
@@ -122,6 +124,19 @@ final class ManifestDerivedFieldsVerifier {
         if (dataRef.startsWith("runtime/conflicts/raw/")) {
             RawConflictEvidenceV1 conflict = JsonV1Codec.decodeFile(dataBytes, RawConflictEvidenceV1.class);
             return jsonFields(List.of(conflict.runId()));
+        }
+        if (dataRef.startsWith("runtime/jobs/active/time-state.json")) {
+            JsonV1Codec.decodeFile(dataBytes, com.supplymind.foundation.model.TimeStateV1.class);
+            return jsonFields(List.of());
+        }
+        if (dataRef.startsWith("runtime/jobs/active/")) {
+            com.supplymind.backfill.BackfillJobStateV1 job = JsonV1Codec.decodeFile(
+                    dataBytes, com.supplymind.backfill.BackfillJobStateV1.class);
+            return jsonFields(List.of(job.jobId()));
+        }
+        if (dataRef.startsWith("warning/")) {
+            JsonV1Codec.decodeFile(dataBytes, com.supplymind.warning.WarningRecordV1.class);
+            return jsonFields(List.of());
         }
         throw new StorageException("No JSON manifest derivation rule is registered for " + dataRef);
     }

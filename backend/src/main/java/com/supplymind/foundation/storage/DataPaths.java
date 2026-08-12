@@ -91,6 +91,24 @@ public final class DataPaths {
                 + "/" + runId + "/" + conflictId + ".json";
     }
 
+    /** D5-T01 recoverable time/rotation state under the frozen runtime/jobs/active pattern. */
+    public static String timeStateRef() {
+        return "runtime/jobs/active/time-state.json";
+    }
+
+    /** D5-T04 backfill job state under the frozen runtime/jobs/active pattern. */
+    public static String backfillJobRef(String jobId) {
+        requireIdentifier(jobId, "jobId");
+        return "runtime/jobs/active/" + jobId + ".json";
+    }
+
+    /** D5-T05 warning evidence under the frozen warning/YYYY-MM pattern. */
+    public static String warningRef(YearMonth warningMonth, String warningId) {
+        Objects.requireNonNull(warningMonth, "warningMonth");
+        requireIdentifier(warningId, "warningId");
+        return "warning/" + warningMonth + "/" + warningId + ".json";
+    }
+
     public static String manifestRef(String businessDataRef) {
         requireLegalDataRef(businessDataRef);
         if (businessDataRef.endsWith(".manifest.json")) {
