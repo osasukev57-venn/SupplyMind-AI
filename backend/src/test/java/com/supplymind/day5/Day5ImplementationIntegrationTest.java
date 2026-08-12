@@ -177,6 +177,13 @@ class Day5ImplementationIntegrationTest {
             }
 
             @Override
+            public boolean supports(MonitorSeriesItemV1 item) {
+                return item.providerType() == ProviderType.OFFICIAL_WEB
+                        && item.accessMethod() == AccessMethod.PUBLIC_OFFICIAL_HTML
+                        && MonitorSeriesDefaults.PBOC_RATE_KIND.equals(item.rateKind());
+            }
+
+            @Override
             public ProviderCollectOutcome collect(ProviderCollectRequest request) {
                 return ProviderCollectOutcome.rejectedOnly("pboc-official-web", Map.of());
             }

@@ -46,6 +46,18 @@ public final class LocalImportDataProvider implements DataProvider {
         return Set.copyOf(supportedItemIdsSupplier.get());
     }
 
+    /**
+     * D5-T03/F3 explicit capability (M2 fail-closed): the LocalImport provider handles
+     * local-import material targets only (LOCAL_IMPORT acquisition, material rate kind).
+     * Configuration activation rejects anything else instead of pretending success.
+     */
+    @Override
+    public boolean supports(com.supplymind.foundation.model.MonitorSeriesItemV1 item) {
+        return item.providerType() == ProviderType.LOCAL_IMPORT
+                && item.accessMethod() == AccessMethod.LOCAL_IMPORT
+                && "material".equals(item.rateKind());
+    }
+
     @Override
     public ProviderCollectOutcome collect(ProviderCollectRequest request) {
         Objects.requireNonNull(request, "request");

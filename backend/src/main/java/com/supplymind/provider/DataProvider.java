@@ -23,12 +23,14 @@ public interface DataProvider {
     /**
      * D5-T03/F3 generic capability contract: whether this provider can genuinely handle the
      * configured target (rateKind, acquisition mode, source intent, spec - whatever the
-     * provider contract requires). The default declares no capability claim beyond identity,
-     * so capability-declaring providers override this. Configuration activation consults this
-     * before accepting a new target - provider type presence alone is never enough.
+     * provider contract requires). M2 fail-closed: the default declares NO capability for any
+     * target, so a provider that only implements the basic port (identity, itemIds, collect)
+     * without explicitly declaring generic capability is rejected everywhere the capability is
+     * consulted. Every production provider must explicitly declare the targets it truly
+     * supports; provider type presence alone is never enough.
      */
     default boolean supports(MonitorSeriesItemV1 item) {
-        return true;
+        return false;
     }
 
     /**

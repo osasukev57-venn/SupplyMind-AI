@@ -142,6 +142,21 @@ public final class BackfillOrchestrator {
             jobStore.write(failed);
             return failed;
         }
+        if (!provider.profile().supportsHistoryData()) {
+            // M3 gate: a provider that only supports current data must never be asked for a
+            // pseudo-history collect and must never claim SUCCEEDED. Frozen honest state:
+            // AWAITING_MANUAL_INPUT when nothing completed, PARTIAL_SUCCESS when some periods
+            // were already completed through real input. No new state is invented.
+            List<String> reasons = new ArrayList<>(job.failureReasons());
+            reasons.add("NO_HISTORY_CAPABILITY");
+            BackfillJobStateV1.JobStatus honest = job.completedPeriods().isEmpty()
+                    ? BackfillJobStateV1.JobStatus.AWAITING_MANUAL_INPUT
+                    : BackfillJobStateV1.JobStatus.PARTIAL_SUCCESS;
+            BackfillJobStateV1 honestJob = job.withStatus(
+                    honest, job.completedPeriods(), job.currentCheckpoint(), reasons, OffsetDateTime.now());
+            jobStore.write(honestJob);
+            return honestJob;
+        }
         BackfillJobStateV1 running = job.withStatus(
                 BackfillJobStateV1.JobStatus.RUNNING,
                 job.completedPeriods(), job.currentCheckpoint(), job.failureReasons(), OffsetDateTime.now());
@@ -160,8 +175,13 @@ public final class BackfillOrchestrator {
                 anyProgress = true;
             } else {
                 try {
+                    // M3: every automatic acquisition is a HISTORY request carrying the explicit
+                    // remaining range [cursor..to]; the provider returns data for the requested
+                    // dates and never relies on implicit internal ordering. The checkpoint below
+                    // stays bound to this range (resume continues at checkpoint+1).
                     ProviderCollectOutcome outcome = provider.collect(
-                            new ProviderCollectRequest(List.of(job.itemId())));
+                            ProviderCollectRequest.history(
+                                    List.of(job.itemId()), cursor, to));
                     boolean acquired = false;
                     for (RawReceiptV1 raw : outcome.raws()) {
                         if (!raw.itemId().equals(job.itemId())

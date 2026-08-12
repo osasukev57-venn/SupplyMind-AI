@@ -168,6 +168,13 @@ class Day5FutureAcceptanceIntegrationHarnessTest {
             }
 
             @Override
+            public boolean supports(com.supplymind.foundation.model.MonitorSeriesItemV1 item) {
+                return item.providerType() == ProviderType.OFFICIAL_WEB
+                        && item.accessMethod() == AccessMethod.PUBLIC_OFFICIAL_HTML
+                        && MonitorSeriesDefaults.PBOC_RATE_KIND.equals(item.rateKind());
+            }
+
+            @Override
             public com.supplymind.provider.ProviderCollectOutcome collect(
                     com.supplymind.provider.ProviderCollectRequest request) {
                 return com.supplymind.provider.ProviderCollectOutcome.rejectedOnly("pboc-official-web", Map.of());

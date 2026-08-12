@@ -2,13 +2,16 @@ package com.supplymind.scheduling;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.Objects;
 
 /**
- * Optional scheduled Day 2 collection trigger. Disabled by default
- * (supplymind.scheduler.enabled=false); the bean only exists when explicitly enabled.
+ * Manual (non-scheduled) Day 2 collection trigger. Since the M1 production-path fix the
+ * application has exactly one formal {@code @Scheduled} acquisition entry -
+ * {@link RotationGuardConfiguration.RotationGuardedScheduler#runGuardedCycle()} - which passes
+ * through the rotation guard. This class deliberately carries NO {@code @Scheduled} annotation:
+ * it exists only for explicit/manual invocation (e.g. CLI or operator trigger), so an unguarded
+ * scheduled cycle can never run in parallel with the guarded one.
  */
 public final class PbocDay2Scheduler {
 
@@ -20,7 +23,7 @@ public final class PbocDay2Scheduler {
         this.collectionService = Objects.requireNonNull(collectionService, "collectionService");
     }
 
-    @Scheduled(cron = "${supplymind.scheduler.cron:0 30 9 * * MON-FRI}")
+    /** Manual trigger only - never scheduled. Prefer the guarded scheduler for timed execution. */
     public void collectOnSchedule() {
         try {
             Day2CycleResult result = collectionService.runImmediateCycle();
