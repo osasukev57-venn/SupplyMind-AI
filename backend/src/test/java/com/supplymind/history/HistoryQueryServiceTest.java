@@ -166,6 +166,37 @@ class HistoryQueryServiceTest {
     }
 
     @Test
+    void conflictingDuplicateOutcomeIsIndependentOfFileTraversalOrder() throws IOException {
+        Harness harness = harness();
+        DailyRecordV1 jan05 = daily("2026-01-05", "run-jan-05");
+        DailyRecordV1 jan05Other = new DailyRecordV1(
+                "1.0", "2026-01-05", ITEM, jan05.providerType(), jan05.actualSourceName(),
+                jan05.accessMethod(), jan05.processingStage(), jan05.validationStatus(),
+                jan05.validationVersion(), jan05.configVersions(), jan05.calculationVersion(),
+                jan05.calculationScale(), jan05.displayScale(), jan05.roundingMode(),
+                jan05.calendarVersion(), "6.99999999", jan05.validCount(), "6.99999999",
+                jan05.expectedCount(), jan05.missingCount(), jan05.complete(),
+                jan05.currency(), jan05.unit(), jan05.inputRefs(), jan05.updatedAt(),
+                jan05.canonicalSpecCode());
+        DailyRecordV1 dec30 = daily("2025-12-30", "run-dec-30");
+        writeDaily(harness, YearMonth.of(2026, 1), List.of(jan05));
+        writeDaily(harness, YearMonth.of(2026, 2), List.of(jan05Other));
+        writeDaily(harness, YearMonth.of(2025, 12), List.of(dec30));
+
+        HistoryQueryService.DailyHistoryResult forward = harness.query().queryDaily(
+                ITEM, LocalDate.parse("2025-12-01"), LocalDate.parse("2026-02-28"));
+        HistoryQueryService.DailyHistoryResult again = harness.query().queryDaily(
+                ITEM, LocalDate.parse("2025-12-01"), LocalDate.parse("2026-02-28"));
+        assertEquals(forward.conflictKeys(), again.conflictKeys(),
+                "the conflict outcome must be identical on every query, independent of traversal");
+        assertFalse(forward.conflictKeys().isEmpty());
+        assertEquals(1, forward.rows().size(),
+                "the conflicting key must be excluded from usable results - no arbitrary record is returned");
+        assertEquals("2025-12-30", forward.rows().get(0).businessDate(),
+                "the usable result must never contain any record of the conflicting key");
+    }
+
+    @Test
     void reverseDateRangeFailsClosed() {
         Harness harness = harness();
         org.junit.jupiter.api.Assertions.assertThrows(

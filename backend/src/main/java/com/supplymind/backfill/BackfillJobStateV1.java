@@ -60,8 +60,9 @@ public record BackfillJobStateV1(
                 throw new SchemaValidationException("completedPeriods must be YYYY-MM: " + period);
             }
         }
-        if (currentCheckpoint != null && !currentCheckpoint.matches("\\d{4}-\\d{2}")) {
-            throw new SchemaValidationException("currentCheckpoint must be YYYY-MM: " + currentCheckpoint);
+        if (currentCheckpoint != null && !currentCheckpoint.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            throw new SchemaValidationException("currentCheckpoint must be a YYYY-MM-DD business date: "
+                    + currentCheckpoint);
         }
         failureReasons = ModelRules.immutableList(failureReasons, "failureReasons");
         ModelRules.positive(configVersion, "configVersion");

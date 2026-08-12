@@ -1,5 +1,7 @@
 package com.supplymind.provider;
 
+import com.supplymind.foundation.model.MonitorSeriesItemV1;
+
 import java.util.Set;
 
 /**
@@ -17,6 +19,17 @@ public interface DataProvider {
 
     /** The monitored targets this provider can cover; unsupported targets are rejected explicitly. */
     Set<String> supportedItemIds();
+
+    /**
+     * D5-T03/F3 generic capability contract: whether this provider can genuinely handle the
+     * configured target (rateKind, acquisition mode, source intent, spec - whatever the
+     * provider contract requires). The default declares no capability claim beyond identity,
+     * so capability-declaring providers override this. Configuration activation consults this
+     * before accepting a new target - provider type presence alone is never enough.
+     */
+    default boolean supports(MonitorSeriesItemV1 item) {
+        return true;
+    }
 
     /**
      * Collect the requested targets and return the standardized RawRecord. Unsupported targets

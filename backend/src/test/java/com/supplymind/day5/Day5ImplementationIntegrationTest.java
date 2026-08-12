@@ -184,7 +184,9 @@ class Day5ImplementationIntegrationTest {
         ConfigManagementService management = new ConfigManagementService(configStore, registry);
         BackfillJobStore jobStore = new BackfillJobStore(root, fileStore, CLOCK);
         BackfillOrchestrator backfill = new BackfillOrchestrator(
-                root, jobStore, configStore, timelineStore, daily, aggregate);
+                root, jobStore, configStore, registry,
+                new com.supplymind.foundation.storage.RawAcquisitionStore(root, fileStore, CLOCK),
+                rawStore, timelineStore, validation, publish, daily, aggregate);
         HistoryQueryService history = new HistoryQueryService(root);
         WarningStore warningStore = new WarningStore(root, fileStore, CLOCK);
         WarningService warning = new WarningService(root, warningStore, CLOCK, history);

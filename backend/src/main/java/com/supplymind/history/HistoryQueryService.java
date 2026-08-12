@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * D5-T02 cross-file, cross-year history query. Reads multiple monthly daily files and yearly
@@ -116,30 +117,61 @@ public final class HistoryQueryService {
 
     private MergedDaily mergeDaily(List<DailyRecordV1> rows) {
         Map<DailyKey, DailyRecordV1> unique = new LinkedHashMap<>();
-        List<String> conflicts = new ArrayList<>();
+        Set<DailyKey> conflictingKeys = new java.util.HashSet<>();
         for (DailyRecordV1 row : rows) {
             DailyKey key = DailyKey.of(row);
             DailyRecordV1 previous = unique.putIfAbsent(key, row);
             if (previous != null && !previous.equals(row)) {
-                conflicts.add("daily " + key);
+                conflictingKeys.add(key);
             }
         }
-        List<DailyRecordV1> merged = new ArrayList<>(unique.values());
+        // F2: a conflicting key must never return an arbitrary record - all rows of the key
+        // are excluded from usable results and the key is reported, independent of traversal
+        // order. Identical records still deduplicate deterministically (first occurrence only).
+        List<String> conflicts = new ArrayList<>();
+        Set<DailyKey> emitted = new java.util.HashSet<>();
+        List<DailyRecordV1> merged = new ArrayList<>();
+        for (DailyRecordV1 row : rows) {
+            DailyKey key = DailyKey.of(row);
+            if (conflictingKeys.contains(key)) {
+                if (!conflicts.contains("daily " + key)) {
+                    conflicts.add("daily " + key);
+                }
+                continue;
+            }
+            if (emitted.add(key)) {
+                merged.add(row);
+            }
+        }
         merged.sort(DailyRecordV1.ORDER);
         return new MergedDaily(merged, conflicts);
     }
 
     private MergedAggregate mergeAggregate(List<AggregateRecordV1> rows) {
         Map<AggregateKey, AggregateRecordV1> unique = new LinkedHashMap<>();
-        List<String> conflicts = new ArrayList<>();
+        Set<AggregateKey> conflictingKeys = new java.util.HashSet<>();
         for (AggregateRecordV1 row : rows) {
             AggregateKey key = AggregateKey.of(row);
             AggregateRecordV1 previous = unique.putIfAbsent(key, row);
             if (previous != null && !previous.equals(row)) {
-                conflicts.add("aggregate " + key);
+                conflictingKeys.add(key);
             }
         }
-        List<AggregateRecordV1> merged = new ArrayList<>(unique.values());
+        List<String> conflicts = new ArrayList<>();
+        Set<AggregateKey> emitted = new java.util.HashSet<>();
+        List<AggregateRecordV1> merged = new ArrayList<>();
+        for (AggregateRecordV1 row : rows) {
+            AggregateKey key = AggregateKey.of(row);
+            if (conflictingKeys.contains(key)) {
+                if (!conflicts.contains("aggregate " + key)) {
+                    conflicts.add("aggregate " + key);
+                }
+                continue;
+            }
+            if (emitted.add(key)) {
+                merged.add(row);
+            }
+        }
         merged.sort(AggregateRecordV1.ORDER);
         return new MergedAggregate(merged, conflicts);
     }

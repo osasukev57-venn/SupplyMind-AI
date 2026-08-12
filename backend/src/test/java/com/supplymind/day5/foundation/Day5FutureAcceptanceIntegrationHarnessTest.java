@@ -175,8 +175,9 @@ class Day5FutureAcceptanceIntegrationHarnessTest {
         });
         ConfigManagementService management = new ConfigManagementService(configStore, registry);
         BackfillOrchestrator backfill = new BackfillOrchestrator(
-                root, new BackfillJobStore(root, fileStore, clock), configStore,
-                timelineStore, daily, aggregate);
+                root, new BackfillJobStore(root, fileStore, clock), configStore, registry,
+                new com.supplymind.foundation.storage.RawAcquisitionStore(root, fileStore, clock),
+                rawStore, timelineStore, validation, publish, daily, aggregate);
         HistoryQueryService history = new HistoryQueryService(root);
         TimeRotationService rotation = new TimeRotationService(new TimeStateStore(root, fileStore, clock));
         return new Harness(root, fileStore, management, manual, validation, publish,

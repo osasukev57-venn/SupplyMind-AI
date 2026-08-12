@@ -48,6 +48,18 @@ public final class ManualDataProvider implements DataProvider {
         return Set.copyOf(supportedItemIdsSupplier.get());
     }
 
+    /**
+     * D5-T03/F3 capability: the Manual provider handles material Manual-route targets only
+     * (rateKind material, MANUAL acquisition). Configuration activation rejects anything else
+     * instead of pretending success.
+     */
+    @Override
+    public boolean supports(com.supplymind.foundation.model.MonitorSeriesItemV1 item) {
+        return item.providerType() == ProviderType.MANUAL
+                && item.accessMethod() == AccessMethod.MANUAL
+                && "material".equals(item.rateKind());
+    }
+
     @Override
     public ProviderCollectOutcome collect(ProviderCollectRequest request) {
         Objects.requireNonNull(request, "request");
