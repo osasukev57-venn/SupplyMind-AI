@@ -115,19 +115,22 @@ public final class ConfigManagementService {
             if (!item.enabled()) {
                 continue;
             }
-            // A material item must carry its DEC-059 validation config (enforced by the model
-            // constructor too; this is a defensive re-check before the whole config activates).
             if ("material".equals(item.rateKind()) && item.materialValidation() == null) {
                 throw new StorageException("material item lacks materialValidation config: " + item.itemId());
             }
             if (item.routeDecision() == RouteDecision.SYNTHETIC_DEMO) {
                 continue;
             }
-            boolean providerRegistered = registry.all().stream()
-                    .anyMatch(provider -> provider.profile().providerType() == item.providerType());
-            if (!providerRegistered) {
+            // F3: provider type presence alone is not enough - the provider must declare generic
+            // capability for this target (rateKind/acquisition/spec-driven, never itemId strings).
+            boolean capable = registry.all().stream()
+                    .anyMatch(provider -> provider.profile().providerType() == item.providerType()
+                            && provider.supports(item));
+            if (!capable) {
                 throw new StorageException(
-                        "no registered provider of type " + item.providerType() + " for item " + item.itemId());
+                        "no registered provider of type " + item.providerType()
+                                + " declares capability for item " + item.itemId()
+                                + " (rateKind=" + item.rateKind() + ")");
             }
         }
     }

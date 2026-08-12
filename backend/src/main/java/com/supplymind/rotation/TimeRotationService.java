@@ -12,12 +12,12 @@ import java.time.temporal.IsoFields;
 import java.util.Objects;
 
 /**
- * D5-T01 rotation detection on top of the recoverable time state. Pure observation: it never
- * writes business files and never fabricates data. It detects period rollovers (month/quarter/
- * half-year/year), forward jumps (including sleep/resume gaps of more than one calendar day),
- * rollbacks and first-run initialization. Downstream idempotency (no duplicate publish/daily/
- * aggregate on rollback) is guaranteed by the existing deterministic processing chain, which
- * the rotation result only feeds with the authoritative current period.
+ * D5-T01/F1 rotation detection on top of a monotonic business high-water mark. The observed
+ * wall clock is recorded only as a diagnostic fact; every rotation decision is computed from
+ * the effective high-water time/business-date/period, which never move backwards. Rollback is
+ * detected as observedTime &lt; effectiveHighWaterTime; a rollback never re-triggers a boundary
+ * and never causes duplicate processing, because daily/aggregate/publish stay idempotent and
+ * partition-correct. No business data is ever fabricated for a future period.
  */
 public final class TimeRotationService {
 
@@ -29,25 +29,28 @@ public final class TimeRotationService {
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
     }
 
-    /** Observe one instant; persists the advanced state and reports the detected transitions. */
     public RotationCheckResult check(OffsetDateTime now) {
         Objects.requireNonNull(now, "now");
-        LocalDate businessDate = now.atZoneSameInstant(SHANGHAI).toLocalDate();
+        LocalDate observedBusinessDate = now.atZoneSameInstant(SHANGHAI).toLocalDate();
         if (!stateStore.exists()) {
-            TimeStateV1 initial = TimeStateV1.initial(now, businessDate);
+            TimeStateV1 initial = TimeStateV1.initial(now, observedBusinessDate);
             stateStore.write(initial);
             return RotationCheckResult.initial(initial);
         }
         TimeStateV1 previous = stateStore.read();
+        boolean rollback = now.isBefore(previous.effectiveHighWaterTime());
+        OffsetDateTime highWater = rollback ? previous.effectiveHighWaterTime() : now;
+        LocalDate effectiveBusinessDate = observedBusinessDate.isAfter(previous.effectiveBusinessDate())
+                ? observedBusinessDate
+                : previous.effectiveBusinessDate();
         YearMonth previousMonth = YearMonth.parse(previous.lastCompletedPeriod());
-        YearMonth currentMonth = YearMonth.from(businessDate);
+        YearMonth currentMonth = YearMonth.from(effectiveBusinessDate);
         boolean monthRolled = !currentMonth.equals(previousMonth);
-        boolean rollback = now.isBefore(previous.lastObservedTime());
-        long forwardDays = ChronoUnit.DAYS.between(previous.lastObservedBusinessDate(), businessDate);
+        long forwardDays = ChronoUnit.DAYS.between(previous.effectiveBusinessDate(), effectiveBusinessDate);
         boolean forwardJump = forwardDays > 1;
         TimeStateV1 next = new TimeStateV1(
-                "1.0", previous.stateVersion() + 1, now, businessDate,
-                currentMonth.toString(), now);
+                "1.0", previous.stateVersion() + 1, now, highWater,
+                effectiveBusinessDate, currentMonth.toString(), now);
         stateStore.write(next);
         return new RotationCheckResult(
                 false,
@@ -55,7 +58,8 @@ public final class TimeRotationService {
                 next.stateVersion(),
                 previous.lastCompletedPeriod(),
                 currentMonth.toString(),
-                businessDate,
+                effectiveBusinessDate,
+                observedBusinessDate,
                 rollback,
                 forwardJump,
                 monthRolled,
@@ -77,14 +81,19 @@ public final class TimeRotationService {
         return month.getMonthValue() <= 6 ? 1 : 2;
     }
 
-    /** Deterministic observation result; no business values are derived from it. */
+    /**
+     * Deterministic observation result. `effectiveBusinessDate` is the monotonic high-water
+     * business date used for rotation; `observedBusinessDate` is the raw clock business date
+     * (diagnostic only). No business values are derived from this record itself.
+     */
     public record RotationCheckResult(
             boolean firstRun,
             int previousStateVersion,
             int newStateVersion,
             String previousPeriod,
             String currentPeriod,
-            LocalDate businessDate,
+            LocalDate effectiveBusinessDate,
+            LocalDate observedBusinessDate,
             boolean rollbackDetected,
             boolean forwardJumpDetected,
             boolean monthRolled,
@@ -95,7 +104,8 @@ public final class TimeRotationService {
         static RotationCheckResult initial(TimeStateV1 initial) {
             return new RotationCheckResult(true, 0, initial.stateVersion(),
                     initial.lastCompletedPeriod(), initial.lastCompletedPeriod(),
-                    initial.lastObservedBusinessDate(), false, false, false, false, false, false);
+                    initial.effectiveBusinessDate(), initial.effectiveBusinessDate(),
+                    false, false, false, false, false, false);
         }
     }
 }

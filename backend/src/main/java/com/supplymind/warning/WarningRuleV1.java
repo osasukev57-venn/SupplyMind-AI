@@ -64,6 +64,13 @@ public record WarningRuleV1(
         }
         ModelRules.positive(baselinePeriods, "baselinePeriods");
         ModelRules.nonBlank(description, "description");
+        // F6: EXT-07/EXT-08 are not confirmed - every rule in this version must be an explicit
+        // TEST/DEMO rule. A formal rule requires a future rule version and a frozen decision.
+        if (!demoRule) {
+            throw new SchemaValidationException(
+                    "WarningRuleV1 demoRule=false is rejected: business thresholds are not confirmed"
+                            + " (EXT-07/EXT-08 open); a formal rule requires a new rule version and a frozen decision");
+        }
     }
 
     public BigDecimal thresholdValue() {

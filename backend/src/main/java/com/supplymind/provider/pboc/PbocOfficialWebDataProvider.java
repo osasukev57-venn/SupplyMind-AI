@@ -110,6 +110,18 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
         return SUPPORTED_ITEM_IDS;
     }
 
+    /**
+     * D5-T03/F3 capability: the PBOC provider handles official-web exchange-rate targets
+     * (rateKind 人民币汇率中间价). Configuration activation consults this before accepting a new
+     * exchange-rate target; the decision is rateKind-driven, never itemId hard-coded.
+     */
+    @Override
+    public boolean supports(com.supplymind.foundation.model.MonitorSeriesItemV1 item) {
+        return item.providerType() == com.supplymind.foundation.model.ProviderType.OFFICIAL_WEB
+                && item.accessMethod() == com.supplymind.foundation.model.AccessMethod.PUBLIC_OFFICIAL_HTML
+                && com.supplymind.foundation.model.MonitorSeriesDefaults.PBOC_RATE_KIND.equals(item.rateKind());
+    }
+
     @Override
     public ProviderCollectOutcome collect(ProviderCollectRequest request) {
         Objects.requireNonNull(request, "request");

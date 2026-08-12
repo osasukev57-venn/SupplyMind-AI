@@ -123,6 +123,47 @@ class WarningServiceTest {
     }
 
     @Test
+    void sameInputsAcrossDifferentClocksProduceByteIdenticalWarnings() throws Exception {
+        Harness harness = harness();
+        String junSha = writeDaily(harness, YearMonth.of(2026, 6), daily("2026-06-10", "run-jun"));
+        String julSha = writeDaily(harness, YearMonth.of(2026, 7), daily("2026-07-10", "run-jul"));
+        writeAggregates(harness, "month", 2026,
+                List.of(aggregateRow("2026-06-01", "2026-06-30", "10000.00", junSha),
+                        aggregateRow("2026-07-01", "2026-07-31", "19850.00", julSha)),
+                List.of("run-jun", "run-jul"));
+        WarningRuleV1 rule = WarningService.demoPriceChangeRule(ITEM, "month", "0.98");
+
+        WarningRecordV1 clockA = harness.service().evaluate(rule, "2026-07-01", "2026-07-31");
+        Clock clockB = Clock.fixed(Instant.parse("2026-08-10T09:30:00Z"), ZoneOffset.UTC);
+        WarningService serviceB = new WarningService(
+                harness.root(), new WarningStore(harness.root(),
+                        new AtomicFileStore(harness.root(), new DirtyMarkerCodec()), clockB),
+                clockB, new HistoryQueryService(harness.root()));
+        WarningRecordV1 clockBRecord = serviceB.evaluate(rule, "2026-07-01", "2026-07-31");
+        assertEquals(clockA.warningId(), clockBRecord.warningId());
+        assertEquals(clockA.inputFingerprint(), clockBRecord.inputFingerprint());
+        assertEquals(clockA.evaluatedAt(), clockBRecord.evaluatedAt(),
+                "evaluatedAt must come from the deterministic input lineage, never the run clock");
+        byte[] bytesA = Files.readAllBytes(harness.root().resolveDataRef(
+                DataPaths.warningRef(YearMonth.of(2026, 7), clockA.warningId())));
+        byte[] bytesB = Files.readAllBytes(harness.root().resolveDataRef(
+                DataPaths.warningRef(YearMonth.of(2026, 7), clockBRecord.warningId())));
+        org.junit.jupiter.api.Assertions.assertArrayEquals(bytesA, bytesB,
+                "the same logical inputs must persist byte-identical business warnings across clocks");
+    }
+
+    @Test
+    void ruleWithDemoFlagFalseIsRejected() {
+        org.junit.jupiter.api.Assertions.assertThrows(
+                com.supplymind.foundation.model.SchemaValidationException.class,
+                () -> new WarningRuleV1(
+                        "leaked", "v1", WarningRuleV1.RuleKind.PRICE_CHANGE, ITEM, "month",
+                        "0.5", WarningRuleV1.Direction.ABOVE, 1, false,
+                        "must be rejected while EXT-07/08 are open"),
+                "demoRule=false is fail-closed: formal thresholds require a future rule version and decision");
+    }
+
+    @Test
     void precisionIsBigDecimalOnly() throws Exception {
         Harness harness = harness();
         String junSha = writeDaily(harness, YearMonth.of(2026, 6), daily("2026-06-10", "run-jun"));

@@ -78,7 +78,8 @@ public final class WarningService {
                         : changeRatio.toPlainString(),
                 WarningRecordV1.RiskLevel.HIGH,
                 List.of(DataPaths.aggregateRef(rule.itemId(), rule.grain(),
-                        LocalDate.parse(periodStart).getYear())));
+                        LocalDate.parse(periodStart).getYear())),
+                current.calculatedAt());
         store.store(warning);
         return warning;
     }
@@ -99,13 +100,19 @@ public final class WarningService {
         }
         List<String> evidenceRefs = List.of(DataPaths.dailyRef(
                 rule.itemId(), java.time.YearMonth.parse(periodStart.substring(0, 7))));
+        OffsetDateTime lineageEvaluatedAt = rows.stream()
+                .map(DailyRecordV1::updatedAt)
+                .max(java.util.Comparator.naturalOrder())
+                .orElseThrow(() -> new com.supplymind.foundation.storage.StorageException(
+                        "data-quality warning requires at least one daily row with updatedAt"));
         WarningRecordV1 warning = warning(
                 rule, periodStart, periodEnd, null,
                 completeness.toPlainString(), rule.thresholdValue().toPlainString(),
                 String.valueOf(missing),
                 completeness.compareTo(new BigDecimal("0.5")) < 0
                         ? WarningRecordV1.RiskLevel.HIGH : WarningRecordV1.RiskLevel.MEDIUM,
-                evidenceRefs);
+                evidenceRefs,
+                lineageEvaluatedAt);
         store.store(warning);
         return warning;
     }
@@ -149,7 +156,7 @@ public final class WarningService {
     private WarningRecordV1 warning(
             WarningRuleV1 rule, String periodStart, String periodEnd, String businessDate,
             String current, String threshold, String baseline, WarningRecordV1.RiskLevel riskLevel,
-            List<String> evidenceRefs
+            List<String> evidenceRefs, OffsetDateTime lineageEvaluatedAt
     ) {
         String fingerprint = fingerprint(rule, periodStart, periodEnd, current, evidenceRefs);
         String warningId = JsonV1Codec.sha256LowerHex(
@@ -158,7 +165,7 @@ public final class WarningService {
         return new WarningRecordV1(
                 "1.0", warningId, rule.ruleId(), rule.ruleVersion(), rule.itemId(), rule.grain(),
                 periodStart, periodEnd, businessDate, threshold, current, baseline, riskLevel,
-                evidenceRefs, "PUBLISHED_VERIFIED", OffsetDateTime.now(clock), fingerprint,
+                evidenceRefs, "PUBLISHED_VERIFIED", lineageEvaluatedAt, fingerprint,
                 rule.demoRule(), rule.description());
     }
 

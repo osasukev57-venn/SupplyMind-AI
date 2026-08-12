@@ -128,6 +128,54 @@ class TimeRotationServiceTest {
     }
 
     @Test
+    void rollbackNeverRegressesHighWaterNorRetriggersBoundaryAndRecoveryIsIdempotent() {
+        Harness harness = harness();
+        assertTrue(harness.rotation().check(at("2026-08-31T23:00:00+08:00")).firstRun());
+        TimeRotationService.RotationCheckResult boundary =
+                harness.rotation().check(at("2026-09-01T00:30:00+08:00"));
+        assertTrue(boundary.monthRolled(), "August 31 -> September 1 is exactly one boundary rotation");
+
+        TimeRotationService.RotationCheckResult rolledBack =
+                harness.rotation().check(at("2026-08-31T12:00:00+08:00"));
+        assertTrue(rolledBack.rollbackDetected(), "the earlier clock must be detected as rollback");
+        assertFalse(rolledBack.monthRolled(), "a rollback must never re-trigger the September boundary");
+        assertEquals("2026-09", rolledBack.currentPeriod(), "the period high-water must not regress");
+
+        TimeRotationService.RotationCheckResult recovered =
+                harness.rotation().check(at("2026-09-01T10:00:00+08:00"));
+        assertFalse(recovered.rollbackDetected());
+        assertFalse(recovered.monthRolled(),
+                "recovering to the high-water date must not produce a second September rotation");
+        assertEquals("2026-09", recovered.currentPeriod());
+
+        TimeRotationService.RotationCheckResult nextDay =
+                harness.rotation().check(at("2026-09-02T10:00:00+08:00"));
+        assertFalse(nextDay.monthRolled(),
+                "September 2 must not duplicate the September month rotation");
+        assertEquals("2026-09", nextDay.currentPeriod());
+        assertEquals(5, nextDay.newStateVersion());
+    }
+
+    @Test
+    void rotationGuardSuppressesTheScheduledCycleOnRollbackAndAllowsItAfterRecovery() {
+        Harness harness = harness();
+        java.util.concurrent.atomic.AtomicInteger cycles = new java.util.concurrent.atomic.AtomicInteger();
+        com.supplymind.scheduling.RotationGuardedCollectionService guarded =
+                new com.supplymind.scheduling.RotationGuardedCollectionService(
+                        harness.rotation(), cycles::incrementAndGet);
+        harness.rotation().check(at("2026-09-01T00:30:00+08:00"));
+
+        assertFalse(guarded.runIfNotRollback(at("2026-08-31T12:00:00+08:00")),
+                "a rollback must suppress the scheduled cycle (no duplicate publish/daily/aggregate)");
+        assertEquals(0, cycles.get());
+
+        assertTrue(guarded.runIfNotRollback(at("2026-09-01T10:00:00+08:00")),
+                "after recovery the scheduled cycle may run again");
+        assertTrue(guarded.runIfNotRollback(at("2026-09-02T10:00:00+08:00")));
+        assertEquals(2, cycles.get(), "recovery and the next day each allow exactly one cycle");
+    }
+
+    @Test
     void corruptTimeStateFailsClosed() throws Exception {
         Harness harness = harness();
         harness.rotation().check(at("2026-08-10T10:00:00+08:00"));

@@ -50,15 +50,41 @@ class ConfigManagementServiceTest {
     Path temporaryDirectory;
 
     @Test
-    void addGbpH07NoJavaCodeChangeRequired() {
+    void addGenericExchangeRateTargetH07NoJavaCodeChangeRequired() {
         Harness harness = harness();
-        MonitorSeriesItemV1 gbp = manualItem("FX.GBP.CNY.PBOC_MID", "英镑/人民币中间价", "GBP", "1英镑对人民币", "CNY/1 GBP", "FX");
+        // A generic new exchange-rate target is accepted through the PBOC provider's generic
+        // capability (rateKind 人民币汇率中间价) - never via itemId hard-coding.
+        MonitorSeriesItemV1 gbp = new MonitorSeriesItemV1(
+                "FX.GBP.CNY.PBOC_MID", "英镑/人民币中间价", true, "PBOC", ProviderType.OFFICIAL_WEB,
+                AccessMethod.PUBLIC_OFFICIAL_HTML, "中国人民银行官网（授权中国外汇交易中心公布）",
+                RouteDecision.PRIMARY, null, NOW, null, "GBP", "1英镑对人民币", "人民币汇率中间价",
+                "arithmetic-mean-v1", 8, 4, java.math.RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                "CNY", "GBP", "CNY/1 GBP", null);
         MonitorSeriesConfigV1 next = harness.management().addItem(gbp);
         assertEquals(2, next.configVersion());
         assertEquals(true, next.requireItem("FX.GBP.CNY.PBOC_MID").enabled());
         assertEquals(7, next.items().size(), "2 PBOC + 4 P0 material + 1 GBP");
         assertTrue(harness.management().active().configVersion() == 2,
                 "H07: a new target is pure configuration, no Java business code involved");
+    }
+
+    @Test
+    void providerWithoutCapabilityRejectsActivationAndKeepsOldActive() {
+        Harness harness = harness();
+        // The Manual provider only declares capability for material Manual targets; an
+        // exchange-rate item driven by the Manual provider must be rejected even though a
+        // provider of type MANUAL exists.
+        MonitorSeriesItemV1 unsupported = new MonitorSeriesItemV1(
+                "FX.GBP.CNY.MANUAL", "英镑/人民币中间价（手工）", true, "PBOC", ProviderType.MANUAL,
+                AccessMethod.MANUAL, "人工录入（Manual）", RouteDecision.FALLBACK_MANUAL, "MANUAL_FALLBACK",
+                NOW, null, "GBP", "1英镑对人民币", "人民币汇率中间价",
+                "arithmetic-mean-v1", 8, 4, java.math.RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                "CNY", "GBP", "CNY/1 GBP", null);
+        assertThrows(com.supplymind.foundation.storage.StorageException.class,
+                () -> harness.management().addItem(unsupported),
+                "provider type presence alone is never enough: capability must support the target");
+        assertEquals(1, harness.management().active().configVersion(),
+                "a capability-rejected activation leaves the previous active config fully effective");
     }
 
     @Test
@@ -160,6 +186,13 @@ class ConfigManagementServiceTest {
             @Override
             public Set<String> supportedItemIds() {
                 return Set.of(MonitorSeriesDefaults.USD_CNY_ITEM_ID, MonitorSeriesDefaults.EUR_CNY_ITEM_ID);
+            }
+
+            @Override
+            public boolean supports(MonitorSeriesItemV1 item) {
+                return item.providerType() == ProviderType.OFFICIAL_WEB
+                        && item.accessMethod() == AccessMethod.PUBLIC_OFFICIAL_HTML
+                        && MonitorSeriesDefaults.PBOC_RATE_KIND.equals(item.rateKind());
             }
 
             @Override
