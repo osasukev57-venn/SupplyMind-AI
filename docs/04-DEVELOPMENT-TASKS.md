@@ -473,7 +473,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D6-T02 SupplyMind EvidencePack 与 AgentReport 合同
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`，`blockedBy=D6-T00,D6-T01`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`（FAST-R0 实施完成，`statusReason=D6T02_EVIDENCEPACK_20260813`）。
 - **风险/Review routing：** 证据和持久化合同高风险，`CORE_R2`。
 - **任务目标：** 按`AGENT-EVIDENCE-SCHEMA-V1`建立SupplyMind拥有的EvidencePackV1/AgentReportV1和引用校验；不得以模型memory、conversation history或tool transcript代替证据。
 - **对应需求：** F06、F12、C20～C22、C36、AT-AI-003。
@@ -488,7 +488,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D6-T03 LLMService + Spring AI ChatClient Adapter
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`，`blockedBy=D6-T00,D6-T02`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`（FAST-R0 实施完成，`statusReason=D6T03_LLM_SERVICE_SPRINGAI_20260813`）。
 - **风险/Review routing：** 外部模型、秘密和tool lifecycle高风险，`CORE_R2`。
 - **任务目标：** 保留SupplyMind `LLMService` application port，以Spring AI1.1.8 `ChatClient`/`ChatModel` infrastructure adapter实现云端调用；`LocalLLMService`仅保留同端口未来扩展点。
 - **对应需求：** C12、C20、C22、C35、C36、AT-AI-001。
@@ -503,7 +503,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D6-T04 证据核验、Agent API与报告持久化
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`，`blockedBy=D6-T00,D6-T02,D6-T03`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`（FAST-R0 实施完成，`statusReason=D6T04_STRUCTURED_QUERY_REPORT_20260813`）。
 - **风险/Review routing：** 业务出口与证据高风险，`CORE_R2`。
 - **任务目标：** 将Java事实与LLM解释分区，校验所有evidenceRefs，并按冻结report路径/manifest/原子写规则持久化AgentReport。
 - **对应需求：** F06、F10、C20、C22、C36、AT-AI-003。
@@ -518,7 +518,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D6-T05 Java模板降级与Day 6退出门禁
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`，`blockedBy=D6-T00,D6-T04`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`（FAST-R0 实施完成，`statusReason=D6T05_JAVA_TEMPLATE_FALLBACK_20260813`）。
 - **风险/Review routing：** P0可用性Gate，`CORE_R2`。
 - **任务目标：** 对缺Key、断网、timeout、429、5xx、畸形/空响应和非法工具请求，使用同一EvidencePack生成Java模板报告并完成Day6端到端验收。
 - **对应需求：** C13、C20、C22、C36、AT-AI-001～003。
