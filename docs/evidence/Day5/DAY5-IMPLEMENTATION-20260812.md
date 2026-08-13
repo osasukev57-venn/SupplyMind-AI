@@ -61,7 +61,7 @@ Day4 无回归：MaterialValidationPipelineTest/MaterialPublishGateTest/Material
 
 - 无数据库；全部持久化沿用冻结目录（time-state/jobs 复用 runtime/jobs/active 模式；warning 用 warning/YYYY-MM）；BigDecimal 全链；Synthetic 正式隔离保持；Publish Gate/validationVersion 绑定未被削弱。
 - 已知外部/人工限制（如实记录，非缺陷）：AT-TIME-003/004 物理系统时间属 D10-T02；EXT-07/EXT-08 阈值/成本权重未确认→仅 TEST/DEMO 规则；Manual 历史回填依赖真实人工输入（AWAITING_MANUAL_INPUT 为诚实状态）。
-- 当前状态：Day5 Development Tasks=ALL_DONE（实施完成）；Day5 Final Acceptance=PASS（实施侧）；Day5 Stage Review=`PENDING_DELTA_REVIEW`（Sol Final Delta 已确认 M1/M2/M3=RESOLVED；Stage Gate 未收口）；Day 5=`NOT_COMPLETE`。最终冻结固定点=DAY5_FINAL_STAGE_CANDIDATE（8ec3aaa，见 §12/§13）。
+- 当前状态（2026-08-12 封板）：**Day5 Development Tasks=ALL_DONE、Day5 Final Acceptance=PASS（实施侧）、Day5 Stage Review=PASS、Day 5=COMPLETE**（Stage Gate 收口；见 §14）。Technical Candidate=`8ec3aaa`、Final M4 Closure=`7855fc2`；Current Final Technical Regression=`83 classes/407 tests/0 failures/0 errors/8 skipped`；AT-TIME-003/004=PENDING_D10（冻结 D10 物理系统时间验收，不阻塞 Day5 COMPLETE）。
 
 > 【HISTORICAL FAILED STAGE CANDIDATE `2a5b878`】（2026-08-12，集成至 integration/day5；Stage Review=`CHANGES_REQUESTED`，已被 R2 STAGE FIX 修正）：OpenCode Candidate=`c0c8c86` 与 Terra Harness=`bcd1d6b` 曾并入 integration/day5（merge：a98649d + 875e414）。Terra 原 PENDING_IMPLEMENTATION harness 曾启用并绑定真实生产链（Day5FutureAcceptanceIntegrationHarnessTest 5 项、Day5AlertContractHarnessTest 阈值绑定）；唯一保持 PENDING：Day5TimeContractHarnessTest 的 **AT-TIME-003/004（物理系统时间，冻结至 D10-T02）**，Day5 Stage Blocking=NO。该候选回归=`72 classes / 372 tests / 0 failures / 0 errors / 8 skipped`（7=门禁；1=D10 依赖）——保留为历史运行，不再作为当前/最终。
 >
@@ -123,3 +123,12 @@ Day4 无回归：MaterialValidationPipelineTest/MaterialPublishGateTest/Material
 - **M4-4 UTF-8 Evidence 修复**：本文件此前 §11/§12 因追加写入产生编码损坏（U+FFFD mojibake，1412 处替换字符）——已整体重写为有效 UTF-8，中文字符完整可读，无 replacement character；攻击 FAIL→FIX→PASS 历史链完整保留（见 §12 引言），未借修编码改写业务结论；`git diff --check`=PASS。
 - **CURRENT FINAL TECHNICAL REGRESSION（真实执行，2026-08-12，`mvn clean test`，integration/day5 最终合并树 @ 8ec3aaa）：83 classes / 407 tests / 0 failures / 0 errors / 8 skipped**（7=真实联网/真实 raw 门禁；1=AT-TIME-003/004 D10 物理时间；Day5 核心测试 0 无理由跳过）。
 - **DAY5_FINAL_M4_CLOSURE_CANDIDATE 已形成**；Day5 Stage Review=PENDING_DELTA_REVIEW（待 Sol+第二方 Stage Gate 收口）、Day 5=NOT_COMPLETE（不提前 COMPLETE）。
+
+## 14. DAY5_FINAL_CLOSURE（2026-08-12，base=`7855fc2`；`docs: close Day5 stage`）
+
+- **状态封板（纯文档，生产代码/测试 0 修改）**：Sol Final M4 Micro Delta=`PASS`、Independent Final M4 Micro Delta=`PASS`、BLOCKER=无、MAJOR=无。
+- **Day5 最终状态**：Development Tasks=`ALL_DONE`、Final Acceptance=`PASS`（实施侧）、Stage Review=`PASS`、**Day 5=`COMPLETE`**（Stage Gate 收口）。
+- **Technical Candidate**=`8ec3aaa`（`test: complete Day5 final R2 integration`，integration/day5 最终合并树）；**Final M4 Closure**=`7855fc2`（`docs: close final Day5 M4 status residues`，Sol+Independent Final M4 Micro Delta 双 PASS）。
+- **Current Final Technical Regression**=`83 classes / 407 tests / 0 failures / 0 errors / 8 skipped`（`mvn clean test` 真实执行，surefire-reports TEST-*.xml 口径，@ 8ec3aaa；本轮未重新运行 regression）。
+- **AT-TIME-003/004**=`PENDING_D10`——冻结的 D10 物理系统时间验收，不阻塞 Day5 COMPLETE（未假造）。
+- **历史证据完整保留（不删除失败历史）**：`2a5b878`=historical failed candidate、`c8f38e4`=historical failed V2 candidate、`8d701c3`=historical R2 production fix、`e8b0a07`=historical R2 fix point、`7bbcf8c`=independent attack（首次执行 Default Capability Attack=FAIL、History Range Contract Attack=FAIL）→`59533c4`=production fix→same attack 最终 PASS、`68dd47d`=M4 closure（historical）、`7855fc2`=final reviewed M4 closure；上述 `PENDING_DELTA_REVIEW`/`NOT_COMPLETE` 表述仅存在于历史章节快照，当前状态统一为 PASS/COMPLETE。
