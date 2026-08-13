@@ -443,7 +443,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D6-T00 Framework Upgrade Gate
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=READY`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（FAST-R0 实施完成，`statusReason=D6T00_FRAMEWORK_UPGRADE_GATE_20260813`；待技术负责人+独立第二方 CORE_R2 Review 收口 DONE）。
 - **风险/Review routing：** 依赖与全基线高风险，`CORE_R2`；必须由技术负责人和独立第二方审查。
 - **任务目标：** 在固定Day5基线`day5-complete` / `36dc178`上，将Java保持17、Spring Boot从3.3.6精确升级到3.5.15，并引入Spring AI BOM 1.1.8；先证明兼容，再允许任何Agent实现。
 - **对应需求：** C01、C02、C06～C10、C35、DEC-060、AT-AI-000。
