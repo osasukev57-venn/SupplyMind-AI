@@ -109,6 +109,13 @@ public final class DataPaths {
         return "warning/" + warningMonth + "/" + warningId + ".json";
     }
 
+    /** D6-T04 Agent report evidence under the frozen report/YYYY-MM pattern (AGENT-EVIDENCE-SCHEMA-V1). */
+    public static String reportRef(YearMonth reportMonth, String reportId) {
+        Objects.requireNonNull(reportMonth, "reportMonth");
+        requireIdentifier(reportId, "reportId");
+        return "report/" + reportMonth + "/" + reportId + ".json";
+    }
+
     public static String manifestRef(String businessDataRef) {
         requireLegalDataRef(businessDataRef);
         if (businessDataRef.endsWith(".manifest.json")) {

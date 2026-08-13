@@ -77,6 +77,14 @@ final class StorageSchemaVerifier {
             if (!dataRef.equals(DataPaths.warningRef(warning.warningMonth(), warning.warningId()))) {
                 throw new StorageException("WarningRecordV1 identity must match its atomic target: " + dataRef);
             }
+        } else if (dataRef.startsWith("report/")) {
+            // D6-T04 Agent reports (AGENT-EVIDENCE-SCHEMA-V1): re-read the report JSON so a
+            // structurally invalid report can never become visible as atomic business evidence.
+            com.supplymind.agent.report.AgentReportV1 report = JsonV1Codec.decodeFile(
+                    bytes, com.supplymind.agent.report.AgentReportV1.class);
+            if (report.reportId() == null || report.reportId().isBlank()) {
+                throw new StorageException("AgentReportV1.reportId must be present for report targets: " + dataRef);
+            }
         } else {
             throw new StorageException("No D1-T03 schema verifier is registered for atomic target " + dataRef);
         }
