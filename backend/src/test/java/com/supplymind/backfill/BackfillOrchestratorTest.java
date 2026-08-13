@@ -60,8 +60,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class BackfillOrchestratorTest {
 
-    private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-08-10T02:00:00Z"), ZoneOffset.UTC);
-    private static final OffsetDateTime NOW = OffsetDateTime.parse("2026-08-10T02:00:00+08:00");
+    private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-08-12T02:00:00Z"), ZoneOffset.UTC);
+    private static final OffsetDateTime NOW = OffsetDateTime.parse("2026-08-12T02:00:00+08:00");
     private static final String ADC12_SMM = "MAT.ADC12.SMM";
     private static final String AUTO_ITEM = MonitorSeriesDefaults.USD_CNY_ITEM_ID;
 

@@ -168,12 +168,18 @@ public final class BackfillOrchestrator {
         LocalDate cursor = checkpoint == null ? LocalDate.parse(job.fromDate())
                 : LocalDate.parse(checkpoint).plusDays(1);
         LocalDate to = LocalDate.parse(job.toDate());
+        // F2: the checkpoint is a CONTIGUOUS high-water mark - it advances only while the
+        // requested range completes day by day with no unresolved gap. A failed date freezes
+        // the checkpoint, and a later success never skips over the failed date.
+        LocalDate contiguous = checkpoint == null ? LocalDate.parse(job.fromDate()).minusDays(1)
+                : LocalDate.parse(checkpoint);
         boolean anyProgress = false;
         while (!cursor.isAfter(to)) {
+            boolean daySucceeded;
             if (hasPublishedRunForDay(job.itemId(), cursor)) {
-                checkpoint = cursor.toString();
-                anyProgress = true;
+                daySucceeded = true;
             } else {
+                daySucceeded = false;
                 try {
                     // M3: every automatic acquisition is a HISTORY request carrying the explicit
                     // remaining range [cursor..to]; the provider returns data for the requested
@@ -192,8 +198,7 @@ public final class BackfillOrchestrator {
                         acquired = true;
                     }
                     if (acquired && hasPublishedRunForDay(job.itemId(), cursor)) {
-                        checkpoint = cursor.toString();
-                        anyProgress = true;
+                        daySucceeded = true;
                     } else {
                         failures.add(cursor + ":NO_DATA_FOR_DAY");
                     }
@@ -201,11 +206,20 @@ public final class BackfillOrchestrator {
                     failures.add(cursor + ":" + exception.getClass().getSimpleName());
                 }
             }
+            if (daySucceeded && cursor.equals(contiguous.plusDays(1))) {
+                contiguous = cursor;
+                checkpoint = cursor.toString();
+                anyProgress = true;
+            }
             cursor = cursor.plusDays(1);
         }
         completed = refreshCompletedMonths(job.itemId(), completed, LocalDate.parse(job.fromDate()), to);
         BackfillJobStateV1.JobStatus status;
-        if (completed.size() >= monthsBetween(job.fromDate(), job.toDate())) {
+        // F2 range-completion rule: SUCCEEDED requires EVERY required date in the requested
+        // range to have completed contiguously (checkpoint reached the range end). Any
+        // unresolved/failed required date keeps the job honest in PARTIAL_SUCCESS/FAILED -
+        // the presence of any raw/published/daily/aggregate artifact alone never decides.
+        if (checkpoint != null && checkpoint.equals(job.toDate())) {
             status = BackfillJobStateV1.JobStatus.SUCCEEDED;
         } else if (anyProgress || !completed.isEmpty()) {
             status = BackfillJobStateV1.JobStatus.PARTIAL_SUCCESS;
