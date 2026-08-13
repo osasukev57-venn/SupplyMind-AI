@@ -59,6 +59,24 @@ final class StorageSchemaVerifier {
             CsvV1Codec.decodeDaily(bytes);
         } else if (dataRef.startsWith("processed/aggregate/")) {
             CsvV1Codec.decodeAggregate(bytes);
+        } else if (dataRef.startsWith("runtime/jobs/active/time-state.json")) {
+            com.supplymind.foundation.model.TimeStateV1 state = JsonV1Codec.decodeFile(
+                    bytes, com.supplymind.foundation.model.TimeStateV1.class);
+            if (!dataRef.equals(DataPaths.timeStateRef())) {
+                throw new StorageException("TimeStateV1 target must be the frozen time-state ref: " + dataRef);
+            }
+        } else if (dataRef.startsWith("runtime/jobs/active/")) {
+            com.supplymind.backfill.BackfillJobStateV1 job = JsonV1Codec.decodeFile(
+                    bytes, com.supplymind.backfill.BackfillJobStateV1.class);
+            if (!dataRef.equals(DataPaths.backfillJobRef(job.jobId()))) {
+                throw new StorageException("BackfillJobStateV1.jobId must match its atomic target: " + dataRef);
+            }
+        } else if (dataRef.startsWith("warning/")) {
+            com.supplymind.warning.WarningRecordV1 warning = JsonV1Codec.decodeFile(
+                    bytes, com.supplymind.warning.WarningRecordV1.class);
+            if (!dataRef.equals(DataPaths.warningRef(warning.warningMonth(), warning.warningId()))) {
+                throw new StorageException("WarningRecordV1 identity must match its atomic target: " + dataRef);
+            }
         } else {
             throw new StorageException("No D1-T03 schema verifier is registered for atomic target " + dataRef);
         }

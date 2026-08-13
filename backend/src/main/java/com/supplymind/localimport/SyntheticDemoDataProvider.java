@@ -61,6 +61,18 @@ public final class SyntheticDemoDataProvider implements DataProvider {
         return supportedItemIds;
     }
 
+    /**
+     * D5-T03/F3 explicit capability (M2 fail-closed): the SyntheticDemo provider declares
+     * capability for synthetic-demo material targets only and stays DEMO-isolated - it can
+     * never serve a formal target and is never a route candidate.
+     */
+    @Override
+    public boolean supports(com.supplymind.foundation.model.MonitorSeriesItemV1 item) {
+        return item.providerType() == ProviderType.SYNTHETIC_DEMO
+                && item.accessMethod() == AccessMethod.SYNTHETIC_DEMO
+                && "material".equals(item.rateKind());
+    }
+
     @Override
     public ProviderCollectOutcome collect(ProviderCollectRequest request) {
         Objects.requireNonNull(request, "request");

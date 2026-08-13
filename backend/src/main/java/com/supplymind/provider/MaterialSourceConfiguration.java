@@ -54,6 +54,20 @@ public class MaterialSourceConfiguration {
                 return Set.copyOf(itemIds);
             }
 
+            /**
+             * F1 explicit capability contract: this provider is a placeholder with NO configured
+             * credentials/authorization, so it explicitly declares capability=false (fail-closed)
+             * instead of inheriting the interface default. The declaration is based on its
+             * profile semantics - AuthorizedApi access with no real acquisition capability -
+             * never on itemId strings or ADC12/AZ91D hard-coding. Once real credentials are
+             * configured, this contract must be re-declared from generic metadata
+             * (providerType/accessMethod/rateKind/source intent).
+             */
+            @Override
+            public boolean supports(com.supplymind.foundation.model.MonitorSeriesItemV1 item) {
+                return false;
+            }
+
             @Override
             public ProviderCollectOutcome collect(ProviderCollectRequest request) {
                 Map<String, String> rejected = new LinkedHashMap<>();

@@ -1,5 +1,7 @@
 package com.supplymind.provider;
 
+import com.supplymind.foundation.model.MonitorSeriesItemV1;
+
 import java.util.Set;
 
 /**
@@ -17,6 +19,19 @@ public interface DataProvider {
 
     /** The monitored targets this provider can cover; unsupported targets are rejected explicitly. */
     Set<String> supportedItemIds();
+
+    /**
+     * D5-T03/F3 generic capability contract: whether this provider can genuinely handle the
+     * configured target (rateKind, acquisition mode, source intent, spec - whatever the
+     * provider contract requires). M2 fail-closed: the default declares NO capability for any
+     * target, so a provider that only implements the basic port (identity, itemIds, collect)
+     * without explicitly declaring generic capability is rejected everywhere the capability is
+     * consulted. Every production provider must explicitly declare the targets it truly
+     * supports; provider type presence alone is never enough.
+     */
+    default boolean supports(MonitorSeriesItemV1 item) {
+        return false;
+    }
 
     /**
      * Collect the requested targets and return the standardized RawRecord. Unsupported targets
