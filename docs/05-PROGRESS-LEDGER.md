@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 5（Day 1/2/3/4=`COMPLETE`；D1-T01～T05、D2-T01～T05、D3-T01～T06、D4-T01～T05 均实施完成；DEC-050～059 已生效；**Day5 Development Tasks=`ALL_DONE`**（D5-T01~T05 实施完成）；**Day5 Final Acceptance=`PASS`**（实施侧，Evidence=`docs/evidence/Day5/DAY5-IMPLEMENTATION-20260812.md`）；**Day5 Stage Review=`PASS`**、**Day 5=`COMPLETE`**（Stage Gate 收口；Technical Candidate=`8ec3aaa`，Final M4 Closure=`7855fc2`；Current Final Technical Regression=`83 classes/407 tests/0 failures/0 errors/8 skipped`；AT-TIME-003/004=`PENDING_D10` 冻结 D10 物理系统时间验收，不阻塞 Day5 COMPLETE）
+> 当前阶段：Day 6 架构变更已批准（Day 1～Day 5=`COMPLETE`；固定可运行基线=`day5-complete` / `36dc178`，Java17 + Spring Boot3.3.6；Current Final Technical Regression=`83 suites/407 tests/0 failures/0 errors/8 skipped`）。DEC-060=`APPROVED`；D6-T00=`TaskExecutionStatus=READY`；D6-T01～D6-T05=`TaskExecutionStatus=NOT_STARTED`且受D6-T00阻塞；尚未修改生产代码、测试或pom。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -55,21 +55,30 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 
 | 字段 | 当前值 |
 |---|---|
-| 当前开发日 | Day 5（进行中；Development Tasks=`ALL_DONE`，待 Stage Review 收口） |
-| 当前任务编号 | D5-T01~T05 全部实施完成（`TaskExecutionStatus=DONE`，阶段大审收口；checkpoints：T01=`975e22f`、T02=`586c015`、T03=`effb2a1`、T04=`1a74f46`、T05=`9bfcadd`）；**Day5 Development Tasks=`ALL_DONE`**；**Day5 Final Acceptance（实施侧）=PASS**（AT-TIME-001/002、AT-XR-001/002、AT-CFG-001/002/003/004、AT-ALT-001 后端路径满足；H05-H09 后端可演示；AT-TIME-003/004 属 D10-T02 未假造）；历史 Candidate `2a5b878`=`STAGE_REVIEW_CHANGES_REQUESTED`（Sol 7 Findings：F1 高水位回退/F2 conflict 任选/F3 缺 Provider capability/F4 backfill 非全链/F5 warning 跨时钟非确定/F6 demoRule 治理/F7 evidence，由 R2 修复）；**R2 修复完成（F1-F7 RESOLVED）**；**Day5 Stage Review=`PASS`；Day 5=`COMPLETE`**（Stage Gate 收口；Technical Candidate=`8ec3aaa`、Final M4 Closure=`7855fc2`）。 |
-| 当前任务状态 | D1-T01～D1-T05、D2-T01～D2-T05、D3-T01～D3-T06、D4-T01～T05 均实施完成；Day 1/2/3/4=`COMPLETE`；AT-SRC-002=`PASS`（Evidence Basis=Day2 已固定真实联网 runner 证据，DEC-056）；DEC-050～059 已生效。Day 5 阶段：Development Tasks=`ALL_DONE`；**DAY5_FINAL_CLOSURE（2026-08-12，base=`7855fc2`）**：Sol Final M4 Micro Delta=`PASS`、Independent Final M4 Micro Delta=`PASS`；Day5 状态封板——**Stage Review=`PASS`、Day 5=`COMPLETE`**（Stage Gate 收口）；Technical Candidate=`8ec3aaa`、Final M4 Closure=`7855fc2`；Current Final Technical Regression=`83 classes/407 tests/0 failures/0 errors/8 skipped`（`mvn clean test` 真实执行）；AT-TIME-003/004=`PENDING_D10`（冻结 D10 物理系统时间验收，不阻塞 Day5 COMPLETE）；历史链完整保留（2a5b878/c8f38e4 失败候选、8d701c3/e8b0a07 修复点、7bbcf8c 首次 FAIL→59533c4 fix→same attack PASS、68dd47d/7855fc2 M4 closure）。父用例 AT-SRC-005/007/008=`NOT_RUN`（Final P0 UNCHANGED）、AT-SRC-005-D4/007-D4/008-D4=`PASS`、AT-SRC-006=`BLOCKED`（Stage Blocking=NO）。 |
-| 编码前基线对齐 | `v1.4 FROZEN`：状态命名空间、唯一目录、RawReceiptV1、LifecycleTimelineV1/CandidateV1、QuarantineProjectionV1、完整config/history、inputRefs/sourceFingerprint、显式计算上下文、data+manifest/DirtyMarkerV1原子提交与自恢复、日期路由及BigDecimal契约已冻结（DEC-041至DEC-049、C27至C34）；DEC-050（PBOC基础校验v1）、DEC-051（业务读模型stale）、DEC-052（daily.updatedAt确定性语义）、DEC-053（arithmetic-mean-v1接受版本化默认）、DEC-054（weekday-asia-shanghai-v1接受版本化默认）、DEC-055（aggregate.calculatedAt=max(daily.updatedAt)确定性语义）、DEC-056（raw-first acquisition boundary + 业务键幂等 + AT runner 证据保存）已生效 |
-| 已完成任务 | BASELINE-DOCS；D1-T01～D1-T05（Day 1 全部DONE，Day 1 Gate=PASS）；D2-T01（Sol最终Review PASS）；D2-T02（Sol最终固定快照Review PASS）；D2-T03（Implementation Review PASS + EXT Gate PASS，commit=607e859）；D2-T04（1ac8233→1178307，Sol/Second-party Final Delta Review 双PASS，commit=1178307）；D2-T05（24d24b6→2b7d2f4→a482087→79680ec，Sol+Second-party 最终双PASS，commit=79680ec）。 |
-| 正在进行任务 | 无（Day 5 已完成：Development Tasks=`ALL_DONE`、Final Acceptance=`PASS`、Stage Review=`PASS`、Day 5=`COMPLETE`（Stage Gate 收口）；未开始 Day 6）。 |
-| 阻塞项 | 无（Day5 Stage Gate 已收口）。EXT-04/EXT-07/EXT-08/EXT-10/EXT-11=`OPEN_EXTERNAL_NON_BLOCKING`（不阻塞 P0；EXT-07/08 未确认→仅 TEST/DEMO 规则）；AT-TIME-003/004=`PENDING_D10`（冻结 D10 物理系统时间验收，不阻塞 Day5 COMPLETE）。 |
-| 最近验收结果 | D2-T01～D2-T05=`DONE`；AT-SRC-002=`PASS`（Evidence Basis=Day2 已固定验证证据，runner 原件 SHA-256，DEC-056）；D3-T01（86c8e3f）、D3-T02（ee7cbc7）、D3-T03（0fbe48d→2c7398d）、D3-T04（9611c66）、D3-T05（c6ec283）、D3-T06（60e6925→bca29b8）均 R1/R1+ Review=`PASS` 收口 `DONE`；DEC-057=`EFFECTIVE`。Day3 Final Acceptance V1（`ab28a6c`）=`CHANGES_REQUESTED`（FAILED_STAGE_CANDIDATE，历史保留）；Day3 Final Acceptance V2（`5c3f6ca`）=`CHANGES_REQUESTED`（STAGE_REVIEW_CHANGES_REQUESTED，历史保留；V2 执行事实=46 classes/247 tests/0/0/7，Evidence=`docs/evidence/Day3/DAY3-FINAL-ACCEPTANCE-V2-20260811.md`）；**DEC-058=`EFFECTIVE`（2026-08-11，a04b0c4，merge=`4667230`：Parent Case + Stage-scoped Subcases；父用例 AT-SRC-005/007/008=`NOT_RUN`、*-D3=`PASS`、AT-SRC-006=`BLOCKED` 非阻断、Day3 Gate 引用子用例、Final P0 UNCHANGED）**；Terra Errata（`5cd7345`：LocalImportService comment + D3-T06 evidence erratum）并入；**Day3 Final Acceptance V3（2026-08-11）=`PASS`**：自 5c3f6ca 起生产逻辑/测试逻辑 0 修改（git diff 验证：LocalImportService 仅 javadoc comment），Technical Regression Basis=UNCHANGED_TECHNICAL_BASE_EVIDENCE（46 classes/247 tests/0 failures/0 errors/7 skipped）；DEC-058 governance closure、Errata closure、Candidate consistency 全部验证；Evidence=`docs/evidence/Day3/DAY3-FINAL-ACCEPTANCE-V3-20260811.md`；DAY3_STAGE_CANDIDATE_V3 已冻结。 |
-| 新增风险 | PBOC页面结构或字段漂移；Windows PowerShell/curl代理TLS失败（Java 17路径成功）；免费源合法性/字段漂移与规格不可比；Manual误录漏录；来源冒充。D2-T03 计算/日历口径已接受版本化默认（DEC-053/054）；weekday-asia-shanghai-v1 不构成完整法定节假日/调休/停报/特殊交易日日历，未来以新 calendarVersion 升级。EXT-04/EXT-10/EXT-11 外部确认项（OPEN_EXTERNAL_NON_BLOCKING）；材料免费公开源调查结论=NO_APPROVED_SOURCE；材料正式校验/发布/加工依赖 Day 4（D4-T01~T04）。 |
-| 下一任务 | 未开始 Day 6（Day5 Stage Gate 已收口、Day 5=`COMPLETE`；后续 Day 6 任务待需求方指示，本轮不执行）。 |
-| 最近一次可运行版本 | backend：Java 17 + Spring Boot 3.3.6。**CURRENT FINAL TECHNICAL REGRESSION（真实执行，2026-08-12，`mvn clean test`，integration/day5 最终合并树 @ 8ec3aaa）：83 classes / 407 tests / 0 failures / 0 errors / 8 skipped**（7=真实联网/真实 raw 门禁；1=AT-TIME-003/004 D10 物理时间；按 surefire-reports TEST-*.xml suite 数统计 classes，85 含 2 个非测试 support 类=GoldenArithmeticHarness/DomainFixtures，不计入）。HISTORICAL/INTERMEDIATE（均非当前/最终）：`80 classes/401 tests`=59533c4 FINAL PRODUCTION FIX feature run（.java 文件口径）、`78 classes/395 tests`=e8b0a07 R2 FIX POINT run、`75 classes/386 tests`=c8f38e4 FAILED V2 STAGE CANDIDATE REGRESSION、`68 classes/366 tests`=8d701c3 R2 FEATURE-BRANCH REGRESSION、`72 classes/372 tests`=2a5b878 FAILED STAGE CANDIDATE REGRESSION。 |
-| 最近一次Git提交 | 本轮提交 `docs: close Day5 stage`（Day5 状态封板，形成 DAY5_CLOSURE_COMMIT）；历史事实：`7855fc2`=FINAL REVIEWED M4 CLOSURE（`docs: close final Day5 M4 status residues`，Sol Final M4 Micro Delta=PASS、Independent=PASS）、`68dd47d`=M4 CLOSURE（`docs: reconcile Day5 final stage evidence`）、`8ec3aaa`=TECHNICAL CANDIDATE（`test: complete Day5 final R2 integration`）、`12119b6`=merge: add final Day5 attack tests、`59533c4`=FINAL PRODUCTION FIX（关闭 Terra 最后两个 Finding）、`7bbcf8c`=INDEPENDENT FINAL ATTACK TEST（首次执行 Default Capability Attack=FAIL、History Range Contract Attack=FAIL——独立发现生产缺陷的历史事实，后由 59533c4 修复、同攻击测试在最终集成上 PASS）、`e8b0a07`=HISTORICAL R2 FIX POINT、`c8f38e4`=HISTORICAL FAILED V2 STAGE CANDIDATE、`2a5b878`=HISTORICAL FAILED STAGE CANDIDATE、`8d701c3`=HISTORICAL R2 PRODUCTION FIX、`4775559`=R2 INTEGRATED MERGE、`6ca96cb`=INDEPENDENT R2 ATTACK HARNESS。 |
-| 是否偏离计划 | 否 |
-| 最后更新人/窗口 | OpenCode实施工程师窗口，Day5 Final Closure（2026-08-12，base=`7855fc2`）：纯状态封板（生产代码/测试 0 修改，未重新运行 regression）。Sol Final M4 Micro Delta=`PASS`、Independent Final M4 Micro Delta=`PASS`、BLOCKER/MAJOR=无；**Day5 Development Tasks=`ALL_DONE`、Day5 Final Acceptance=`PASS`、Day5 Stage Review=`PASS`、Day 5=`COMPLETE`**（Stage Gate 收口；Technical Candidate=`8ec3aaa`、Final M4 Closure=`7855fc2`）；Current Final Technical Regression=`83 classes/407 tests/0 failures/0 errors/8 skipped`（8ec3aaa `mvn clean test` 真实执行，未伪造重新执行）；AT-TIME-003/004=`PENDING_D10`（冻结 D10 物理系统时间验收，不阻塞 Day5 COMPLETE）；历史链完整保留（2a5b878/c8f38e4 失败候选、8d701c3/e8b0a07 修复点、7bbcf8c 首次 FAIL→59533c4 fix→same attack PASS、68dd47d/7855fc2 M4 closure）；父用例 AT-SRC-005/007/008=`NOT_RUN`（Final P0 UNCHANGED，不提前 PASS）、AT-SRC-005-D4/007-D4/008-D4=`PASS`、AT-SRC-006=`BLOCKED`（Stage Blocking=NO）；未开始 Day6、未 merge main。 |
-| 最后更新时间 | 2026-08-12（Asia/Shanghai） |
+| 当前开发日 | Day 6（Architecture Change已批准；implementation未开始） |
+| 当前任务编号 | D6-T00 Framework Upgrade Gate |
+| 当前任务状态 | D6-T00=`TaskExecutionStatus=READY`；D6-T01～D6-T05=`TaskExecutionStatus=NOT_STARTED`，`blockedBy=D6-T00`；Day1～Day5=`COMPLETE`。 |
+| 编码前基线对齐 | `v1.5 FROZEN`：既有DEC-041～059/C27～C34继续生效；新增DEC-060、C35～C36，精确冻结Java17、Boot3.5.15、Spring AI1.1.8、SupplyMind LLMService门面、只读Tool Adapter、EvidencePack所有权与升级/回退Gate。 |
+| 已完成任务 | Day1～Day5全部开发任务及Stage Gate；最近固定基线`day5-complete` / `36dc178`。 |
+| 正在进行任务 | 无；架构文档已批准并冻结，等待D6-T00领取。 |
+| 阻塞项 | D6-T01～D6-T05受D6-T00阻塞；D6-T00本身无外部阻塞。现有EXT状态不因本次架构变更改变。 |
+| 最近验收结果 | Day5 Stage Review=`PASS`、Day5=`COMPLETE`；Day6 AT-AI-000/001/002/003均尚未执行，不得宣称PASS。 |
+| 新增风险 | Spring Boot/Spring AI传递依赖或自动配置造成既有合同回归；工具越权；模型输出与证据脱节；凭据泄漏。由D6-T00、只读Adapter、SupplyMind EvidencePack和Java模板降级控制。 |
+| 下一任务 | D6-T00 Framework Upgrade Gate（唯一可领取P0任务）。 |
+| 最近一次可运行版本 | Java17 + Spring Boot3.3.6，`day5-complete` / `36dc178`；83 suites/407 tests/0 failures/0 errors/8 skipped。Boot3.5.15/Spring AI1.1.8只是目标，尚未成为可运行基线。 |
+| 最近一次Git提交 | 本Architecture Docs Candidate提交（具体hash以该提交Git HEAD为准；父提交/最近可运行生产基线=`36dc178`）；仅含文档，禁止混入中止的D6实现残留。 |
+| 是否偏离计划 | 经正式架构变更批准：Day6 LLM plumbing改用Spring AI adapter；Day1～Day5业务架构、Day7 Vue、Final P0不变。 |
+| 最后更新人/窗口 | 技术负责人 / Architecture Change Review；状态迁移：`PLAN_CHANGE_PENDING → ARCHITECTURE_CHANGE_APPROVED`。 |
+| 最后更新时间 | 2026-08-13（Asia/Shanghai） |
+
+### 3.1 Day 6 Architecture Change Approval（2026-08-13）
+
+- 状态迁移：`PLAN_CHANGE_PENDING → ARCHITECTURE_CHANGE_APPROVED`。
+- 正式决策：DEC-060；目标基线Java17 + Spring Boot3.5.15 + Spring AI1.1.8；Spring Boot4/Spring AI2/预发布均禁止。
+- 实施边界：SupplyMind `LLMService`门面与EvidencePack/工具执行/业务计算继续归项目所有；Spring AI只在infrastructure adapter处理模型传输和受控tool calling。
+- 任务状态：D6-T00=`READY`；D6-T01～D6-T05=`NOT_STARTED`且blocked；AT-AI-000～003均未执行。
+- 本次变更：仅文档；生产代码、测试、`backend/pom.xml`均未修改。中止的D6工作区实现残留已清除，不构成候选内容。
+- 下一正式动作：领取D6-T00并以Day5固定基线执行Framework Upgrade Gate；失败则回退原基线。
 
 ## 4. 外部阻塞快照
 

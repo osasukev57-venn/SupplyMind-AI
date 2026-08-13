@@ -1,7 +1,7 @@
 # SupplyMind AI 项目总计划书
 
 > 文档编号：SMA-PLAN-001  
-> 版本：v1.4  
+> 版本：v1.5  
 > 状态：项目执行基线  
 > 基线日期：2026-08-08  
 > 适用范围：SupplyMind AI P0 开发、测试、验收、交付及后续 P1/P2 演进
@@ -56,7 +56,7 @@ SupplyMind AI 的官方题目为“供应链成本监测与动态调价预警智
 2. JSON/CSV 是唯一业务持久化方式，运行时无任何数据库进程。[B][C]
 3. 所有数字计算使用 BigDecimal，保证可追溯、可复算、无 float/double 精度污染。[B][C]
 4. 交付 Vue3 + Electron Windows 便携桌面应用，内置 JRE，用户双击 EXE 即可运行。[C]
-5. 云端模型通过 LLMService 解耦；云模型不可用时 Java 模板报告仍可工作。[C]
+5. 云端模型通过 SupplyMind `LLMService` 门面解耦；Day 6 经 D6-T00 门禁后由 Spring AI 1.1.8 `ChatClient`/`ChatModel` 基础设施适配器实现，云模型不可用时 Java 模板报告仍可工作。[C]
 
 ## 3. 官方需求与硬性验收基线
 
@@ -107,7 +107,7 @@ SupplyMind AI 的官方题目为“供应链成本监测与动态调价预警智
 - 文件原子写入、轮转、校验元数据、隔离、恢复、跨年度查询。
 - 动态标的配置、历史回填、面板联动和最小规则预警。
 - Vue3 仪表盘、历史趋势、数据质量、导入、配置、预警、Agent 工作台。
-- 受控 Agent 工具、EvidencePack、CloudLLMService 和 Java 模板降级。
+- 受控 Agent Tool Adapter、SupplyMind EvidencePack、`LLMService` + Spring AI adapter 和 Java 模板降级。
 - Electron、内置 JRE、Spring Boot 子进程管理和 Windows 便携 ZIP。
 - 源码、README、部署/用户/数据/计算/Agent 文档和验收证据。
 
@@ -148,14 +148,14 @@ Electron Windows 外壳
 | 层 | 冻结选择 | 来源 |
 |---|---|---|
 | Java | Java 17 | [C] |
-| 后端 | Spring Boot，单工程、模块化单体 | [C] |
+| 后端 | 当前 Spring Boot 3.3.6；Day 6 仅可经 D6-T00 受控升级到 Spring Boot 3.5.15，单工程、模块化单体 | [C] |
 | JSON/CSV | Jackson；CSV 使用 RFC 4180 兼容库并在 D1-T03 的构建基线中锁定版本。config/raw/lifecycle/quarantine/warning/report/runtime/manifest=JSON，daily/aggregate=CSV | [C] |
 | 计算 | BigDecimal | [B][C] |
 | 前端 | Vue3 | [C] |
 | 桌面 | Electron | [C] |
 | Java 运行时 | 发布包内置精简 JRE | [C] |
 | 持久化 | 仅 JSON/CSV 与普通运行状态文件 | [B][C] |
-| AI | LLMService；P0 CloudLLMService；LocalLLMService 扩展点 | [C] |
+| AI | SupplyMind `LLMService` 门面；Spring AI 1.1.8 `ChatClient`/`ChatModel` infrastructure adapter 与受控 Tool Calling；LocalLLMService 扩展点；Java模板降级 | [C] |
 | 最终交付 | Windows 便携目录 + ZIP + 双击 EXE | [C] |
 
 P0 禁止任何数据库栈或数据库文件，包括 MySQL、Redis、SQLite、H2、JPA、JDBC、R2DBC、MyBatis 及其驱动/服务；禁止将 Docker 变成开发或最终运行条件。[C]
@@ -173,12 +173,12 @@ P0 禁止任何数据库栈或数据库文件，包括 MySQL、Redis、SQLite、
 | `storage` | 唯一物理目录、原子写、manifest、轮转、隔离、恢复 | raw/staging/quarantine/processed 等 JSON/CSV 与生命周期元数据 |
 | `history` | 跨卷/跨年检索、拼接、去重、排序、来源追踪 | 时间范围 → 已验证序列 |
 | `warning` | 确定性规则、风险等级、证据和预警记录 | 指标/阈值 → warning JSON |
-| `agent` | 意图识别、受控工具编排、EvidencePack、报告核验 | 用户问题 → 结构化报告 |
-| `llm` | 模型供应商解耦、云端调用、本地扩展、失败降级 | EvidencePack → 解释文本 |
+| `agent` | 应用层编排、只读 Tool Adapter、EvidencePack、报告核验与装配 | 用户问题 → 结构化报告 |
+| `llm` | SupplyMind LLMService门面、Spring AI infrastructure adapter、供应商配置、本地扩展、失败降级 | EvidencePack → 解释文本 |
 | `web` | API、统一错误、健康检查、只读证据输出 | Vue/Electron 请求 |
 | `desktop` | 动态端口、内置 JRE、单实例、进程退出与数据路径 | EXE 启停与发布包 |
 
-模块间只能通过稳定应用接口和数据对象协作。Provider 不得直接写面板文件；LLM 不得直接访问 raw、文件系统或执行任意 SQL/Shell。[C]
+模块间只能通过稳定应用接口和数据对象协作。Provider 不得直接写面板文件；Spring AI 类型不得进入业务服务或 EvidencePack；LLM 不得直接访问 raw、文件系统、数据库、网络爬虫、配置/回填写入口或执行任意 SQL/Shell。[C]
 
 ## 7. 数据接入模式、三层降级与来源边界
 
@@ -461,7 +461,9 @@ P0 预警必须由 Java 确定性规则产生并持久化。规则输入只能�
 ```text
 用户问题
 → 标的和意图识别
-→ Java 选择受控工具链
+→ Spring AI 仅在受控 Tool Adapter 集合中完成工具选择
+→ SupplyMind 应用层校验工具请求并执行只读业务 Service
+→ SupplyMind 应用层校验工具输出与证据引用
 → 查询已验证数据
 → Java 计算确定性指标
 → 构造 EvidencePack
@@ -470,7 +472,7 @@ P0 预警必须由 Java 确定性规则产生并持久化。规则输入只能�
 → 保存结构化报告
 ```
 
-### 13.2 P0 工具
+### 13.2 P0只读工具与Spring AI边界
 
 - `series.resolve`
 - `history.query`
@@ -480,14 +482,27 @@ P0 预警必须由 Java 确定性规则产生并持久化。规则输入只能�
 - `warning.explain`
 - `provenance.trace`
 
-工具只读取 `ProcessingStage=PUBLISHED` 且 `ValidationStatus∈{VERIFIED, VERIFIED_WITH_NOTICE}` 的数据。EvidencePack 至少包含 item、时间范围、指标精确字符串、质量状态、来源文件和 checksum/版本引用。[C]
+七个名称保持冻结，不创造无需求工具；分别由既有 config/history/aggregation/quality/warning/published lineage 服务提供事实。Spring AI `@Tool` 或稳定 `ToolCallback` 只能放在 SupplyMind Tool Adapter 中，不得把底层 Service 无选择注册为全局工具。工具统一 `READ_ONLY`，只接受明确DTO，只返回明确DTO和evidenceRefs；应用程序执行输入/输出校验。工具只读取 `ProcessingStage=PUBLISHED` 且 `ValidationStatus∈{VERIFIED, VERIFIED_WITH_NOTICE}` 的数据。EvidencePack至少包含tool input/output、item、时间范围、businessDate/period、指标精确字符串、质量状态、warning/notices、actualSourceName、file/source refs、validationVersion、configVersion、lineage和checksum/版本引用；EvidencePackV1/AgentReportV1精确字段、引用核验和持久化规则以`docs/data-dictionary/AGENT-EVIDENCE-SCHEMA-V1.md`为准。[C]
 
 ### 13.3 模型边界与降级
 
 LLM 不得判断数据是否有效、读取未校验 raw、计算均值/成本、确定风险等级、编造来源或无证据解释外部原因。模型仅解释 Java 已计算的事实。[C]
 
-`LLMService` 隔离厂商 SDK；P0 实现 `CloudLLMService`，保留 `LocalLLMService` 接口。云端不可用、断网或调用失败时，系统根据同一 EvidencePack 生成 Java 模板报告，Agent 工作台仍返回可验证结果。[C]
+正式采用门面方案：SupplyMind `LLMService` 保留为 application port，Spring AI 1.1.8 `ChatClient`/`ChatModel` 只在 infrastructure adapter 内实现该端口，业务层不得直接依赖厂商或Spring AI DTO；`LocalLLMService` 保留同一门面的未来实现点。`baseUrl`、`apiKey`、`model`、`timeout`外部化且秘密不得提交。云端缺密钥、断网、超时、429、5xx、畸形/空响应或非法工具请求时，系统根据同一 EvidencePack 生成 Java 模板报告，Agent 工作台仍返回可验证结果且核心链路不受影响。[C]
 
+
+### 13.4 Framework Compatibility Gate
+
+Day 6 实施前必须先执行独立的 `D6-T00 Framework Upgrade Gate`，在 Day 5 完整基线之上一次性验证 Java 17 + Spring Boot 3.5.15 + Spring AI 1.1.8。升级只允许改动框架依赖、配置绑定和必要的兼容胶水，不得改变 Day 1～Day 5 的业务语义、文件字节合同、BigDecimal 规则、调度、校验、发布、预警或既有验收结果。[C]
+
+Gate 必须满足：
+
+- 完整运行 Day 1～Day 5 回归并逐项核对原有测试类和测试用例；历史基线为 83 个 Surefire suite、407 个 tests、0 failures、0 errors、8 skipped，任何数量变化必须给出可审计说明，禁止核心测试静默 skip。
+- 依赖树不得出现 Spring Boot 4.x、Spring AI 2.x、预发布版本、数据库栈或与本项目冻结架构冲突的基础设施。
+- Spring AI 类型不得进入 domain/application DTO、EvidencePack、业务文件 schema 或 Java 确定性计算链；升级不得造成业务文件迁移或历史数据改写。
+- 若升级需要大规模重写生产代码、无法保持原始合同/回归，或引入不可接受的传递依赖，则 Gate 必须拒绝，Day 6 回退至 `day5-complete` / `36dc178` 的 Spring Boot 3.3.6 轻量 Agent 基线；不得以“继续升级”为由修改已冻结业务规则。
+
+只有 D6-T00 为 DONE 后，D6-T01～D6-T05 才可领取。[C]
 ## 14. Vue3 与 Windows 桌面方案
 
 ### 14.1 Vue3 页面
@@ -519,7 +534,7 @@ Day 8 完成后冻结新增业务功能，只允许修复 P0 验收缺陷、补�
 | Day 3 | `D3-T01` 六类Provider边界；`D3-T02` 三层路由与AuthorizedApi；`D3-T03` FreePublic；`D3-T04` Manual；`D3-T05` LocalImport/Synthetic隔离；`D3-T06` ADC12/AZ91D合规接入 | 四个来源意图×材料序列各有合法指定源、免费公开源或Manual中的一条non-synthetic路径；实际来源不可冒充。Day 3 Gate（DEC-057 边界 + DEC-058 阶段子用例）：不要求材料在Day 3达到VERIFIED/PUBLISHED/daily/aggregate；Manual fallback 须具备可追溯的 raw、`PARSED+PENDING`、source identity、operator 与 revision/version 能力；所有 PENDING 数据必须被正式 Gate 拒绝。Day 3 Gate 引用 `AT-SRC-005-D3=PASS`、`AT-SRC-007-D3=PASS`、`AT-SRC-008-D3=PASS`（DEC-058；父用例 AT-SRC-005/007/008 保持完整端到端语义、当前`NOT_RUN`，不要求未来阶段提前 PASS）；AT-SRC-006=`BLOCKED` 且 Stage Blocking=`NO`（EXT-10=`OPEN_EXTERNAL_NON_BLOCKING`，Manual 合法路线满足三选一）。材料 validation/publish/processing/aggregate 与 AT-SRC-007 正向全链由 Day 4（D4-T01~D4-T04）承担 |
 | Day 4 | `D4-T01` 全Provider标准化/校验；`D4-T02` 统一发布门禁；`D4-T03` 每日加工通用化；`D4-T04` 五级聚合；`D4-T05` 黄金复算与来源治理测试 | Day1-2最小链推广到全部Provider；手工/免费源不得绕门禁；H01/H02核心计算通过 |
 | Day 5 | `D5-T01` 系统时间与文件轮转；`D5-T02` 跨卷/跨年读取；`D5-T03` 动态标的与依赖；`D5-T04` 历史回填；`D5-T05` 最小规则预警 | H05-H09后端链路可演示；前跳/回拨有证据；历史不删除；预警已持久化 |
-| Day 6 | `D6-T01` 七个Agent工具；`D6-T02` EvidencePack；`D6-T03` LLMService/CloudLLMService；`D6-T04` 证据核验与结构化报告；`D6-T05` Java模板降级 | LLM不直接计算；回答展示真实来源；断网/云模型失败仍返回确定性报告 |
+| Day 6 | `D6-T00` Framework Upgrade Gate；`D6-T01` Spring AI只读Tool Boundary；`D6-T02` SupplyMind EvidencePack；`D6-T03` LLMService + ChatClient Adapter；`D6-T04` 证据核验/结构化查询/报告；`D6-T05` Java模板降级 | 升级不改变Day1～Day5语义；LLM只选择受控只读工具且不直接计算；回答展示真实来源；断网/云模型失败仍返回确定性报告 |
 | Day 7 | `D7-T01` Vue基础；`D7-T02` 仪表盘；`D7-T03` 历史/质量/来源；`D7-T04` 手工录入与文件导入 | 核心Web流通过；手工提交先RECEIVED+PENDING；免费信源和Manual展示实际来源；不展示未校验或未发布数据 |
 | Day 8 | `D8-T01` 动态配置页面；`D8-T02` 预警页面；`D8-T03` Agent工作台；`D8-T04` Web端H01-H09预验收；`D8-T05` 冻结功能 | Web P0功能冻结；三层路由和来源真实性有证据；剩余项均为可追踪缺陷 |
 | Day 9 | `D9-T01` Electron外壳；`D9-T02` 内置JRE；`D9-T03` 动态端口与健康检查；`D9-T04` 子进程生命周期/单实例；`D9-T05` 便携目录和ZIP | 无外部Java/Node/数据库即可启动；退出无残留Java；data目录可检查 |
@@ -531,7 +546,7 @@ Day 8 完成后冻结新增业务功能，只允许修复 P0 验收缺陷、补�
 
 ### P0：正式交付基线
 
-H01-H09、PBOC EUR/CNY/USD/CNY真实闭环、六类Provider逻辑边界、原材料三层合法接入、来源真实性、文件全链路、BigDecimal、五级持久化、动态标的、历史回填、预警、七个Agent工具、CloudLLMService与模板降级、Vue3、Electron、内置JRE、Windows便携包、完整文档和证据。[A][F][B][C]
+H01-H09、PBOC EUR/CNY/USD/CNY真实闭环、六类Provider逻辑边界、原材料三层合法接入、来源真实性、文件全链路、BigDecimal、五级持久化、动态标的、历史回填、预警、七个Agent工具、SupplyMind LLMService + Spring AI adapter与模板降级、Vue3、Electron、内置JRE、Windows便携包、完整文档和证据。[A][F][B][C]
 
 ### P1：P0 通过后的增强
 

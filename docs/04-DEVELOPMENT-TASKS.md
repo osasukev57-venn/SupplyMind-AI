@@ -1,9 +1,9 @@
 # SupplyMind AI 10天可执行开发任务
 
 > 文档性质：跨窗口可独立执行的任务清单  
-> 规范版本：v1.4（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
+> 规范版本：v1.5（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
-> 当前进度锚点：Day 1 与 Day 2 已完成（D1-T01～D1-T05、D2-T01～D2-T05 均`DONE`；Day 1=`COMPLETE`、Day 2=`COMPLETE`；AT-SRC-002=`PASS`、DEC-056 implementation=`PASS`）；Day 3 开发任务 D3-T01～D3-T06 全部`DONE`、Day 3 Development Tasks=`COMPLETE`；Day3 Final Acceptance V1（`ab28a6c`）与 V2（`5c3f6ca`）Stage Review 均为`CHANGES_REQUESTED`（FAILED_STAGE_CANDIDATE / STAGE_REVIEW_CHANGES_REQUESTED，历史保留）；DEC-058（Parent Case + Stage-scoped Subcases）=`EFFECTIVE`（a04b0c4，merge=4667230）；Terra Errata（5cd7345）已并入；**Day3 Final Acceptance V3=`PASS`**（DAY3_STAGE_CANDIDATE_V3=`0bead68`；MINOR 修复=`5d6a538`）；**Day3 Stage Review=`PASS`**（Sol Final Delta=`PASS`、Independent Final Delta=`PASS`）；**Day 3=`COMPLETE`**（Stage Gate 收口）。父用例 AT-SRC-005/007/008=`NOT_RUN`（Final P0 UNCHANGED），AT-SRC-005-D3/007-D3/008-D3=`PASS`，AT-SRC-006=`BLOCKED`（Stage Blocking=NO）；下一阶段 Day 4（D4-T01~T04），未开始。
+> 当前进度锚点：Day 1～Day 5均已完成并通过各自Stage Gate，固定可运行基线为`day5-complete` / `36dc178`（Java17、Spring Boot3.3.6；最近完整技术回归83 suites/407 tests/0 failures/0 errors/8 skipped）。DEC-060已批准Day6 Spring AI架构变更；D6-T00=`TaskExecutionStatus=READY`，负责先验证Java17 + Spring Boot3.5.15 + Spring AI1.1.8兼容性；D6-T01～D6-T05=`TaskExecutionStatus=NOT_STARTED`且受D6-T00阻塞。当前没有Day6生产实现，禁止绕过D6-T00。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
 ## 1. 新窗口执行协议
@@ -27,7 +27,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 |---|---|
 | H01-H09 | 官方九项硬性验收要求，以需求追踪矩阵原文为准 |
 | SUP-01至SUP-08 | 项目方实施补充：汇率优先、六类Provider、三层降级、Manual门禁、来源真实性 |
-| C27-C34 | 编码前基线：状态命名空间、唯一目录、单item raw/run、Lifecycle/Candidate/Quarantine、活动config+不可变history、inputRefs/sourceFingerprint、显式计算上下文、dataRoot/manifest/原子提交 |
+| C27-C36 | C27-C34为文件/状态/计算基线；C35-C36为Day6精确框架版本、升级Gate、Spring AI适配边界、SupplyMind EvidencePack/工具执行/模板降级 |
 | F01 | Windows桌面运行 |
 | F02 | PBOC自动获取；材料按合法三层路线接入 |
 | F03 | PBOC EUR/CNY、USD/CNY真实闭环 |
@@ -46,7 +46,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 | Day 3 | 六类Provider与材料三层接入 | 四个来源意图×材料序列各有一条non-synthetic合法路线；来源不可冒充 |
 | Day 4 | 全Provider治理与五级计算 | Manual/FreePublic也走统一门禁；黄金数据与来源治理测试通过 |
 | Day 5 | 轮转、跨年、动态配置、回填、预警 | 后端可完成H05-H09核心闭环 |
-| Day 6 | Agent与LLM | Agent只调用受控工具；LLM失败时模板报告可用 |
+| Day 6 | Spring AI Agent与LLM | D6-T00先证明框架升级零业务回归；模型只选择受控只读工具，SupplyMind执行/核验；LLM失败时模板报告可用 |
 | Day 7 | Vue核心页面 | 浏览器完成仪表盘、历史、质量、导入闭环 |
 | Day 8 | Vue联动与Web验收 | 配置、预警、Agent可演示；P0 Web链路通过；功能冻结 |
 | Day 9 | Electron桌面交付 | 无开发服务器的Windows便携目录可双击启动和安全退出 |
@@ -439,77 +439,97 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ---
 
-## 9. Day 6：Agent、模型抽象与降级
+## 9. Day 6：Spring AI Agent、证据与降级
 
-### D6-T01 Agent工具契约与已验证数据边界
+### D6-T00 Framework Upgrade Gate
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
-- **任务目标：** 实现七个受控工具契约，并保证它们只能通过Java业务服务访问已验证数据。
-- **对应需求：** F06、H01、H02、项目Agent冻结边界。
-- **输入：** history、aggregation、quality、costing、warning和provenance服务。
-- **创建或修改文件：** agent/tool模块、工具DTO、权限边界测试和工具说明文档。
-- **输出：** `series.resolve`、`history.query`、`period.metrics`、`quality.inspect`、`cost.impact`、`warning.explain`、`provenance.trace`。
-- **依赖任务：** D5-T02、D5-T05、D4-T02。
-- **具体测试：** 分别调用七个工具；尝试传入文件路径、未验证ID、越界日期和未知series。
-- **Definition of Done：** 工具只接受业务参数；输出包含来源、周期、业务日期、完整率和证据ID；不暴露任意文件读取能力。
-- **失败回退：** 禁用不安全工具，仅保留通过契约测试的工具，不允许LLM直接补偿缺失能力。
+- **优先级/状态：** P0 / `TaskExecutionStatus=READY`。
+- **风险/Review routing：** 依赖与全基线高风险，`CORE_R2`；必须由技术负责人和独立第二方审查。
+- **任务目标：** 在固定Day5基线`day5-complete` / `36dc178`上，将Java保持17、Spring Boot从3.3.6精确升级到3.5.15，并引入Spring AI BOM 1.1.8；先证明兼容，再允许任何Agent实现。
+- **对应需求：** C01、C02、C06～C10、C35、DEC-060、AT-AI-000。
+- **输入：** 当前`backend/pom.xml`、配置、Day1～Day5全部生产代码/测试、83 suites/407 tests/0 failures/0 errors/8 skipped历史基线。
+- **创建或修改文件：** 仅框架依赖、必要配置绑定、最小兼容胶水、升级Gate测试与`docs/evidence/D6-T00/`；禁止顺便实现Agent业务。
+- **输出：** 精确依赖树、完整回归原始结果、原测试清点、黄金字节/业务合同diff、Go/No-Go与rollback报告。
+- **依赖任务：** Day5=`COMPLETE`，基线worktree clean；不得依赖D6-T01～D6-T05。
+- **具体测试：** 干净构建和Day1～Day5完整回归；核对每个原测试类/用例/skip；审计无Boot4、Spring AI2、预发布和数据库栈；复核文件字节、manifest、BigDecimal、scheduler、validation、publish、warning。
+- **Definition of Done：** Java17 + Boot3.5.15 + Spring AI1.1.8在完整基线上零业务语义回归；数量变化逐项解释且无核心测试静默skip；无需大规模生产重写、无需业务文件迁移。
+- **失败回退：** Gate=`FAIL`，丢弃升级增量并恢复`day5-complete`/`36dc178` Boot3.3.6基线；不得修改冻结规则迁就框架。
+- **是否阻塞后续：** 是；D6-T01～D6-T05全部依赖本任务`DONE`。
+
+### D6-T01 Spring AI只读Tool Boundary
+
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`，`blockedBy=D6-T00`。
+- **风险/Review routing：** 权限与业务Gate高风险，`CORE_R2`。
+- **任务目标：** 在SupplyMind Tool Adapter中注册七个冻结只读工具；Spring AI只负责在受控集合内选择工具，应用层负责校验、执行既有Service并验证输出。
+- **对应需求：** F06、F12、C20、C21、C35、C36、AT-AI-002。
+- **输入：** history、aggregation、quality、costing、warning、provenance既有服务和PUBLISHED+VERIFIED类Gate。
+- **创建或修改文件：** agent/tool adapter、显式input/output DTO、`@Tool`或稳定`ToolCallback`配置、权限测试；不得把底层Service全局注册。
+- **输出：** 精确七工具：`series.resolve`、`history.query`、`period.metrics`、`quality.inspect`、`cost.impact`、`warning.explain`、`provenance.trace`。
+- **依赖任务：** D6-T00。
+- **具体测试：** 本地确定性ChatModel stub逐一选工具；未知工具、文件路径、未验证ID、越界日期、prompt injection、写操作和shell负向测试。
+- **Definition of Done：** 工具全部READ_ONLY且仅接受业务DTO；输出带evidenceRefs；禁止任意文件、HTTP、数据库、配置/回填/预警写入和shell；Spring AI类型不进入业务Service。
+- **失败回退：** 禁用不安全adapter，仅保留通过合同的工具；非法请求fail-closed并交D6-T05降级。
 - **是否阻塞后续：** 是。
 
-### D6-T02 Agent编排与EvidencePack
+### D6-T02 SupplyMind EvidencePack 与 AgentReport 合同
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
-- **任务目标：** 建立受控流程：意图与标的识别、Java工具计划、确定性指标、EvidencePack和证据引用校验。
-- **对应需求：** 项目Agent冻结边界、F06、F12。
-- **输入：** 七个工具、用户问题、正式/演示模式。
-- **创建或修改文件：** agent orchestration、intent模型、EvidencePack、报告装配和测试。
-- **输出：** 趋势分析、成本风险概览、预警解释三类P0任务的结构化证据包。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`，`blockedBy=D6-T00,D6-T01`。
+- **风险/Review routing：** 证据和持久化合同高风险，`CORE_R2`。
+- **任务目标：** 按`AGENT-EVIDENCE-SCHEMA-V1`建立SupplyMind拥有的EvidencePackV1/AgentReportV1和引用校验；不得以模型memory、conversation history或tool transcript代替证据。
+- **对应需求：** F06、F12、C20～C22、C36、AT-AI-003。
+- **输入：** 七工具显式DTO、正式/演示mode、来源/文件/版本lineage。
+- **创建或修改文件：** Agent领域合同、codec、schema黄金文件、evidence verifier与测试；不得引入Spring AI DTO。
+- **输出：** 趋势、成本风险、预警解释三类任务可复核EvidencePack和结构化AgentReport。
 - **依赖任务：** D6-T01。
-- **具体测试：** 正常问题、模糊别名、缺少日期、无数据、演示数据和未验证数据提问。
-- **Definition of Done：** Java决定工具链和事实；EvidencePack仅含允许状态；每个结论引用存在的evidenceId。
-- **失败回退：** 返回结构化“数据不足/无法验证”结果，不进行自由ReAct或编造原因。
+- **具体测试：** 黄金JSON字节、无效/缺失/篡改引用、额外数字、未验证数据、重启读取和manifest校验。
+- **Definition of Done：** 每个事实为精确字符串并引用真实evidence；包含tool输入/输出、item/time、quality/warnings、actualSourceName、版本、file/source refs和lineage；报告可重启读取。
+- **失败回退：** 返回结构化“数据不足/证据无效”，不得自由补全事实。
 - **是否阻塞后续：** 是。
 
-### D6-T03 LLMService、CloudLLMService与Local扩展点
+### D6-T03 LLMService + Spring AI ChatClient Adapter
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
-- **任务目标：** 用项目内部请求响应模型解耦云端厂商，并保留LocalLLMService接口但不部署本地模型。
-- **对应需求：** C类AI架构冻结、Agent要求。
-- **输入：** EvidencePack、模型配置、云端API凭证注入方式。
-- **创建或修改文件：** llm端口、Cloud实现、Local接口/禁用实现、配置和适配测试；不得提交密钥。
-- **输出：** 可配置provider、baseUrl、model和timeout的云端分析调用。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`，`blockedBy=D6-T00,D6-T02`。
+- **风险/Review routing：** 外部模型、秘密和tool lifecycle高风险，`CORE_R2`。
+- **任务目标：** 保留SupplyMind `LLMService` application port，以Spring AI1.1.8 `ChatClient`/`ChatModel` infrastructure adapter实现云端调用；`LocalLLMService`仅保留同端口未来扩展点。
+- **对应需求：** C12、C20、C22、C35、C36、AT-AI-001。
+- **输入：** EvidencePack、受控Tool Adapter、外部化provider/baseUrl/apiKey/model/timeout。
+- **创建或修改文件：** llm application port、Spring AI adapter、配置绑定、测试stub、契约和秘密扫描；不得提交密钥。
+- **输出：** 与厂商DTO解耦的分析请求/响应与tool selection结果。
 - **依赖任务：** D6-T02。
-- **具体测试：** 成功响应、超时、401、限流、非法JSON、厂商字段变化和密钥日志检查。
-- **Definition of Done：** Agent不依赖厂商DTO或原生function calling；切换配置不修改业务代码；Local未成为运行依赖。
-- **失败回退：** 禁用云端适配器并调用D6-T05模板报告，不影响核心系统。
+- **具体测试：** 本地stub成功合同；缺Key、timeout、401/429、5xx、畸形/空响应、非法tool request、厂商字段变化和日志脱敏。
+- **Definition of Done：** 业务/domain/EvidencePack不依赖Spring AI DTO；配置切换不改业务代码；真实Cloud test为独立gated，缺凭据不得伪造PASS；Local不成为P0依赖。
+- **失败回退：** 转D6-T05 Java模板，不影响核心链。
 - **是否阻塞后续：** 是。
 
-### D6-T04 证据核验、结构化报告与报告持久化
+### D6-T04 证据核验、Agent API与报告持久化
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
-- **任务目标：** 将Java事实区与LLM解释区分离，校验所有evidenceId并持久化结构化报告。
-- **对应需求：** F06、F10、项目Agent冻结边界。
-- **输入：** EvidencePack和LLM叙述结果。
-- **创建或修改文件：** evidence verifier、report assembler、report JSON writer、Agent API和测试。
-- **输出：** 事实、解释、建议、限制、来源引用分区的报告JSON。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`，`blockedBy=D6-T00,D6-T02,D6-T03`。
+- **风险/Review routing：** 业务出口与证据高风险，`CORE_R2`。
+- **任务目标：** 将Java事实与LLM解释分区，校验所有evidenceRefs，并按冻结report路径/manifest/原子写规则持久化AgentReport。
+- **对应需求：** F06、F10、C20、C22、C36、AT-AI-003。
+- **输入：** EvidencePack和LLM/模板叙述结果。
+- **创建或修改文件：** verifier、report assembler、report store、Agent API和测试；复用D1～D5文件基础设施。
+- **输出：** 事实、解释、建议、限制、来源引用和degraded状态分区的报告JSON。
 - **依赖任务：** D6-T02、D6-T03。
-- **具体测试：** 正常报告、未知证据ID、额外数字、无数据、演示模式和无证据因果问题。
-- **Definition of Done：** 事实数字来自Java；不存在的引用被拒绝；报告可定位来源、周期和更新时间。
-- **失败回退：** 丢弃不合法叙述，只保留Java事实区和限制说明。
+- **具体测试：** 正常报告、未知/篡改引用、额外数字、无数据、演示mode、无证据因果问题、manifest和重启读取。
+- **Definition of Done：** 事实数字来自Java；引用逐一存在且可核验；报告定位来源、周期、更新时间和版本；无新业务真值目录。
+- **失败回退：** 丢弃不合法叙述，只保存Java事实和限制说明。
 - **是否阻塞后续：** 是。
 
-### D6-T05 Java模板降级与后端退出门禁
+### D6-T05 Java模板降级与Day 6退出门禁
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
-- **任务目标：** 云端LLM失败时根据同一EvidencePack生成Java模板报告，并完成后端端到端验收。
-- **对应需求：** C类AI降级决策、F06、F10。
-- **输入：** 已验证EvidencePack、LLM成功或失败状态。
-- **创建或修改文件：** template reporter、降级策略、集成测试和验收证据。
-- **输出：** 可验证的模板分析报告及明确的模型降级状态。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`，`blockedBy=D6-T00,D6-T04`。
+- **风险/Review routing：** P0可用性Gate，`CORE_R2`。
+- **任务目标：** 对缺Key、断网、timeout、429、5xx、畸形/空响应和非法工具请求，使用同一EvidencePack生成Java模板报告并完成Day6端到端验收。
+- **对应需求：** C13、C20、C22、C36、AT-AI-001～003。
+- **输入：** 已验证EvidencePack、LLM成功/失败状态和AgentReport合同。
+- **创建或修改文件：** template reporter、fallback policy、集成测试和`docs/evidence/Day6/`；不得改变采集/校验/发布/计算/预警。
+- **输出：** 可验证模板报告、明确degraded/degradeReason和Day6 Gate证据。
 - **依赖任务：** D6-T04。
-- **具体测试：** 正常云端、DNS失败、超时、429、5xx、空响应和断网；同时执行采集、查询、聚合、预警。
-- **Definition of Done：** 故障时仍返回Java模板报告；核心业务不受影响；后端API可独立完成P0链路。
-- **失败回退：** 只返回Java事实表和明确错误，不阻塞数据采集、查询、聚合和预警。
-- **是否阻塞后续：** 是，阻塞Vue Agent工作台和Day 8 Web验收。
+- **具体测试：** 本地正常stub及全部失败矩阵；同时执行采集、查询、聚合、预警最小直接回归；确认核心API不因LLM失败整体500。
+- **Definition of Done：** AT-AI-000/002/003通过；AT-AI-001本地合同和降级矩阵通过；真实Cloud未执行时如实NOT_RUN/BLOCKED；故障仍返回确定性报告且核心业务不受影响。
+- **失败回退：** 只返回Java事实表和明确错误，不阻塞核心业务。
+- **是否阻塞后续：** 是，阻塞Vue Agent工作台和Day8 Web验收。
 
 ---
 
@@ -891,6 +911,6 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ## 推荐启动顺序
 
-- D1-T04 已通过 Sol 技术负责人和 OpenCode 独立 Review，状态为 `DONE`；D1-T05 亦已完成 Review 收口为 `DONE`（Day 1=`COMPLETE`，Git 基线 `day1-complete`）。
-- D1-T01～D1-T05 均已由 Review 为`DONE`；Day 1=`COMPLETE`；D2-T01～D2-T05 均`DONE`；AT-SRC-002=`PASS`、DEC-056 implementation=`PASS`、Day 2=`COMPLETE`；D3-T01～D3-T06 均`DONE`、Day 3 Development Tasks=`COMPLETE`；Day3 Final Acceptance V1（`ab28a6c`）与 V2（`5c3f6ca`）Stage Review 均=`CHANGES_REQUESTED`（历史保留）；DEC-058=`EFFECTIVE`（父用例 AT-SRC-005/007/008=`NOT_RUN`，*-D3=`PASS`，AT-SRC-006=`BLOCKED` 非阻断）；**Day3 Final Acceptance V3=`PASS`**（Candidate V3=`0bead68`）、**Day3 Stage Review=`PASS`**、**Day 3=`COMPLETE`**（Stage Gate 收口）；Day 4（D4-T01~T04）未开始。
+- Day 1～Day 5均为`COMPLETE`，固定基线为`day5-complete` / `36dc178`；DEC-060=`APPROVED`。
+- 当前唯一可领取P0任务为D6-T00（`TaskExecutionStatus=READY`）；D6-T01～D6-T05保持`TaskExecutionStatus=NOT_STARTED`并由D6-T00 Gate阻塞。
 - P1/P2仅在P0验收全绿、Day 8功能冻结未被破坏且仍有时间时启动。
