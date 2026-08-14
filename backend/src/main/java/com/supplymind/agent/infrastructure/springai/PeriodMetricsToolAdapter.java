@@ -80,9 +80,16 @@ public final class PeriodMetricsToolAdapter {
             body.put("missingRefs", result.missingRefs());
             body.put("corruptRefs", result.corruptRefs());
             body.put("conflictKeys", result.conflictKeys());
+            AggregateRecordV1 first = result.rows().get(0);
             return ToolResult.success(TOOL_NAME, TOOL_VERSION, requestId,
                     "itemId=" + safeItem + " grain=" + safeGrain + " years=" + from + ".." + to,
-                    body, List.copyOf(evidenceRefs), List.of());
+                    body, List.copyOf(evidenceRefs), List.of(),
+                    new ToolResult.Lineage(
+                            first.calculationVersion(), first.calendarVersion(),
+                            first.configVersions() == null ? List.of()
+                                    : first.configVersions().stream().map(String::valueOf).toList(),
+                            first.actualSourceName(), first.sourceFingerprint(),
+                            first.validationVersion()));
         } catch (ToolInputException exception) {
             return ToolResult.rejected(TOOL_NAME, TOOL_VERSION, requestId, exception.getMessage());
         } catch (RuntimeException exception) {

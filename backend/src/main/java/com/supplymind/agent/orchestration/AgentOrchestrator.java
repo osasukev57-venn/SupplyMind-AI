@@ -93,8 +93,13 @@ public final class AgentOrchestrator {
                 limitations.add(result.toolName() + ": " + result.inputSummary());
             }
         }
+        // F4: lineage enrichment uses the first SUCCESS tool result's real production metadata.
+        ToolResult.Lineage lineage = toolResults.stream()
+                .filter(result -> result.status() == ToolStatus.SUCCESS && result.lineage() != null)
+                .map(ToolResult::lineage)
+                .findFirst().orElse(null);
         List<EvidencePackV1.EvidenceRefEntry> verifiedRefs =
-                evidenceVerifier.verifyAll(rawEvidenceRefs);
+                evidenceVerifier.verifyAll(rawEvidenceRefs, lineage);
 
         // M2: FORMAL mode excludes demo/synthetic evidence; only VERIFIED refs are usable.
         List<EvidencePackV1.EvidenceRefEntry> usableRefs = new ArrayList<>();
@@ -232,6 +237,23 @@ public final class AgentOrchestrator {
                         if (refs.isEmpty()) {
                             continue; // no verifiable evidence => no fact may be claimed
                         }
+                        // F4: lineage comes from the real production Tool Result metadata; never
+                        // placeholders. Rows may also carry per-row lineage which wins.
+                        ToolResult.Lineage lineage = result.lineage();
+                        String calculationVersion = lineage == null ? null : lineage.calculationVersion();
+                        String calendarVersion = lineage == null ? null : lineage.calendarVersion();
+                        List<String> configVersions = lineage == null ? List.of() : lineage.configVersions();
+                        String actualSourceName = lineage == null ? null : lineage.actualSourceName();
+                        String sourceFingerprint = lineage == null ? null : lineage.sourceFingerprint();
+                        if (row.get("calculationVersion") != null) {
+                            calculationVersion = String.valueOf(row.get("calculationVersion"));
+                        }
+                        if (row.get("calendarVersion") != null) {
+                            calendarVersion = String.valueOf(row.get("calendarVersion"));
+                        }
+                        if (row.get("actualSourceName") != null) {
+                            actualSourceName = String.valueOf(row.get("actualSourceName"));
+                        }
                         facts.add(new EvidencePackV1.Fact(
                                 "fact-" + (factId++), result.toolName(), itemId, businessDate,
                                 row.get("periodStart") == null ? null : String.valueOf(row.get("periodStart")),
@@ -242,7 +264,8 @@ public final class AgentOrchestrator {
                                 row.get("complete") == null ? null : String.valueOf(row.get("complete")),
                                 row.get("validationStatus") == null ? null : String.valueOf(row.get("validationStatus")),
                                 row.get("validationVersion") == null ? null : String.valueOf(row.get("validationVersion")),
-                                null, null, List.of(), null, null,
+                                calculationVersion, calendarVersion, configVersions,
+                                actualSourceName, sourceFingerprint,
                                 refs));
                     }
                 }

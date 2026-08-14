@@ -128,13 +128,13 @@ public class AgentConfiguration {
 
     @Bean
     LLMService.Port agentLlmPort(
-            ObjectProvider<ChatClient> chatClientProvider,
+            ObjectProvider<org.springframework.ai.chat.model.ChatModel> chatModelProvider,
             SupplyMindToolCallbackProvider supplyMindToolCallbackProvider,
             @Value("${supplymind.agent.llm.provider:}") String provider,
             @Value("${supplymind.agent.llm.model:}") String model
     ) {
-        ChatClient chatClient = chatClientProvider.getIfAvailable();
-        if (chatClient == null) {
+        org.springframework.ai.chat.model.ChatModel chatModel = chatModelProvider.getIfAvailable();
+        if (chatModel == null) {
             return new LLMService.Port() {
                 @Override
                 public LLMService.LLMResponse analyze(LLMService.LLMRequest request) {
@@ -142,7 +142,8 @@ public class AgentConfiguration {
                 }
             };
         }
-        return new SpringAiLlmService(chatClient, supplyMindToolCallbackProvider, provider, model);
+        return SpringAiLlmService.createWithToolCalling(
+                chatModel, supplyMindToolCallbackProvider, provider, model);
     }
 
     @Bean

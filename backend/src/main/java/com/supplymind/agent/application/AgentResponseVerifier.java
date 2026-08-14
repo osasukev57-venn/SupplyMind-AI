@@ -48,23 +48,57 @@ public final class AgentResponseVerifier {
             knownEvidenceRefs.add(entry.ref());
         }
 
+        // F2: every reference the model names - in structured claims AND in free text - must
+        // exist in the current EvidencePack; any unknown reference rejects the whole draft.
+        String unknownRef = findUnknownReference(draft.rawText(), knownFactIds, knownEvidenceRefs);
+        if (unknownRef != null) {
+            return Verification.rejected("UNKNOWN_" + (unknownRef.startsWith("fact-") ? "FACT_REFERENCE" : "EVIDENCE_REFERENCE"));
+        }
         for (ModelClaimV1 claim : draft.claims()) {
             for (String factId : claim.factIds()) {
                 if (!knownFactIds.contains(factId)) {
-                    return Verification.rejected("UNKNOWN_FACT_REF:" + factId);
+                    return Verification.rejected("UNKNOWN_FACT_REFERENCE");
                 }
             }
             for (String ref : claim.evidenceRefs()) {
                 if (!knownEvidenceRefs.contains(ref)) {
-                    return Verification.rejected("UNKNOWN_EVIDENCE_REF:" + ref);
+                    return Verification.rejected("UNKNOWN_EVIDENCE_REFERENCE");
                 }
             }
         }
         String fabricated = findFabricatedNumber(draft.rawText(), evidencePack);
         if (fabricated != null) {
-            return Verification.rejected("FABRICATED_NUMBER:" + fabricated);
+            return Verification.rejected("FABRICATED_NUMBER");
         }
         return Verification.accepted();
+    }
+
+    /** F2: scan free text for referenced names (fact-*, raw/..., processed/..., warning/...) that are not known. */
+    private static String findUnknownReference(
+            String rawText, Set<String> knownFactIds, Set<String> knownEvidenceRefs
+    ) {
+        if (rawText == null || rawText.isBlank()) {
+            return null;
+        }
+        java.util.regex.Matcher factMatcher = java.util.regex.Pattern
+                .compile("fact-[A-Za-z0-9._-]+")
+                .matcher(rawText);
+        while (factMatcher.find()) {
+            String token = factMatcher.group();
+            if (!knownFactIds.contains(token)) {
+                return token;
+            }
+        }
+        java.util.regex.Matcher refMatcher = java.util.regex.Pattern
+                .compile("(raw|processed|staging|warning|config)/[A-Za-z0-9._/-]+\\.(json|csv)")
+                .matcher(rawText);
+        while (refMatcher.find()) {
+            String token = refMatcher.group();
+            if (!knownEvidenceRefs.contains(token)) {
+                return token;
+            }
+        }
+        return null;
     }
 
     /** Any number token in the draft that is not the value of a referenced fact is fabrication. */

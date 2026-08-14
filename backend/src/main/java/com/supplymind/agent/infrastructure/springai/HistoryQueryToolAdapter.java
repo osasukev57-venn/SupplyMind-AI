@@ -73,9 +73,19 @@ public final class HistoryQueryToolAdapter {
                 return ToolResult.noData(TOOL_NAME, TOOL_VERSION, requestId,
                         "itemId=" + safeItem + " range=" + from + ".." + to, "no published daily rows in range");
             }
+            DailyRecordV1 first = result.rows().get(0);
+            String sourceFingerprint = com.supplymind.foundation.model.CanonicalJsonV1.sha256LowerHex(
+                    com.supplymind.foundation.model.CanonicalJsonV1.sourceIdentity(
+                            first.providerType(), first.actualSourceName(), first.accessMethod()));
             return ToolResult.success(TOOL_NAME, TOOL_VERSION, requestId,
                     "itemId=" + safeItem + " range=" + from + ".." + to, body,
-                    List.copyOf(evidenceRefs), List.of());
+                    List.copyOf(evidenceRefs), List.of(),
+                    new ToolResult.Lineage(
+                            first.calculationVersion(), first.calendarVersion(),
+                            first.configVersions() == null ? List.of()
+                                    : first.configVersions().stream().map(String::valueOf).toList(),
+                            first.actualSourceName(), sourceFingerprint,
+                            first.validationVersion()));
         } catch (ToolInputException exception) {
             return ToolResult.rejected(TOOL_NAME, TOOL_VERSION, requestId, exception.getMessage());
         } catch (RuntimeException exception) {

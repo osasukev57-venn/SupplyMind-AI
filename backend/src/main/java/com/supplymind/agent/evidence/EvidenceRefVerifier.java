@@ -38,6 +38,35 @@ public final class EvidenceRefVerifier {
         return List.copyOf(entries);
     }
 
+    /** Verifies refs and enriches the entries with the real production lineage from the tool result. */
+    public List<EvidencePackV1.EvidenceRefEntry> verifyAll(
+            List<String> refs, com.supplymind.agent.tool.ToolResult.Lineage lineage
+    ) {
+        List<EvidencePackV1.EvidenceRefEntry> entries = new ArrayList<>();
+        for (String ref : refs) {
+            EvidencePackV1.EvidenceRefEntry entry = verify(ref);
+            entries.add(enrich(entry, lineage));
+        }
+        entries.sort(java.util.Comparator.comparing(EvidencePackV1.EvidenceRefEntry::evidenceRefId));
+        return List.copyOf(entries);
+    }
+
+    private static EvidencePackV1.EvidenceRefEntry enrich(
+            EvidencePackV1.EvidenceRefEntry entry, com.supplymind.agent.tool.ToolResult.Lineage lineage
+    ) {
+        if (lineage == null || entry.status() != EvidenceStatus.VERIFIED) {
+            return entry;
+        }
+        return new EvidencePackV1.EvidenceRefEntry(
+                entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
+                entry.status(), entry.reasonCode(), entry.runId(), entry.rawRef(), entry.publishRef(),
+                entry.businessDate(), entry.periodStart(), entry.periodEnd(),
+                entry.validationVersion() == null ? lineage.validationVersion() : entry.validationVersion(),
+                entry.calculationVersion() == null ? lineage.calculationVersion() : entry.calculationVersion(),
+                entry.calendarVersion() == null ? lineage.calendarVersion() : entry.calendarVersion(),
+                entry.configVersions().isEmpty() ? lineage.configVersions() : entry.configVersions());
+    }
+
     public EvidencePackV1.EvidenceRefEntry verify(String ref) {
         Objects.requireNonNull(ref, "ref");
         String evidenceRefId = "ev-" + Math.abs(ref.hashCode());
