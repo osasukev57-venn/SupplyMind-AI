@@ -169,7 +169,12 @@ class AgentPipelineIntegrationTest {
 
     private AgentOrchestrator orchestrator(Harness harness, ChatModel chatModel) {
         ChatClient chatClient = ChatClient.builder(chatModel).build();
-        LLMService.Port llm = new SpringAiLlmService(chatClient, "test-stub", "stub-model");
+        LLMService.Port llm = new SpringAiLlmService(chatClient,
+                new com.supplymind.agent.infrastructure.springai.SupplyMindToolCallbackProvider(List.of(
+                        harness.seriesResolve(), harness.historyQuery(),
+                        harness.periodMetrics(), harness.qualityInspect(), harness.costImpact(),
+                        harness.warningExplain(), harness.provenanceTrace())),
+                "test-stub", "stub-model");
         EvidenceRefVerifier verifier = new EvidenceRefVerifier(harness.root());
         return new AgentOrchestrator(
                 new ToolExecutor(harness.seriesResolve(), harness.historyQuery(),
@@ -178,7 +183,8 @@ class AgentPipelineIntegrationTest {
                 llm,
                 new TemplateFallbackService(),
                 verifier,
-                new ReportStore(harness.root(), harness.files()));
+                new ReportStore(harness.root(), harness.files()),
+                new com.supplymind.agent.application.AgentResponseVerifier(List.of()));
     }
 
     private Harness harness(String leaf) {

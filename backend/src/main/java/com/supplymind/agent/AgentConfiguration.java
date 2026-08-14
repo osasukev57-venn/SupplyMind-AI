@@ -129,6 +129,7 @@ public class AgentConfiguration {
     @Bean
     LLMService.Port agentLlmPort(
             ObjectProvider<ChatClient> chatClientProvider,
+            SupplyMindToolCallbackProvider supplyMindToolCallbackProvider,
             @Value("${supplymind.agent.llm.provider:}") String provider,
             @Value("${supplymind.agent.llm.model:}") String model
     ) {
@@ -141,7 +142,15 @@ public class AgentConfiguration {
                 }
             };
         }
-        return new SpringAiLlmService(chatClient, provider, model);
+        return new SpringAiLlmService(chatClient, supplyMindToolCallbackProvider, provider, model);
+    }
+
+    @Bean
+    com.supplymind.agent.application.AgentResponseVerifier agentResponseVerifier(
+            @Value("${supplymind.agent.llm.api-key:}") String apiKey
+    ) {
+        return new com.supplymind.agent.application.AgentResponseVerifier(
+                apiKey == null || apiKey.isBlank() ? java.util.List.of() : java.util.List.of(apiKey));
     }
 
     @Bean
@@ -150,10 +159,11 @@ public class AgentConfiguration {
             LLMService.Port agentLlmPort,
             TemplateFallbackService templateFallbackService,
             EvidenceRefVerifier evidenceRefVerifier,
-            ReportStore reportStore
+            ReportStore reportStore,
+            com.supplymind.agent.application.AgentResponseVerifier agentResponseVerifier
     ) {
         return new AgentOrchestrator(toolExecutor, agentLlmPort, templateFallbackService,
-                evidenceRefVerifier, reportStore);
+                evidenceRefVerifier, reportStore, agentResponseVerifier);
     }
 
     @Bean

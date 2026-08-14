@@ -458,7 +458,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D6-T01 Spring AI只读Tool Boundary
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`，`blockedBy=D6-T00`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`（FAST-R0 实施完成，`statusReason=D6T01_READ_ONLY_TOOLS_20260813`；R2 Stage Fix 保持）。
 - **风险/Review routing：** 权限与业务Gate高风险，`CORE_R2`。
 - **任务目标：** 在SupplyMind Tool Adapter中注册七个冻结只读工具；Spring AI只负责在受控集合内选择工具，应用层负责校验、执行既有Service并验证输出。
 - **对应需求：** F06、F12、C20、C21、C35、C36、AT-AI-002。

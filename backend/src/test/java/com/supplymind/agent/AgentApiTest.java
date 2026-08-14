@@ -128,7 +128,12 @@ class AgentApiTest {
             }
         };
         LLMService.Port llm = new SpringAiLlmService(
-                ChatClient.builder(chatModel).build(), "test-stub", "stub-model");
+                ChatClient.builder(chatModel).build(),
+                new com.supplymind.agent.infrastructure.springai.SupplyMindToolCallbackProvider(List.of(
+                        harness.seriesResolve(), harness.historyQuery(),
+                        harness.periodMetrics(), harness.qualityInspect(), harness.costImpact(),
+                        harness.warningExplain(), harness.provenanceTrace())),
+                "test-stub", "stub-model");
         EvidenceRefVerifier verifier = new EvidenceRefVerifier(harness.root());
         return new AgentOrchestrator(
                 new ToolExecutor(harness.seriesResolve(), harness.historyQuery(),
@@ -137,7 +142,8 @@ class AgentApiTest {
                 llm,
                 new TemplateFallbackService(),
                 verifier,
-                new ReportStore(harness.root(), harness.files()));
+                new ReportStore(harness.root(), harness.files()),
+                new com.supplymind.agent.application.AgentResponseVerifier(List.of()));
     }
 
     private Harness harness() {

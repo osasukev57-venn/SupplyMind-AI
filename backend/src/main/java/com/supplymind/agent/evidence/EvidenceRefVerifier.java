@@ -43,21 +43,21 @@ public final class EvidenceRefVerifier {
         String evidenceRefId = "ev-" + Math.abs(ref.hashCode());
         String refType = refTypeOf(ref);
         if (refType == null) {
-            return entry(evidenceRefId, ref, null, EvidenceStatus.UNAVAILABLE, null);
+            return entry(evidenceRefId, ref, null, EvidenceStatus.UNAVAILABLE, "UNSAFE_REF", null);
         }
         try {
             DataPaths.requireLegalDataRef(ref);
         } catch (RuntimeException exception) {
-            return entry(evidenceRefId, ref, refType, EvidenceStatus.UNAVAILABLE, null);
+            return entry(evidenceRefId, ref, refType, EvidenceStatus.UNAVAILABLE, "UNSAFE_REF", null);
         }
         Path filePath = dataRoot.resolveDataRef(ref);
         Path manifestPath = dataRoot.resolveDataRef(DataPaths.manifestRef(ref));
         if (!Files.isRegularFile(filePath)) {
-            return entry(evidenceRefId, ref, refType, EvidenceStatus.MISSING, null);
+            return entry(evidenceRefId, ref, refType, EvidenceStatus.MISSING, "FILE_NOT_FOUND", null);
         }
         if (!Files.isRegularFile(manifestPath)
                 || !ManifestVerifier.matches(dataRoot, ref, filePath, manifestPath)) {
-            return entry(evidenceRefId, ref, refType, EvidenceStatus.INVALID, null);
+            return entry(evidenceRefId, ref, refType, EvidenceStatus.INVALID, "MANIFEST_MISMATCH", null);
         }
         String sha256 = null;
         try {
@@ -66,20 +66,23 @@ public final class EvidenceRefVerifier {
         } catch (IOException | RuntimeException ignored) {
             sha256 = null;
         }
-        return entry(evidenceRefId, ref, refType, EvidenceStatus.VERIFIED, sha256);
+        if (sha256 == null) {
+            return entry(evidenceRefId, ref, refType, EvidenceStatus.UNAVAILABLE, "NO_SHA256", null);
+        }
+        return entry(evidenceRefId, ref, refType, EvidenceStatus.VERIFIED, null, sha256);
     }
 
     public boolean isVerified(EvidencePackV1.EvidenceRefEntry entry) {
-        return entry != null && entry.sha256() != null && entry.refType() != null
-                && !entry.refType().isBlank();
+        return entry != null && entry.status() == EvidenceStatus.VERIFIED;
     }
 
     private static EvidencePackV1.EvidenceRefEntry entry(
-            String id, String ref, String refType, EvidenceStatus status, String sha256
+            String id, String ref, String refType, EvidenceStatus status, String reason, String sha256
     ) {
         return new EvidencePackV1.EvidenceRefEntry(
                 id, refType == null ? "UNAVAILABLE" : refType,
-                ref, sha256, null, ref.startsWith("raw/") ? ref : null, null,
+                ref, sha256, status, reason,
+                null, ref.startsWith("raw/") ? ref : null, null,
                 null, null, null, null, null, null, List.of());
     }
 

@@ -102,6 +102,8 @@ public record EvidencePackV1(
             String refType,
             String ref,
             String sha256,
+            EvidenceStatus status,
+            String reasonCode,
             String runId,
             String rawRef,
             String publishRef,
@@ -115,6 +117,9 @@ public record EvidencePackV1(
     ) {
         public EvidenceRefEntry {
             configVersions = configVersions == null ? List.of() : List.copyOf(configVersions);
+            if (status == null) {
+                throw new IllegalArgumentException("evidence status is required");
+            }
         }
     }
 }

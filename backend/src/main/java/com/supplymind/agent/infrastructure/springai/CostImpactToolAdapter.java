@@ -62,8 +62,10 @@ public final class CostImpactToolAdapter {
                         "itemId=" + safeItem + " grain=" + safeGrain + " periodStart=" + start,
                         "previous-period baseline is zero; ratio undefined");
             }
-            BigDecimal changeRatio = current.subtract(previous)
-                    .divide(previous, 12, java.math.RoundingMode.HALF_UP);
+            // M6: the change ratio is computed by the SAME production component as the Day5
+            // warning chain (CostImpactCalculator) - the Agent tool owns no business formula.
+            BigDecimal changeRatio = com.supplymind.processing.CostImpactCalculator
+                    .changeRatio(current, previous);
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("itemId", safeItem);
             body.put("grain", safeGrain);

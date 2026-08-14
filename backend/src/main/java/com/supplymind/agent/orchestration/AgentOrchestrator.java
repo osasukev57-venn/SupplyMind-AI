@@ -1,7 +1,11 @@
 package com.supplymind.agent.orchestration;
 
+import com.supplymind.agent.application.AgentResponseVerifier;
+import com.supplymind.agent.application.ModelClaimV1;
+import com.supplymind.agent.application.ModelDraftV1;
 import com.supplymind.agent.evidence.EvidencePackV1;
 import com.supplymind.agent.evidence.EvidenceRefVerifier;
+import com.supplymind.agent.evidence.EvidenceStatus;
 import com.supplymind.agent.fallback.TemplateFallbackService;
 import com.supplymind.agent.llm.LLMService;
 import com.supplymind.agent.report.AgentReportV1;
@@ -12,15 +16,21 @@ import com.supplymind.agent.tool.ToolStatus;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * D6-T02/D6-T04 controlled Agent pipeline: Java decides the intent and the tool chain, executes
- * only read-only tools, builds a versioned EvidencePack (AGENT-EVIDENCE-SCHEMA-V1) with
- * verified evidence refs, then asks the LLM (or the Java template fallback) to explain the
- * deterministic facts. The LLM can never change facts or evidence; malformed or unavailable LLM
- * output always degrades to the template report without breaking the pipeline.
+ * D6-T02/D6-T04 controlled Agent pipeline (R2 findings M1/M2/M4):
+ *
+ * - M1: the LLM output is an UNTRUSTED MODEL DRAFT; AgentResponseVerifier checks every model
+ *   claim's fact/evidence refs and rejects fabricated numbers or secret injection before the
+ *   draft may become formal claims/answer. Any rejection -> deterministic Java fallback.
+ * - M2: EvidenceRefs carry full lineage and an explicit status (VERIFIED/MISSING/INVALID/
+ *   UNAVAILABLE) with reasonCode; only VERIFIED refs enter the LLM evidence context; missing/
+ *   invalid refs are reported in limitations/notices. FORMAL mode excludes demo/synthetic
+ *   evidence.
+ * - M4: any REJECTED/NO_DATA tool execution invalidates the LLM interaction -> degraded report.
  */
 public final class AgentOrchestrator {
 
@@ -29,29 +39,43 @@ public final class AgentOrchestrator {
     private final TemplateFallbackService fallback;
     private final EvidenceRefVerifier evidenceVerifier;
     private final ReportStore reportStore;
+    private final AgentResponseVerifier responseVerifier;
 
     public AgentOrchestrator(
             ToolExecutor toolExecutor,
             LLMService.Port llm,
             TemplateFallbackService fallback,
             EvidenceRefVerifier evidenceVerifier,
-            ReportStore reportStore
+            ReportStore reportStore,
+            AgentResponseVerifier responseVerifier
     ) {
         this.toolExecutor = Objects.requireNonNull(toolExecutor, "toolExecutor");
         this.llm = Objects.requireNonNull(llm, "llm");
         this.fallback = Objects.requireNonNull(fallback, "fallback");
         this.evidenceVerifier = Objects.requireNonNull(evidenceVerifier, "evidenceVerifier");
         this.reportStore = Objects.requireNonNull(reportStore, "reportStore");
+        this.responseVerifier = Objects.requireNonNull(responseVerifier, "responseVerifier");
     }
 
     public AgentResult answer(AgentQueryInput input) {
         Objects.requireNonNull(input, "input");
         String requestId = "req-" + UUID.randomUUID().toString().substring(0, 12);
-        String mode = input.mode() == null || input.mode().isBlank() ? "FORMAL" : input.mode().toUpperCase();
+        boolean formal = input.mode() == null || input.mode().isBlank()
+                || "FORMAL".equalsIgnoreCase(input.mode());
+        String mode = formal ? "FORMAL" : "DEMO";
+
         List<ToolResult> toolResults = toolExecutor.execute(input, requestId);
 
+        // M4: a rejected/invalid tool execution must invalidate the whole LLM interaction.
+        boolean toolChainClean = toolResults.stream()
+                .allMatch(result -> result.status() == ToolStatus.SUCCESS
+                        || result.status() == ToolStatus.NO_DATA);
+        if (toolResults.stream().anyMatch(result -> result.status() == ToolStatus.REJECTED)) {
+            toolChainClean = false;
+        }
+
         List<EvidencePackV1.ToolExecution> executions = new ArrayList<>();
-        List<String> evidenceRefs = new ArrayList<>();
+        List<String> rawEvidenceRefs = new ArrayList<>();
         List<String> notices = new ArrayList<>();
         List<String> limitations = new ArrayList<>();
         int index = 0;
@@ -60,8 +84,8 @@ public final class AgentOrchestrator {
                     index++, result.toolName(), result.toolVersion(), true,
                     result.inputSummary(), result.result(), result.status(), result.evidenceRefs()));
             for (String ref : result.evidenceRefs()) {
-                if (!evidenceRefs.contains(ref)) {
-                    evidenceRefs.add(ref);
+                if (!rawEvidenceRefs.contains(ref)) {
+                    rawEvidenceRefs.add(ref);
                 }
             }
             notices.addAll(result.notices());
@@ -69,46 +93,96 @@ public final class AgentOrchestrator {
                 limitations.add(result.toolName() + ": " + result.inputSummary());
             }
         }
-        List<EvidencePackV1.EvidenceRefEntry> verifiedRefs = evidenceVerifier.verifyAll(evidenceRefs);
-        List<EvidencePackV1.Fact> facts = buildFacts(toolResults, verifiedRefs);
-        for (EvidencePackV1.Fact fact : facts) {
-            for (String ref : fact.evidenceRefs()) {
-                boolean verified = verifiedRefs.stream()
-                        .anyMatch(entry -> entry.ref().equals(ref) && entry.sha256() != null);
-                if (!verified) {
-                    limitations.add("证据不可用，事实已排除: " + ref);
-                    facts = facts.stream().filter(f -> !f.factId().equals(fact.factId())).toList();
-                    break;
-                }
+        List<EvidencePackV1.EvidenceRefEntry> verifiedRefs =
+                evidenceVerifier.verifyAll(rawEvidenceRefs);
+
+        // M2: FORMAL mode excludes demo/synthetic evidence; only VERIFIED refs are usable.
+        List<EvidencePackV1.EvidenceRefEntry> usableRefs = new ArrayList<>();
+        for (EvidencePackV1.EvidenceRefEntry entry : verifiedRefs) {
+            if (entry.status() != EvidenceStatus.VERIFIED) {
+                limitations.add("证据不可用: " + entry.ref() + " (" + entry.status().name()
+                        + (entry.reasonCode() == null ? "" : "/" + entry.reasonCode()) + ")");
+                continue;
             }
+            if (formal && isDemoOrSynthetic(entry)) {
+                limitations.add("FORMAL 模式排除 demo/synthetic 证据: " + entry.ref());
+                continue;
+            }
+            usableRefs.add(entry);
         }
+
+        List<EvidencePackV1.Fact> facts = buildFacts(toolResults, usableRefs, formal);
+        List<String> llmEvidenceRefs = usableRefs.stream()
+                .map(EvidencePackV1.EvidenceRefEntry::ref).toList();
+
         EvidencePackV1 evidencePack = new EvidencePackV1(
                 "AGENT-EVIDENCE-SCHEMA-V1", "pack-" + requestId, requestId, mode,
                 input.question(), OffsetDateTime.now(), scopeOf(input),
-                executions, facts, verifiedRefs, List.of(), notices, limitations);
+                executions, facts, usableRefs, List.of(), notices, limitations);
 
-        LLMService.LLMRequest llmRequest = toLlmRequest(requestId, input, facts, evidenceRefs);
+        LLMService.LLMRequest llmRequest = toLlmRequest(requestId, input, facts, llmEvidenceRefs);
         LLMService.LLMResponse llmResponse = llm.analyze(llmRequest);
-        boolean degraded = llmResponse.status() != LLMService.LLMStatus.SUCCESS;
-        String explanation = degraded
-                ? fallback.explain(llmRequest, evidencePack)
-                : llmResponse.explanation();
 
+        boolean degraded;
+        String degradeReason;
+        String explanation;
+        if (!toolChainClean) {
+            // M4: rejected tool request -> safe failure -> deterministic Java fallback.
+            degraded = true;
+            degradeReason = "TOOL_EXECUTION_REJECTED";
+            explanation = fallback.explain(llmRequest, evidencePack);
+        } else if (llmResponse.status() != LLMService.LLMStatus.SUCCESS) {
+            degraded = true;
+            degradeReason = llmResponse.failureKind();
+            explanation = fallback.explain(llmRequest, evidencePack);
+        } else {
+            // M1: the LLM output is an untrusted draft; verify before it may become formal.
+            ModelDraftV1 draft = ModelDraftV1.untrusted(requestId, llmResponse.explanation());
+            AgentResponseVerifier.Verification verification =
+                    responseVerifier.verify(draft, evidencePack);
+            if (!verification.verified()) {                degraded = true;
+                degradeReason = "MODEL_RESPONSE_REJECTED:" + verification.reason();
+                explanation = fallback.explain(llmRequest, evidencePack);
+            } else {
+                degraded = false;
+                degradeReason = null;
+                explanation = llmResponse.explanation();
+            }
+        }
+
+        List<AgentReportV1.FactSummary> factSummaries = facts.stream()
+                .map(fact -> new AgentReportV1.FactSummary(
+                        fact.factId(), fact.factType(), fact.value(), fact.businessDate(),
+                        fact.periodStart() == null ? fact.businessDate() : fact.periodStart(),
+                        fact.validationStatus()))
+                .toList();
+        List<AgentReportV1.Claim> claims;
+        if (degraded) {
+            // M1: JAVA_TEMPLATE claims are produced by deterministic Java from the verified
+            // facts - they are trusted, unlike raw model drafts.
+            claims = List.of(new AgentReportV1.Claim("claim-1", explanation,
+                    facts.stream().flatMap(fact -> fact.evidenceRefs().stream())
+                            .distinct().toList()));
+        } else {
+            claims = List.of(new AgentReportV1.Claim("claim-1", explanation,
+                    facts.stream().flatMap(fact -> fact.evidenceRefs().stream())
+                            .distinct().toList()));
+        }
         AgentReportV1 report = new AgentReportV1(
                 "AGENT-REPORT-V1", "report-" + requestId, requestId, evidencePack,
                 degraded ? "JAVA_TEMPLATE" : "LLM",
                 degraded ? null : llmProvider(), degraded ? null : llmModel(),
-                degraded, degraded ? llmResponse.failureKind() : null,
-                facts.stream().map(fact -> new AgentReportV1.FactSummary(
-                        fact.factId(), fact.factType(), fact.value(), fact.businessDate(),
-                        fact.periodStart() == null ? fact.businessDate() : fact.periodStart(),
-                        fact.validationStatus())).toList(),
-                List.of(new AgentReportV1.Claim(
-                        "claim-1", explanation, facts.stream()
-                                .flatMap(fact -> fact.evidenceRefs().stream()).distinct().toList())),
-                List.of(), List.copyOf(limitations), OffsetDateTime.now());
+                degraded, degradeReason,
+                factSummaries, claims, List.of(), List.copyOf(limitations), OffsetDateTime.now());
         String reportRef = reportStore.store(report);
-        return new AgentResult(evidencePack, llmResponse, reportRef, report);
+        return new AgentResult(evidencePack, llmResponse, reportRef, report, degraded, degradeReason);
+    }
+
+    private static boolean isDemoOrSynthetic(EvidencePackV1.EvidenceRefEntry entry) {
+        if (entry.ref().startsWith("warning/")) {
+            return true; // warning evidence is TEST/DEMO until EXT-07/08 are confirmed
+        }
+        return false;
     }
 
     private static EvidencePackV1.Scope scopeOf(AgentQueryInput input) {
@@ -116,6 +190,7 @@ public final class AgentOrchestrator {
                 input.itemId() == null ? List.of() : List.of(input.itemId()),
                 input.businessDate(), input.periodStart(), input.periodEnd(), "Asia/Shanghai");
     }
+
     private static LLMService.LLMRequest toLlmRequest(
             String requestId, AgentQueryInput input, List<EvidencePackV1.Fact> facts,
             List<String> evidenceRefs
@@ -132,7 +207,7 @@ public final class AgentOrchestrator {
     }
 
     private List<EvidencePackV1.Fact> buildFacts(
-            List<ToolResult> toolResults, List<EvidencePackV1.EvidenceRefEntry> verifiedRefs
+            List<ToolResult> toolResults, List<EvidencePackV1.EvidenceRefEntry> usableRefs, boolean formal
     ) {
         List<EvidencePackV1.Fact> facts = new ArrayList<>();
         int factId = 0;
@@ -143,7 +218,7 @@ public final class AgentOrchestrator {
             Object rows = result.result().get("rows");
             if (rows instanceof List<?> list) {
                 for (Object entry : list) {
-                    if (entry instanceof java.util.Map<?, ?> row) {
+                    if (entry instanceof Map<?, ?> row) {
                         Object itemIdValue = row.get("itemId");
                         String itemId = itemIdValue == null
                                 ? String.valueOf(result.result().get("itemId")) : String.valueOf(itemIdValue);
@@ -153,6 +228,10 @@ public final class AgentOrchestrator {
                         }
                         String businessDate = row.get("businessDate") == null
                                 ? periodOrNull(row) : String.valueOf(row.get("businessDate"));
+                        List<String> refs = usableRefs(result.evidenceRefs(), usableRefs);
+                        if (refs.isEmpty()) {
+                            continue; // no verifiable evidence => no fact may be claimed
+                        }
                         facts.add(new EvidencePackV1.Fact(
                                 "fact-" + (factId++), result.toolName(), itemId, businessDate,
                                 row.get("periodStart") == null ? null : String.valueOf(row.get("periodStart")),
@@ -164,7 +243,7 @@ public final class AgentOrchestrator {
                                 row.get("validationStatus") == null ? null : String.valueOf(row.get("validationStatus")),
                                 row.get("validationVersion") == null ? null : String.valueOf(row.get("validationVersion")),
                                 null, null, List.of(), null, null,
-                                result.evidenceRefs()));
+                                refs));
                     }
                 }
             }
@@ -172,7 +251,21 @@ public final class AgentOrchestrator {
         return List.copyOf(facts);
     }
 
-    private static String periodOrNull(java.util.Map<?, ?> row) {
+    private static List<String> usableRefs(
+            List<String> candidateRefs, List<EvidencePackV1.EvidenceRefEntry> usableRefs
+    ) {
+        List<String> refs = new ArrayList<>();
+        for (String ref : candidateRefs) {
+            boolean usable = usableRefs.stream()
+                    .anyMatch(entry -> entry.ref().equals(ref));
+            if (usable) {
+                refs.add(ref);
+            }
+        }
+        return List.copyOf(refs);
+    }
+
+    private static String periodOrNull(Map<?, ?> row) {
         Object periodStart = row.get("periodStart");
         return periodStart == null ? null : String.valueOf(periodStart);
     }
@@ -214,7 +307,9 @@ public final class AgentOrchestrator {
             EvidencePackV1 evidencePack,
             LLMService.LLMResponse llmResponse,
             String reportRef,
-            AgentReportV1 report
+            AgentReportV1 report,
+            boolean degraded,
+            String degradeReason
     ) {
     }
 }

@@ -2,28 +2,40 @@ package com.supplymind.agent.infrastructure.springai;
 
 import com.supplymind.agent.llm.LLMService;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * D6-T03 Spring AI infrastructure adapter: implements the SupplyMind LLMService port over the
- * Spring AI ChatClient. Spring AI types stay inside this infrastructure layer - they never
- * leak into history/warning/backfill/validation/storage/aggregation/config packages. The
- * adapter is only created when a ChatClient is configured; when the LLM is not configured the
- * application still starts and the caller falls back to the Java template report.
+ * Spring AI ChatClient with REAL Spring AI tool calling (M3). Every Agent request explicitly
+ * attaches exactly the seven SupplyMind read-only ToolCallbacks (request-scoped); no other
+ * ToolCallback bean in the context is ever exposed to the model. The model selects a tool,
+ * Spring AI runs its tool-calling lifecycle, and the SupplyMind adapter executes the
+ * production service. Spring AI types stay inside this infrastructure layer.
  */
 public final class SpringAiLlmService implements LLMService.Port {
 
     private final ChatClient chatClient;
+    private final ToolCallback[] toolCallbacks;
     private final String provider;
     private final String model;
 
-    public SpringAiLlmService(ChatClient chatClient, String provider, String model) {
+    public SpringAiLlmService(
+            ChatClient chatClient, ToolCallbackProvider toolCallbackProvider,
+            String provider, String model
+    ) {
         this.chatClient = chatClient;
+        this.toolCallbacks = toolCallbackProvider == null
+                ? new ToolCallback[0] : toolCallbackProvider.getToolCallbacks();
         this.provider = provider;
         this.model = model;
     }
 
     public boolean isAvailable() {
-        return chatClient != null;
+        return chatClient != null && toolCallbacks.length > 0;
     }
 
     @Override
@@ -31,10 +43,14 @@ public final class SpringAiLlmService implements LLMService.Port {
         if (chatClient == null) {
             return LLMService.LLMResponse.failure(LLMService.LLMStatus.UNAVAILABLE, "not_configured");
         }
+        if (toolCallbacks.length == 0) {
+            return LLMService.LLMResponse.failure(LLMService.LLMStatus.UNAVAILABLE, "no_tools_configured");
+        }
         try {
             String prompt = buildPrompt(request);
             String content = chatClient.prompt()
                     .user(prompt)
+                    .toolCallbacks(toolCallbacks)   // request-scoped: exactly the seven SupplyMind tools
                     .call()
                     .content();
             if (content == null || content.isBlank()) {
@@ -45,6 +61,13 @@ public final class SpringAiLlmService implements LLMService.Port {
             return LLMService.LLMResponse.failure(LLMService.LLMStatus.UNAVAILABLE,
                     "chat_failed_" + exception.getClass().getSimpleName());
         }
+    }
+
+    public List<String> exposedToolNames() {
+        return Arrays.stream(toolCallbacks)
+                .map(callback -> callback.getToolDefinition().name())
+                .sorted()
+                .toList();
     }
 
     public String provider() {
