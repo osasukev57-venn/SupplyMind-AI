@@ -70,7 +70,63 @@ public final class AgentResponseVerifier {
         if (fabricated != null) {
             return Verification.rejected("FABRICATED_NUMBER");
         }
+        // F2 micro-fix: a draft that restates a REAL formal business number must still cite at
+        // least one valid factId or VERIFIED evidenceRef from the current request. Restating a
+        // known value without any reference is not a citable statement.
+        if (containsKnownBusinessNumber(draft.rawText(), evidencePack)
+                && !hasAnyValidReference(draft, knownFactIds, knownEvidenceRefs)) {
+            return Verification.rejected("MISSING_REQUIRED_REFERENCE");
+        }
         return Verification.accepted();
+    }
+
+    private static boolean containsKnownBusinessNumber(String rawText, EvidencePackV1 evidencePack) {
+        if (rawText == null || rawText.isBlank()) {
+            return false;
+        }
+        for (EvidencePackV1.Fact fact : evidencePack.facts()) {
+            if (fact.value() == null || fact.value().isBlank()) {
+                continue;
+            }
+            if (rawText.contains(fact.value())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasAnyValidReference(
+            ModelDraftV1 draft, Set<String> knownFactIds, Set<String> knownEvidenceRefs
+    ) {
+        for (ModelClaimV1 claim : draft.claims()) {
+            for (String factId : claim.factIds()) {
+                if (knownFactIds.contains(factId)) {
+                    return true;
+                }
+            }
+            for (String ref : claim.evidenceRefs()) {
+                if (knownEvidenceRefs.contains(ref)) {
+                    return true;
+                }
+            }
+        }
+        java.util.regex.Matcher factMatcher = java.util.regex.Pattern
+                .compile("fact-[A-Za-z0-9._-]+")
+                .matcher(draft.rawText() == null ? "" : draft.rawText());
+        while (factMatcher.find()) {
+            if (knownFactIds.contains(factMatcher.group())) {
+                return true;
+            }
+        }
+        java.util.regex.Matcher refMatcher = java.util.regex.Pattern
+                .compile("(raw|processed|staging|warning|config)/[A-Za-z0-9._/-]+\\.(json|csv)")
+                .matcher(draft.rawText() == null ? "" : draft.rawText());
+        while (refMatcher.find()) {
+            if (knownEvidenceRefs.contains(refMatcher.group())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** F2: scan free text for referenced names (fact-*, raw/..., processed/..., warning/...) that are not known. */
