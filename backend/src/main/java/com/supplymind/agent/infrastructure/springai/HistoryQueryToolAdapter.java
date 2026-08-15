@@ -27,6 +27,22 @@ public final class HistoryQueryToolAdapter {
 
     private final HistoryQueryService history;
 
+    /** M2 R4: each row's own fingerprint from ITS providerType + actualSourceName + accessMethod. */
+    private static String fingerprintOf(DailyRecordV1 row) {
+        return com.supplymind.foundation.model.CanonicalJsonV1.sha256LowerHex(
+                com.supplymind.foundation.model.CanonicalJsonV1.sourceIdentity(
+                        row.providerType(), row.actualSourceName(), row.accessMethod()));
+    }
+
+    /** M2 R4: configVersions is an ordered list - dedupe, numeric ascending, never a scalar. */
+    private static List<String> normalizedConfigVersions(DailyRecordV1 row) {
+        if (row.configVersions() == null) {
+            return List.of();
+        }
+        return row.configVersions().stream().distinct().sorted()
+                .map(String::valueOf).toList();
+    }
+
     public HistoryQueryToolAdapter(HistoryQueryService history) {
         this.history = history;
     }
@@ -55,13 +71,23 @@ public final class HistoryQueryToolAdapter {
                 entry.put("currency", row.currency());
                 entry.put("validationStatus", row.validationStatus().wireValue());
                 entry.put("validationVersion", row.validationVersion());
+                entry.put("calculationVersion", row.calculationVersion());
+                entry.put("calendarVersion", row.calendarVersion());
                 entry.put("complete", row.complete());
-                rows.add(entry);
+                // M2 R4: every row keeps the evidence refs IT really comes from (never the whole
+                // ToolResult set) and its OWN source fingerprint.
+                List<String> rowRefs = new ArrayList<>();
                 for (var input : row.inputRefs()) {
+                    if (!rowRefs.contains(input.rawRef())) {
+                        rowRefs.add(input.rawRef());
+                    }
                     if (!evidenceRefs.contains(input.rawRef())) {
                         evidenceRefs.add(input.rawRef());
                     }
                 }
+                entry.put("evidenceRefs", List.copyOf(rowRefs));
+                entry.put("sourceFingerprint", fingerprintOf(row));
+                rows.add(entry);
             }
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("rows", rows);
@@ -74,25 +100,27 @@ public final class HistoryQueryToolAdapter {
                         "itemId=" + safeItem + " range=" + from + ".." + to, "no published daily rows in range");
             }
             DailyRecordV1 first = result.rows().get(0);
-            String sourceFingerprint = com.supplymind.foundation.model.CanonicalJsonV1.sha256LowerHex(
-                    com.supplymind.foundation.model.CanonicalJsonV1.sourceIdentity(
-                            first.providerType(), first.actualSourceName(), first.accessMethod()));
-            // M2: per-evidenceRef lineage - each ref is filled ONLY with the lineage of the rows
-            // that actually reference it; a ref referenced by heterogeneous rows is never masked
-            // by a per-ref map entry (the file-level AMBIGUOUS_FILE_LINEAGE then governs).
+            // M2 R4: per-evidenceRef lineage - each ref is filled ONLY with the lineage of the rows
+            // that actually reference it; a ref referenced by heterogeneous rows is PERMANENTLY
+            // tombstoned (A->B->A order never re-adds it) - the file-level
+            // AMBIGUOUS_FILE_LINEAGE then governs. Every row computes its OWN fingerprint.
             java.util.Map<String, ToolResult.Lineage> perRef = new java.util.LinkedHashMap<>();
+            java.util.Set<String> tombstonedRefs = new java.util.HashSet<>();
             for (DailyRecordV1 row : result.rows()) {
                 ToolResult.Lineage rowLineage = new ToolResult.Lineage(
                         row.calculationVersion(), row.calendarVersion(),
-                        row.configVersions() == null ? List.of()
-                                : row.configVersions().stream().map(String::valueOf).toList(),
-                        row.actualSourceName(), sourceFingerprint, row.validationVersion());
+                        normalizedConfigVersions(row),
+                        row.actualSourceName(), fingerprintOf(row), row.validationVersion());
                 for (var input : row.inputRefs()) {
+                    if (tombstonedRefs.contains(input.rawRef())) {
+                        continue; // heterogeneous ref stays tombstoned forever
+                    }
                     ToolResult.Lineage existing = perRef.get(input.rawRef());
                     if (existing == null) {
                         perRef.put(input.rawRef(), rowLineage);
                     } else if (!existing.equals(rowLineage)) {
-                        perRef.remove(input.rawRef()); // heterogeneous: never mask
+                        perRef.remove(input.rawRef());
+                        tombstonedRefs.add(input.rawRef()); // never re-added
                     }
                 }
             }
@@ -101,9 +129,8 @@ public final class HistoryQueryToolAdapter {
                     List.copyOf(evidenceRefs), List.of(),
                     new ToolResult.Lineage(
                             first.calculationVersion(), first.calendarVersion(),
-                            first.configVersions() == null ? List.of()
-                                    : first.configVersions().stream().map(String::valueOf).toList(),
-                            first.actualSourceName(), sourceFingerprint,
+                            normalizedConfigVersions(first),
+                            first.actualSourceName(), fingerprintOf(first),
                             first.validationVersion()),
                     perRef);
         } catch (ToolInputException exception) {

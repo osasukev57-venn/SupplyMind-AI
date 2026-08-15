@@ -40,6 +40,8 @@ public final class AgentResponseVerifier {
                     + "|-?\\d+(?:\\.\\d+)?%?");
     private static final Pattern DATE_TOKEN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern FACT_REF = Pattern.compile("fact-[A-Za-z0-9._-]+");
+    private static final Pattern SOURCE_DECLARATION = Pattern.compile(
+            "(?i)(?:\\bsource\\b|来源)\\s*[:：]?\\s*([A-Za-z0-9_\\-./]+)");
     private static final Pattern EVIDENCE_REF = Pattern
             .compile("(raw|processed|staging|warning|config)/[A-Za-z0-9._/-]+\\.(json|csv)");
 
@@ -62,8 +64,9 @@ public final class AgentResponseVerifier {
         Objects.requireNonNull(draft, "draft");
         Objects.requireNonNull(evidencePack, "evidencePack");
 
-        String secretHit = findSecret(draft.rawText());
-        if (secretHit != null) {
+        // M3 R4: the secret guard scans EVERY persistable field of the structured response -
+        // answer, claimId, claim.text, factIds, evidenceRefs, sourceNames, businessDates.
+        if (secretInAnyPersistableField(draft)) {
             return Verification.rejected("SECRET_INJECTION");
         }
         Set<String> knownFactIds = new LinkedHashSet<>();
@@ -107,14 +110,15 @@ public final class AgentResponseVerifier {
             if (!claimDateAndSourceSupported(claim, facts)) {
                 return Verification.rejected("UNSUPPORTED_CLAIM_REFERENCE");
             }
+            if (!claimSourceDeclarationsClosed(claim, facts)) {
+                return Verification.rejected("UNSUPPORTED_CLAIM_REFERENCE");
+            }
         }
 
         // M3: every business number in the free text must match a verified fact value.
-        List<String> numbers = extractNumbers(draft.rawText());
-        List<String> textDates = extractDates(draft.rawText());
+        List<String> numbers = extractBusinessNumbers(draft.rawText());
         for (String number : numbers) {
-            if (!matchesAnyFactValue(number, facts)
-                    && !partOfSupportedDate(number, textDates, facts)) {
+            if (!matchesAnyFactValue(number, facts)) {
                 return Verification.rejected("FABRICATED_NUMBER");
             }
         }
@@ -126,27 +130,37 @@ public final class AgentResponseVerifier {
         return Verification.accepted();
     }
 
+    /** M3 R4: any secret in ANY persistable structured field rejects the whole draft. */
+    private boolean secretInAnyPersistableField(ModelDraftV1 draft) {
+        if (findSecret(draft.rawText()) != null) {
+            return true;
+        }
+        for (ModelClaimV1 claim : draft.claims()) {
+            if (findSecret(claim.claimId()) != null
+                    || findSecret(claim.text()) != null
+                    || findSecret(String.join(" ", claim.factIds())) != null
+                    || findSecret(String.join(" ", claim.evidenceRefs())) != null
+                    || findSecret(String.join(" ", claim.sourceNames())) != null
+                    || findSecret(String.join(" ", claim.businessDates())) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * M3: PER-NUMBER binding - every business number token in the claim text must be supported
      * by at least one fact the claim references (by factId or evidenceRef). A number that only
-     * exists in a GLOBAL, unreferenced fact never helps this claim pass. Numbers that are part
-     * of a full ISO date in the text are supported by the referenced facts' businessDate/period.
+     * exists in a GLOBAL, unreferenced fact never helps this claim pass. Position-aware: number
+     * tokens lying INSIDE an ISO date token span are not business numbers at all.
      */
     private static boolean everyNumberSupportedByClaimFacts(ModelClaimV1 claim, List<EvidenceFact> facts) {
         List<EvidenceFact> referenced = referencedFacts(claim, facts);
-        List<String> claimNumbers = extractNumbers(claim.text());
-        if (claimNumbers.isEmpty()) {
-            return true;
-        }
-        List<String> textDates = extractDates(claim.text());
+        List<String> claimNumbers = extractBusinessNumbers(claim.text());
         for (String number : claimNumbers) {
-            if (matchesAnyFactValueInFacts(number, referenced)) {
-                continue;
+            if (!matchesAnyFactValueInFacts(number, referenced)) {
+                return false;
             }
-            if (partOfSupportedDate(number, textDates, referenced)) {
-                continue;
-            }
-            return false;
         }
         return true;
     }
@@ -166,20 +180,6 @@ public final class AgentResponseVerifier {
     }
 
     /** M3: every date appearing in the text must be covered by a referenced fact's date/period. */
-    private static boolean partOfSupportedDate(String number, List<String> textDates, List<EvidenceFact> referenced) {
-        if (textDates.isEmpty()) {
-            return false;
-        }
-        String digits = number.startsWith("-") ? number.substring(1) : number;
-        for (String date : textDates) {
-            if (date.contains(digits)
-                    && referenced.stream().anyMatch(fact -> supportsDate(fact, date))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private static List<String> extractDates(String text) {
         List<String> dates = new ArrayList<>();
         if (text == null) {
@@ -224,6 +224,37 @@ public final class AgentResponseVerifier {
             boolean backed = source != null && referenced.stream().anyMatch(
                     fact -> source.equals(fact.actualSourceName()));
             if (!backed) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * M3 R4 SOURCE CLOSURE: a source declaration in claim.text must be declared in
+     * sourceNames[] and backed by a referenced fact. A known source name appearing in the text
+     * with an empty/missing sourceNames[] rejects; a source declaration naming anything NOT in
+     * the known source set cannot be reliably verified and fails closed.
+     */
+    private static boolean claimSourceDeclarationsClosed(ModelClaimV1 claim, List<EvidenceFact> facts) {
+        Set<String> knownSourceNames = new LinkedHashSet<>();
+        for (EvidenceFact fact : facts) {
+            if (fact.actualSourceName() != null && !fact.actualSourceName().isBlank()) {
+                knownSourceNames.add(fact.actualSourceName());
+            }
+        }
+        String text = claim.text() == null ? "" : claim.text();
+        // Every KNOWN source name mentioned in the text must be explicitly declared.
+        for (String known : knownSourceNames) {
+            if (text.contains(known) && !claim.sourceNames().contains(known)) {
+                return false;
+            }
+        }
+        // Any source declaration naming an UNKNOWN source cannot be verified -> fail closed.
+        Matcher matcher = SOURCE_DECLARATION.matcher(text);
+        while (matcher.find()) {
+            String token = matcher.group(1);
+            if (!knownSourceNames.contains(token)) {
                 return false;
             }
         }
@@ -307,6 +338,41 @@ public final class AgentResponseVerifier {
             numbers.add(token);
         }
         return List.copyOf(numbers);
+    }
+
+    /**
+     * M3 R4 POSITION-AWARE: business numbers are only the tokens that are NOT part of an ISO
+     * date token span ("2026-08-10" is a date - its 2026/08/10 fragments are never business
+     * numbers); a standalone "20" next to the date IS a business number and must be supported
+     * by a referenced fact value. The old date.contains(number) exemption is forbidden.
+     */
+    static List<String> extractBusinessNumbers(String text) {
+        if (text == null || text.isBlank()) {
+            return List.of();
+        }
+        List<int[]> dateSpans = new ArrayList<>();
+        Matcher dateMatcher = DATE_TOKEN.matcher(text);
+        while (dateMatcher.find()) {
+            dateSpans.add(new int[]{dateMatcher.start(), dateMatcher.end()});
+        }
+        List<String> numbers = new ArrayList<>();
+        Matcher matcher = NUMBER_TOKEN.matcher(text);
+        while (matcher.find()) {
+            if (insideAnyDateSpan(matcher.start(), matcher.end(), dateSpans)) {
+                continue;
+            }
+            numbers.add(matcher.group());
+        }
+        return List.copyOf(numbers);
+    }
+
+    private static boolean insideAnyDateSpan(int start, int end, List<int[]> dateSpans) {
+        for (int[] span : dateSpans) {
+            if (start >= span[0] && end <= span[1]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean hasAnyValidReference(

@@ -456,8 +456,11 @@ public final class AgentOrchestrator {
                         }
                         String businessDate = row.get("businessDate") == null
                                 ? periodOrNull(row) : String.valueOf(row.get("businessDate"));
-                        List<String> refs = usableRefs(result.evidenceRefs(), usableRefSet);
-                        if (refs.isEmpty()) {
+                        // M2 R4: each fact uses ONLY the refs of the row it really came from
+                        // (row-level evidenceRefs when the tool provides them, never the whole
+                        // ToolResult set) - raw-A must never back a fact that only raw-B produced.
+                        List<String> rowRefs = rowRefsOf(row, result, usableRefSet);
+                        if (rowRefs.isEmpty()) {
                             continue; // no verifiable evidence => no fact may be claimed
                         }
                         // F4: per-row lineage wins; per-ToolResult lineage is the fallback.
@@ -480,6 +483,9 @@ public final class AgentOrchestrator {
                         if (row.get("validationVersion") != null) {
                             validationVersion = String.valueOf(row.get("validationVersion"));
                         }
+                        if (row.get("sourceFingerprint") != null) {
+                            sourceFingerprint = String.valueOf(row.get("sourceFingerprint"));
+                        }
                         facts.add(new EvidencePackV1.Fact(
                                 "fact-" + (factId++), result.toolName(), itemId, businessDate,
                                 row.get("periodStart") == null ? null : String.valueOf(row.get("periodStart")),
@@ -492,7 +498,7 @@ public final class AgentOrchestrator {
                                 validationVersion,
                                 calculationVersion, calendarVersion, configVersions,
                                 actualSourceName, sourceFingerprint,
-                                refs));
+                                rowRefs));
                     }
                 }
             }
@@ -508,6 +514,26 @@ public final class AgentOrchestrator {
             }
         }
         return List.copyOf(refs);
+    }
+
+    /**
+     * M2 R4: the row's OWN evidence refs when the tool exposes them (history.query rows carry
+     * their inputRefs); tools without row-level refs fall back to their ToolResult refs - the
+     * whole-tool set is never assigned to a row that declares its own refs.
+     */
+    private static List<String> rowRefsOf(Map<?, ?> row, ToolResult result, Set<String> usableRefSet) {
+        Object rowRefsValue = row.get("evidenceRefs");
+        if (rowRefsValue instanceof List<?> rowRefs && !rowRefs.isEmpty()) {
+            List<String> refs = new ArrayList<>();
+            for (Object ref : rowRefs) {
+                String refText = String.valueOf(ref);
+                if (usableRefSet.contains(refText)) {
+                    refs.add(refText);
+                }
+            }
+            return List.copyOf(refs);
+        }
+        return usableRefs(result.evidenceRefs(), usableRefSet);
     }
 
     private static String periodOrNull(Map<?, ?> row) {

@@ -201,21 +201,19 @@ public final class EvidenceRefVerifier {
         List<String> validationVersions = new ArrayList<>();
         List<String> calculationVersions = new ArrayList<>();
         List<String> calendarVersions = new ArrayList<>();
-        List<String> configVersions = new ArrayList<>();
+        List<List<String>> configVersionLists = new ArrayList<>();
         for (com.supplymind.foundation.model.DailyRecordV1 row : rows) {
             validationVersions.add(row.validationVersion());
             calculationVersions.add(row.calculationVersion());
             calendarVersions.add(row.calendarVersion());
-            if (row.configVersions() != null) {
-                row.configVersions().stream().map(String::valueOf).forEach(configVersions::add);
-            }
+            configVersionLists.add(normalizedConfigVersions(row.configVersions()));
         }
         String validationVersion = uniform(validationVersions);
         String calculationVersion = uniform(calculationVersions);
         String calendarVersion = uniform(calendarVersions);
-        String configVersion = uniform(configVersions);
+        List<String> configVersions = uniformList(configVersionLists);
         if (validationVersion == null || calculationVersion == null
-                || calendarVersion == null || configVersion == null) {
+                || calendarVersion == null || configVersions == null) {
             return ambiguous(entry);
         }
         return new EvidencePackV1.EvidenceRefEntry(
@@ -223,7 +221,7 @@ public final class EvidenceRefVerifier {
                 entry.status(), entry.reasonCode(), null, null, null,
                 manifest.minBusinessDate(), manifest.minBusinessDate(), manifest.maxBusinessDate(),
                 validationVersion, calculationVersion, calendarVersion,
-                List.of(configVersion));
+                configVersions);
     }
 
     /**
@@ -242,21 +240,19 @@ public final class EvidenceRefVerifier {
         List<String> validationVersions = new ArrayList<>();
         List<String> calculationVersions = new ArrayList<>();
         List<String> calendarVersions = new ArrayList<>();
-        List<String> configVersions = new ArrayList<>();
+        List<List<String>> configVersionLists = new ArrayList<>();
         for (com.supplymind.foundation.model.AggregateRecordV1 row : rows) {
             validationVersions.add(row.validationVersion());
             calculationVersions.add(row.calculationVersion());
             calendarVersions.add(row.calendarVersion());
-            if (row.configVersions() != null) {
-                row.configVersions().stream().map(String::valueOf).forEach(configVersions::add);
-            }
+            configVersionLists.add(normalizedConfigVersions(row.configVersions()));
         }
         String validationVersion = uniform(validationVersions);
         String calculationVersion = uniform(calculationVersions);
         String calendarVersion = uniform(calendarVersions);
-        String configVersion = uniform(configVersions);
+        List<String> configVersions = uniformList(configVersionLists);
         if (validationVersion == null || calculationVersion == null
-                || calendarVersion == null || configVersion == null) {
+                || calendarVersion == null || configVersions == null) {
             return ambiguous(entry);
         }
         return new EvidencePackV1.EvidenceRefEntry(
@@ -264,7 +260,7 @@ public final class EvidenceRefVerifier {
                 entry.status(), entry.reasonCode(), null, null, null,
                 null, manifest.minBusinessDate(), manifest.maxBusinessDate(),
                 validationVersion, calculationVersion, calendarVersion,
-                List.of(configVersion));
+                configVersions);
     }
 
     /** M2: the first row never represents a multi-row file - heterogeneous lineage fails closed. */
@@ -285,6 +281,35 @@ public final class EvidenceRefVerifier {
         String first = values.get(0);
         for (String value : values) {
             if (!java.util.Objects.equals(first, value)) {
+                return null;
+            }
+        }
+        return first;
+    }
+
+    /**
+     * M2 R4: configVersions is an ORDERED LIST, not a scalar: each row's list is normalized
+     * (dedupe, numeric ascending); only the FULL normalized lists being equal keeps the file
+     * VERIFIED with the complete list preserved - a legal [1,2] is never mistaken for
+     * ambiguous, and a [1,2] vs [1,3] difference fails closed.
+     */
+    private static List<String> normalizedConfigVersions(java.util.Collection<?> configVersions) {
+        if (configVersions == null) {
+            return List.of();
+        }
+        return configVersions.stream().distinct()
+                .map(String::valueOf)
+                .sorted(java.util.Comparator.comparingLong(Long::parseLong))
+                .toList();
+    }
+
+    private static List<String> uniformList(List<List<String>> lists) {
+        if (lists == null || lists.isEmpty()) {
+            return null;
+        }
+        List<String> first = lists.get(0);
+        for (List<String> list : lists) {
+            if (!first.equals(list)) {
                 return null;
             }
         }
