@@ -108,8 +108,13 @@ public final class EvidenceRefVerifier {
 
     /**
      * M2/M4: verifies a ref AND recovers its AUTHORITATIVE lineage by decoding the real
-     * evidence file (never the report's self-reported lineage). Applicable fields are filled
-     * per refType; fields not applicable to a type stay null per the frozen contract.
+     * evidence file (never the report's self-reported lineage). For multi-row CSV files EVERY
+     * row is read and each frozen lineage field must be uniform across the whole file - a
+     * heterogeneous field cannot be honestly expressed by the V1 scalar contract and fails
+     * closed as UNAVAILABLE/AMBIGUOUS_FILE_LINEAGE (the first row never represents the file).
+     * A manifest-valid file that cannot be decoded is INVALID/SCHEMA_DECODE_FAILED - it is
+     * never silently marked VERIFIED. Applicable fields are filled per refType; fields not
+     * applicable to a type stay null per the frozen contract.
      */
     public EvidencePackV1.EvidenceRefEntry verifyWithAuthoritativeLineage(String ref) {
         EvidencePackV1.EvidenceRefEntry entry = verify(ref);
@@ -119,35 +124,20 @@ public final class EvidenceRefVerifier {
         try {
             Path path = dataRoot.resolveDataRef(ref);
             byte[] bytes = Files.readAllBytes(path);
+            if (ref.startsWith("raw/source/") || ref.startsWith("raw/import/")) {
+                return entry; // SOURCE original entities are allowed non-structured: no decode
+            }
             if (ref.startsWith("processed/daily/")) {
-                List<com.supplymind.foundation.model.DailyRecordV1> rows =
-                        CsvV1Codec.decodeDaily(bytes);
-                if (rows.isEmpty()) {
-                    return entry;
-                }
-                com.supplymind.foundation.model.DailyRecordV1 row = rows.get(0);
-                return new EvidencePackV1.EvidenceRefEntry(
-                        entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
-                        entry.status(), entry.reasonCode(), null, null, null,
-                        row.businessDate(), null, null,
-                        row.validationVersion(), row.calculationVersion(), row.calendarVersion(),
-                        row.configVersions() == null ? List.of()
-                                : row.configVersions().stream().map(String::valueOf).toList());
+                ManifestV1 manifest = JsonV1Codec.decodeFile(
+                        Files.readAllBytes(dataRoot.resolveDataRef(DataPaths.manifestRef(ref))),
+                        ManifestV1.class);
+                return dailyLineage(entry, bytes, manifest);
             }
             if (ref.startsWith("processed/aggregate/")) {
-                List<com.supplymind.foundation.model.AggregateRecordV1> rows =
-                        CsvV1Codec.decodeAggregate(bytes);
-                if (rows.isEmpty()) {
-                    return entry;
-                }
-                com.supplymind.foundation.model.AggregateRecordV1 row = rows.get(0);
-                return new EvidencePackV1.EvidenceRefEntry(
-                        entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
-                        entry.status(), entry.reasonCode(), null, null, null,
-                        null, row.periodStart(), row.periodEnd(),
-                        row.validationVersion(), row.calculationVersion(), row.calendarVersion(),
-                        row.configVersions() == null ? List.of()
-                                : row.configVersions().stream().map(String::valueOf).toList());
+                ManifestV1 manifest = JsonV1Codec.decodeFile(
+                        Files.readAllBytes(dataRoot.resolveDataRef(DataPaths.manifestRef(ref))),
+                        ManifestV1.class);
+                return aggregateLineage(entry, bytes, manifest);
             }
             if (ref.startsWith("raw/")) {
                 com.supplymind.foundation.model.RawReceiptV1 raw = JsonV1Codec.decodeFile(
@@ -156,22 +146,25 @@ public final class EvidenceRefVerifier {
                         entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
                         entry.status(), entry.reasonCode(), raw.runId(), ref, null,
                         raw.sourceBusinessDate(), null, null,
-                        null, null, null, List.of());
+                        null, null, null,
+                        List.of(String.valueOf(raw.configVersion())));
             }
             if (ref.startsWith("staging/")) {
                 com.supplymind.foundation.model.LifecycleTimelineV1 timeline =
                         JsonV1Codec.decodeFile(bytes,
                                 com.supplymind.foundation.model.LifecycleTimelineV1.class);
-                String runId = timeline.runId();
-                String rawRef = timeline.rawRef();
-                String validationVersion = null;
-                if (timeline.current() != null) {
-                    validationVersion = timeline.current().validationVersion();
+                com.supplymind.foundation.model.LifecycleSnapshotV1 current = timeline.current();
+                String publishRef = current == null ? null : current.publishRef();
+                String validationVersion = current == null ? null : current.validationVersion();
+                String businessDate = null;
+                if (current != null && current.candidate() != null) {
+                    businessDate = current.candidate().businessDate();
                 }
                 return new EvidencePackV1.EvidenceRefEntry(
                         entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
-                        entry.status(), entry.reasonCode(), runId, rawRef, null,
-                        null, null, null, validationVersion, null, null, List.of());
+                        entry.status(), entry.reasonCode(), timeline.runId(), timeline.rawRef(),
+                        publishRef, businessDate, null, null,
+                        validationVersion, null, null, List.of());
             }
             if (ref.equals(DataPaths.configActiveRef()) || ref.startsWith("config/history/")) {
                 com.supplymind.foundation.model.MonitorSeriesConfigV1 config =
@@ -183,10 +176,119 @@ public final class EvidenceRefVerifier {
                         null, null, null, null, null, null,
                         List.of(String.valueOf(config.configVersion())));
             }
-            return entry;
+            return entry; // WARNING and other manifest-valid refs carry no decodable lineage
         } catch (IOException | RuntimeException exception) {
-            return entry; // unreadable but manifest-valid: keep the base VERIFIED entry
+            return new EvidencePackV1.EvidenceRefEntry(
+                    entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
+                    EvidenceStatus.INVALID, "SCHEMA_DECODE_FAILED",
+                    null, null, null, null, null, null, null, null, null, List.of());
         }
+    }
+
+    /**
+     * M2: DAILY file - the business date is row-level data: the manifest's min/max business
+     * dates are the FILE-LEVEL authority (never a single row). The frozen file-level LINEAGE
+     * fields (validationVersion/calculationVersion/calendarVersion/configVersions) must be
+     * uniform across ALL rows or the file fails closed as ambiguous.
+     */
+    private static EvidencePackV1.EvidenceRefEntry dailyLineage(
+            EvidencePackV1.EvidenceRefEntry entry, byte[] bytes, ManifestV1 manifest
+    ) {
+        List<com.supplymind.foundation.model.DailyRecordV1> rows = CsvV1Codec.decodeDaily(bytes);
+        if (rows.isEmpty()) {
+            return ambiguous(entry);
+        }
+        List<String> validationVersions = new ArrayList<>();
+        List<String> calculationVersions = new ArrayList<>();
+        List<String> calendarVersions = new ArrayList<>();
+        List<String> configVersions = new ArrayList<>();
+        for (com.supplymind.foundation.model.DailyRecordV1 row : rows) {
+            validationVersions.add(row.validationVersion());
+            calculationVersions.add(row.calculationVersion());
+            calendarVersions.add(row.calendarVersion());
+            if (row.configVersions() != null) {
+                row.configVersions().stream().map(String::valueOf).forEach(configVersions::add);
+            }
+        }
+        String validationVersion = uniform(validationVersions);
+        String calculationVersion = uniform(calculationVersions);
+        String calendarVersion = uniform(calendarVersions);
+        String configVersion = uniform(configVersions);
+        if (validationVersion == null || calculationVersion == null
+                || calendarVersion == null || configVersion == null) {
+            return ambiguous(entry);
+        }
+        return new EvidencePackV1.EvidenceRefEntry(
+                entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
+                entry.status(), entry.reasonCode(), null, null, null,
+                manifest.minBusinessDate(), manifest.minBusinessDate(), manifest.maxBusinessDate(),
+                validationVersion, calculationVersion, calendarVersion,
+                List.of(configVersion));
+    }
+
+    /**
+     * M2: AGGREGATE file - the period is row-level data: the manifest's min/max business dates
+     * are the FILE-LEVEL authority. The frozen file-level LINEAGE fields must be uniform across
+     * ALL rows or the file fails closed as ambiguous.
+     */
+    private static EvidencePackV1.EvidenceRefEntry aggregateLineage(
+            EvidencePackV1.EvidenceRefEntry entry, byte[] bytes, ManifestV1 manifest
+    ) {
+        List<com.supplymind.foundation.model.AggregateRecordV1> rows =
+                CsvV1Codec.decodeAggregate(bytes);
+        if (rows.isEmpty()) {
+            return ambiguous(entry);
+        }
+        List<String> validationVersions = new ArrayList<>();
+        List<String> calculationVersions = new ArrayList<>();
+        List<String> calendarVersions = new ArrayList<>();
+        List<String> configVersions = new ArrayList<>();
+        for (com.supplymind.foundation.model.AggregateRecordV1 row : rows) {
+            validationVersions.add(row.validationVersion());
+            calculationVersions.add(row.calculationVersion());
+            calendarVersions.add(row.calendarVersion());
+            if (row.configVersions() != null) {
+                row.configVersions().stream().map(String::valueOf).forEach(configVersions::add);
+            }
+        }
+        String validationVersion = uniform(validationVersions);
+        String calculationVersion = uniform(calculationVersions);
+        String calendarVersion = uniform(calendarVersions);
+        String configVersion = uniform(configVersions);
+        if (validationVersion == null || calculationVersion == null
+                || calendarVersion == null || configVersion == null) {
+            return ambiguous(entry);
+        }
+        return new EvidencePackV1.EvidenceRefEntry(
+                entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
+                entry.status(), entry.reasonCode(), null, null, null,
+                null, manifest.minBusinessDate(), manifest.maxBusinessDate(),
+                validationVersion, calculationVersion, calendarVersion,
+                List.of(configVersion));
+    }
+
+    /** M2: the first row never represents a multi-row file - heterogeneous lineage fails closed. */
+    private static EvidencePackV1.EvidenceRefEntry ambiguous(
+            EvidencePackV1.EvidenceRefEntry entry
+    ) {
+        return new EvidencePackV1.EvidenceRefEntry(
+                entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
+                EvidenceStatus.UNAVAILABLE, "AMBIGUOUS_FILE_LINEAGE",
+                null, null, null, null, null, null, null, null, null, List.of());
+    }
+
+    /** M2: all values equal -> the uniform value; otherwise null (heterogeneous). */
+    private static String uniform(List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return null;
+        }
+        String first = values.get(0);
+        for (String value : values) {
+            if (!java.util.Objects.equals(first, value)) {
+                return null;
+            }
+        }
+        return first;
     }
 
     /** M2: verifies all refs and recovers authoritative lineage for each VERIFIED ref. */

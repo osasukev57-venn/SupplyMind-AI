@@ -131,24 +131,32 @@ public final class AgentOrchestrator {
                 explanation = fallback.explain(new LLMService.LLMRequest(
                         requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
             } else {
-                // M1/M3: the Phase B output is an untrusted draft; verify before formal use.
-                // M3: the production path PREFERS structured claims - when the model answers with
-                // the strict JSON claims envelope each claim is verified individually; a plain
-                // free-text answer falls back to the whole-text verification (still rejected on
-                // any fabricated number or unsupported reference).
+                // M1/M3: the Phase B output is an UNTRUSTED draft; verify before formal use.
+                // M3 strict contract: only the strict JSON claims envelope is acceptable; plain
+                // free text, malformed JSON, missing/empty/partial claims reject the WHOLE draft
+                // (MODEL_RESPONSE_REJECTED:MALFORMED_STRUCTURED_RESPONSE) -> JAVA_TEMPLATE.
                 ModelDraftV1 draft = parseStructuredDraft(requestId, phaseB.explanation());
-                draftClaims = draft.claims();
-                AgentResponseVerifier.Verification verification =
-                        responseVerifier.verify(draft, evidencePack);
-                if (!verification.verified()) {
+                if (draft == null) {
                     degraded = true;
-                    degradeReason = "MODEL_RESPONSE_REJECTED:" + verification.reason();
+                    degradeReason = "MODEL_RESPONSE_REJECTED:MALFORMED_STRUCTURED_RESPONSE";
                     explanation = fallback.explain(new LLMService.LLMRequest(
                             requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
                 } else {
-                    degraded = false;
-                    degradeReason = null;
-                    explanation = structuredAnswer(draft, phaseB.explanation());
+                    draftClaims = draft.claims();
+                    AgentResponseVerifier.Verification verification =
+                            responseVerifier.verify(draft, evidencePack);
+                    if (!verification.verified()) {
+                        degraded = true;
+                        degradeReason = "MODEL_RESPONSE_REJECTED:" + verification.reason();
+                        explanation = fallback.explain(new LLMService.LLMRequest(
+                                requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
+                    } else {
+                        degraded = false;
+                        degradeReason = null;
+                        // M3: the explanation is composed ONLY from the verified claim texts in a
+                        // deterministic order - the unverified raw model answer is never reused.
+                        explanation = verifiedClaimsText(draft);
+                    }
                 }
             }
         }
@@ -330,67 +338,87 @@ public final class AgentOrchestrator {
     }
 
     /**
-     * M3: the production Phase B path PREFERS the strict structured claims envelope:
+     * M3 STRICT: the production Phase B path ONLY accepts the strict JSON claims envelope:
      * {"answer": "...", "claims": [{"claimId": "...", "text": "...", "factIds": [...],
-     * "evidenceRefs": [...]}]}. When the model answers in plain free text the envelope is
-     * absent and the whole-text verification path applies (backwards compatible, still fully
-     * guarded against fabricated numbers and unsupported references).
+     * "evidenceRefs": [...], "sourceNames": [...], "businessDates": [...]}]}.
+     * Free text, malformed JSON, missing/empty claims, a claim without any reference or a
+     * malformed claim (missing/wrong-typed fields) rejects the WHOLE draft - a bad claim is
+     * never skipped in favour of the remaining good ones. Returns null when the response does
+     * not satisfy the contract; ModelDraftV1.untrusted(...) is never an acceptable LLM output.
      */
     private static ModelDraftV1 parseStructuredDraft(String requestId, String explanation) {
         String text = explanation == null ? "" : explanation;
         String trimmed = text.trim();
         if (!trimmed.startsWith("{")) {
-            return ModelDraftV1.untrusted(requestId, text);
+            return null;
         }
         try {
             com.fasterxml.jackson.databind.JsonNode root =
                     new com.fasterxml.jackson.databind.ObjectMapper().readTree(trimmed);
-            com.fasterxml.jackson.databind.JsonNode answer = root.get("answer");
-            String rawText = answer != null && answer.isTextual()
-                    ? answer.asText() : text;
             com.fasterxml.jackson.databind.JsonNode claimsNode = root.get("claims");
+            if (claimsNode == null || !claimsNode.isArray() || claimsNode.isEmpty()) {
+                return null;
+            }
             List<ModelClaimV1> claims = new ArrayList<>();
-            if (claimsNode != null && claimsNode.isArray()) {
-                for (com.fasterxml.jackson.databind.JsonNode node : claimsNode) {
-                    if (!node.has("claimId") || !node.has("text")) {
-                        continue;
-                    }
-                    List<String> factIds = stringList(node.get("factIds"));
-                    List<String> refs = stringList(node.get("evidenceRefs"));
-                    if (factIds.isEmpty() && refs.isEmpty()) {
-                        continue; // a claim without any reference is never formal
-                    }
-                    claims.add(new ModelClaimV1(
-                            node.get("claimId").asText(), node.get("text").asText(),
-                            factIds, refs));
+            for (com.fasterxml.jackson.databind.JsonNode node : claimsNode) {
+                if (!node.isObject()) {
+                    return null;
                 }
+                com.fasterxml.jackson.databind.JsonNode claimId = node.get("claimId");
+                com.fasterxml.jackson.databind.JsonNode claimText = node.get("text");
+                if (claimId == null || !claimId.isTextual() || claimId.asText().isBlank()
+                        || claimText == null || !claimText.isTextual()) {
+                    return null; // a single malformed claim rejects the whole draft
+                }
+                List<String> factIds = stringList(node.get("factIds"));
+                List<String> refs = stringList(node.get("evidenceRefs"));
+                if (factIds.isEmpty() && refs.isEmpty()) {
+                    return null; // every formal claim must carry a non-empty reference set
+                }
+                List<String> sourceNames = stringList(node.get("sourceNames"));
+                List<String> businessDates = stringList(node.get("businessDates"));
+                claims.add(new ModelClaimV1(
+                        claimId.asText(), claimText.asText(), factIds, refs, sourceNames, businessDates));
             }
             if (claims.isEmpty()) {
-                return ModelDraftV1.untrusted(requestId, text);
+                return null;
             }
+            // rawText carries ONLY the answer field for secret/unknown-reference/number scanning;
+            // the persisted explanation is composed from verified claim texts, never this answer.
+            com.fasterxml.jackson.databind.JsonNode answer = root.get("answer");
+            String rawText = answer != null && answer.isTextual() ? answer.asText() : "";
             return new ModelDraftV1(requestId, rawText, claims);
         } catch (com.fasterxml.jackson.core.JsonProcessingException malformed) {
-            return ModelDraftV1.untrusted(requestId, text);
+            return null;
         } catch (RuntimeException malformed) {
-            return ModelDraftV1.untrusted(requestId, text);
+            return null;
         }
     }
 
     private static List<String> stringList(com.fasterxml.jackson.databind.JsonNode node) {
+        if (node == null || !node.isArray()) {
+            return List.of();
+        }
         List<String> values = new ArrayList<>();
-        if (node != null && node.isArray()) {
-            for (com.fasterxml.jackson.databind.JsonNode element : node) {
-                if (element.isTextual()) {
-                    values.add(element.asText());
-                }
+        for (com.fasterxml.jackson.databind.JsonNode element : node) {
+            if (!element.isTextual()) {
+                throw new IllegalArgumentException("claim field must be a string array");
             }
+            values.add(element.asText());
         }
         return values;
     }
 
-    /** M3: a verified structured claim is answered with its own text. */
-    private static String structuredAnswer(ModelDraftV1 draft, String fallbackText) {
-        return draft.claims().isEmpty() ? fallbackText : draft.rawText();
+    /** M3: the persisted explanation is the deterministic composition of verified claim texts. */
+    private static String verifiedClaimsText(ModelDraftV1 draft) {
+        StringBuilder builder = new StringBuilder();
+        for (ModelClaimV1 claim : draft.claims()) {
+            if (builder.length() > 0) {
+                builder.append('\n');
+            }
+            builder.append(claim.text());
+        }
+        return builder.toString();
     }
 
     /** M3: the persisted claim references the facts the claim cited (factIds -> fact evidenceRefs). */

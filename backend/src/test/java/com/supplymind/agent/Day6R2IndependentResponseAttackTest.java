@@ -24,11 +24,19 @@ class Day6R2IndependentResponseAttackTest {
     @Test
     void fabricatedFormalNumberIsRejectedBeforeClaimAnswerAndPersistedReport() throws Exception {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "fabricated");
-        AgentOrchestrator.AgentResult result = fixture.orchestrator(success("Current value is 999999.999"),
+        // M3 strict contract: the attack must be carried INSIDE the JSON claims envelope - a
+        // fabricated number in a claim is rejected claim-by-claim (the plain free-text variant
+        // is now rejected earlier as MALFORMED_STRUCTURED_RESPONSE, both fail closed).
+        AgentOrchestrator.AgentResult result = fixture.orchestrator(
+                request -> LLMService.LLMResponse.success(
+                        "{\"answer\":\"summary\",\"claims\":[{\"claimId\":\"c1\","
+                                + "\"text\":\"Current value is 999999.999\",\"factIds\":[\"fact-0\"],"
+                                + "\"evidenceRefs\":[]}]}"),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
 
         assertTrue(result.degraded());
-        assertTrue(result.degradeReason().startsWith("MODEL_RESPONSE_REJECTED:FABRICATED_NUMBER"));
+        assertTrue(result.degradeReason().startsWith("MODEL_RESPONSE_REJECTED:"),
+                "reason=" + result.degradeReason());
         assertTrue(result.report().generatedBy().equals("JAVA_TEMPLATE"));
         assertFalse(result.report().claims().stream().anyMatch(claim -> claim.text().contains("999999.999")));
         assertFalse(result.report().factsSummary().stream().anyMatch(fact -> "999999.999".equals(fact.value())));
@@ -41,7 +49,10 @@ class Day6R2IndependentResponseAttackTest {
         String secret = "super-secret-value";
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "secret");
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
-                success("Authorization: Bearer " + secret), new AgentResponseVerifier(List.of(secret)))
+                request -> LLMService.LLMResponse.success(
+                        "{\"answer\":\"Authorization: Bearer " + secret + "\",\"claims\":[{\"claimId\":\"c1\","
+                                + "\"text\":\"ok\",\"factIds\":[\"fact-0\"],\"evidenceRefs\":[]}]}"),
+                new AgentResponseVerifier(List.of(secret)))
                 .answer(fixture.formalHistoryQuery());
 
         assertTrue(result.degraded());
@@ -56,11 +67,16 @@ class Day6R2IndependentResponseAttackTest {
     void unknownFactAndEvidenceNamesInModelAnswerCannotBecomeFormalLlmSuccess() {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "unknown-reference");
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
-                success("I rely on fact-does-not-exist and raw/unknown-evidence.json."),
+                request -> LLMService.LLMResponse.success(
+                        "{\"answer\":\"summary\",\"claims\":[{\"claimId\":\"c1\","
+                                + "\"text\":\"I rely on fact-does-not-exist\",\"factIds\":[\"fact-does-not-exist\"],"
+                                + "\"evidenceRefs\":[]},{\"claimId\":\"c2\",\"text\":\"x\","
+                                + "\"factIds\":[],\"evidenceRefs\":[\"raw/unknown-evidence.json\"]}]}"),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
 
         assertTrue(result.degraded(), "unknown fact/evidence references from a model response require fallback");
-        assertTrue(result.degradeReason().startsWith("MODEL_RESPONSE_REJECTED:UNKNOWN_"));
+        assertTrue(result.degradeReason().startsWith("MODEL_RESPONSE_REJECTED:UNKNOWN_"),
+                "reason=" + result.degradeReason());
         assertFalse(result.report().claims().stream().anyMatch(claim ->
                 claim.text().contains("fact-does-not-exist") || claim.text().contains("unknown-evidence")));
     }

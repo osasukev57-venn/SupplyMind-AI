@@ -113,13 +113,19 @@ class AgentF2MissingReferenceGuardTest {
     @Test
     void orchestratorDegradesWhenModelRestatesValueWithoutReference() {
         Harness harness = harness();
+        // M3 strict contract: a claim WITHOUT any reference violates the structured envelope
+        // contract (every formal claim needs a non-empty factIds/evidenceRefs) - the whole
+        // draft is rejected and the pipeline degrades to the Java template.
         AgentOrchestrator orchestrator = orchestrator(harness, request -> LLMService.LLMResponse.success(
-                "当前值为 7.15000000"), new AgentResponseVerifier(List.of()));
+                "{\"answer\":\"summary\",\"claims\":[{\"claimId\":\"c1\","
+                        + "\"text\":\"当前值为 7.15000000\",\"factIds\":[],\"evidenceRefs\":[]}]}"),
+                new AgentResponseVerifier(List.of()));
         AgentOrchestrator.AgentResult result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
                 "请分析 2026-08-10 的美元/人民币", FX_ITEM,
                 "2026-08-10", "2026-08-10", null, null, null, null, null, "FORMAL"));
         assertTrue(result.degraded(), "a known value without any reference must degrade to fallback");
-        assertTrue(result.degradeReason().contains("MISSING_REQUIRED_REFERENCE")
+        assertTrue(result.degradeReason().contains("MALFORMED_STRUCTURED_RESPONSE")
+                        || result.degradeReason().contains("MISSING_REQUIRED_REFERENCE")
                         || result.degradeReason().contains("FABRICATED_NUMBER"),
                 "reason=" + result.degradeReason());
         assertFalse(result.report().claims().isEmpty(),

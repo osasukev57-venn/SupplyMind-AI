@@ -116,8 +116,12 @@ class AgentR2StageFixAttackTest {
     @Test
     void a17ModelSecretInjectionIsRejectedAndFallsBack() throws Exception {
         Harness harness = harness("a17");
+        // M3 strict contract: the secret is carried in the envelope answer field (the plain
+        // free-text variant is rejected earlier as MALFORMED_STRUCTURED_RESPONSE; both fail closed).
         AgentOrchestrator orchestrator = orchestrator(harness, new FixedChatModel(
-                "sk-super-secret-api-key"), new AgentResponseVerifier(List.of("sk-super-secret-api-key")));
+                "{\"answer\":\"sk-super-secret-api-key\",\"claims\":[{\"claimId\":\"c1\",\"text\":\"ok\","
+                        + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[]}]}"),
+                new AgentResponseVerifier(List.of("sk-super-secret-api-key")));
         var result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
                 "请分析 2026-08-01 至 2026-08-10 的美元/人民币趋势", FX_ITEM,
                 "2026-08-01", "2026-08-10", null, null, null, null, null, "FORMAL"));

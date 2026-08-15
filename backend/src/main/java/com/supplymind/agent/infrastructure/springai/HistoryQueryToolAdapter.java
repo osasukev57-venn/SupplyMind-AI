@@ -77,6 +77,25 @@ public final class HistoryQueryToolAdapter {
             String sourceFingerprint = com.supplymind.foundation.model.CanonicalJsonV1.sha256LowerHex(
                     com.supplymind.foundation.model.CanonicalJsonV1.sourceIdentity(
                             first.providerType(), first.actualSourceName(), first.accessMethod()));
+            // M2: per-evidenceRef lineage - each ref is filled ONLY with the lineage of the rows
+            // that actually reference it; a ref referenced by heterogeneous rows is never masked
+            // by a per-ref map entry (the file-level AMBIGUOUS_FILE_LINEAGE then governs).
+            java.util.Map<String, ToolResult.Lineage> perRef = new java.util.LinkedHashMap<>();
+            for (DailyRecordV1 row : result.rows()) {
+                ToolResult.Lineage rowLineage = new ToolResult.Lineage(
+                        row.calculationVersion(), row.calendarVersion(),
+                        row.configVersions() == null ? List.of()
+                                : row.configVersions().stream().map(String::valueOf).toList(),
+                        row.actualSourceName(), sourceFingerprint, row.validationVersion());
+                for (var input : row.inputRefs()) {
+                    ToolResult.Lineage existing = perRef.get(input.rawRef());
+                    if (existing == null) {
+                        perRef.put(input.rawRef(), rowLineage);
+                    } else if (!existing.equals(rowLineage)) {
+                        perRef.remove(input.rawRef()); // heterogeneous: never mask
+                    }
+                }
+            }
             return ToolResult.success(TOOL_NAME, TOOL_VERSION, requestId,
                     "itemId=" + safeItem + " range=" + from + ".." + to, body,
                     List.copyOf(evidenceRefs), List.of(),
@@ -85,7 +104,8 @@ public final class HistoryQueryToolAdapter {
                             first.configVersions() == null ? List.of()
                                     : first.configVersions().stream().map(String::valueOf).toList(),
                             first.actualSourceName(), sourceFingerprint,
-                            first.validationVersion()));
+                            first.validationVersion()),
+                    perRef);
         } catch (ToolInputException exception) {
             return ToolResult.rejected(TOOL_NAME, TOOL_VERSION, requestId, exception.getMessage());
         } catch (RuntimeException exception) {

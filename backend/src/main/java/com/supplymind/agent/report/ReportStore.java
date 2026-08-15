@@ -149,11 +149,14 @@ public final class ReportStore {
     }
 
     /**
-     * M4: every frozen evidence field (ref, sha256, status, reasonCode and the lineage fields
-     * APPLICABLE to the refType) must equal the current re-verification result (authoritative,
-     * decoded from the real files). A status drift to non-VERIFIED is reported by the caller as
-     * EVIDENCE_UNAVAILABLE; here we only detect drift between two VERIFIED states (sha/lineage
-     * change) and status/reasonCode drift that is not an availability change.
+     * M4: EVERY frozen identity field (evidenceRefId, refType, ref, sha256, status, reasonCode)
+     * must equal the authoritative re-verification result - an attacker-modified refType must
+     * never steer the comparison into a looser branch. Only after refType equality is proven is
+     * the lineage comparison selected BY THE AUTHORITATIVE refType. RAW compares
+     * runId/rawRef/businessDate/configVersions; LIFECYCLE compares runId/rawRef/publishRef/
+     * businessDate/validationVersion. A status drift to non-VERIFIED is reported by the caller
+     * as EVIDENCE_UNAVAILABLE; here we only detect drift between two VERIFIED states and
+     * status/reasonCode drift that is not an availability change.
      */
     private static String bindingMismatch(
             List<com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry> frozen,
@@ -166,13 +169,25 @@ public final class ReportStore {
             if (current == null) {
                 return "EVIDENCE_BINDING_MISMATCH";
             }
-            if (frozenEntry.status() != current.status()) {
+            if (!Objects.equals(frozenEntry.evidenceRefId(), current.evidenceRefId())) {
+                return "EVIDENCE_BINDING_MISMATCH";
+            }
+            if (!Objects.equals(frozenEntry.ref(), current.ref())) {
+                return "EVIDENCE_BINDING_MISMATCH";
+            }
+            if (!Objects.equals(frozenEntry.refType(), current.refType())) {
+                return "EVIDENCE_BINDING_MISMATCH";
+            }
+            if (!Objects.equals(frozenEntry.status(), current.status())) {
                 // availability drift is handled by the caller; status/reason drift on a
                 // VERIFIED frozen entry still must fail closed
                 if (frozenEntry.status() == com.supplymind.agent.evidence.EvidenceStatus.VERIFIED
                         && current.status() != com.supplymind.agent.evidence.EvidenceStatus.VERIFIED) {
                     return null; // caller reports EVIDENCE_UNAVAILABLE
                 }
+                return "EVIDENCE_BINDING_MISMATCH";
+            }
+            if (!Objects.equals(frozenEntry.reasonCode(), current.reasonCode())) {
                 return "EVIDENCE_BINDING_MISMATCH";
             }
             if (frozenEntry.status() == com.supplymind.agent.evidence.EvidenceStatus.VERIFIED) {
@@ -183,27 +198,33 @@ public final class ReportStore {
                 if (lineageFailure != null) {
                     return lineageFailure;
                 }
-            } else if (!Objects.equals(frozenEntry.reasonCode(), current.reasonCode())) {
-                return "EVIDENCE_BINDING_MISMATCH";
             }
         }
         return null;
     }
 
     /**
-     * M4: compare only the lineage fields the refType actually carries in the real file, so a
-     * RAW file (which has no validation/calculation/calendar/config versions) is never compared
-     * against the report's tool-supplied filler values.
+     * M4: compare only the lineage fields the AUTHORITATIVE refType actually carries in the real
+     * file (refType equality is already proven by the caller). A RAW file has no
+     * validation/calculation/calendar versions, but DOES bind runId/rawRef/businessDate/
+     * configVersions; a LIFECYCLE file binds runId/rawRef/publishRef/businessDate/
+     * validationVersion. Inapplicable fields stay null and are not compared.
      */
     private static String lineageMismatch(
             com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry frozen,
             com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry current
     ) {
-        switch (frozen.refType()) {
+        switch (current.refType()) {
             case "RAW":
-                return mismatch(frozen.runId(), current.runId(), frozen.rawRef(), current.rawRef());
+                return mismatch(frozen.runId(), current.runId(),
+                        frozen.rawRef(), current.rawRef(),
+                        frozen.businessDate(), current.businessDate(),
+                        frozen.configVersions(), current.configVersions());
             case "LIFECYCLE":
-                return mismatch(frozen.runId(), current.runId(), frozen.rawRef(), current.rawRef(),
+                return mismatch(frozen.runId(), current.runId(),
+                        frozen.rawRef(), current.rawRef(),
+                        frozen.publishRef(), current.publishRef(),
+                        frozen.businessDate(), current.businessDate(),
                         frozen.validationVersion(), current.validationVersion());
             case "DAILY":
                 return mismatch(frozen.businessDate(), current.businessDate(),

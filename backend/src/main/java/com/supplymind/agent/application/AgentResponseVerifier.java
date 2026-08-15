@@ -87,7 +87,9 @@ public final class AgentResponseVerifier {
             return Verification.rejected("UNKNOWN_" + (unknownRef.startsWith("fact-")
                     ? "FACT_REFERENCE" : "EVIDENCE_REFERENCE"));
         }
-        // M3: structured claims - each claim's references must support its own numbers.
+        // M3: structured claims - each claim's references must support EVERY number the claim
+        // states (per-number binding: for every number in claim, a referenced fact supports it;
+        // the global fact set never helps a claim through).
         for (ModelClaimV1 claim : draft.claims()) {
             for (String factId : claim.factIds()) {
                 if (!knownFactIds.contains(factId)) {
@@ -99,22 +101,20 @@ public final class AgentResponseVerifier {
                     return Verification.rejected("UNKNOWN_EVIDENCE_REFERENCE");
                 }
             }
-            List<String> claimNumbers = extractNumbers(claim.text());
-            if (!claimNumbers.isEmpty() && !supportsNumbers(claim, facts)) {
+            if (!everyNumberSupportedByClaimFacts(claim, facts)) {
                 return Verification.rejected("UNSUPPORTED_CLAIM_REFERENCE");
             }
-            // M3: dates, periods and source declarations in a structured claim must also be
-            // supported by the facts that claim references - an unrelated reference never
-            // validates a date/source the claim states.
-            if (!claimTextSupported(claim, facts)) {
+            if (!claimDateAndSourceSupported(claim, facts)) {
                 return Verification.rejected("UNSUPPORTED_CLAIM_REFERENCE");
             }
         }
 
         // M3: every business number in the free text must match a verified fact value.
         List<String> numbers = extractNumbers(draft.rawText());
+        List<String> textDates = extractDates(draft.rawText());
         for (String number : numbers) {
-            if (!matchesAnyFactValue(number, facts)) {
+            if (!matchesAnyFactValue(number, facts)
+                    && !partOfSupportedDate(number, textDates, facts)) {
                 return Verification.rejected("FABRICATED_NUMBER");
             }
         }
@@ -126,34 +126,33 @@ public final class AgentResponseVerifier {
         return Verification.accepted();
     }
 
-    /** M3: claim's factIds must point at facts whose value is among the claim's stated numbers. */
-    private static boolean supportsNumbers(ModelClaimV1 claim, List<EvidenceFact> facts) {
+    /**
+     * M3: PER-NUMBER binding - every business number token in the claim text must be supported
+     * by at least one fact the claim references (by factId or evidenceRef). A number that only
+     * exists in a GLOBAL, unreferenced fact never helps this claim pass. Numbers that are part
+     * of a full ISO date in the text are supported by the referenced facts' businessDate/period.
+     */
+    private static boolean everyNumberSupportedByClaimFacts(ModelClaimV1 claim, List<EvidenceFact> facts) {
+        List<EvidenceFact> referenced = referencedFacts(claim, facts);
         List<String> claimNumbers = extractNumbers(claim.text());
-        for (String factId : claim.factIds()) {
-            for (EvidenceFact fact : facts) {
-                if (fact.factId().equals(factId) && matchesAnyFactValueInList(fact.value(), claimNumbers)) {
-                    return true;
-                }
-            }
+        if (claimNumbers.isEmpty()) {
+            return true;
         }
-        for (String ref : claim.evidenceRefs()) {
-            for (EvidenceFact fact : facts) {
-                if (fact.evidenceRefs() != null && fact.evidenceRefs().contains(ref)
-                        && matchesAnyFactValueInList(fact.value(), claimNumbers)) {
-                    return true;
-                }
+        List<String> textDates = extractDates(claim.text());
+        for (String number : claimNumbers) {
+            if (matchesAnyFactValueInFacts(number, referenced)) {
+                continue;
             }
+            if (partOfSupportedDate(number, textDates, referenced)) {
+                continue;
+            }
+            return false;
         }
-        return false;
+        return true;
     }
 
-    /**
-     * M3: a structured claim's dates/periods and source declarations must be supported by the
-     * facts it references: every full ISO date in the claim text must fall within the referenced
-     * facts' businessDate/period, and every known source name appearing in the text must be the
-     * actualSourceName of a referenced fact.
-     */
-    private static boolean claimTextSupported(ModelClaimV1 claim, List<EvidenceFact> facts) {
+    /** M3: the facts this claim references (by factId or evidenceRef) - the ONLY support set. */
+    private static List<EvidenceFact> referencedFacts(ModelClaimV1 claim, List<EvidenceFact> facts) {
         List<EvidenceFact> referenced = new ArrayList<>();
         for (EvidenceFact fact : facts) {
             boolean byFactId = claim.factIds() != null && claim.factIds().contains(fact.factId());
@@ -163,29 +162,69 @@ public final class AgentResponseVerifier {
                 referenced.add(fact);
             }
         }
-        if (referenced.isEmpty()) {
-            return true; // numeric support is handled by supportsNumbers; no reference = no dates
+        return referenced;
+    }
+
+    /** M3: every date appearing in the text must be covered by a referenced fact's date/period. */
+    private static boolean partOfSupportedDate(String number, List<String> textDates, List<EvidenceFact> referenced) {
+        if (textDates.isEmpty()) {
+            return false;
         }
+        String digits = number.startsWith("-") ? number.substring(1) : number;
+        for (String date : textDates) {
+            if (date.contains(digits)
+                    && referenced.stream().anyMatch(fact -> supportsDate(fact, date))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static List<String> extractDates(String text) {
         List<String> dates = new ArrayList<>();
-        Matcher dateMatcher = DATE_TOKEN.matcher(claim.text() == null ? "" : claim.text());
+        if (text == null) {
+            return dates;
+        }
+        Matcher dateMatcher = DATE_TOKEN.matcher(text);
         while (dateMatcher.find()) {
             dates.add(dateMatcher.group());
         }
-        for (String date : dates) {
+        return dates;
+    }
+
+    private static boolean matchesAnyFactValueInFacts(String number, List<EvidenceFact> facts) {
+        for (EvidenceFact fact : facts) {
+            if (matchesAnyFactValueInList(fact.value(), List.of(number))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * M3: a structured claim's dates, periods and source declarations must be supported by the
+     * facts it references - every full ISO date in the claim text, every explicit
+     * businessDates[] entry and every explicit sourceNames[] entry must be backed by a
+     * referenced fact. Source declarations are NEVER accepted from unverifiable free text.
+     */
+    private static boolean claimDateAndSourceSupported(ModelClaimV1 claim, List<EvidenceFact> facts) {
+        List<EvidenceFact> referenced = referencedFacts(claim, facts);
+        List<String> textDates = extractDates(claim.text());
+        for (String date : textDates) {
             if (!referenced.stream().anyMatch(fact -> supportsDate(fact, date))) {
                 return false;
             }
         }
-        for (EvidenceFact fact : facts) {
-            if (fact.actualSourceName() == null || fact.actualSourceName().isBlank()) {
-                continue;
+        for (String date : claim.businessDates()) {
+            if (date == null || !referenced.stream().anyMatch(fact -> supportsDate(fact, date))) {
+                return false;
             }
-            if (claim.text() != null && claim.text().contains(fact.actualSourceName())) {
-                boolean supported = referenced.stream().anyMatch(ref -> ref.actualSourceName() != null
-                        && ref.actualSourceName().equals(fact.actualSourceName()));
-                if (!supported) {
-                    return false;
-                }
+        }
+        for (String source : claim.sourceNames()) {
+            boolean backed = source != null && referenced.stream().anyMatch(
+                    fact -> source.equals(fact.actualSourceName()));
+            if (!backed) {
+                return false;
             }
         }
         return true;

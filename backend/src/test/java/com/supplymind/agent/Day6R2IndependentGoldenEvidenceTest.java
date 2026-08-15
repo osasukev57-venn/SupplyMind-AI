@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /** Fixed A11 oracle: resource bytes and SHA are hand-frozen, never produced at assertion time. */
 class Day6R2IndependentGoldenEvidenceTest {
 
-    private static final String GOLDEN_SHA256 = "0e66319d3d0eb9064bfbdedb6d1a3ad9af19a56ed83a2affdfa035f9705d6c56";
+    private static final String GOLDEN_SHA256 = "5f18e2b7b63d20fae8fd4d6ad8ec4c259b1f678548ecc6d113f7fa3310d0e5df";
 
     @TempDir
     Path temp;

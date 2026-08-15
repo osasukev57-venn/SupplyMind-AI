@@ -268,6 +268,18 @@ public final class SpringAiLlmService implements LLMService.Port {
         }
         prompt.append("Do not invent numbers, dates, sources or evidence refs. ");
         prompt.append("If the facts are insufficient, say so explicitly.");
+        if (!request.toolCallingEnabled()) {
+            // M3 STRICT: Phase B must answer with the JSON claims envelope ONLY.
+            prompt.append("\nPhase B response contract - return EXACTLY this JSON envelope, nothing else:\n")
+                    .append("{\"answer\":\"<one-line summary, no new business facts>\",")
+                    .append("\"claims\":[{\"claimId\":\"c1\",\"text\":\"<claim statement>\",")
+                    .append("\"factIds\":[\"<only facts that support this claim>\"],")
+                    .append("\"evidenceRefs\":[\"<only evidence refs that support this claim>\"],")
+                    .append("\"sourceNames\":[\"<actual source names from the referenced facts>\"],")
+                    .append("\"businessDates\":[\"<business dates covered by the referenced facts>\"]}]}\n")
+                    .append("Every number in a claim text must come from the facts that claim references. ")
+                    .append("Plain prose is REJECTED. Every claim must reference at least one factId or evidenceRef.");
+        }
         return prompt.toString();
     }
 }
