@@ -128,6 +128,29 @@ class Day6FinalStageClaimFieldGuardAttackTest {
     }
 
     @Test
+    void authoritativeSourcePrefixCannotValidateAnExtendedFakeSource() {
+        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "source-prefix-extension");
+        for (String declaration : List.of(
+                "来源：" + Day6R2Fixture.SOURCE + "伪造分行提供数据",
+                "source: " + Day6R2Fixture.SOURCE + " Fake Branch provides data")) {
+            AgentOrchestrator.AgentResult result = fixture.orchestrator(
+                    request -> LLMService.LLMResponse.success(
+                            "{\"answer\":\"ok\",\"claims\":[{\"claimId\":\"c1\","
+                                    + "\"text\":\"" + declaration + "\","
+                                    + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[],"
+                                    + "\"sourceNames\":[\"" + Day6R2Fixture.SOURCE + "\"],"
+                                    + "\"businessDates\":[]}]}"),
+                    new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
+            assertTrue(result.degraded(),
+                    "an authoritative source prefix must not validate an extended fake source: "
+                            + declaration);
+            assertTrue(result.degradeReason().contains("UNSUPPORTED_CLAIM_REFERENCE"),
+                    "reason=" + result.degradeReason() + " declaration=" + declaration);
+            assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
+        }
+    }
+
+    @Test
     void realSourceDeclarationClosedInSourceNamesPasses() {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "real-source");
         // The known source name appears in the text AND is declared in sourceNames, backed by

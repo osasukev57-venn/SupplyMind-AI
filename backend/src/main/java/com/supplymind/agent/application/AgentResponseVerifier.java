@@ -263,7 +263,9 @@ public final class AgentResponseVerifier {
             String matchedSource = null;
             for (String source : claim.sourceNames()) {
                 if (source != null && !source.isBlank()
-                        && text.startsWith(source, declarationStart)) {
+                        && text.startsWith(source, declarationStart)
+                        && sourceDeclarationEndsHere(
+                                text, declarationStart + source.length())) {
                     matchedSource = source;
                     break;
                 }
@@ -274,6 +276,24 @@ public final class AgentResponseVerifier {
             coveredUntil = declarationStart + matchedSource.length();
         }
         return true;
+    }
+
+    /**
+     * A declared source must end exactly at the authoritative source name. Whitespace alone is
+     * not a boundary because it would allow an authoritative prefix such as "PBOC" to validate
+     * "PBOC Fake Branch". The structured response contract therefore requires the source name
+     * to be followed by end-of-text or explicit punctuation; prose can continue after that
+     * delimiter. This is deliberately fail-closed.
+     */
+    private static boolean sourceDeclarationEndsHere(String text, int sourceEnd) {
+        int index = sourceEnd;
+        while (index < text.length() && Character.isWhitespace(text.charAt(index))) {
+            index++;
+        }
+        if (index == text.length()) {
+            return true;
+        }
+        return ",.;:!?，。；：！？、()（）[]【】".indexOf(text.charAt(index)) >= 0;
     }
 
     private static int skipSourceConnector(String text, int start) {
