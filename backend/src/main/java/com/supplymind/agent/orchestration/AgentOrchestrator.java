@@ -110,6 +110,7 @@ public final class AgentOrchestrator {
         boolean degraded;
         String degradeReason;
         String explanation;
+        List<ModelClaimV1> draftClaims = List.of();
         if (!toolChainClean) {
             degraded = true;
             degradeReason = "TOOL_EXECUTION_REJECTED";
@@ -131,7 +132,12 @@ public final class AgentOrchestrator {
                         requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
             } else {
                 // M1/M3: the Phase B output is an untrusted draft; verify before formal use.
-                ModelDraftV1 draft = ModelDraftV1.untrusted(requestId, phaseB.explanation());
+                // M3: the production path PREFERS structured claims - when the model answers with
+                // the strict JSON claims envelope each claim is verified individually; a plain
+                // free-text answer falls back to the whole-text verification (still rejected on
+                // any fabricated number or unsupported reference).
+                ModelDraftV1 draft = parseStructuredDraft(requestId, phaseB.explanation());
+                draftClaims = draft.claims();
                 AgentResponseVerifier.Verification verification =
                         responseVerifier.verify(draft, evidencePack);
                 if (!verification.verified()) {
@@ -142,7 +148,7 @@ public final class AgentOrchestrator {
                 } else {
                     degraded = false;
                     degradeReason = null;
-                    explanation = phaseB.explanation();
+                    explanation = structuredAnswer(draft, phaseB.explanation());
                 }
             }
         }
@@ -156,15 +162,27 @@ public final class AgentOrchestrator {
         // M4: claims must never carry empty evidenceRefs; the JAVA_TEMPLATE fallback claim still
         // references the top-level EvidencePack refs (auditable paths) so it stays traceable even
         // when no verified fact value is available.
-        List<String> claimRefs = facts.stream().flatMap(fact -> fact.evidenceRefs().stream())
-                .distinct().toList();
-        if (claimRefs.isEmpty()) {
-            claimRefs = evidencePack.evidenceRefs().stream()
-                    .map(EvidencePackV1.EvidenceRefEntry::ref).distinct().toList();
-        }
         List<AgentReportV1.Claim> claims = new ArrayList<>();
-        if (!claimRefs.isEmpty()) {
-            claims.add(new AgentReportV1.Claim("claim-1", explanation, claimRefs));
+        if (!draftClaims.isEmpty() && !degraded) {
+            // M3: the persisted AgentReport claims ARE the verified structured claims.
+            for (ModelClaimV1 claim : draftClaims) {
+                List<String> refs = claimRefsOf(claim, facts);
+                if (refs.isEmpty()) {
+                    continue;
+                }
+                claims.add(new AgentReportV1.Claim(claim.claimId(), claim.text(), refs));
+            }
+        }
+        if (claims.isEmpty()) {
+            List<String> claimRefs = facts.stream().flatMap(fact -> fact.evidenceRefs().stream())
+                    .distinct().toList();
+            if (claimRefs.isEmpty()) {
+                claimRefs = evidencePack.evidenceRefs().stream()
+                        .map(EvidencePackV1.EvidenceRefEntry::ref).distinct().toList();
+            }
+            if (!claimRefs.isEmpty()) {
+                claims.add(new AgentReportV1.Claim("claim-1", explanation, claimRefs));
+            }
         }
         AgentReportV1 report = new AgentReportV1(
                 "AGENT-REPORT-V1", "report-" + requestId, requestId, evidencePack,
@@ -189,39 +207,48 @@ public final class AgentOrchestrator {
         List<String> limitations = new ArrayList<>();
         int index = 0;
         for (ToolResult result : toolResults) {
-            // M5: tool input summaries may contain user-supplied args; redact secrets before any
-            // content enters the EvidencePack.
             String inputSummary = result.inputSummary();
             executions.add(new EvidencePackV1.ToolExecution(
                     index++, result.toolName(), result.toolVersion(), true,
                     inputSummary, result.result(), result.status(), result.evidenceRefs()));
-            // M2: per-ToolResult lineage (never batch-applied from another tool).
-            allEntries.addAll(evidenceVerifier.verifyAll(result.evidenceRefs(), result.lineage()));
+            // M2: per-evidenceRef lineage - evidenceLineageByRef wins, then the tool-level
+            // lineage is used as the tool-default; the real file stays the authority for any
+            // field it can decode (M4 write-path binding).
+            for (String ref : result.evidenceRefs()) {
+                ToolResult.Lineage perRef = result.evidenceLineageByRef().get(ref);
+                ToolResult.Lineage lineage = perRef != null ? perRef : result.lineage();
+                allEntries.add(evidenceVerifier.verifyMerged(ref, lineage));
+            }
             notices.addAll(result.notices());
             if (result.status() == ToolStatus.NO_DATA || result.status() == ToolStatus.REJECTED) {
                 limitations.add(result.toolName() + ": " + inputSummary);
             }
         }
         List<EvidencePackV1.EvidenceRefEntry> topLevelRefs = new ArrayList<>(allEntries);
-        Set<String> topLevelRefSet = new LinkedHashSet<>();
+        // M2: the EvidencePack carries the FULL four-state structured list (all results incl.
+        // MISSING/INVALID/UNAVAILABLE with reasonCode), dedupe by ref keeping the first entry.
+        java.util.Map<String, EvidencePackV1.EvidenceRefEntry> byRef = new java.util.LinkedHashMap<>();
         for (EvidencePackV1.EvidenceRefEntry entry : topLevelRefs) {
-            topLevelRefSet.add(entry.ref());
+            byRef.putIfAbsent(entry.ref(), entry);
         }
-        // M2: every ToolExecution evidenceRef must exist in the top-level EvidencePack.
+        List<EvidencePackV1.EvidenceRefEntry> fourStateRefs = new ArrayList<>(byRef.values());
+        fourStateRefs.sort(java.util.Comparator.comparing(EvidencePackV1.EvidenceRefEntry::evidenceRefId));
+        Set<String> finalRefSet = new LinkedHashSet<>();
+        for (EvidencePackV1.EvidenceRefEntry entry : fourStateRefs) {
+            finalRefSet.add(entry.ref());
+        }
         for (EvidencePackV1.ToolExecution execution : executions) {
             for (String ref : execution.evidenceRefs()) {
-                if (!topLevelRefSet.contains(ref)) {
+                if (!finalRefSet.contains(ref)) {
                     throw new IllegalStateException(
-                            "ToolExecution evidenceRef not present in top-level EvidencePack: " + ref);
+                            "ToolExecution evidenceRef not present in final EvidencePack: " + ref);
                 }
             }
         }
 
-        // M2: the audit trail keeps ALL verification results (incl. reasonCodes) in limitations;
-        // the EvidencePack evidenceRefs only carries the usable (VERIFIED, mode-allowed) refs
-        // with complete lineage - a VERIFIED file without real lineage is fail-closed.
-        List<EvidencePackV1.EvidenceRefEntry> usableRefs = new ArrayList<>();
-        for (EvidencePackV1.EvidenceRefEntry entry : topLevelRefs) {
+        // M2: LLM context is a SEPARATE filtered view: VERIFIED + mode-allowed + lineage-complete.
+        List<EvidencePackV1.EvidenceRefEntry> llmUsableRefs = new ArrayList<>();
+        for (EvidencePackV1.EvidenceRefEntry entry : fourStateRefs) {
             if (entry.status() != EvidenceStatus.VERIFIED) {
                 limitations.add("证据不可用: " + entry.ref() + " (" + entry.status().name()
                         + (entry.reasonCode() == null ? "" : "/" + entry.reasonCode()) + ")");
@@ -231,29 +258,55 @@ public final class AgentOrchestrator {
                 limitations.add("FORMAL 模式排除 demo/synthetic 证据: " + entry.ref());
                 continue;
             }
-            if (entry.calculationVersion() == null || entry.validationVersion() == null
-                    || entry.calendarVersion() == null || entry.configVersions().isEmpty()) {
-                if ("FORMAL".equals(mode)) {
-                    limitations.add("证据 lineage 不完整，不可引用: " + entry.ref());
-                    continue;
-                }
-                // DEMO mode may reference demo evidence without full lineage.
+            if ("FORMAL".equals(mode) && !lineageCompleteFor(entry)) {
+                limitations.add("证据 lineage 不完整，不可引用: " + entry.ref());
+                continue;
             }
-            usableRefs.add(entry);
+            llmUsableRefs.add(entry);
         }
-        Set<String> usableRefSet = new LinkedHashSet<>();
-        for (EvidencePackV1.EvidenceRefEntry entry : usableRefs) {
-            usableRefSet.add(entry.ref());
+        Set<String> llmUsableRefSet = new LinkedHashSet<>();
+        for (EvidencePackV1.EvidenceRefEntry entry : llmUsableRefs) {
+            llmUsableRefSet.add(entry.ref());
         }
 
-        List<EvidencePackV1.Fact> facts = buildFacts(toolResults, usableRefSet, mode);
-        List<String> llmEvidenceRefs = usableRefs.stream()
+        List<EvidencePackV1.Fact> facts = buildFacts(toolResults, llmUsableRefSet, mode);
+        List<String> llmEvidenceRefs = llmUsableRefs.stream()
                 .map(EvidencePackV1.EvidenceRefEntry::ref).toList();
+        // M2: the EvidencePack carries the FULL four-state structured list.
         EvidencePackV1 evidencePack = new EvidencePackV1(
                 "AGENT-EVIDENCE-SCHEMA-V1", "pack-" + requestId, requestId, mode,
                 input.question(), OffsetDateTime.now(), scopeOf(input),
-                executions, facts, usableRefs, List.of(), notices, limitations);
+                executions, facts, fourStateRefs, List.of(), notices, limitations);
         return new EvidenceBuild(evidencePack, facts, llmEvidenceRefs, limitations);
+    }
+
+    /** M2/M4: applicable lineage fields per refType; RAW does not need aggregate/daily fields. */
+    private static boolean lineageCompleteFor(EvidencePackV1.EvidenceRefEntry entry) {
+        String type = entry.refType();
+        if ("RAW".equals(type)) {
+            return entry.runId() != null && entry.rawRef() != null;
+        }
+        if ("LIFECYCLE".equals(type)) {
+            return entry.runId() != null && entry.rawRef() != null
+                    && entry.validationVersion() != null;
+        }
+        if ("DAILY".equals(type)) {
+            return entry.businessDate() != null && entry.validationVersion() != null
+                    && entry.calculationVersion() != null && entry.calendarVersion() != null
+                    && !entry.configVersions().isEmpty();
+        }
+        if ("AGGREGATE".equals(type)) {
+            return entry.periodStart() != null && entry.periodEnd() != null
+                    && entry.validationVersion() != null && entry.calculationVersion() != null
+                    && entry.calendarVersion() != null && !entry.configVersions().isEmpty();
+        }
+        if ("CONFIG".equals(type)) {
+            return !entry.configVersions().isEmpty();
+        }
+        if ("WARNING".equals(type)) {
+            return true; // warning evidence lineage is the warning ref itself
+        }
+        return true; // SOURCE and other types: no strict requirement beyond verification
     }
 
     private static boolean isDemoOrSynthetic(EvidencePackV1.EvidenceRefEntry entry) {
@@ -274,6 +327,83 @@ public final class AgentOrchestrator {
                         fact.validationStatus(),
                         fact.evidenceRefs().isEmpty() ? null : fact.evidenceRefs().get(0)))
                 .toList();
+    }
+
+    /**
+     * M3: the production Phase B path PREFERS the strict structured claims envelope:
+     * {"answer": "...", "claims": [{"claimId": "...", "text": "...", "factIds": [...],
+     * "evidenceRefs": [...]}]}. When the model answers in plain free text the envelope is
+     * absent and the whole-text verification path applies (backwards compatible, still fully
+     * guarded against fabricated numbers and unsupported references).
+     */
+    private static ModelDraftV1 parseStructuredDraft(String requestId, String explanation) {
+        String text = explanation == null ? "" : explanation;
+        String trimmed = text.trim();
+        if (!trimmed.startsWith("{")) {
+            return ModelDraftV1.untrusted(requestId, text);
+        }
+        try {
+            com.fasterxml.jackson.databind.JsonNode root =
+                    new com.fasterxml.jackson.databind.ObjectMapper().readTree(trimmed);
+            com.fasterxml.jackson.databind.JsonNode answer = root.get("answer");
+            String rawText = answer != null && answer.isTextual()
+                    ? answer.asText() : text;
+            com.fasterxml.jackson.databind.JsonNode claimsNode = root.get("claims");
+            List<ModelClaimV1> claims = new ArrayList<>();
+            if (claimsNode != null && claimsNode.isArray()) {
+                for (com.fasterxml.jackson.databind.JsonNode node : claimsNode) {
+                    if (!node.has("claimId") || !node.has("text")) {
+                        continue;
+                    }
+                    List<String> factIds = stringList(node.get("factIds"));
+                    List<String> refs = stringList(node.get("evidenceRefs"));
+                    if (factIds.isEmpty() && refs.isEmpty()) {
+                        continue; // a claim without any reference is never formal
+                    }
+                    claims.add(new ModelClaimV1(
+                            node.get("claimId").asText(), node.get("text").asText(),
+                            factIds, refs));
+                }
+            }
+            if (claims.isEmpty()) {
+                return ModelDraftV1.untrusted(requestId, text);
+            }
+            return new ModelDraftV1(requestId, rawText, claims);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException malformed) {
+            return ModelDraftV1.untrusted(requestId, text);
+        } catch (RuntimeException malformed) {
+            return ModelDraftV1.untrusted(requestId, text);
+        }
+    }
+
+    private static List<String> stringList(com.fasterxml.jackson.databind.JsonNode node) {
+        List<String> values = new ArrayList<>();
+        if (node != null && node.isArray()) {
+            for (com.fasterxml.jackson.databind.JsonNode element : node) {
+                if (element.isTextual()) {
+                    values.add(element.asText());
+                }
+            }
+        }
+        return values;
+    }
+
+    /** M3: a verified structured claim is answered with its own text. */
+    private static String structuredAnswer(ModelDraftV1 draft, String fallbackText) {
+        return draft.claims().isEmpty() ? fallbackText : draft.rawText();
+    }
+
+    /** M3: the persisted claim references the facts the claim cited (factIds -> fact evidenceRefs). */
+    private static List<String> claimRefsOf(ModelClaimV1 claim, List<EvidencePackV1.Fact> facts) {
+        List<String> refs = new ArrayList<>();
+        Set<String> factIdSet = new LinkedHashSet<>(claim.factIds());
+        for (EvidencePackV1.Fact fact : facts) {
+            if (factIdSet.contains(fact.factId())) {
+                refs.addAll(fact.evidenceRefs());
+            }
+        }
+        refs.addAll(claim.evidenceRefs());
+        return refs.stream().distinct().toList();
     }
 
     private static List<EvidencePackV1.Fact> buildFacts(

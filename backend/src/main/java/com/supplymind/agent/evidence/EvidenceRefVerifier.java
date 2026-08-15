@@ -1,5 +1,6 @@
 package com.supplymind.agent.evidence;
 
+import com.supplymind.foundation.codec.CsvV1Codec;
 import com.supplymind.foundation.codec.JsonV1Codec;
 import com.supplymind.foundation.model.ManifestV1;
 import com.supplymind.foundation.storage.DataPaths;
@@ -103,6 +104,122 @@ public final class EvidenceRefVerifier {
 
     public boolean isVerified(EvidencePackV1.EvidenceRefEntry entry) {
         return entry != null && entry.status() == EvidenceStatus.VERIFIED;
+    }
+
+    /**
+     * M2/M4: verifies a ref AND recovers its AUTHORITATIVE lineage by decoding the real
+     * evidence file (never the report's self-reported lineage). Applicable fields are filled
+     * per refType; fields not applicable to a type stay null per the frozen contract.
+     */
+    public EvidencePackV1.EvidenceRefEntry verifyWithAuthoritativeLineage(String ref) {
+        EvidencePackV1.EvidenceRefEntry entry = verify(ref);
+        if (entry.status() != EvidenceStatus.VERIFIED) {
+            return entry;
+        }
+        try {
+            Path path = dataRoot.resolveDataRef(ref);
+            byte[] bytes = Files.readAllBytes(path);
+            if (ref.startsWith("processed/daily/")) {
+                List<com.supplymind.foundation.model.DailyRecordV1> rows =
+                        CsvV1Codec.decodeDaily(bytes);
+                if (rows.isEmpty()) {
+                    return entry;
+                }
+                com.supplymind.foundation.model.DailyRecordV1 row = rows.get(0);
+                return new EvidencePackV1.EvidenceRefEntry(
+                        entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
+                        entry.status(), entry.reasonCode(), null, null, null,
+                        row.businessDate(), null, null,
+                        row.validationVersion(), row.calculationVersion(), row.calendarVersion(),
+                        row.configVersions() == null ? List.of()
+                                : row.configVersions().stream().map(String::valueOf).toList());
+            }
+            if (ref.startsWith("processed/aggregate/")) {
+                List<com.supplymind.foundation.model.AggregateRecordV1> rows =
+                        CsvV1Codec.decodeAggregate(bytes);
+                if (rows.isEmpty()) {
+                    return entry;
+                }
+                com.supplymind.foundation.model.AggregateRecordV1 row = rows.get(0);
+                return new EvidencePackV1.EvidenceRefEntry(
+                        entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
+                        entry.status(), entry.reasonCode(), null, null, null,
+                        null, row.periodStart(), row.periodEnd(),
+                        row.validationVersion(), row.calculationVersion(), row.calendarVersion(),
+                        row.configVersions() == null ? List.of()
+                                : row.configVersions().stream().map(String::valueOf).toList());
+            }
+            if (ref.startsWith("raw/")) {
+                com.supplymind.foundation.model.RawReceiptV1 raw = JsonV1Codec.decodeFile(
+                        bytes, com.supplymind.foundation.model.RawReceiptV1.class);
+                return new EvidencePackV1.EvidenceRefEntry(
+                        entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
+                        entry.status(), entry.reasonCode(), raw.runId(), ref, null,
+                        raw.sourceBusinessDate(), null, null,
+                        null, null, null, List.of());
+            }
+            if (ref.startsWith("staging/")) {
+                com.supplymind.foundation.model.LifecycleTimelineV1 timeline =
+                        JsonV1Codec.decodeFile(bytes,
+                                com.supplymind.foundation.model.LifecycleTimelineV1.class);
+                String runId = timeline.runId();
+                String rawRef = timeline.rawRef();
+                String validationVersion = null;
+                if (timeline.current() != null) {
+                    validationVersion = timeline.current().validationVersion();
+                }
+                return new EvidencePackV1.EvidenceRefEntry(
+                        entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
+                        entry.status(), entry.reasonCode(), runId, rawRef, null,
+                        null, null, null, validationVersion, null, null, List.of());
+            }
+            if (ref.equals(DataPaths.configActiveRef()) || ref.startsWith("config/history/")) {
+                com.supplymind.foundation.model.MonitorSeriesConfigV1 config =
+                        JsonV1Codec.decodeFile(bytes,
+                                com.supplymind.foundation.model.MonitorSeriesConfigV1.class);
+                return new EvidencePackV1.EvidenceRefEntry(
+                        entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
+                        entry.status(), entry.reasonCode(), null, null, null,
+                        null, null, null, null, null, null,
+                        List.of(String.valueOf(config.configVersion())));
+            }
+            return entry;
+        } catch (IOException | RuntimeException exception) {
+            return entry; // unreadable but manifest-valid: keep the base VERIFIED entry
+        }
+    }
+
+    /** M2: verifies all refs and recovers authoritative lineage for each VERIFIED ref. */
+    public List<EvidencePackV1.EvidenceRefEntry> verifyAllWithAuthoritativeLineage(List<String> refs) {
+        List<EvidencePackV1.EvidenceRefEntry> entries = new ArrayList<>();
+        for (String ref : refs) {
+            entries.add(verifyWithAuthoritativeLineage(ref));
+        }
+        entries.sort(java.util.Comparator.comparing(EvidencePackV1.EvidenceRefEntry::evidenceRefId));
+        return List.copyOf(entries);
+    }
+
+    /**
+     * M2/M4: write-path binding - the real file is the authority for every lineage field it can
+     * decode; the tool result only FILLS fields the file cannot carry (RAW files have no
+     * validation/calculation/calendar/config versions). Never the reverse.
+     */
+    public EvidencePackV1.EvidenceRefEntry verifyMerged(
+            String ref, com.supplymind.agent.tool.ToolResult.Lineage toolLineage
+    ) {
+        EvidencePackV1.EvidenceRefEntry entry = verifyWithAuthoritativeLineage(ref);
+        if (entry.status() != EvidenceStatus.VERIFIED || toolLineage == null) {
+            return entry;
+        }
+        return new EvidencePackV1.EvidenceRefEntry(
+                entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),
+                entry.status(), entry.reasonCode(),
+                entry.runId(), entry.rawRef(), entry.publishRef(),
+                entry.businessDate(), entry.periodStart(), entry.periodEnd(),
+                entry.validationVersion() != null ? entry.validationVersion() : toolLineage.validationVersion(),
+                entry.calculationVersion() != null ? entry.calculationVersion() : toolLineage.calculationVersion(),
+                entry.calendarVersion() != null ? entry.calendarVersion() : toolLineage.calendarVersion(),
+                entry.configVersions().isEmpty() ? toolLineage.configVersions() : entry.configVersions());
     }
 
     private static EvidencePackV1.EvidenceRefEntry entry(

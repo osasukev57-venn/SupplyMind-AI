@@ -115,15 +115,18 @@ public final class ReportStore {
                                 || !report.requestId().equals(report.evidencePack().requestId())) {
                             failure = "REQUEST_IDENTITY_MISMATCH";
                         } else {
-                            // M4: re-verify the embedded evidence refs and compare every frozen
-                            // identity field (sha256/status/reasonCode/lineage) with the current
-                            // filesystem state; any drift fails closed.
+                            // M4: re-verify the embedded evidence refs against the CURRENT files,
+                            // recovering authoritative lineage by DECODING the real evidence files
+                            // (never the report's self-reported lineage). Every frozen identity
+                            // field applicable to the refType must equal the current state; any
+                            // drift fails closed.
                             com.supplymind.agent.evidence.EvidenceRefVerifier verifier =
                                     new com.supplymind.agent.evidence.EvidenceRefVerifier(dataRoot);
                             List<com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry> reverified =
-                                    verifier.verifyAll(report.evidencePack().evidenceRefs().stream()
-                                            .map(com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry::ref)
-                                            .toList());
+                                    verifier.verifyAllWithAuthoritativeLineage(
+                                            report.evidencePack().evidenceRefs().stream()
+                                                    .map(com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry::ref)
+                                                    .toList());
                             String bindingFailure = bindingMismatch(
                                     report.evidencePack().evidenceRefs(), reverified);
                             if (bindingFailure != null) {
@@ -146,10 +149,11 @@ public final class ReportStore {
     }
 
     /**
-     * M4: every frozen evidence field (ref, sha256, status, reasonCode and lineage) must equal
-     * the current re-verification result. A status drift to non-VERIFIED is reported by the
-     * caller as EVIDENCE_UNAVAILABLE; here we only detect drift between two VERIFIED states
-     * (sha/lineage change) and status/reasonCode drift that is not an availability change.
+     * M4: every frozen evidence field (ref, sha256, status, reasonCode and the lineage fields
+     * APPLICABLE to the refType) must equal the current re-verification result (authoritative,
+     * decoded from the real files). A status drift to non-VERIFIED is reported by the caller as
+     * EVIDENCE_UNAVAILABLE; here we only detect drift between two VERIFIED states (sha/lineage
+     * change) and status/reasonCode drift that is not an availability change.
      */
     private static String bindingMismatch(
             List<com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry> frozen,
@@ -175,17 +179,86 @@ public final class ReportStore {
                 if (!Objects.equals(frozenEntry.sha256(), current.sha256())) {
                     return "EVIDENCE_BINDING_MISMATCH";
                 }
-                if (!Objects.equals(frozenEntry.validationVersion(), current.validationVersion())
-                        || !Objects.equals(frozenEntry.calculationVersion(), current.calculationVersion())
-                        || !Objects.equals(frozenEntry.calendarVersion(), current.calendarVersion())
-                        || !Objects.equals(frozenEntry.configVersions(), current.configVersions())) {
-                    return "EVIDENCE_LINEAGE_MISMATCH";
+                String lineageFailure = lineageMismatch(frozenEntry, current);
+                if (lineageFailure != null) {
+                    return lineageFailure;
                 }
             } else if (!Objects.equals(frozenEntry.reasonCode(), current.reasonCode())) {
                 return "EVIDENCE_BINDING_MISMATCH";
             }
         }
         return null;
+    }
+
+    /**
+     * M4: compare only the lineage fields the refType actually carries in the real file, so a
+     * RAW file (which has no validation/calculation/calendar/config versions) is never compared
+     * against the report's tool-supplied filler values.
+     */
+    private static String lineageMismatch(
+            com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry frozen,
+            com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry current
+    ) {
+        switch (frozen.refType()) {
+            case "RAW":
+                return mismatch(frozen.runId(), current.runId(), frozen.rawRef(), current.rawRef());
+            case "LIFECYCLE":
+                return mismatch(frozen.runId(), current.runId(), frozen.rawRef(), current.rawRef(),
+                        frozen.validationVersion(), current.validationVersion());
+            case "DAILY":
+                return mismatch(frozen.businessDate(), current.businessDate(),
+                        frozen.validationVersion(), current.validationVersion(),
+                        frozen.calculationVersion(), current.calculationVersion(),
+                        frozen.calendarVersion(), current.calendarVersion(),
+                        frozen.configVersions(), current.configVersions());
+            case "AGGREGATE":
+                return mismatch(frozen.periodStart(), current.periodStart(),
+                        frozen.periodEnd(), current.periodEnd(),
+                        frozen.validationVersion(), current.validationVersion(),
+                        frozen.calculationVersion(), current.calculationVersion(),
+                        frozen.calendarVersion(), current.calendarVersion(),
+                        frozen.configVersions(), current.configVersions());
+            case "CONFIG":
+                return mismatch(frozen.configVersions(), current.configVersions());
+            default:
+                return null; // SOURCE/WARNING/unknown: identity is ref + sha256 + status
+        }
+    }
+
+    private static String mismatch(Object frozenA, Object currentA) {
+        return Objects.equals(frozenA, currentA) ? null : "EVIDENCE_LINEAGE_MISMATCH";
+    }
+
+    private static String mismatch(Object frozenA, Object currentA, Object frozenB, Object currentB) {
+        String first = mismatch(frozenA, currentA);
+        return first != null ? first : mismatch(frozenB, currentB);
+    }
+
+    private static String mismatch(Object frozenA, Object currentA, Object frozenB, Object currentB,
+                                   Object frozenC, Object currentC) {
+        String first = mismatch(frozenA, currentA, frozenB, currentB);
+        return first != null ? first : mismatch(frozenC, currentC);
+    }
+
+    private static String mismatch(Object frozenA, Object currentA, Object frozenB, Object currentB,
+                                   Object frozenC, Object currentC, Object frozenD, Object currentD) {
+        String first = mismatch(frozenA, currentA, frozenB, currentB, frozenC, currentC);
+        return first != null ? first : mismatch(frozenD, currentD);
+    }
+
+    private static String mismatch(Object frozenA, Object currentA, Object frozenB, Object currentB,
+                                   Object frozenC, Object currentC, Object frozenD, Object currentD,
+                                   Object frozenE, Object currentE) {
+        String first = mismatch(frozenA, currentA, frozenB, currentB, frozenC, currentC, frozenD, currentD);
+        return first != null ? first : mismatch(frozenE, currentE);
+    }
+
+    private static String mismatch(Object frozenA, Object currentA, Object frozenB, Object currentB,
+                                   Object frozenC, Object currentC, Object frozenD, Object currentD,
+                                   Object frozenE, Object currentE, Object frozenF, Object currentF) {
+        String first = mismatch(frozenA, currentA, frozenB, currentB, frozenC, currentC, frozenD, currentD,
+                frozenE, currentE);
+        return first != null ? first : mismatch(frozenF, currentF);
     }
 
     public record ReadResult(AgentReportV1 report, String failureCode) {

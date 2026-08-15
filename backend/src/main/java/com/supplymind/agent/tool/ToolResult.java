@@ -1,5 +1,6 @@
 package com.supplymind.agent.tool;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +20,8 @@ public record ToolResult(
         Map<String, Object> result,
         List<String> notices,
         List<String> evidenceRefs,
-        Lineage lineage
+        Lineage lineage,
+        Map<String, Lineage> evidenceLineageByRef
 ) {
     public ToolResult {
         if (toolName == null || toolName.isBlank()) {
@@ -31,6 +33,8 @@ public record ToolResult(
         result = result == null ? Map.of() : Map.copyOf(result);
         notices = notices == null ? List.of() : List.copyOf(notices);
         evidenceRefs = evidenceRefs == null ? List.of() : List.copyOf(evidenceRefs);
+        evidenceLineageByRef = evidenceLineageByRef == null
+                ? Map.of() : Map.copyOf(evidenceLineageByRef);
     }
 
     public static ToolResult success(
@@ -38,7 +42,7 @@ public record ToolResult(
             Map<String, Object> result, List<String> evidenceRefs, List<String> notices
     ) {
         return new ToolResult(toolName, toolVersion, requestId, ToolStatus.SUCCESS,
-                inputSummary, result, notices, evidenceRefs, null);
+                inputSummary, result, notices, evidenceRefs, null, Map.of());
     }
 
     public static ToolResult success(
@@ -46,21 +50,31 @@ public record ToolResult(
             Map<String, Object> result, List<String> evidenceRefs, List<String> notices, Lineage lineage
     ) {
         return new ToolResult(toolName, toolVersion, requestId, ToolStatus.SUCCESS,
-                inputSummary, result, notices, evidenceRefs, lineage);
+                inputSummary, result, notices, evidenceRefs, lineage, Map.of());
+    }
+
+    public static ToolResult success(
+            String toolName, String toolVersion, String requestId, String inputSummary,
+            Map<String, Object> result, List<String> evidenceRefs, List<String> notices,
+            Lineage lineage, Map<String, Lineage> evidenceLineageByRef
+    ) {
+        return new ToolResult(toolName, toolVersion, requestId, ToolStatus.SUCCESS,
+                inputSummary, result, notices, evidenceRefs, lineage,
+                new LinkedHashMap<>(evidenceLineageByRef));
     }
 
     public static ToolResult rejected(
             String toolName, String toolVersion, String requestId, String reason
     ) {
         return new ToolResult(toolName, toolVersion, requestId, ToolStatus.REJECTED,
-                reason, Map.of(), List.of(), List.of(), null);
+                reason, Map.of(), List.of(), List.of(), null, Map.of());
     }
 
     public static ToolResult noData(
             String toolName, String toolVersion, String requestId, String inputSummary, String reason
     ) {
         return new ToolResult(toolName, toolVersion, requestId, ToolStatus.NO_DATA,
-                inputSummary, Map.of("reason", reason), List.of(), List.of(), null);
+                inputSummary, Map.of("reason", reason), List.of(), List.of(), null, Map.of());
     }
 
     /** F4: real production lineage carried by the Tool Result (never placeholders). */

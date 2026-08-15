@@ -28,11 +28,17 @@ import java.util.regex.Pattern;
  */
 public final class AgentResponseVerifier {
 
+    /**
+     * M3: full-token business numbers. Scientific notation comes FIRST so "7.15e6" is one token
+     * (never truncated to "7.15" plus a dangling "e6"); thousands groups require at least one
+     * separator; the plain decimal form is the tail. "12%" and "12" stay DIFFERENT tokens - a
+     * percentage only matches a fact whose value is itself a percentage (unit-aware).
+     */
     private static final Pattern NUMBER_TOKEN = Pattern.compile(
-            "-?\\d{1,3}(?:,\\d{3})*(?:\\.\\d+)?%?"
-                    + "|-?\\d+(?:\\.\\d+)?%?"
-                    + "|-?\\d+(?:\\.\\d+)?[eE][+-]?\\d+"
-                    + "|-?\\d+(?:\\.\\d+)?");
+            "-?\\d+(?:\\.\\d+)?[eE][+-]?\\d+%?"
+                    + "|-?\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?%?"
+                    + "|-?\\d+(?:\\.\\d+)?%?");
+    private static final Pattern DATE_TOKEN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern FACT_REF = Pattern.compile("fact-[A-Za-z0-9._-]+");
     private static final Pattern EVIDENCE_REF = Pattern
             .compile("(raw|processed|staging|warning|config)/[A-Za-z0-9._/-]+\\.(json|csv)");
@@ -66,7 +72,8 @@ public final class AgentResponseVerifier {
         for (EvidencePackV1.Fact fact : evidencePack.facts()) {
             knownFactIds.add(fact.factId());
             knownVerifiedEvidenceRefs.addAll(fact.evidenceRefs());
-            facts.add(new EvidenceFact(fact.factId(), fact.value(), fact.evidenceRefs()));
+            facts.add(new EvidenceFact(fact.factId(), fact.value(), fact.evidenceRefs(),
+                    fact.businessDate(), fact.periodStart(), fact.periodEnd(), fact.actualSourceName()));
         }
         for (EvidencePackV1.EvidenceRefEntry entry : evidencePack.evidenceRefs()) {
             if (entry.status() == EvidenceStatus.VERIFIED) {
@@ -94,6 +101,12 @@ public final class AgentResponseVerifier {
             }
             List<String> claimNumbers = extractNumbers(claim.text());
             if (!claimNumbers.isEmpty() && !supportsNumbers(claim, facts)) {
+                return Verification.rejected("UNSUPPORTED_CLAIM_REFERENCE");
+            }
+            // M3: dates, periods and source declarations in a structured claim must also be
+            // supported by the facts that claim references - an unrelated reference never
+            // validates a date/source the claim states.
+            if (!claimTextSupported(claim, facts)) {
                 return Verification.rejected("UNSUPPORTED_CLAIM_REFERENCE");
             }
         }
@@ -134,6 +147,67 @@ public final class AgentResponseVerifier {
         return false;
     }
 
+    /**
+     * M3: a structured claim's dates/periods and source declarations must be supported by the
+     * facts it references: every full ISO date in the claim text must fall within the referenced
+     * facts' businessDate/period, and every known source name appearing in the text must be the
+     * actualSourceName of a referenced fact.
+     */
+    private static boolean claimTextSupported(ModelClaimV1 claim, List<EvidenceFact> facts) {
+        List<EvidenceFact> referenced = new ArrayList<>();
+        for (EvidenceFact fact : facts) {
+            boolean byFactId = claim.factIds() != null && claim.factIds().contains(fact.factId());
+            boolean byRef = claim.evidenceRefs() != null && fact.evidenceRefs() != null
+                    && claim.evidenceRefs().stream().anyMatch(fact.evidenceRefs()::contains);
+            if (byFactId || byRef) {
+                referenced.add(fact);
+            }
+        }
+        if (referenced.isEmpty()) {
+            return true; // numeric support is handled by supportsNumbers; no reference = no dates
+        }
+        List<String> dates = new ArrayList<>();
+        Matcher dateMatcher = DATE_TOKEN.matcher(claim.text() == null ? "" : claim.text());
+        while (dateMatcher.find()) {
+            dates.add(dateMatcher.group());
+        }
+        for (String date : dates) {
+            if (!referenced.stream().anyMatch(fact -> supportsDate(fact, date))) {
+                return false;
+            }
+        }
+        for (EvidenceFact fact : facts) {
+            if (fact.actualSourceName() == null || fact.actualSourceName().isBlank()) {
+                continue;
+            }
+            if (claim.text() != null && claim.text().contains(fact.actualSourceName())) {
+                boolean supported = referenced.stream().anyMatch(ref -> ref.actualSourceName() != null
+                        && ref.actualSourceName().equals(fact.actualSourceName()));
+                if (!supported) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static boolean supportsDate(EvidenceFact fact, String date) {
+        if (date.equals(fact.businessDate())) {
+            return true;
+        }
+        if (fact.periodStart() != null && fact.periodEnd() != null) {
+            try {
+                java.time.LocalDate when = java.time.LocalDate.parse(date);
+                java.time.LocalDate start = java.time.LocalDate.parse(fact.periodStart());
+                java.time.LocalDate end = java.time.LocalDate.parse(fact.periodEnd());
+                return !when.isBefore(start) && !when.isAfter(end);
+            } catch (java.time.format.DateTimeParseException ignored) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private static boolean matchesAnyFactValue(String number, List<EvidenceFact> facts) {
         for (EvidenceFact fact : facts) {
             if (matchesAnyFactValueInList(fact.value(), List.of(number))) {
@@ -156,14 +230,20 @@ public final class AgentResponseVerifier {
         return false;
     }
 
-    /** M3: normalize 1,234.56 -> 1234.56; 12% -> 12; 1.5e3 -> 1500; keep - sign. */
+    /**
+     * M3: normalize 1,234.56 -> 1234.56; 1.5e3 -> 1500; keep - sign. A trailing % is PART OF the
+     * token: "12%" only matches a fact whose value is itself "12%" (percentage is never silently
+     * equivalent to the plain number - it only matches when the fact's unit IS a percentage).
+     */
     private static String normalizeNumber(String token) {
         String value = token.trim();
         boolean negative = value.startsWith("-");
         if (negative) {
             value = value.substring(1);
         }
+        String percent = "";
         if (value.endsWith("%")) {
+            percent = "%";
             value = value.substring(0, value.length() - 1);
         }
         value = value.replace(",", "");
@@ -173,7 +253,7 @@ public final class AgentResponseVerifier {
         } catch (NumberFormatException ignored) {
             // keep the raw token; exact-string matching will still reject unknown forms
         }
-        return (negative ? "-" : "") + value;
+        return (negative ? "-" : "") + value + percent;
     }
 
     /** M3: extract business numbers from free text (integer/one-decimal/multi/negative/percent/thousands/scientific). */
@@ -272,7 +352,10 @@ public final class AgentResponseVerifier {
         return null;
     }
 
-    private record EvidenceFact(String factId, String value, List<String> evidenceRefs) {
+    private record EvidenceFact(
+            String factId, String value, List<String> evidenceRefs,
+            String businessDate, String periodStart, String periodEnd, String actualSourceName
+    ) {
     }
 
     public record Verification(boolean verified, String reason) {
