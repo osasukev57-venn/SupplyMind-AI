@@ -1,5 +1,7 @@
 package com.supplymind.agent.llm;
 
+import com.supplymind.agent.tool.ToolResult;
+
 import java.util.List;
 
 /**
@@ -25,11 +27,19 @@ public final class LLMService {
             String question,
             String mode,
             List<LlmFact> facts,
-            List<String> evidenceRefs
+            List<String> evidenceRefs,
+            boolean toolCallingEnabled
     ) {
         public LLMRequest {
             facts = facts == null ? List.of() : List.copyOf(facts);
             evidenceRefs = evidenceRefs == null ? List.of() : List.copyOf(evidenceRefs);
+        }
+
+        public LLMRequest(
+                String queryId, String question, String mode,
+                List<LlmFact> facts, List<String> evidenceRefs
+        ) {
+            this(queryId, question, mode, facts, evidenceRefs, true);
         }
     }
 
@@ -43,14 +53,24 @@ public final class LLMService {
     public record LLMResponse(
             LLMStatus status,
             String explanation,
-            String failureKind
+            String failureKind,
+            List<ToolResult> toolResults
     ) {
+        public LLMResponse {
+            toolResults = toolResults == null ? List.of() : List.copyOf(toolResults);
+        }
+
         public static LLMResponse success(String explanation) {
-            return new LLMResponse(LLMStatus.SUCCESS, explanation, null);
+            return new LLMResponse(LLMStatus.SUCCESS, explanation, null, List.of());
+        }
+
+        /** M1: SUCCESS carries the full ToolResults the model actually selected and executed. */
+        public static LLMResponse success(String explanation, List<ToolResult> toolResults) {
+            return new LLMResponse(LLMStatus.SUCCESS, explanation, null, toolResults);
         }
 
         public static LLMResponse failure(LLMStatus status, String failureKind) {
-            return new LLMResponse(status, null, failureKind);
+            return new LLMResponse(status, null, failureKind, List.of());
         }
     }
 

@@ -259,6 +259,7 @@ class AgentAttackTest {
         configs.activate(new MonitorSeriesConfigV1("1.0", 1, Mode.FORMAL, AT,
                 List.of(fxItem())));
         HistoryQueryService history = new HistoryQueryService(root);
+        writeRawFixture(root, files, FX_ITEM);
         writeDailyFixture(root, files, FX_ITEM);
         ConfigManagementService configManagement =
                 new ConfigManagementService(configs, new com.supplymind.provider.DataProviderRegistry());
@@ -279,6 +280,28 @@ class AgentAttackTest {
                 RouteDecision.PRIMARY, null, AT, null, "USD", "1美元对人民币", "人民币汇率中间价",
                 "arithmetic-mean-v1", 8, 4, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
                 "CNY", "USD", "CNY/1 USD", null);
+    }
+
+    private static void writeRawFixture(DataRoot root, AtomicFileStore files, String itemId) {
+        String runId = "fx-run-20260810";
+        String rawRef = DataPaths.rawRef("formal", "official_web", itemId, AT, runId);
+        byte[] payload = "fx-2026-08-10".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        com.supplymind.foundation.model.RawReceiptV1 raw = new com.supplymind.foundation.model.RawReceiptV1(
+                "1.0", rawRef, "acq-fx", runId, Mode.FORMAL,
+                ProviderType.OFFICIAL_WEB, AccessMethod.PUBLIC_OFFICIAL_HTML, 1,
+                "中国人民银行官网（授权中国外汇交易中心公布）",
+                "https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/index.html",
+                "fx-ref", itemId, "2026-08-10", "2026-08-10", null, AT, AT, null,
+                "7.15000000", "CNY/1 USD", "CNY", null, 200, "text/html; charset=UTF-8", "base64",
+                java.util.Base64.getEncoder().encodeToString(payload),
+                com.supplymind.foundation.storage.FileDigest.sha256(payload),
+                null, AT, null, null);
+        byte[] data = com.supplymind.foundation.codec.JsonV1Codec.encodeFile(raw);
+        ManifestV1 manifest = com.supplymind.foundation.storage.ManifestFactory.json(
+                rawRef, data, List.of(runId), AT);
+        files.commit("raw-fixture", DirtyTransactionType.SINGLE_FILE, AT,
+                List.of(new FileTransactionTarget(DirtyTargetRole.BUSINESS_FILE, rawRef, data,
+                        com.supplymind.foundation.codec.JsonV1Codec.encodeFile(manifest), true)));
     }
 
     private static void writeDailyFixture(DataRoot root, AtomicFileStore files, String itemId) {

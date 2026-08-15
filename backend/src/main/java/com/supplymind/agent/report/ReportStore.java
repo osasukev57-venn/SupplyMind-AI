@@ -36,6 +36,14 @@ public final class ReportStore {
 
     public String store(AgentReportV1 report) {
         Objects.requireNonNull(report, "report");
+        // M4: a formal claim must never carry empty evidenceRefs; without verifiable facts the
+        // report carries no formal claim (orchestrator already avoids this).
+        for (AgentReportV1.Claim claim : report.claims()) {
+            if (claim.evidenceRefs() == null || claim.evidenceRefs().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "AgentReport claim must carry non-empty evidenceRefs: " + claim.claimId());
+            }
+        }
         YearMonth month = YearMonth.from(report.createdAt().atZoneSameInstant(SHANGHAI));
         String ref = DataPaths.reportRef(month, report.reportId());
         byte[] dataBytes = JsonV1Codec.encodeFile(report);
@@ -107,11 +115,20 @@ public final class ReportStore {
                                 || !report.requestId().equals(report.evidencePack().requestId())) {
                             failure = "REQUEST_IDENTITY_MISMATCH";
                         } else {
+                            // M4: re-verify the embedded evidence refs and compare every frozen
+                            // identity field (sha256/status/reasonCode/lineage) with the current
+                            // filesystem state; any drift fails closed.
+                            com.supplymind.agent.evidence.EvidenceRefVerifier verifier =
+                                    new com.supplymind.agent.evidence.EvidenceRefVerifier(dataRoot);
                             List<com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry> reverified =
-                                    new com.supplymind.agent.evidence.EvidenceRefVerifier(dataRoot)
-                                            .verifyAll(report.evidencePack().evidenceRefs().stream()
-                                                    .map(com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry::ref)
-                                                    .toList());
+                                    verifier.verifyAll(report.evidencePack().evidenceRefs().stream()
+                                            .map(com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry::ref)
+                                            .toList());
+                            String bindingFailure = bindingMismatch(
+                                    report.evidencePack().evidenceRefs(), reverified);
+                            if (bindingFailure != null) {
+                                return new ReadResult(null, bindingFailure);
+                            }
                             List<String> unavailable = reverified.stream()
                                     .filter(entry -> entry.status()
                                             != com.supplymind.agent.evidence.EvidenceStatus.VERIFIED)
@@ -126,6 +143,49 @@ public final class ReportStore {
             }
         }
         return new ReadResult(null, failure);
+    }
+
+    /**
+     * M4: every frozen evidence field (ref, sha256, status, reasonCode and lineage) must equal
+     * the current re-verification result. A status drift to non-VERIFIED is reported by the
+     * caller as EVIDENCE_UNAVAILABLE; here we only detect drift between two VERIFIED states
+     * (sha/lineage change) and status/reasonCode drift that is not an availability change.
+     */
+    private static String bindingMismatch(
+            List<com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry> frozen,
+            List<com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry> reverified
+    ) {
+        for (com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry frozenEntry : frozen) {
+            com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry current = reverified.stream()
+                    .filter(entry -> entry.ref().equals(frozenEntry.ref()))
+                    .findFirst().orElse(null);
+            if (current == null) {
+                return "EVIDENCE_BINDING_MISMATCH";
+            }
+            if (frozenEntry.status() != current.status()) {
+                // availability drift is handled by the caller; status/reason drift on a
+                // VERIFIED frozen entry still must fail closed
+                if (frozenEntry.status() == com.supplymind.agent.evidence.EvidenceStatus.VERIFIED
+                        && current.status() != com.supplymind.agent.evidence.EvidenceStatus.VERIFIED) {
+                    return null; // caller reports EVIDENCE_UNAVAILABLE
+                }
+                return "EVIDENCE_BINDING_MISMATCH";
+            }
+            if (frozenEntry.status() == com.supplymind.agent.evidence.EvidenceStatus.VERIFIED) {
+                if (!Objects.equals(frozenEntry.sha256(), current.sha256())) {
+                    return "EVIDENCE_BINDING_MISMATCH";
+                }
+                if (!Objects.equals(frozenEntry.validationVersion(), current.validationVersion())
+                        || !Objects.equals(frozenEntry.calculationVersion(), current.calculationVersion())
+                        || !Objects.equals(frozenEntry.calendarVersion(), current.calendarVersion())
+                        || !Objects.equals(frozenEntry.configVersions(), current.configVersions())) {
+                    return "EVIDENCE_LINEAGE_MISMATCH";
+                }
+            } else if (!Objects.equals(frozenEntry.reasonCode(), current.reasonCode())) {
+                return "EVIDENCE_BINDING_MISMATCH";
+            }
+        }
+        return null;
     }
 
     public record ReadResult(AgentReportV1 report, String failureCode) {

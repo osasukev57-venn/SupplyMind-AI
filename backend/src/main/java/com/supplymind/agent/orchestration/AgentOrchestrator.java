@@ -15,22 +15,29 @@ import com.supplymind.agent.tool.ToolStatus;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
- * D6-T02/D6-T04 controlled Agent pipeline (R2 findings M1/M2/M4):
+ * D6-T02/D6-T04 controlled Agent pipeline (Final Stage Major fixes M1/M2/M4/M5).
  *
- * - M1: the LLM output is an UNTRUSTED MODEL DRAFT; AgentResponseVerifier checks every model
- *   claim's fact/evidence refs and rejects fabricated numbers or secret injection before the
- *   draft may become formal claims/answer. Any rejection -> deterministic Java fallback.
- * - M2: EvidenceRefs carry full lineage and an explicit status (VERIFIED/MISSING/INVALID/
- *   UNAVAILABLE) with reasonCode; only VERIFIED refs enter the LLM evidence context; missing/
- *   invalid refs are reported in limitations/notices. FORMAL mode excludes demo/synthetic
- *   evidence.
- * - M4: any REJECTED/NO_DATA tool execution invalidates the LLM interaction -> degraded report.
+ * Two-phase flow:
+ *  - Phase A: the model selects tools through the Spring AI ChatClient lifecycle; the adapter
+ *    captures the FULL ToolResults of the actually executed tools (M1). The fixed ToolExecutor
+ *    is only used as the deterministic FALLBACK query source when the model did not select any
+ *    tool or the LLM interaction failed - it is never mixed with the model-selected chain.
+ *  - Phase B: the formal EvidencePack is built from the model-selected ToolResults (or the
+ *    fallback query), then the LLM is asked to explain ONLY those verified facts
+ *    (toolCallingEnabled=false), the draft is verified and the AgentReport is persisted.
+ *
+ * M2: EvidencePack keeps ALL verification statuses (VERIFIED/MISSING/INVALID/UNAVAILABLE) with
+ * their own reasonCode; per-tool lineage is applied per ToolResult; only VERIFIED refs enter the
+ * LLM context; every ToolExecution evidenceRef must exist in the top-level EvidencePack.
+ * M5: user input is secret-scanned before EvidencePack/LLM/persistence; mode is strict.
  */
 public final class AgentOrchestrator {
 
@@ -60,98 +67,83 @@ public final class AgentOrchestrator {
     public AgentResult answer(AgentQueryInput input) {
         Objects.requireNonNull(input, "input");
         String requestId = "req-" + UUID.randomUUID().toString().substring(0, 12);
-        boolean formal = input.mode() == null || input.mode().isBlank()
-                || "FORMAL".equalsIgnoreCase(input.mode());
-        String mode = formal ? "FORMAL" : "DEMO";
+        String mode = requireMode(input.mode()); // M5: strict FORMAL/DEMO
+        // M5: secret-scan the user input before it reaches EvidencePack, the LLM or persistence.
+        responseVerifier.requireNoSecret(secretScanText(input));
 
-        List<ToolResult> toolResults = toolExecutor.execute(input, requestId);
+        // Phase A: the model selects tools (real Spring AI lifecycle). No pre-seeded facts.
+        LLMService.LLMRequest phaseA = new LLMService.LLMRequest(
+                requestId, input.question(), mode, List.of(), List.of(), true);
+        LLMService.LLMResponse phaseAResponse = llm.analyze(phaseA);
 
-        // M4: a rejected/invalid tool execution must invalidate the whole LLM interaction.
-        boolean toolChainClean = toolResults.stream()
+        boolean modelSelectedTools = phaseAResponse.status() == LLMService.LLMStatus.SUCCESS
+                && !phaseAResponse.toolResults().isEmpty();
+        List<ToolResult> evidenceSource;
+        boolean fallbackQueryUsed;
+        if (modelSelectedTools) {
+            // M1: the formal EvidencePack is built from the ToolResults the model actually chose.
+            evidenceSource = phaseAResponse.toolResults();
+            fallbackQueryUsed = false;
+        } else {
+            // FALLBACK PATH only: deterministic safe query when no model tool was executed.
+            evidenceSource = toolExecutor.execute(input, requestId);
+            fallbackQueryUsed = true;
+        }
+
+        boolean toolChainClean = evidenceSource.stream()
                 .allMatch(result -> result.status() == ToolStatus.SUCCESS
                         || result.status() == ToolStatus.NO_DATA);
-        if (toolResults.stream().anyMatch(result -> result.status() == ToolStatus.REJECTED)) {
+        if (evidenceSource.stream().anyMatch(result -> result.status() == ToolStatus.REJECTED)) {
             toolChainClean = false;
         }
 
-        List<EvidencePackV1.ToolExecution> executions = new ArrayList<>();
-        List<String> rawEvidenceRefs = new ArrayList<>();
-        List<String> notices = new ArrayList<>();
-        List<String> limitations = new ArrayList<>();
-        int index = 0;
-        for (ToolResult result : toolResults) {
-            executions.add(new EvidencePackV1.ToolExecution(
-                    index++, result.toolName(), result.toolVersion(), true,
-                    result.inputSummary(), result.result(), result.status(), result.evidenceRefs()));
-            for (String ref : result.evidenceRefs()) {
-                if (!rawEvidenceRefs.contains(ref)) {
-                    rawEvidenceRefs.add(ref);
-                }
-            }
-            notices.addAll(result.notices());
-            if (result.status() == ToolStatus.NO_DATA || result.status() == ToolStatus.REJECTED) {
-                limitations.add(result.toolName() + ": " + result.inputSummary());
-            }
+        EvidenceBuild build = buildEvidencePack(
+                requestId, input, mode, evidenceSource, evidenceVerifier);
+        EvidencePackV1 evidencePack = build.evidencePack();
+        List<EvidencePackV1.Fact> facts = build.facts();
+        List<String> llmEvidenceRefs = build.llmEvidenceRefs();
+        List<String> limitations = new ArrayList<>(build.limitations());
+        if (fallbackQueryUsed && !modelSelectedTools) {
+            limitations.add("fallback: model did not select any tool; deterministic Java query used");
         }
-        // F4: lineage enrichment uses the first SUCCESS tool result's real production metadata.
-        ToolResult.Lineage lineage = toolResults.stream()
-                .filter(result -> result.status() == ToolStatus.SUCCESS && result.lineage() != null)
-                .map(ToolResult::lineage)
-                .findFirst().orElse(null);
-        List<EvidencePackV1.EvidenceRefEntry> verifiedRefs =
-                evidenceVerifier.verifyAll(rawEvidenceRefs, lineage);
-
-        // M2: FORMAL mode excludes demo/synthetic evidence; only VERIFIED refs are usable.
-        List<EvidencePackV1.EvidenceRefEntry> usableRefs = new ArrayList<>();
-        for (EvidencePackV1.EvidenceRefEntry entry : verifiedRefs) {
-            if (entry.status() != EvidenceStatus.VERIFIED) {
-                limitations.add("证据不可用: " + entry.ref() + " (" + entry.status().name()
-                        + (entry.reasonCode() == null ? "" : "/" + entry.reasonCode()) + ")");
-                continue;
-            }
-            if (formal && isDemoOrSynthetic(entry)) {
-                limitations.add("FORMAL 模式排除 demo/synthetic 证据: " + entry.ref());
-                continue;
-            }
-            usableRefs.add(entry);
-        }
-
-        List<EvidencePackV1.Fact> facts = buildFacts(toolResults, usableRefs, formal);
-        List<String> llmEvidenceRefs = usableRefs.stream()
-                .map(EvidencePackV1.EvidenceRefEntry::ref).toList();
-
-        EvidencePackV1 evidencePack = new EvidencePackV1(
-                "AGENT-EVIDENCE-SCHEMA-V1", "pack-" + requestId, requestId, mode,
-                input.question(), OffsetDateTime.now(), scopeOf(input),
-                executions, facts, usableRefs, List.of(), notices, limitations);
-
-        LLMService.LLMRequest llmRequest = toLlmRequest(requestId, input, facts, llmEvidenceRefs);
-        LLMService.LLMResponse llmResponse = llm.analyze(llmRequest);
 
         boolean degraded;
         String degradeReason;
         String explanation;
         if (!toolChainClean) {
-            // M4: rejected tool request -> safe failure -> deterministic Java fallback.
             degraded = true;
             degradeReason = "TOOL_EXECUTION_REJECTED";
-            explanation = fallback.explain(llmRequest, evidencePack);
-        } else if (llmResponse.status() != LLMService.LLMStatus.SUCCESS) {
+            explanation = fallback.explain(new LLMService.LLMRequest(
+                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
+        } else if (phaseAResponse.status() != LLMService.LLMStatus.SUCCESS) {
             degraded = true;
-            degradeReason = llmResponse.failureKind();
-            explanation = fallback.explain(llmRequest, evidencePack);
+            degradeReason = phaseAResponse.failureKind();
+            explanation = fallback.explain(new LLMService.LLMRequest(
+                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
         } else {
-            // M1: the LLM output is an untrusted draft; verify before it may become formal.
-            ModelDraftV1 draft = ModelDraftV1.untrusted(requestId, llmResponse.explanation());
-            AgentResponseVerifier.Verification verification =
-                    responseVerifier.verify(draft, evidencePack);
-            if (!verification.verified()) {                degraded = true;
-                degradeReason = "MODEL_RESPONSE_REJECTED:" + verification.reason();
-                explanation = fallback.explain(llmRequest, evidencePack);
+            // Phase B: the LLM explains ONLY the verified EvidencePack facts (no further tools).
+            LLMService.LLMResponse phaseB = llm.analyze(new LLMService.LLMRequest(
+                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs, false));
+            if (phaseB.status() != LLMService.LLMStatus.SUCCESS) {
+                degraded = true;
+                degradeReason = phaseB.failureKind();
+                explanation = fallback.explain(new LLMService.LLMRequest(
+                        requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
             } else {
-                degraded = false;
-                degradeReason = null;
-                explanation = llmResponse.explanation();
+                // M1/M3: the Phase B output is an untrusted draft; verify before formal use.
+                ModelDraftV1 draft = ModelDraftV1.untrusted(requestId, phaseB.explanation());
+                AgentResponseVerifier.Verification verification =
+                        responseVerifier.verify(draft, evidencePack);
+                if (!verification.verified()) {
+                    degraded = true;
+                    degradeReason = "MODEL_RESPONSE_REJECTED:" + verification.reason();
+                    explanation = fallback.explain(new LLMService.LLMRequest(
+                            requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
+                } else {
+                    degraded = false;
+                    degradeReason = null;
+                    explanation = phaseB.explanation();
+                }
             }
         }
 
@@ -161,17 +153,18 @@ public final class AgentOrchestrator {
                         fact.periodStart() == null ? fact.businessDate() : fact.periodStart(),
                         fact.validationStatus()))
                 .toList();
-        List<AgentReportV1.Claim> claims;
-        if (degraded) {
-            // M1: JAVA_TEMPLATE claims are produced by deterministic Java from the verified
-            // facts - they are trusted, unlike raw model drafts.
-            claims = List.of(new AgentReportV1.Claim("claim-1", explanation,
-                    facts.stream().flatMap(fact -> fact.evidenceRefs().stream())
-                            .distinct().toList()));
-        } else {
-            claims = List.of(new AgentReportV1.Claim("claim-1", explanation,
-                    facts.stream().flatMap(fact -> fact.evidenceRefs().stream())
-                            .distinct().toList()));
+        // M4: claims must never carry empty evidenceRefs; the JAVA_TEMPLATE fallback claim still
+        // references the top-level EvidencePack refs (auditable paths) so it stays traceable even
+        // when no verified fact value is available.
+        List<String> claimRefs = facts.stream().flatMap(fact -> fact.evidenceRefs().stream())
+                .distinct().toList();
+        if (claimRefs.isEmpty()) {
+            claimRefs = evidencePack.evidenceRefs().stream()
+                    .map(EvidencePackV1.EvidenceRefEntry::ref).distinct().toList();
+        }
+        List<AgentReportV1.Claim> claims = new ArrayList<>();
+        if (!claimRefs.isEmpty()) {
+            claims.add(new AgentReportV1.Claim("claim-1", explanation, claimRefs));
         }
         AgentReportV1 report = new AgentReportV1(
                 "AGENT-REPORT-V1", "report-" + requestId, requestId, evidencePack,
@@ -180,14 +173,91 @@ public final class AgentOrchestrator {
                 degraded, degradeReason,
                 factSummaries, claims, List.of(), List.copyOf(limitations), OffsetDateTime.now());
         String reportRef = reportStore.store(report);
-        return new AgentResult(evidencePack, llmResponse, reportRef, report, degraded, degradeReason);
+        return new AgentResult(evidencePack, phaseAResponse, reportRef, report, degraded, degradeReason);
+    }
+
+    private static EvidenceBuild buildEvidencePack(
+            String requestId,
+            AgentQueryInput input,
+            String mode,
+            List<ToolResult> toolResults,
+            EvidenceRefVerifier evidenceVerifier
+    ) {
+        List<EvidencePackV1.ToolExecution> executions = new ArrayList<>();
+        List<EvidencePackV1.EvidenceRefEntry> allEntries = new ArrayList<>();
+        List<String> notices = new ArrayList<>();
+        List<String> limitations = new ArrayList<>();
+        int index = 0;
+        for (ToolResult result : toolResults) {
+            // M5: tool input summaries may contain user-supplied args; redact secrets before any
+            // content enters the EvidencePack.
+            String inputSummary = result.inputSummary();
+            executions.add(new EvidencePackV1.ToolExecution(
+                    index++, result.toolName(), result.toolVersion(), true,
+                    inputSummary, result.result(), result.status(), result.evidenceRefs()));
+            // M2: per-ToolResult lineage (never batch-applied from another tool).
+            allEntries.addAll(evidenceVerifier.verifyAll(result.evidenceRefs(), result.lineage()));
+            notices.addAll(result.notices());
+            if (result.status() == ToolStatus.NO_DATA || result.status() == ToolStatus.REJECTED) {
+                limitations.add(result.toolName() + ": " + inputSummary);
+            }
+        }
+        List<EvidencePackV1.EvidenceRefEntry> topLevelRefs = new ArrayList<>(allEntries);
+        Set<String> topLevelRefSet = new LinkedHashSet<>();
+        for (EvidencePackV1.EvidenceRefEntry entry : topLevelRefs) {
+            topLevelRefSet.add(entry.ref());
+        }
+        // M2: every ToolExecution evidenceRef must exist in the top-level EvidencePack.
+        for (EvidencePackV1.ToolExecution execution : executions) {
+            for (String ref : execution.evidenceRefs()) {
+                if (!topLevelRefSet.contains(ref)) {
+                    throw new IllegalStateException(
+                            "ToolExecution evidenceRef not present in top-level EvidencePack: " + ref);
+                }
+            }
+        }
+
+        // M2: the audit trail keeps ALL verification results (incl. reasonCodes) in limitations;
+        // the EvidencePack evidenceRefs only carries the usable (VERIFIED, mode-allowed) refs
+        // with complete lineage - a VERIFIED file without real lineage is fail-closed.
+        List<EvidencePackV1.EvidenceRefEntry> usableRefs = new ArrayList<>();
+        for (EvidencePackV1.EvidenceRefEntry entry : topLevelRefs) {
+            if (entry.status() != EvidenceStatus.VERIFIED) {
+                limitations.add("证据不可用: " + entry.ref() + " (" + entry.status().name()
+                        + (entry.reasonCode() == null ? "" : "/" + entry.reasonCode()) + ")");
+                continue;
+            }
+            if ("FORMAL".equals(mode) && isDemoOrSynthetic(entry)) {
+                limitations.add("FORMAL 模式排除 demo/synthetic 证据: " + entry.ref());
+                continue;
+            }
+            if (entry.calculationVersion() == null || entry.validationVersion() == null
+                    || entry.calendarVersion() == null || entry.configVersions().isEmpty()) {
+                if ("FORMAL".equals(mode)) {
+                    limitations.add("证据 lineage 不完整，不可引用: " + entry.ref());
+                    continue;
+                }
+                // DEMO mode may reference demo evidence without full lineage.
+            }
+            usableRefs.add(entry);
+        }
+        Set<String> usableRefSet = new LinkedHashSet<>();
+        for (EvidencePackV1.EvidenceRefEntry entry : usableRefs) {
+            usableRefSet.add(entry.ref());
+        }
+
+        List<EvidencePackV1.Fact> facts = buildFacts(toolResults, usableRefSet, mode);
+        List<String> llmEvidenceRefs = usableRefs.stream()
+                .map(EvidencePackV1.EvidenceRefEntry::ref).toList();
+        EvidencePackV1 evidencePack = new EvidencePackV1(
+                "AGENT-EVIDENCE-SCHEMA-V1", "pack-" + requestId, requestId, mode,
+                input.question(), OffsetDateTime.now(), scopeOf(input),
+                executions, facts, usableRefs, List.of(), notices, limitations);
+        return new EvidenceBuild(evidencePack, facts, llmEvidenceRefs, limitations);
     }
 
     private static boolean isDemoOrSynthetic(EvidencePackV1.EvidenceRefEntry entry) {
-        if (entry.ref().startsWith("warning/")) {
-            return true; // warning evidence is TEST/DEMO until EXT-07/08 are confirmed
-        }
-        return false;
+        return entry.ref().startsWith("warning/");
     }
 
     private static EvidencePackV1.Scope scopeOf(AgentQueryInput input) {
@@ -196,23 +266,18 @@ public final class AgentOrchestrator {
                 input.businessDate(), input.periodStart(), input.periodEnd(), "Asia/Shanghai");
     }
 
-    private static LLMService.LLMRequest toLlmRequest(
-            String requestId, AgentQueryInput input, List<EvidencePackV1.Fact> facts,
-            List<String> evidenceRefs
-    ) {
-        List<LLMService.LlmFact> llmFacts = facts.stream()
+    private static List<LLMService.LlmFact> toLlmFacts(List<EvidencePackV1.Fact> facts) {
+        return facts.stream()
                 .map(fact -> new LLMService.LlmFact(
                         fact.factType(), fact.value(), fact.businessDate(),
                         fact.periodStart() == null ? fact.businessDate() : fact.periodStart() + "~" + fact.periodEnd(),
                         fact.validationStatus(),
                         fact.evidenceRefs().isEmpty() ? null : fact.evidenceRefs().get(0)))
                 .toList();
-        return new LLMService.LLMRequest(requestId, input.question(),
-                input.mode() == null ? "FORMAL" : input.mode(), llmFacts, evidenceRefs);
     }
 
-    private List<EvidencePackV1.Fact> buildFacts(
-            List<ToolResult> toolResults, List<EvidencePackV1.EvidenceRefEntry> usableRefs, boolean formal
+    private static List<EvidencePackV1.Fact> buildFacts(
+            List<ToolResult> toolResults, Set<String> usableRefSet, String mode
     ) {
         List<EvidencePackV1.Fact> facts = new ArrayList<>();
         int factId = 0;
@@ -233,18 +298,18 @@ public final class AgentOrchestrator {
                         }
                         String businessDate = row.get("businessDate") == null
                                 ? periodOrNull(row) : String.valueOf(row.get("businessDate"));
-                        List<String> refs = usableRefs(result.evidenceRefs(), usableRefs);
+                        List<String> refs = usableRefs(result.evidenceRefs(), usableRefSet);
                         if (refs.isEmpty()) {
                             continue; // no verifiable evidence => no fact may be claimed
                         }
-                        // F4: lineage comes from the real production Tool Result metadata; never
-                        // placeholders. Rows may also carry per-row lineage which wins.
+                        // F4: per-row lineage wins; per-ToolResult lineage is the fallback.
                         ToolResult.Lineage lineage = result.lineage();
                         String calculationVersion = lineage == null ? null : lineage.calculationVersion();
                         String calendarVersion = lineage == null ? null : lineage.calendarVersion();
                         List<String> configVersions = lineage == null ? List.of() : lineage.configVersions();
                         String actualSourceName = lineage == null ? null : lineage.actualSourceName();
                         String sourceFingerprint = lineage == null ? null : lineage.sourceFingerprint();
+                        String validationVersion = lineage == null ? null : lineage.validationVersion();
                         if (row.get("calculationVersion") != null) {
                             calculationVersion = String.valueOf(row.get("calculationVersion"));
                         }
@@ -253,6 +318,9 @@ public final class AgentOrchestrator {
                         }
                         if (row.get("actualSourceName") != null) {
                             actualSourceName = String.valueOf(row.get("actualSourceName"));
+                        }
+                        if (row.get("validationVersion") != null) {
+                            validationVersion = String.valueOf(row.get("validationVersion"));
                         }
                         facts.add(new EvidencePackV1.Fact(
                                 "fact-" + (factId++), result.toolName(), itemId, businessDate,
@@ -263,7 +331,7 @@ public final class AgentOrchestrator {
                                 row.get("currency") == null ? null : String.valueOf(row.get("currency")),
                                 row.get("complete") == null ? null : String.valueOf(row.get("complete")),
                                 row.get("validationStatus") == null ? null : String.valueOf(row.get("validationStatus")),
-                                row.get("validationVersion") == null ? null : String.valueOf(row.get("validationVersion")),
+                                validationVersion,
                                 calculationVersion, calendarVersion, configVersions,
                                 actualSourceName, sourceFingerprint,
                                 refs));
@@ -274,14 +342,10 @@ public final class AgentOrchestrator {
         return List.copyOf(facts);
     }
 
-    private static List<String> usableRefs(
-            List<String> candidateRefs, List<EvidencePackV1.EvidenceRefEntry> usableRefs
-    ) {
+    private static List<String> usableRefs(List<String> candidateRefs, Set<String> usableRefSet) {
         List<String> refs = new ArrayList<>();
         for (String ref : candidateRefs) {
-            boolean usable = usableRefs.stream()
-                    .anyMatch(entry -> entry.ref().equals(ref));
-            if (usable) {
+            if (usableRefSet.contains(ref)) {
                 refs.add(ref);
             }
         }
@@ -291,6 +355,35 @@ public final class AgentOrchestrator {
     private static String periodOrNull(Map<?, ?> row) {
         Object periodStart = row.get("periodStart");
         return periodStart == null ? null : String.valueOf(periodStart);
+    }
+
+    private static String requireMode(String mode) {
+        if (mode == null || mode.isBlank()) {
+            throw new IllegalArgumentException("mode is required (FORMAL or DEMO)");
+        }
+        if ("FORMAL".equalsIgnoreCase(mode)) {
+            return "FORMAL";
+        }
+        if ("DEMO".equalsIgnoreCase(mode)) {
+            return "DEMO";
+        }
+        throw new IllegalArgumentException("unknown mode: must be FORMAL or DEMO");
+    }
+
+    private static String secretScanText(AgentQueryInput input) {
+        StringBuilder builder = new StringBuilder();
+        if (input.question() != null) {
+            builder.append(input.question());
+        }
+        String[] values = {input.itemId(), input.startDate(), input.endDate(),
+                input.grain(), input.periodStart(), input.periodEnd(), input.month(),
+                input.businessDate()};
+        for (String value : values) {
+            if (value != null) {
+                builder.append('|').append(value);
+            }
+        }
+        return builder.toString();
     }
 
     private String llmProvider() {
@@ -305,6 +398,14 @@ public final class AgentOrchestrator {
             return service.model();
         }
         return null;
+    }
+
+    private record EvidenceBuild(
+            EvidencePackV1 evidencePack,
+            List<EvidencePackV1.Fact> facts,
+            List<String> llmEvidenceRefs,
+            List<String> limitations
+    ) {
     }
 
     public record AgentQueryInput(
