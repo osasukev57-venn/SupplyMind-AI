@@ -89,5 +89,13 @@ public record ToolResult(
         public Lineage {
             configVersions = configVersions == null ? List.of() : List.copyOf(configVersions);
         }
+
+        /**
+         * Explicit per-ref fail-closed marker. A missing map key permits tool-level fallback;
+         * a present key with this empty lineage records heterogeneous lineage and forbids it.
+         */
+        public static Lineage ambiguous() {
+            return new Lineage(null, null, List.of(), null, null, null);
+        }
     }
 }

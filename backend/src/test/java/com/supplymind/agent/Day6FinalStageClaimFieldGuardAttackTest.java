@@ -109,19 +109,22 @@ class Day6FinalStageClaimFieldGuardAttackTest {
     @Test
     void fabricatedSourceDeclarationWithEmptySourceNamesRejects() {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "fabricated-source");
-        AgentOrchestrator.AgentResult result = fixture.orchestrator(
-                request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"ok\",\"claims\":[{\"claimId\":\"c1\","
-                                + "\"text\":\"来源：fabricated source 提供数据\","
-                                + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[],"
-                                + "\"sourceNames\":[],\"businessDates\":[]}]}"),
-                new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
-
-        assertTrue(result.degraded(),
-                "a fabricated source declaration with empty sourceNames must fail closed");
-        assertTrue(result.degradeReason().contains("UNSUPPORTED_CLAIM_REFERENCE"),
-                "reason=" + result.degradeReason());
-        assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
+        for (String declaration : List.of(
+                "来源：虚构银行提供数据",
+                "来源：Fake Bank Ltd 提供数据",
+                "source: Fake Bank Ltd provides data")) {
+            AgentOrchestrator.AgentResult result = fixture.orchestrator(
+                    request -> LLMService.LLMResponse.success(
+                            "{\"answer\":\"ok\",\"claims\":[{\"claimId\":\"c1\","
+                                    + "\"text\":\"" + declaration + "\","
+                                    + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[],"
+                                    + "\"sourceNames\":[],\"businessDates\":[]}]}"),
+                    new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
+            assertTrue(result.degraded(), "must reject unknown source declaration: " + declaration);
+            assertTrue(result.degradeReason().contains("UNSUPPORTED_CLAIM_REFERENCE"),
+                    "reason=" + result.degradeReason() + " declaration=" + declaration);
+            assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
+        }
     }
 
     @Test

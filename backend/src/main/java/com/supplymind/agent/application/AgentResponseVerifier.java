@@ -40,8 +40,8 @@ public final class AgentResponseVerifier {
                     + "|-?\\d+(?:\\.\\d+)?%?");
     private static final Pattern DATE_TOKEN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern FACT_REF = Pattern.compile("fact-[A-Za-z0-9._-]+");
-    private static final Pattern SOURCE_DECLARATION = Pattern.compile(
-            "(?i)(?:\\bsource\\b|来源)\\s*[:：]?\\s*([A-Za-z0-9_\\-./]+)");
+    private static final Pattern SOURCE_MARKER = Pattern.compile(
+            "(?iu)(?:\\bsource\\b|来源|来自)");
     private static final Pattern EVIDENCE_REF = Pattern
             .compile("(raw|processed|staging|warning|config)/[A-Za-z0-9._/-]+\\.(json|csv)");
 
@@ -250,15 +250,52 @@ public final class AgentResponseVerifier {
                 return false;
             }
         }
-        // Any source declaration naming an UNKNOWN source cannot be verified -> fail closed.
-        Matcher matcher = SOURCE_DECLARATION.matcher(text);
+        // Every source marker must be followed by one of this claim's explicitly declared and
+        // already fact-backed sourceNames. Matching the declared string itself supports Chinese
+        // and multi-word names and fails closed when the declaration cannot be parsed reliably.
+        Matcher matcher = SOURCE_MARKER.matcher(text);
+        int coveredUntil = -1;
         while (matcher.find()) {
-            String token = matcher.group(1);
-            if (!knownSourceNames.contains(token)) {
+            if (matcher.start() < coveredUntil) {
+                continue; // marker word inside an already verified multi-word source name
+            }
+            int declarationStart = skipSourceConnector(text, matcher.end());
+            String matchedSource = null;
+            for (String source : claim.sourceNames()) {
+                if (source != null && !source.isBlank()
+                        && text.startsWith(source, declarationStart)) {
+                    matchedSource = source;
+                    break;
+                }
+            }
+            if (matchedSource == null) {
                 return false;
             }
+            coveredUntil = declarationStart + matchedSource.length();
         }
         return true;
+    }
+
+    private static int skipSourceConnector(String text, int start) {
+        int index = start;
+        while (index < text.length()) {
+            char current = text.charAt(index);
+            if (Character.isWhitespace(current) || current == ':' || current == '：') {
+                index++;
+                continue;
+            }
+            break;
+        }
+        for (String connector : List.of("from", "为", "于", "是", "自")) {
+            if (text.regionMatches(true, index, connector, 0, connector.length())) {
+                index += connector.length();
+                while (index < text.length() && Character.isWhitespace(text.charAt(index))) {
+                    index++;
+                }
+                break;
+            }
+        }
+        return index;
     }
 
     private static boolean supportsDate(EvidenceFact fact, String date) {

@@ -41,6 +41,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -94,6 +95,14 @@ class Day6FinalStageRowToRefConfigTest {
                 "fact of row-A must carry EXACTLY raw-A");
         assertEquals(List.of(fixture.rawBRef()), second.evidenceRefs(),
                 "fact of row-B must carry EXACTLY raw-B");
+        assertEquals("Row Source A", first.actualSourceName());
+        assertEquals(List.of("1"), first.configVersions());
+        assertEquals("Row Source B", second.actualSourceName());
+        assertEquals(List.of("2", "3"), second.configVersions());
+        assertEquals(CanonicalJsonV1.sha256LowerHex(CanonicalJsonV1.sourceIdentity(
+                ProviderType.OFFICIAL_WEB, "Row Source A", AccessMethod.PUBLIC_OFFICIAL_HTML)), first.sourceFingerprint());
+        assertEquals(CanonicalJsonV1.sha256LowerHex(CanonicalJsonV1.sourceIdentity(
+                ProviderType.OFFICIAL_WEB, "Row Source B", AccessMethod.PUBLIC_OFFICIAL_HTML)), second.sourceFingerprint());
     }
 
     @Test
@@ -115,11 +124,29 @@ class Day6FinalStageRowToRefConfigTest {
         HistoryQueryToolAdapter adapter = base.historyQuery();
         ToolResult result = adapter.historyQuery(Day6R2Fixture.ITEM, "2026-08-08", "2026-08-10", "req-tomb");
         assertEquals(ToolStatus.SUCCESS, result.status());
-        assertFalse(result.evidenceLineageByRef().containsKey(rawRef),
-                "A->B->A ordering must keep the ref permanently tombstoned - never re-added");
+        assertTrue(result.evidenceLineageByRef().containsKey(rawRef),
+                "an explicit map entry must distinguish ambiguous from missing/fallback");
+        assertEquals(ToolResult.Lineage.ambiguous(), result.evidenceLineageByRef().get(rawRef),
+                "A->B->A must retain the explicit ambiguous marker");
         assertEquals(EvidenceStatus.UNAVAILABLE,
                 new EvidenceRefVerifier(base.root()).verifyWithAuthoritativeLineage(dailyRef).status(),
                 "the file-level lineage must also fail closed as ambiguous");
+
+        AgentOrchestrator.AgentResult pipeline = base.orchestrator(
+                request -> LLMService.LLMResponse.success(
+                        "{\"answer\":\"ok\",\"claims\":[{\"claimId\":\"c1\",\"text\":\"ok\","
+                                + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[]}]}"),
+                new AgentResponseVerifier(List.of())).answer(new AgentOrchestrator.AgentQueryInput(
+                        "analyse heterogeneous ref", Day6R2Fixture.ITEM,
+                        "2026-08-08", "2026-08-10", null, null, null, null, null, "FORMAL"));
+        EvidencePackV1.EvidenceRefEntry finalRaw = pipeline.evidencePack().evidenceRefs().stream()
+                .filter(entry -> entry.ref().equals(rawRef)).findFirst().orElseThrow();
+        assertNull(finalRaw.validationVersion(),
+                "final EvidencePack must not refill ambiguous ref with first-row validationVersion");
+        assertNull(finalRaw.calculationVersion(),
+                "final EvidencePack must not refill ambiguous ref with first-row calculationVersion");
+        assertNull(finalRaw.calendarVersion(),
+                "final EvidencePack must not refill ambiguous ref with first-row calendarVersion");
     }
 
     @Test
@@ -230,8 +257,8 @@ class Day6FinalStageRowToRefConfigTest {
             String rawBRef = writeRaw(base, "rowrunB20260809", "Row Source B", "2026-08-09", valueB);
             String dailyRef = DataPaths.dailyRef(Day6R2Fixture.ITEM, YearMonth.of(2026, 8));
             List<DailyRecordV1> rows = List.of(
-                    row(base, "2026-08-08", rawARef, valueA, "rowrunA20260808", "Row Source A"),
-                    row(base, "2026-08-09", rawBRef, valueB, "rowrunB20260809", "Row Source B"));
+                    row(base, "2026-08-08", rawARef, valueA, "rowrunA20260808", "Row Source A", List.of(1)),
+                    row(base, "2026-08-09", rawBRef, valueB, "rowrunB20260809", "Row Source B", List.of(2, 3)));
             byte[] data = CsvV1Codec.encodeDaily(rows);
             ManifestV1 manifest = ManifestFactory.csv(dailyRef, data, 2, "2026-08-08", "2026-08-09",
                     List.of("rowrunA20260808", "rowrunB20260809"), Day6R2Fixture.AT);
@@ -242,11 +269,12 @@ class Day6FinalStageRowToRefConfigTest {
         }
 
         private static DailyRecordV1 row(Day6R2Fixture base, String businessDate, String rawRef,
-                                         String value, String runId, String sourceName) {
+                                         String value, String runId, String sourceName,
+                                         List<Integer> configVersions) {
             return new DailyRecordV1("1.0", businessDate, Day6R2Fixture.ITEM,
                     ProviderType.OFFICIAL_WEB, sourceName, AccessMethod.PUBLIC_OFFICIAL_HTML,
                     ProcessingStage.PUBLISHED, ValidationStatus.VERIFIED, "pboc-basic-validation-v1",
-                    List.of(1), "arithmetic-mean-v1", 8, 4, RoundingMode.HALF_UP,
+                    configVersions, "arithmetic-mean-v1", 8, 4, RoundingMode.HALF_UP,
                     "weekday-asia-shanghai-v1", value, 1, value, 1, 0, true, "CNY", "CNY/1 USD",
                     List.of(new DailyInputRefV1(runId, rawRef, 4)), Day6R2Fixture.AT, null);
         }

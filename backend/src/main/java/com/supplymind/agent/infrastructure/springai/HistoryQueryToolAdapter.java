@@ -73,6 +73,8 @@ public final class HistoryQueryToolAdapter {
                 entry.put("validationVersion", row.validationVersion());
                 entry.put("calculationVersion", row.calculationVersion());
                 entry.put("calendarVersion", row.calendarVersion());
+                entry.put("configVersions", normalizedConfigVersions(row));
+                entry.put("actualSourceName", row.actualSourceName());
                 entry.put("complete", row.complete());
                 // M2 R4: every row keeps the evidence refs IT really comes from (never the whole
                 // ToolResult set) and its OWN source fingerprint.
@@ -105,22 +107,20 @@ public final class HistoryQueryToolAdapter {
             // tombstoned (A->B->A order never re-adds it) - the file-level
             // AMBIGUOUS_FILE_LINEAGE then governs. Every row computes its OWN fingerprint.
             java.util.Map<String, ToolResult.Lineage> perRef = new java.util.LinkedHashMap<>();
-            java.util.Set<String> tombstonedRefs = new java.util.HashSet<>();
             for (DailyRecordV1 row : result.rows()) {
                 ToolResult.Lineage rowLineage = new ToolResult.Lineage(
                         row.calculationVersion(), row.calendarVersion(),
                         normalizedConfigVersions(row),
                         row.actualSourceName(), fingerprintOf(row), row.validationVersion());
                 for (var input : row.inputRefs()) {
-                    if (tombstonedRefs.contains(input.rawRef())) {
-                        continue; // heterogeneous ref stays tombstoned forever
-                    }
                     ToolResult.Lineage existing = perRef.get(input.rawRef());
                     if (existing == null) {
                         perRef.put(input.rawRef(), rowLineage);
-                    } else if (!existing.equals(rowLineage)) {
-                        perRef.remove(input.rawRef());
-                        tombstonedRefs.add(input.rawRef()); // never re-added
+                    } else if (!existing.equals(rowLineage)
+                            && !existing.equals(ToolResult.Lineage.ambiguous())) {
+                        // Keep an explicit entry so absence still means "fallback allowed" while
+                        // heterogeneous A->B->A remains ambiguous and never uses first-row data.
+                        perRef.put(input.rawRef(), ToolResult.Lineage.ambiguous());
                     }
                 }
             }

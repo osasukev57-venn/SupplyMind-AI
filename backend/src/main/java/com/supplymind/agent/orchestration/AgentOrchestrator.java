@@ -223,8 +223,10 @@ public final class AgentOrchestrator {
             // lineage is used as the tool-default; the real file stays the authority for any
             // field it can decode (M4 write-path binding).
             for (String ref : result.evidenceRefs()) {
-                ToolResult.Lineage perRef = result.evidenceLineageByRef().get(ref);
-                ToolResult.Lineage lineage = perRef != null ? perRef : result.lineage();
+                // containsKey is intentional: explicit ambiguous lineage suppresses fallback.
+                ToolResult.Lineage lineage = result.evidenceLineageByRef().containsKey(ref)
+                        ? result.evidenceLineageByRef().get(ref)
+                        : result.lineage();
                 allEntries.add(evidenceVerifier.verifyMerged(ref, lineage));
             }
             notices.addAll(result.notices());
@@ -476,6 +478,12 @@ public final class AgentOrchestrator {
                         }
                         if (row.get("calendarVersion") != null) {
                             calendarVersion = String.valueOf(row.get("calendarVersion"));
+                        }
+                        if (row.get("configVersions") instanceof List<?> rowConfigVersions) {
+                            configVersions = rowConfigVersions.stream()
+                                    .map(String::valueOf).distinct()
+                                    .sorted(java.util.Comparator.comparingLong(Long::parseLong))
+                                    .toList();
                         }
                         if (row.get("actualSourceName") != null) {
                             actualSourceName = String.valueOf(row.get("actualSourceName"));
