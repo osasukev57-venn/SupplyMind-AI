@@ -3,7 +3,7 @@
 > 文档性质：跨窗口可独立执行的任务清单  
 > 规范版本：v1.5（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
-> 当前进度锚点：Day 1～Day 5均已完成并通过各自Stage Gate，固定可运行基线为`day5-complete` / `36dc178`（Java17、Spring Boot3.3.6；最近完整技术回归83 suites/407 tests/0 failures/0 errors/8 skipped）。DEC-060已批准Day6 Spring AI架构变更；D6-T00=`TaskExecutionStatus=READY`，负责先验证Java17 + Spring Boot3.5.15 + Spring AI1.1.8兼容性；D6-T01～D6-T05=`TaskExecutionStatus=NOT_STARTED`且受D6-T00阻塞。当前没有Day6生产实现，禁止绕过D6-T00。
+> 当前进度锚点：Day 1～Day 6均已完成并通过各自Stage Gate。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8；最终完整技术回归105 suites/535 tests/0 failures/0 errors/8 skipped）；D6-T00～D6-T05=`TaskExecutionStatus=DONE`，Day6=`COMPLETE`。AT-AI-000/002/003本地合同=`PASS`，AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`且不被伪报为PASS。D7-T01=`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`，尚未开始Day7实现。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
 ## 1. 新窗口执行协议
@@ -518,7 +518,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D6-T05 Java模板降级与Day 6退出门禁
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`（FAST-R0 实施完成，`statusReason=D6T05_JAVA_TEMPLATE_FALLBACK_20260813`）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`（`statusReason=DAY6_STAGE_REVIEW_PASS_BC6F61A_20260816`；Java模板降级、EvidencePack/Report绑定、七工具边界、模型输出验证及最终攻击回归均通过；真实Cloud gated run保持`NOT_RUN/PENDING_EXTERNAL`）。
 - **风险/Review routing：** P0可用性Gate，`CORE_R2`。
 - **任务目标：** 对缺Key、断网、timeout、429、5xx、畸形/空响应和非法工具请求，使用同一EvidencePack生成Java模板报告并完成Day6端到端验收。
 - **对应需求：** C13、C20、C22、C36、AT-AI-001～003。
@@ -537,7 +537,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D7-T01 Vue3应用壳与API契约
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`（D6-T05与Day6 Stage Gate均已完成，尚未领取）。
 - **任务目标：** 建立Vue3/Vite页面壳、路由、统一API客户端、错误状态和精确小数字符串展示规范。
 - **对应需求：** F01、H09、C类前端冻结。
 - **输入：** 后端接口说明、UI页面清单。
@@ -911,6 +911,6 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ## 推荐启动顺序
 
-- Day 1～Day 5均为`COMPLETE`，固定基线为`day5-complete` / `36dc178`；DEC-060=`APPROVED`。
-- 当前唯一可领取P0任务为D6-T00（`TaskExecutionStatus=READY`）；D6-T01～D6-T05保持`TaskExecutionStatus=NOT_STARTED`并由D6-T00 Gate阻塞。
+- Day 1～Day 6均为`COMPLETE`；Day6最终技术候选=`bc6f61a`，DEC-060=`APPROVED`且实现保持不变。
+- 当前唯一可领取P0任务为D7-T01（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`）；Day7实现尚未开始。
 - P1/P2仅在P0验收全绿、Day 8功能冻结未被破坏且仍有时间时启动。

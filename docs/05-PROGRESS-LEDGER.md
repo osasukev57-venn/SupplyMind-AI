@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 6 架构变更已批准（Day 1～Day 5=`COMPLETE`；固定可运行基线=`day5-complete` / `36dc178`，Java17 + Spring Boot3.3.6；Current Final Technical Regression=`83 suites/407 tests/0 failures/0 errors/8 skipped`）。DEC-060=`APPROVED`；D6-T00=`TaskExecutionStatus=READY`；D6-T01～D6-T05=`TaskExecutionStatus=NOT_STARTED`且受D6-T00阻塞；尚未修改生产代码、测试或pom。
+> 当前阶段：Day 1～Day 6=`COMPLETE`。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8）；D6-T00～D6-T05=`DONE`，Day6 Stage Review=`PASS`，最终完整技术回归=105 suites/535 tests/0 failures/0 errors/8 skipped。AT-AI-000/002/003本地合同=`PASS`；AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。D7-T01=`NOT_STARTED`且`readyState=READY`。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -55,21 +55,21 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 
 | 字段 | 当前值 |
 |---|---|
-| 当前开发日 | Day 6（Architecture Change已批准；implementation未开始） |
-| 当前任务编号 | D6-T00 Framework Upgrade Gate |
-| 当前任务状态 | Day1～Day5=`COMPLETE`（Day5 Technical Candidate=`8ec3aaa`，Final M4 Closure=`7855fc2`）。**Day 6：D6-T00=`DONE`**（Spring Boot 3.5.15 + Spring AI 1.1.8，Java17）；**D6-T01～D6-T05 实施完成**；**DAY6_R2_NARROW_FIX_2（2026-08-14，base=`07f5539`，独立攻击=`8dc0c07`）**：`03e82bc`=HISTORICAL FAILED STAGE CANDIDATE、`07f5539`=HISTORICAL R2 FIX #1（INDEPENDENT ATTACK CHANGES_REQUIRED）、`8dc0c07`=INDEPENDENT ATTACK（20 targeted / 6 failures→本轮全部 FAIL→PASS，攻击测试未修改）；R2 Fix #2 关闭 F1-F4：F1 degradeReason=受控系统原因码（MODEL_FABRICATION_DETECTED/SECRET_INJECTION/UNKNOWN_FACT_REFERENCE/UNKNOWN_EVIDENCE_REFERENCE/UNKNOWN_TOOL/TOOL_EXECUTION_REJECTED/MODEL_RESPONSE_MALFORMED/LLM_UNAVAILABLE；模型编造数字/secret 不落盘 report）、F2 unknown fact/evidence ref 全 draft REJECTED→JAVA_TEMPLATE（自由文本引用扫描+结构化 claims 双校验）、F3 真实 ChatClient ToolCallAdvisor 两阶段生命周期（模型选工具→ToolCallback 执行→结果回传模型；request-scoped 恰 7 个工具；unknown tool→UNKNOWN_TOOL；REJECTED→TOOL_EXECUTION_REJECTED；ToolExecutionLedger 可信层记录）、F4 calculationVersion/calendarVersion/configVersions/actualSourceName/sourceFingerprint/validationVersion 真实 lineage 透传（无占位符，缺则 Evidence INCOMPLETE/UNAVAILABLE）；**CURRENT FINAL TECHNICAL REGRESSION（`mvn clean test` 真实执行）=90 classes/447 tests/0 failures/0 errors/8 skipped**（89+1 新 F3 suite；skipped 8 项与基线相同，Day1-Day5 无丢失/无新增 skip）；Day6 Final Acceptance（实施侧）=`PASS`；Day6 Stage Review=`CHANGES_REQUESTED`（R2_FIX_IN_PROGRESS，待独立 attack review）；Day 6=`NOT_COMPLETE`。Evidence=`docs/evidence/Day6/`。 |
-| 编码前基线对齐 | `v1.5 FROZEN`：既有DEC-041～059/C27～C34继续生效；新增DEC-060、C35～C36，精确冻结Java17、Boot3.5.15、Spring AI1.1.8、SupplyMind LLMService门面、只读Tool Adapter、EvidencePack所有权与升级/回退Gate。 |
-| 已完成任务 | Day1～Day5全部开发任务及Stage Gate；最近固定基线`day5-complete` / `36dc178`。 |
-| 正在进行任务 | 无；架构文档已批准并冻结，等待D6-T00领取。 |
-| 阻塞项 | D6-T01～D6-T05受D6-T00阻塞；D6-T00本身无外部阻塞。现有EXT状态不因本次架构变更改变。 |
-| 最近验收结果 | Day5 Stage Review=`PASS`、Day5=`COMPLETE`；Day6 AT-AI-000/001/002/003均尚未执行，不得宣称PASS。 |
-| 新增风险 | Spring Boot/Spring AI传递依赖或自动配置造成既有合同回归；工具越权；模型输出与证据脱节；凭据泄漏。由D6-T00、只读Adapter、SupplyMind EvidencePack和Java模板降级控制。 |
-| 下一任务 | D6-T00 Framework Upgrade Gate（唯一可领取P0任务）。 |
-| 最近一次可运行版本 | Java17 + Spring Boot3.3.6，`day5-complete` / `36dc178`；83 suites/407 tests/0 failures/0 errors/8 skipped。Boot3.5.15/Spring AI1.1.8只是目标，尚未成为可运行基线。 |
-| 最近一次Git提交 | 本Architecture Docs Candidate提交（具体hash以该提交Git HEAD为准；父提交/最近可运行生产基线=`36dc178`）；仅含文档，禁止混入中止的D6实现残留。 |
-| 是否偏离计划 | 经正式架构变更批准：Day6 LLM plumbing改用Spring AI adapter；Day1～Day5业务架构、Day7 Vue、Final P0不变。 |
-| 最后更新人/窗口 | 技术负责人 / Architecture Change Review；状态迁移：`PLAN_CHANGE_PENDING → ARCHITECTURE_CHANGE_APPROVED`。 |
-| 最后更新时间 | 2026-08-13（Asia/Shanghai） |
+| 当前开发日 | Day 6=`COMPLETE`；Day 7尚未开始 |
+| 当前任务编号 | Day6 Final Stage Closure；下一可领取任务=D7-T01 |
+| 当前任务状态 | D6-T00～D6-T05=`DONE`；Day6 Stage Review=`PASS`；Day6=`COMPLETE`。最终技术候选=`bc6f61a`，最终 Delta Review 无 BLOCKER/MAJOR。D7-T01=`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`。 |
+| 编码前基线对齐 | `v1.5 FROZEN`：DEC-060、C35～C36保持不变；Java17、Boot3.5.15、Spring AI1.1.8、SupplyMind LLMService门面、只读Tool Adapter与EvidencePack所有权边界均保持。 |
+| 已完成任务 | Day1～Day6全部开发任务及Stage Gate；Day6最终技术候选=`bc6f61a`。 |
+| 正在进行任务 | 无；D7-T01已具备领取条件但尚未开始。 |
+| 阻塞项 | Day6无阻塞项；真实Cloud LLM验证=`PENDING_EXTERNAL`且不阻塞Java模板P0闭环。 |
+| 最近验收结果 | AT-AI-000/002/003本地合同=`PASS`；AT-AI-001本地合同与故障降级矩阵=`PASS`；真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。 |
+| 新增风险 | 无新的Day6 P0风险；Cloud真实连接能力仍须在具备合法凭据时独立执行，不得回写当前本地合同结论。 |
+| 下一任务 | D7-T01 Vue3应用壳与API契约（`NOT_STARTED` + `READY`）。 |
+| 最近一次可运行版本 | Day6最终技术候选=`bc6f61a`；105 suites/535 tests/0 failures/0 errors/8 skipped。 |
+| 最近一次Git提交 | Day6最终技术候选=`bc6f61a`；本状态闭环记录位于当前docs closure提交。 |
+| 是否偏离计划 | 否；DEC-060不变，工具仍为7个只读工具，Write Tool=NONE，未引入RAG/Vector/MCP/数据库，Day1～Day5合同无回归。 |
+| 最后更新人/窗口 | 技术负责人 / Day6 Final Stage Closure |
+| 最后更新时间 | 2026-08-16（Asia/Shanghai） |
 
 ### 3.1 Day 6 Architecture Change Approval（2026-08-13）
 
@@ -79,6 +79,17 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 - 任务状态：D6-T00=`READY`；D6-T01～D6-T05=`NOT_STARTED`且blocked；AT-AI-000～003均未执行。
 - 本次变更：仅文档；生产代码、测试、`backend/pom.xml`均未修改。中止的D6工作区实现残留已清除，不构成候选内容。
 - 下一正式动作：领取D6-T00并以Day5固定基线执行Framework Upgrade Gate；失败则回退原基线。
+
+### 3.2 Day 6 Final Stage Closure（2026-08-16）
+
+- 状态迁移：Day6 Stage Review=`CHANGES_REQUESTED → PASS`；Day6=`NOT_COMPLETE → COMPLETE`。D6-T00～D6-T05均保持`DONE`。
+- 固定技术链：`9171154`（Round4）→ `033415b`（lineage/source修复）→ `bc6f61a`（来源名称前缀扩展绕过最终修复）。
+- 最终Review：`bc6f61a` Delta Review=`PASS`；BLOCKER=无，MAJOR=无。M2异构lineage永久tombstone、逐行evidenceRefs/configVersions/sourceFingerprint绑定通过；M3中英文未知来源与权威来源前缀扩展均fail-closed，合法来源声明保持通过。
+- 验收状态：AT-AI-000/002/003本地合同=`PASS`；AT-AI-001本地stub成功合同和缺Key/timeout/429/5xx/畸形/非法工具等降级矩阵=`PASS`；真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`，未伪报PASS。
+- 最终测试：定点来源/lineage攻击13/13 PASS；`8dc0c07`原始独立攻击20/20 PASS；`mvnw.cmd clean test`=105 suites/535 tests/0 failures/0 errors/8 skipped，skip与既有门禁一致，无新增。
+- 架构边界：Tool Count=7、Write Tool=NONE、DEC-060=UNCHANGED；Cloud LLM保持可选外部能力，Java模板在故障时基于同一EvidencePack确定性降级；未修改Day1～Day5业务合同。
+- 证据：`docs/evidence/Day6/DAY6-FINAL-STAGE-CLOSURE-20260816.md`。
+- 下一步：D7-T01=`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`；本闭环不代表Day7已开始。
 
 ## 4. 外部阻塞快照
 
