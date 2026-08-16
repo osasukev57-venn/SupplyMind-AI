@@ -1,7 +1,8 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 1～Day 6=`COMPLETE`。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8）；D6-T00～D6-T05=`DONE`，Day6 Stage Review=`PASS`，最终完整技术回归=105 suites/535 tests/0 failures/0 errors/8 skipped。AT-AI-000/002/003本地合同=`PASS`；AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。D7-T01=`NOT_STARTED`且`readyState=READY`。
+> 当前阶段：Day 1～Day 6=`COMPLETE`（保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8）；D6-T00～D6-T05=`DONE`，Day6 Stage Review=`PASS`，最终完整技术回归=105 suites/535 tests/0 failures/0 errors/8 skipped。AT-AI-000/002/003本地合同=`PASS`；AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。
+> Day7已开始：D7-T01～D7-T04实施完成（Vue3/Vite/TS 前端 + /api/dashboard 只读后端），实施 commit=`2ea6a4b`，前端 npm test 6/6 PASS、后端 Dashboard 套件 13/13 PASS、全量回归=108 suites/548 tests/0 failures/0 errors/8 skipped；D7-T01～D7-T04=`TaskExecutionStatus=REVIEW_PENDING`（待技术负责人 Code Review 后改 DONE）。Day6 COMPLETE 保持，Day6 代码零修改。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
