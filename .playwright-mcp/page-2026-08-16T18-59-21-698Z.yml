@@ -1,0 +1,131 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]: SupplyMind 监测仪表盘
+    - navigation [ref=e6]:
+      - link "总览" [ref=e7] [cursor=pointer]:
+        - /url: "#/dashboard"
+      - link "历史趋势" [ref=e8] [cursor=pointer]:
+        - /url: "#/history"
+      - link "数据质量" [ref=e9] [cursor=pointer]:
+        - /url: "#/quality"
+      - link "来源与录入" [ref=e10] [cursor=pointer]:
+        - /url: "#/sources"
+      - link "动态配置" [ref=e11] [cursor=pointer]:
+        - /url: "#/config"
+      - link "预警" [ref=e12] [cursor=pointer]:
+        - /url: "#/warning"
+      - link "Agent" [ref=e13] [cursor=pointer]:
+        - /url: "#/agent"
+  - main [ref=e14]:
+    - generic [ref=e97]:
+      - generic [ref=e98]:
+        - heading "来源列表与三层路线（模式：FORMAL）" [level=2] [ref=e99]
+        - table [ref=e100]:
+          - rowgroup [ref=e101]:
+            - row [ref=e102]:
+              - columnheader "标的" [ref=e103]
+              - columnheader "启用" [ref=e104]
+              - columnheader "来源意图" [ref=e105]
+              - columnheader "Provider" [ref=e106]
+              - columnheader "实际来源" [ref=e107]
+              - columnheader "访问方式" [ref=e108]
+              - columnheader "路线" [ref=e109]
+              - columnheader "降级原因" [ref=e110]
+          - rowgroup [ref=e111]:
+            - row [ref=e112]:
+              - cell "欧元/人民币中间价（FX.EUR.CNY.PBOC_MID）" [ref=e113]
+              - cell "是" [ref=e114]
+              - cell "PBOC" [ref=e115]
+              - cell "official_web" [ref=e116]
+              - cell "中国人民银行官网（授权中国外汇交易中心公布）" [ref=e117]
+              - cell "public_official_html" [ref=e118]
+              - cell "PRIMARY" [ref=e119]
+              - cell "—" [ref=e120]
+            - row [ref=e121]:
+              - cell "美元/人民币中间价（FX.USD.CNY.PBOC_MID）" [ref=e122]
+              - cell "是" [ref=e123]
+              - cell "PBOC" [ref=e124]
+              - cell "official_web" [ref=e125]
+              - cell "中国人民银行官网（授权中国外汇交易中心公布）" [ref=e126]
+              - cell "public_official_html" [ref=e127]
+              - cell "PRIMARY" [ref=e128]
+              - cell "—" [ref=e129]
+            - row [ref=e130]:
+              - cell "ADC12铝合金锭（Asian Metal意图）（MAT.ADC12.AM）" [ref=e131]
+              - cell "是" [ref=e132]
+              - cell "Asian Metal" [ref=e133]
+              - cell "manual" [ref=e134]
+              - cell "人工录入（Manual）" [ref=e135]
+              - cell "manual" [ref=e136]
+              - cell "FALLBACK_MANUAL" [ref=e137]
+              - cell "MANUAL_FALLBACK" [ref=e138]
+            - row [ref=e139]:
+              - cell "ADC12铝合金锭（SMM意图）（MAT.ADC12.SMM）" [ref=e140]
+              - cell "是" [ref=e141]
+              - cell "SMM" [ref=e142]
+              - cell "manual" [ref=e143]
+              - cell "人工录入（Manual）" [ref=e144]
+              - cell "manual" [ref=e145]
+              - cell "FALLBACK_MANUAL" [ref=e146]
+              - cell "MANUAL_FALLBACK" [ref=e147]
+            - row [ref=e148]:
+              - cell "AZ91D镁合金锭（Asian Metal意图）（MAT.AZ91D.AM）" [ref=e149]
+              - cell "是" [ref=e150]
+              - cell "Asian Metal" [ref=e151]
+              - cell "manual" [ref=e152]
+              - cell "人工录入（Manual）" [ref=e153]
+              - cell "manual" [ref=e154]
+              - cell "FALLBACK_MANUAL" [ref=e155]
+              - cell "MANUAL_FALLBACK" [ref=e156]
+            - row [ref=e157]:
+              - cell "AZ91D镁合金锭（SMM意图）（MAT.AZ91D.SMM）" [ref=e158]
+              - cell "是" [ref=e159]
+              - cell "SMM" [ref=e160]
+              - cell "manual" [ref=e161]
+              - cell "人工录入（Manual）" [ref=e162]
+              - cell "manual" [ref=e163]
+              - cell "FALLBACK_MANUAL" [ref=e164]
+              - cell "MANUAL_FALLBACK" [ref=e165]
+      - generic [ref=e166]:
+        - heading "手动录入" [level=2] [ref=e167]
+        - generic [ref=e190]:
+          - generic [ref=e191]: PENDING
+          - generic [ref=e192]: PENDING
+        - generic [ref=e168]:
+          - generic [ref=e169]:
+            - text: 标的 itemId
+            - textbox "标的 itemId" [ref=e170]:
+              - /placeholder: 如 FX.USD.CNY.PBOC_MID
+              - text: MAT.ADC12.SMM
+          - generic [ref=e171]:
+            - text: 来源（actualSourceName）
+            - textbox "来源（actualSourceName）" [ref=e172]:
+              - /placeholder: 实际来源名称（不得冒充）
+              - text: 华东某厂报价单（测试）
+          - generic [ref=e173]:
+            - text: 业务日期
+            - textbox "业务日期" [ref=e174]: 2026-08-10
+          - generic [ref=e175]:
+            - text: 值（原字符串）
+            - textbox "值（原字符串）" [ref=e176]:
+              - /placeholder: 如 6.7904
+              - text: "19850.50"
+          - generic [ref=e177]:
+            - text: 单位
+            - textbox "单位" [ref=e178]:
+              - /placeholder: 如 CNY/1 USD
+              - text: 元/吨
+          - button "提交（PENDING）" [active] [ref=e179] [cursor=pointer]
+        - generic [ref=e193]: manual intake accepted - raw and lifecycle timeline persisted as PENDING (formal verification/publish remain downstream gates)
+        - generic [ref=e194]: 受理证据：runId=manual-MAT.ADC12.SMM-20260810-68886d445e78930cde6d38d6db3f1c392c9b1f9cd22d41f0e90643cf39bf7d06；rawRef=raw/formal/manual/MAT.ADC12.SMM/2026/08/manual-MAT.ADC12.SMM-20260810-68886d445e78930cde6d38d6db3f1c392c9b1f9cd22d41f0e90643cf39bf7d06.json； timelineRef=staging/manual-MAT.ADC12.SMM-20260810-68886d445e78930cde6d38d6db3f1c392c9b1f9cd22d41f0e90643cf39bf7d06.json
+      - generic [ref=e180]:
+        - heading "文件导入" [level=2] [ref=e181]
+        - generic [ref=e182]:
+          - generic [ref=e183]: —
+          - generic [ref=e184]: 状态：未提交
+          - link "下载导入模板（CSV）" [ref=e185] [cursor=pointer]:
+            - /url: /api/dashboard/import/template
+        - button "Choose File" [ref=e186]
+      - generic [ref=e187]:
+        - heading "Synthetic 演示数据" [level=2] [ref=e188]
+        - button "生成演示数据（SyntheticDemo）" [ref=e189] [cursor=pointer]

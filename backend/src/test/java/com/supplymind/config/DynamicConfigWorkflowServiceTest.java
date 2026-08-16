@@ -260,6 +260,27 @@ class DynamicConfigWorkflowServiceTest {
         assertNotNull(corrupted.get(0).message());
     }
 
+    @Test
+    void backfillJobListIgnoresNonBackfillFilesInTheSameRuntimeJobsDir() throws Exception {
+        Harness harness = harness();
+        // D5-T01 time-state shares runtime/jobs/active - it is NOT a backfill job and must never
+        // be decoded as one (D8-T04 finding: the raw list() failed 400 on time-state.json).
+        Path jobDir = harness.root().resolveInternalRelative("runtime/jobs/active");
+        Files.createDirectories(jobDir);
+        Files.write(jobDir.resolve("time-state.json"),
+                "{\"schemaVersion\":\"1.0\",\"transactionId\":\"x\"}".getBytes(StandardCharsets.UTF_8));
+
+        assertEquals(List.of(), harness.workflow().backfillJobs(),
+                "time-state.json and other non-backfill files are excluded from the job list");
+
+        ConfigV1.AddItemRequest manual = manualRequest(
+                "MAT.MANUAL.LIST.001", "列表手工标的", "SMM", "ADC12", "2026-08-01", "2026-08-31");
+        ConfigV1.WorkflowResult result = harness.workflow().addItem(manual);
+        assertEquals(1, result.backfillJobs().size());
+        assertEquals(1, harness.workflow().backfillJobs().size(),
+                "the real backfill job is listed alongside the excluded time-state file");
+    }
+
     // ---- request builders ----
 
     private static ConfigV1.AddItemRequest gbpRequest(String backfillFrom, String backfillTo) {

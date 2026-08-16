@@ -1,0 +1,75 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]: SupplyMind 监测仪表盘
+    - navigation [ref=e6]:
+      - link "总览" [ref=e7] [cursor=pointer]:
+        - /url: "#/dashboard"
+      - link "历史趋势" [ref=e8] [cursor=pointer]:
+        - /url: "#/history"
+      - link "数据质量" [ref=e9] [cursor=pointer]:
+        - /url: "#/quality"
+      - link "来源与录入" [ref=e10] [cursor=pointer]:
+        - /url: "#/sources"
+      - link "动态配置" [ref=e11] [cursor=pointer]:
+        - /url: "#/config"
+      - link "预警" [ref=e12] [cursor=pointer]:
+        - /url: "#/warning"
+      - link "Agent" [ref=e13] [cursor=pointer]:
+        - /url: "#/agent"
+  - main [ref=e14]:
+    - generic [ref=e536]:
+      - heading "Agent 工作台" [level=1] [ref=e537]
+      - paragraph [ref=e538]: D8-T03：问题由后端编排为受控只读工具调用，所有数值来自 Java 事实；LLM 失败时生成 Java 模板报告（明确标记 degraded）。
+      - generic [ref=e539]:
+        - heading "提问" [level=2] [ref=e540]
+        - generic [ref=e541]:
+          - generic [ref=e542]:
+            - text: 问题
+            - textbox "问题" [ref=e543]:
+              - /placeholder: 如：分析 ADC12 近期上涨风险
+              - text: 分析 ADC12 近期趋势
+          - generic [ref=e544]:
+            - text: itemId（可选）
+            - textbox "itemId（可选）" [ref=e545]:
+              - /placeholder: 如 MAT.ADC12.SMM
+          - generic [ref=e546]:
+            - text: 模式
+            - combobox "模式" [ref=e547]:
+              - option "FORMAL" [selected]
+              - option "DEMO"
+        - button "提交分析" [ref=e548] [cursor=pointer]
+      - generic [ref=e549]:
+        - heading "分析结果 JAVA_TEMPLATE Java 模板降级：TOOL_EXECUTION_REJECTED" [level=2] [ref=e550]:
+          - text: 分析结果
+          - generic [ref=e551]: JAVA_TEMPLATE
+          - generic [ref=e552]: Java 模板降级：TOOL_EXECUTION_REJECTED
+        - paragraph [ref=e553]: 模型/模板来源：JAVA_TEMPLATE ；截至时间：-；requestId：req-8e703464-153
+        - generic [ref=e554]: 范围：- / - ~ - / Asia/Shanghai
+        - heading "Java 事实（facts）" [level=3] [ref=e555]
+        - paragraph [ref=e556]: 无事实
+        - heading "工具调用时间线（只读）" [level=3] [ref=e557]
+        - table [ref=e558]:
+          - rowgroup [ref=e559]:
+            - row [ref=e560]:
+              - columnheader "#" [ref=e561]
+              - columnheader "工具" [ref=e562]
+              - columnheader "只读" [ref=e563]
+              - columnheader "状态" [ref=e564]
+              - columnheader "输入" [ref=e565]
+              - columnheader "输出" [ref=e566]
+          - rowgroup [ref=e567]:
+            - row [ref=e568]:
+              - cell "0" [ref=e569]
+              - cell "series.resolve@1.0" [ref=e570]
+              - cell "是" [ref=e571]
+              - cell "REJECTED" [ref=e572]
+              - cell "itemId is required" [ref=e574]
+              - 'cell "{}" [ref=e575]'
+        - heading "报告结论（claims）" [level=3] [ref=e576]
+        - paragraph [ref=e577]: 无结论
+        - heading "证据引用" [level=3] [ref=e578]
+        - paragraph [ref=e579]: 无证据引用
+        - heading "限制与说明" [level=3] [ref=e580]
+        - list [ref=e581]:
+          - listitem [ref=e582]: "series.resolve: itemId is required"
+          - listitem [ref=e583]: "fallback: model did not select any tool; deterministic Java query used"

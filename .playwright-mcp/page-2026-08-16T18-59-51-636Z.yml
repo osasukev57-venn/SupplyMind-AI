@@ -1,0 +1,31 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]: SupplyMind 监测仪表盘
+    - navigation [ref=e6]:
+      - link "总览" [ref=e7] [cursor=pointer]:
+        - /url: "#/dashboard"
+      - link "历史趋势" [ref=e8] [cursor=pointer]:
+        - /url: "#/history"
+      - link "数据质量" [ref=e9] [cursor=pointer]:
+        - /url: "#/quality"
+      - link "来源与录入" [ref=e10] [cursor=pointer]:
+        - /url: "#/sources"
+      - link "动态配置" [ref=e11] [cursor=pointer]:
+        - /url: "#/config"
+      - link "预警" [ref=e12] [cursor=pointer]:
+        - /url: "#/warning"
+      - link "Agent" [ref=e13] [cursor=pointer]:
+        - /url: "#/agent"
+  - main [ref=e14]:
+    - generic [ref=e464]:
+      - heading "历史趋势 / 聚合" [level=2] [ref=e465]
+      - generic [ref=e466]:
+        - combobox [ref=e467]
+        - textbox [ref=e468]: 2026-01-01
+        - textbox [ref=e469]: 2026-12-31
+        - combobox [ref=e470]:
+          - option "日（daily）" [selected]
+          - option "月（month）"
+          - option "季（quarter）"
+          - option "半年（halfyear）"
+          - option "年（year）"

@@ -15,11 +15,13 @@ const metrics = ref<MetricsResponse | null>(null)
 const error = ref<string | null>(null)
 
 onMounted(async () => {
-  const overview = await import('../api/dashboard').then((m) => m.fetchOverview())
-  if (overview) {
-    items.value = overview.items.map((card) => ({
-      itemId: card.itemId,
-      displayName: card.displayName
+  // D8-T04 (AT-UI-002): the history selector must list ALL configured items INCLUDING
+  // disabled ones - a stopped target stays selectable for historical queries (H09/H06).
+  const config = await import('../api/config').then((m) => m.fetchConfigItems())
+  if (config) {
+    items.value = config.items.map((item) => ({
+      itemId: item.itemId,
+      displayName: item.displayName
     }))
     if (items.value.length > 0) {
       itemId.value = items.value[0].itemId

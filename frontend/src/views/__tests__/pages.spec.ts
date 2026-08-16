@@ -12,6 +12,10 @@ vi.mock('../../api/dashboard', () => ({
   submitSyntheticDemo: vi.fn()
 }))
 
+vi.mock('../../api/config', () => ({
+  fetchConfigItems: vi.fn()
+}))
+
 import DashboardView from '../DashboardView.vue'
 import HistoryView from '../HistoryView.vue'
 import QualityView from '../QualityView.vue'
@@ -26,7 +30,42 @@ import {
   submitManual,
   submitSyntheticDemo
 } from '../../api/dashboard'
+import { fetchConfigItems } from '../../api/config'
 import type { OverviewResponse, HistoryResponse, QualityResponse, SourcesResponse } from '../../types/dashboard'
+import type { ConfigView } from '../../types/config'
+
+const configItems: ConfigView = {
+  schemaVersion: '1.0',
+  configVersion: 1,
+  mode: 'FORMAL',
+  updatedAt: '2026-08-12T02:00:00+08:00',
+  items: [
+    {
+      itemId: 'FX.USD.CNY.PBOC_MID',
+      displayName: '美元/人民币',
+      enabled: true,
+      sourceIntent: 'PBOC',
+      providerType: 'official_web',
+      accessMethod: 'public_official_html',
+      actualSourceName: '中国人民银行官网',
+      routeDecision: 'PRIMARY',
+      fallbackReason: null,
+      routeEffectiveAt: '2026-08-12T02:00:00+08:00',
+      supersedesItemId: null,
+      externalCode: 'USD',
+      sourceFieldKey: '1美元对人民币',
+      rateKind: '人民币汇率中间价',
+      calculationVersion: 'arithmetic-mean-v1',
+      calculationScale: 8,
+      displayScale: 4,
+      roundingMode: 'HALF_UP',
+      calendarVersion: 'weekday-asia-shanghai-v1',
+      currency: 'CNY',
+      baseCurrency: 'USD',
+      unit: 'CNY/1 USD'
+    }
+  ]
+}
 
 const overview: OverviewResponse = {
   mode: 'FORMAL',
@@ -133,6 +172,7 @@ describe('dashboard pages', () => {
     vi.mocked(fetchHistory).mockResolvedValue(history)
     vi.mocked(fetchQuality).mockResolvedValue(quality)
     vi.mocked(fetchSources).mockResolvedValue(sources)
+    vi.mocked(fetchConfigItems).mockResolvedValue(configItems)
   })
 
   it('dashboard renders the exact backend value string', async () => {
@@ -179,6 +219,44 @@ describe('dashboard pages', () => {
     expect(wrapper.text()).toContain('缺失')
     expect(wrapper.text()).toContain('2026-01')
     expect(wrapper.text()).not.toContain('processed/')
+  })
+
+  it('history selector lists disabled items too (AT-UI-002: stopped targets stay queryable)', async () => {
+    vi.mocked(fetchConfigItems).mockResolvedValue({
+      ...configItems,
+      items: [
+        ...configItems.items,
+        {
+          itemId: 'FX.EUR.CNY.PBOC_MID',
+          displayName: '欧元/人民币中间价（已停用）',
+          enabled: false,
+          sourceIntent: 'PBOC',
+          providerType: 'official_web',
+          accessMethod: 'public_official_html',
+          actualSourceName: '中国人民银行官网',
+          routeDecision: 'PRIMARY',
+          fallbackReason: null,
+          routeEffectiveAt: '2026-08-12T02:00:00+08:00',
+          supersedesItemId: null,
+          externalCode: 'EUR',
+          sourceFieldKey: '1欧元对人民币',
+          rateKind: '人民币汇率中间价',
+          calculationVersion: 'arithmetic-mean-v1',
+          calculationScale: 8,
+          displayScale: 4,
+          roundingMode: 'HALF_UP',
+          calendarVersion: 'weekday-asia-shanghai-v1',
+          currency: 'CNY',
+          baseCurrency: 'EUR',
+          unit: 'CNY/1 EUR'
+        }
+      ]
+    })
+    const wrapper = mount(HistoryView)
+    await flushPromises()
+    const options = wrapper.findAll('option').map((option) => option.text())
+    expect(options).toContain('欧元/人民币中间价（已停用）')
+    expect(options).toContain('美元/人民币')
   })
 
   it('quality renders rows and warning list', async () => {

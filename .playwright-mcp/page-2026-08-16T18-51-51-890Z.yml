@@ -1,0 +1,19 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]: SupplyMind 监测仪表盘
+    - navigation [ref=e6]:
+      - link "总览" [ref=e7] [cursor=pointer]:
+        - /url: "#/dashboard"
+      - link "历史趋势" [ref=e8] [cursor=pointer]:
+        - /url: "#/history"
+      - link "数据质量" [ref=e9] [cursor=pointer]:
+        - /url: "#/quality"
+      - link "来源与录入" [ref=e10] [cursor=pointer]:
+        - /url: "#/sources"
+      - link "动态配置" [ref=e11] [cursor=pointer]:
+        - /url: "#/config"
+      - link "预警" [ref=e12] [cursor=pointer]:
+        - /url: "#/warning"
+      - link "Agent" [ref=e13] [cursor=pointer]:
+        - /url: "#/agent"
+  - main [ref=e14]

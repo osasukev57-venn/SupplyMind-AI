@@ -1,0 +1,74 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]: SupplyMind 监测仪表盘
+    - navigation [ref=e6]:
+      - link "总览" [ref=e7] [cursor=pointer]:
+        - /url: "#/dashboard"
+      - link "历史趋势" [ref=e8] [cursor=pointer]:
+        - /url: "#/history"
+      - link "数据质量" [ref=e9] [cursor=pointer]:
+        - /url: "#/quality"
+      - link "来源与录入" [ref=e10] [cursor=pointer]:
+        - /url: "#/sources"
+      - link "动态配置" [ref=e11] [cursor=pointer]:
+        - /url: "#/config"
+      - link "预警" [ref=e12] [cursor=pointer]:
+        - /url: "#/warning"
+      - link "Agent" [ref=e13] [cursor=pointer]:
+        - /url: "#/agent"
+  - main [ref=e14]:
+    - generic [ref=e503]:
+      - heading "预警" [level=1] [ref=e504]
+      - paragraph [ref=e505]: D8-T02：预警由 Java 确定性规则生成；EXT-07/EXT-08 阈值未确认，所有规则均明确标记 TEST/DEMO。确认只写 DEC-061 sidecar，原预警证据不可改写。
+      - generic [ref=e535]: no warning triggered for the requested rule and period
+      - generic [ref=e506]:
+        - heading "预警查询（真实 from/to 范围）" [level=2] [ref=e507]
+        - generic [ref=e508]:
+          - generic [ref=e509]:
+            - text: itemId
+            - textbox "itemId" [ref=e510]: MAT.ADC12.SMM
+          - generic [ref=e511]:
+            - text: from
+            - textbox "from" [ref=e512]: 2026-06-30
+          - generic [ref=e513]:
+            - text: to
+            - textbox "to" [ref=e514]: 2026-08-16
+        - button "查询" [ref=e515] [cursor=pointer]
+        - paragraph [ref=e516]: 所选范围内无预警
+      - generic [ref=e517]:
+        - heading "规则求值（v1 demo 规则；EXT-07/EXT-08 保持开放）" [level=2] [ref=e518]
+        - generic [ref=e519]:
+          - generic [ref=e520]:
+            - text: ruleId
+            - textbox "ruleId" [ref=e521]: demo-price-change-x
+          - generic [ref=e522]:
+            - text: ruleKind
+            - combobox "ruleKind" [ref=e523]:
+              - option "PRICE_CHANGE" [selected]
+              - option "RATE_CHANGE"
+              - option "COST_IMPACT"
+              - option "DATA_QUALITY"
+          - generic [ref=e524]:
+            - text: grain
+            - combobox "grain" [ref=e525]:
+              - option "month" [selected]
+              - option "quarter"
+              - option "halfyear"
+              - option "year"
+          - generic [ref=e526]:
+            - text: 阈值
+            - textbox "阈值" [ref=e527]:
+              - /placeholder: "0.05"
+              - text: "0.05"
+          - generic [ref=e528]:
+            - text: 方向
+            - combobox "方向" [ref=e529]:
+              - option "ABOVE" [selected]
+              - option "BELOW"
+          - generic [ref=e530]:
+            - text: 周期起
+            - textbox "周期起" [ref=e531]: 2026-08-01
+          - generic [ref=e532]:
+            - text: 周期止
+            - textbox "周期止" [ref=e533]: 2026-08-31
+        - button "执行（demoRule=true）" [active] [ref=e534] [cursor=pointer]

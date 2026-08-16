@@ -6,6 +6,11 @@ spring:
 
 supplymind:
   data-root: ${user.dir}/data
+  manual:
+    # DEC-057 P0 single-operator rule: the operatorRef is server-side configured (authentication
+    # context), never client-supplied. The local desktop default is a controlled single operator;
+    # set it to empty to disable manual intake fail-closed.
+    operator-ref: ${SUPPLYMIND_MANUAL_OPERATOR_REF:local-operator}
   agent:
     llm:
       provider: ${SUPPLYMIND_LLM_PROVIDER:openai-compatible}

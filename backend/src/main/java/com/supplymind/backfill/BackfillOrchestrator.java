@@ -46,6 +46,9 @@ import java.util.Objects;
  */
 public final class BackfillOrchestrator {
 
+    /** Stable job identity prefix (runtime/jobs/active/backfill-*.json). */
+    public static final String JOB_ID_PREFIX = "backfill-";
+
     private final DataRoot dataRoot;
     private final BackfillJobStore jobStore;
     private final ConfigActivationStore configStore;
@@ -92,7 +95,7 @@ public final class BackfillOrchestrator {
         if (from.isAfter(to)) {
             throw new com.supplymind.foundation.storage.StorageException("backfill from must not be after to");
         }
-        String jobId = "backfill-" + itemId + "-" + from + "-" + to;
+        String jobId = JOB_ID_PREFIX + itemId + "-" + from + "-" + to;
         if (jobStore.exists(jobId)) {
             return jobStore.read(jobId);
         }

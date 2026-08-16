@@ -37,6 +37,7 @@ public final class BackfillJobQueryService {
         List<BackfillJobStateV1> jobs = new ArrayList<>();
         try (Stream<Path> files = Files.list(jobDir)) {
             for (Path jobFile : files.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().startsWith(BackfillOrchestrator.JOB_ID_PREFIX))
                     .filter(path -> path.getFileName().toString().endsWith(".json"))
                     .filter(path -> !path.getFileName().toString().endsWith(".manifest.json"))
                     .toList()) {
