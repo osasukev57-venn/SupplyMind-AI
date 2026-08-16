@@ -11,6 +11,7 @@ import { RouterLink, RouterView } from 'vue-router'
         <RouterLink to="/history">历史趋势</RouterLink>
         <RouterLink to="/quality">数据质量</RouterLink>
         <RouterLink to="/sources">来源与录入</RouterLink>
+        <RouterLink to="/config">动态配置</RouterLink>
       </nav>
     </header>
     <main class="app-main">

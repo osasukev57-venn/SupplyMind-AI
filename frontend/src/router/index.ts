@@ -27,6 +27,11 @@ export const router = createRouter({
       path: '/sources',
       name: 'sources',
       component: () => import('../views/SourcesView.vue')
+    },
+    {
+      path: '/config',
+      name: 'config',
+      component: () => import('../views/ConfigView.vue')
     }
   ]
 })
