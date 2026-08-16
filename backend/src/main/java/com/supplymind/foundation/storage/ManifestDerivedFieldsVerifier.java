@@ -135,6 +135,11 @@ final class ManifestDerivedFieldsVerifier {
                     dataBytes, com.supplymind.backfill.BackfillJobStateV1.class);
             return jsonFields(List.of(job.jobId()));
         }
+        if (dataRef.startsWith("warning/") && dataRef.endsWith(".ack.json")) {
+            // DEC-061 acknowledgement sidecar: no source run ids, distinct schema.
+            JsonV1Codec.decodeFile(dataBytes, com.supplymind.warning.WarningAcknowledgementV1.class);
+            return jsonFields(List.of());
+        }
         if (dataRef.startsWith("warning/")) {
             JsonV1Codec.decodeFile(dataBytes, com.supplymind.warning.WarningRecordV1.class);
             return jsonFields(List.of());

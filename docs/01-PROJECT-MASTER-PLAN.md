@@ -296,6 +296,7 @@ SupplyMindAI/
     processed/aggregate/<itemId>/halfyear/YYYY.csv
     processed/aggregate/<itemId>/year/YYYY.csv
     warning/YYYY-MM/<warningId>.json
+    warning/YYYY-MM/<warningId>.ack.json                     # DEC-061确认sidecar（原warning不可改写）
     report/YYYY-MM/<reportId>.json
     runtime/jobs/active/*.json                                   # 任务恢复状态，不是根runtime/
     runtime/jobs/history/YYYY-MM/*.json

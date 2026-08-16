@@ -177,7 +177,7 @@
 5. AT-SRC-003/004若因会员、无公开接口或合法反爬被判N/A_APPROVED_FALLBACK，只表示对应指定源自动能力未实现；认可替代路线PASS后不阻塞整体P0。
 6. FreePublic/Manual是项目方认可的真实降级通道，但不得冒充SMM/Asian Metal；Synthetic仍不能作为真实来源证据。
 7. 只有ProcessingStage=PUBLISHED且ValidationStatus为VERIFIED或VERIFIED_WITH_NOTICE可进入每日加工、聚合、面板、预警和Agent；Manual不得直达业务层。
-8. 物理业务真值目录只能使用C29规定的路径；normalized/published等不得作为竞争性目录。
+8. 物理业务真值目录只能使用C29规定的路径；normalized/published等不得作为竞争性目录。DEC-061确认sidecar（`warning/YYYY-MM/<warningId>.ack.json`）属于C29 warning 路径下的受控扩展：原warning证据永久不可改写，确认状态独立存储。
 9. 任何绕过登录、验证码、会员或反爬、来源冒充或手工直达面板均直接判FAIL。
 10. E01-E09不得抢占P0时间或成为Windows包运行前提；任务完成后同步本矩阵和进度台账。
 11. 需求变化先保存独立官方补充或D类确认记录，再更新矩阵、决策、任务与测试；不得覆盖原始正文。

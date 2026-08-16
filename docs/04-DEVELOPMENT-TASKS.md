@@ -610,15 +610,15 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D8-T02 预警规则、记录与确认闭环
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
-- **任务目标：** 对Java计算结果执行阈值、环比/同比和数据质量规则，持久化可追溯预警并支持确认。
+- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（Day8 Batch 实施中，见 docs/05 Day8ExecutionMode）。
+- **任务目标：** 对Java计算结果执行阈值、环比/同比和数据质量规则，持久化可追溯预警并支持确认（DEC-061 确认 sidecar）。
 - **对应需求：** F09、F10、F11、H02。
 - **输入：** 已发布日值与聚合值、完整率、stale状态、可配置规则。
-- **创建或修改文件：** warning服务、规则执行器、warning JSON仓储、warning页面/API和测试。
+- **创建或修改文件：** warning确认sidecar（WarningAcknowledgementV1/WarningAckStore）、warning查询（真实 from/to）、warning页面/API（/api/warnings）和测试。
 - **输出：** warningId、规则版本、证据引用、严重级别、状态、创建/确认时间和处置备注。
 - **依赖任务：** D4-T04、D5-T03、D7-T01。
-- **具体测试：** 阈值命中/未命中、缺失数据、规则变更、重复执行幂等、跨月轮转、确认后重启保持。
-- **Definition of Done：** LLM不参与规则判定；每条预警可回溯到数据与公式；重复调度不产生重复记录。
+- **具体测试：** 阈值命中/未命中、缺失数据、规则变更、重复执行幂等、跨月轮转、确认后重启保持（DEC-061：原warning不可改写、sidecar CREATE_NEW/幂等/冲突fail-closed、ack文件不得被当WarningRecord解码）。
+- **Definition of Done：** LLM不参与规则判定；每条预警可回溯到数据与公式；重复调度不产生重复记录；确认走独立sidecar且原warning逐字节不变；EXT-07/EXT-08保持`OPEN_EXTERNAL`，页面/API显示demoRule=true。
 - **失败回退：** 暂停故障规则并显示规则不可用，不把未计算结果当作正常。
 - **是否阻塞后续：** 是，阻塞Agent风险报告和最终展示。
 

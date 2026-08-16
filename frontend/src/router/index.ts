@@ -32,6 +32,11 @@ export const router = createRouter({
       path: '/config',
       name: 'config',
       component: () => import('../views/ConfigView.vue')
+    },
+    {
+      path: '/warning',
+      name: 'warning',
+      component: () => import('../views/WarningView.vue')
     }
   ]
 })
