@@ -42,7 +42,8 @@ const overview: OverviewResponse = {
         stale: false,
         updatedAt: '2026-08-10T09:25:38+08:00'
       },
-      warningSummary: null
+      warningSummary: null,
+      aggregateSummary: { grain: 'month', periodStart: '2026-08-01', periodEnd: '2026-08-31', value: '6.79040000', unit: 'CNY/1 USD' }
     }
   ],
   warnings: []
@@ -84,7 +85,8 @@ const quality: QualityResponse = {
       accessMethod: 'public_official_html',
       validationStatus: 'VERIFIED',
       validationVersion: 'pboc-basic-validation-v1',
-      stale: false
+      stale: false,
+      completeness: '1.000000000000'
     }
   ],
   warnings: [],

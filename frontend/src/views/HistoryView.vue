@@ -35,7 +35,15 @@ async function load(): Promise<void> {
     metrics.value = null
     if (history.value === null) error.value = '历史数据不可用'
   } else {
-    metrics.value = await fetchMetrics(itemId.value, grain.value, 2026, 2026)
+    // M2: the aggregate years come from the USER-SELECTED range - never a fixed year.
+    const fromYear = Number(from.value.slice(0, 4))
+    const toYear = Number(to.value.slice(0, 4))
+    if (fromYear > toYear) {
+      error.value = '开始日期不能晚于结束日期'
+      metrics.value = null
+      return
+    }
+    metrics.value = await fetchMetrics(itemId.value, grain.value, fromYear, toYear)
     history.value = null
     if (metrics.value === null) error.value = '聚合数据不可用'
   }
@@ -96,7 +104,7 @@ async function load(): Promise<void> {
     </div>
 
     <div v-if="grain !== 'daily' && metrics" class="panel">
-      <h2>聚合（{{ metrics.grain }}，{{ metrics.rows.length }} 行）</h2>
+      <h2>聚合（{{ metrics.grain }}，{{ metrics.rows.length }} 行，{{ metrics.fromYear }}~{{ metrics.toYear }}）</h2>
       <table class="sm-table">
         <thead>
           <tr>
@@ -119,6 +127,10 @@ async function load(): Promise<void> {
           </tr>
         </tbody>
       </table>
+      <div v-for="(issue, i) in metrics.evidenceIssues" :key="i" class="muted warn-line">
+        {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
+        （期间：{{ issue.periods.join('；') }}）
+      </div>
     </div>
   </div>
 </template>

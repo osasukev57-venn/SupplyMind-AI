@@ -30,7 +30,18 @@ public final class DashboardV1 {
             String dataThrough,
             SourceView source,
             QualityView quality,
-            String warningSummary
+            String warningSummary,
+            AggregateSummary aggregateSummary
+    ) {
+    }
+
+    /** D7: latest aggregate summary for the item (backend-computed, e.g. current month avg). */
+    public record AggregateSummary(
+            String grain,
+            String periodStart,
+            String periodEnd,
+            String value,
+            String unit
     ) {
     }
 
@@ -147,7 +158,8 @@ public final class DashboardV1 {
             String accessMethod,
             String validationStatus,
             String validationVersion,
-            boolean stale
+            boolean stale,
+            String completeness
     ) {
     }
 

@@ -27,6 +27,11 @@ defineProps<{ card: ItemCard }>()
       校验：{{ card.quality.validationVersion ?? '—' }}
       <span v-if="card.quality.stale" class="stale">STALE</span>
     </div>
+    <div v-if="card.aggregateSummary" class="card-meta">
+      聚合摘要：{{ card.aggregateSummary.grain }} {{ card.aggregateSummary.periodStart }}~
+      {{ card.aggregateSummary.periodEnd }} = {{ card.aggregateSummary.value }}
+      {{ card.aggregateSummary.unit ?? '' }}
+    </div>
     <div v-if="card.warningSummary" class="card-warn">⚠ {{ card.warningSummary }}</div>
   </section>
 </template>

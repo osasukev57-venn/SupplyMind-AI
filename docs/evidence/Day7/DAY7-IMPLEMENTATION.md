@@ -75,6 +75,26 @@ Vue3 (frontend/) --HTTP /api/dashboard--> DashboardController --> DashboardServi
 
 保持：DEC-008（值全链路字符串）、Day1-Day6 契约（零修改）、WarningService 边界（findRecent 只读，不触碰既有方法）、前端零计算（本 commit 无前端改动）。
 
-回归：后端全量 `.\mvnw.cmd clean test` = 110 suites / 558 tests / 0 failures / 0 errors / 8 skipped（+4 MockMvc）。
+回归（CURRENT）：后端全量 `.\mvnw.cmd clean test` = **110 suites / 563 tests / 0 failures / 0 errors / 8 skipped**（+5 正式 MVC contract）；前端 `npm run test` 6/6、`npm run build` PASS；DEC-008 保持（值全链路字符串，坐标仅展示几何）。
+
+## 最终审查修复（Sol Findings，2026-08-16，commit 见 05-PROGRESS-LEDGER）
+
+1. **M1 D7-T04 Source Management**：SourcesView 增加 Manual Entry 表单（itemId/来源/业务日期/值/单位 → Submit → PENDING 状态与受理提示）、文件导入入口（file input → 本地预览（行号/单元格）→ 逐行错误展示（缺列/空字段表单校验）→ Submit → PENDING）。不实现真实写入，保持 Day8 写入边界（提交仅记录受理状态）。
+2. **M2 History/Metric Cross Year**：HistoryView 聚合模式使用**用户选择范围派生的真实 fromYear/toYear**（不再固定 2026）；daily 与聚合两个面板均展示后端返回的 `evidenceIssues`（业务期间 + status + reason）；from>to 前端即拒绝。
+3. **M3 Dashboard Contract**：DTO 补充 `completeness`（QualityRow，后端按 (expected−missing)/expected 12 位 HALF_UP 计算，与 warning 数据质量规则同语义）与 `aggregateSummary`（ItemCard，后端取当月最新 month 聚合行）；`stale` 不再硬编码——按 DEC-051 同一规则（业务日期早于参考日期 30 天）由后端真实计算。
+4. **M4 Error Contract**：新增 `DashboardApiAdvice`（@RestControllerAdvice 限定 dashboard 包）统一处理：缺少参数 → 400 `required parameter 'x' is missing`；类型转换失败（非数字 year）→ 400 `parameter 'x' has an invalid value`；非法日期 → 400；其余失败 → 400 通用消息；全部 `{status:"REJECTED", message}`，无 500、无框架默认错误体、无堆栈泄漏。为承载正式 servlet MVC，pom 新增 `spring-boot-starter-web`（Day7 Web 形态基础，无数据库，不触碰任何业务 bean/语义）。
+5. **M5 API Tests**：新增**正式 MVC contract 测试** `DashboardMvcContractTest`（@WebMvcTest + 完整 DispatcherServlet，5 项）：missing param → 400、invalid type → 400、invalid range → 400 + 精确 message、unknown itemId → 400、valid request → 200（overview/history/metrics 契约体）。standalone MockMvc 测试保留为补充。
+6. **M6 WarningService**：`findRecent` 改为**逐文件 try/catch**——单个损坏 warning 文件 `continue` 跳过，绝不中断同月其余文件扫描；目录列举失败也只跳过该月。
+7. **M7 Evidence/docs**：CURRENT regression 统一为 110 suites/563 tests/0 failures/0 errors/8 skipped；旧数字（109/558、108/548 等）一律 HISTORICAL（见下表）。
+
+| 回归快照 | suites | tests | 状态 |
+|---|---|---|---|
+| Day6 final（bc6f61a） | 105 | 535 | HISTORICAL |
+| Day7 实施（2ea6a4b） | 108 | 548 | HISTORICAL |
+| 攻击修复（5f1491c） | 109 | 554 | HISTORICAL |
+| API 契约修复（3fd1d35） | 110 | 558 | HISTORICAL |
+| **最终审查修复（本 commit）** | **110** | **563** | **CURRENT** |
+
+保持：Day1-Day6 语义与契约零修改（仅 pom 增加 web starter 依赖、warning/dashboard 包只读扩展）、DEC-060 未改、测试断言未降低、前端零计算（SourcesView 仅表单/预览校验，无业务数值计算）。
 
 回归：后端全量 `.\mvnw.cmd clean test` = 109 suites / 554 tests / 0 failures / 0 errors / 8 skipped（+6 MockMvc）；前端 `npm run test` 6/6、`npm run build` PASS；DEC-008 保持（值全链路字符串，坐标仅展示几何）。

@@ -340,7 +340,7 @@ class DashboardServiceTest {
         WarningService warnings = new WarningService(root,
                 new com.supplymind.warning.WarningStore(root, fileStore, FIXED_CLOCK),
                 FIXED_CLOCK, history);
-        DashboardService dashboard = new DashboardService(configs, query, history, warnings);
+        DashboardService dashboard = new DashboardService(configs, query, history, warnings, FIXED_CLOCK);
         return new Harness(root, fileStore, rawStore, timelineStore, validation, publish, query, dashboard);
     }
 

@@ -21,6 +21,15 @@ export interface ItemCard {
   source: SourceView
   quality: QualityView
   warningSummary: string | null
+  aggregateSummary: AggregateSummary | null
+}
+
+export interface AggregateSummary {
+  grain: string
+  periodStart: string
+  periodEnd: string
+  value: string
+  unit: string | null
 }
 
 export interface SourceView {
@@ -115,6 +124,7 @@ export interface QualityRow {
   validationStatus: string | null
   validationVersion: string | null
   stale: boolean
+  completeness: string
 }
 
 export interface WarningView {

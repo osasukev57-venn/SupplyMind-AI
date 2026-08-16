@@ -29,17 +29,22 @@ class DashboardDtoContractTest {
                         "中国人民银行官网", "PRIMARY", null),
                 new DashboardV1.QualityView("VERIFIED", "VERIFIED", "pboc-basic-validation-v1",
                         false, "2026-08-10T09:25:38+08:00"),
-                null)), List.of());
+                null,
+                new DashboardV1.AggregateSummary("month", "2026-08-01", "2026-08-31",
+                        "6.79040000", "CNY/1 USD"))), List.of());
 
         JsonNode json = JsonV1Codec.mapper().readTree(JsonV1Codec.encodeCompact(dto));
         assertEquals(Set.of("mode", "items", "warnings"), keys(json));
         JsonNode card = json.get("items").get(0);
         assertEquals(Set.of("itemId", "displayName", "enabled", "latestValue", "businessDate",
-                "unit", "currency", "dataThrough", "source", "quality", "warningSummary"), keys(card));
+                "unit", "currency", "dataThrough", "source", "quality", "warningSummary",
+                "aggregateSummary"), keys(card));
         assertEquals(Set.of("providerType", "accessMethod", "actualSourceName", "routeDecision",
                 "fallbackReason"), keys(card.get("source")));
         assertEquals(Set.of("status", "validationStatus", "validationVersion", "stale",
                 "updatedAt"), keys(card.get("quality")));
+        assertEquals(Set.of("grain", "periodStart", "periodEnd", "value", "unit"),
+                keys(card.get("aggregateSummary")));
         assertEquals("6.7904", json.get("items").get(0).get("latestValue").asText(),
                 "the exact decimal string must survive the wire contract");
     }
@@ -82,7 +87,7 @@ class DashboardDtoContractTest {
                 "FX.USD.CNY.PBOC_MID", "VERIFIED",
                 List.of(new DashboardV1.QualityRow("2026-08-10", "6.79040000", "CNY/1 USD",
                         "中国人民银行官网", "official_web", "public_official_html", "VERIFIED",
-                        "pboc-basic-validation-v1", false)),
+                        "pboc-basic-validation-v1", false, "1.000000000000")),
                 List.of(new DashboardV1.WarningView("w1", "r1", "v1", "2026-08-01", "2026-08-31",
                         "7.00000000", "5.00000000", "HIGH", "PUBLISHED_VERIFIED",
                         "2026-08-10T10:00:00+08:00")),
@@ -91,8 +96,10 @@ class DashboardDtoContractTest {
         assertEquals(Set.of("itemId", "latestStatus", "rows", "warnings", "evidenceIssues"),
                 keys(qualityJson));
         assertEquals(Set.of("businessDate", "value", "unit", "actualSourceName", "providerType",
-                "accessMethod", "validationStatus", "validationVersion", "stale"),
+                "accessMethod", "validationStatus", "validationVersion", "stale", "completeness"),
                 keys(qualityJson.get("rows").get(0)));
+        assertEquals("1.000000000000", qualityJson.get("rows").get(0).get("completeness").asText(),
+                "completeness is a backend-computed decimal string");
         assertEquals(Set.of("warningId", "ruleId", "ruleVersion", "periodStart", "periodEnd",
                 "value", "threshold", "riskLevel", "status", "createdAt"),
                 keys(qualityJson.get("warnings").get(0)));

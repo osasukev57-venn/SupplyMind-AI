@@ -37,10 +37,11 @@ public class DashboardConfiguration {
             ConfigManagementService configManagementService,
             PublishedQueryService publishedQueryService,
             HistoryQueryService historyQueryService,
-            WarningService dashboardWarningService
+            WarningService dashboardWarningService,
+            Clock foundationClock
     ) {
         return new DashboardService(configManagementService, publishedQueryService,
-                historyQueryService, dashboardWarningService);
+                historyQueryService, dashboardWarningService, foundationClock);
     }
 
     @Bean

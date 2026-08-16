@@ -54,6 +54,7 @@ async function load(): Promise<void> {
             <th>Provider</th>
             <th>校验状态</th>
             <th>校验版本</th>
+            <th>完整率</th>
           </tr>
         </thead>
         <tbody>
@@ -64,6 +65,7 @@ async function load(): Promise<void> {
             <td>{{ row.providerType ?? '—' }}</td>
             <td><StatusBadge :status="row.validationStatus" /></td>
             <td>{{ row.validationVersion ?? '—' }}</td>
+            <td>{{ row.completeness }}</td>
           </tr>
         </tbody>
       </table>

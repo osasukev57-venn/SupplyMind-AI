@@ -277,7 +277,7 @@ class DashboardApiMockMvcTest {
         HistoryQueryService history = new HistoryQueryService(root);
         WarningService warnings = new WarningService(root,
                 new WarningStore(root, fileStore, FIXED_CLOCK), FIXED_CLOCK, history);
-        DashboardService dashboard = new DashboardService(configManagement, query, history, warnings);
+        DashboardService dashboard = new DashboardService(configManagement, query, history, warnings, FIXED_CLOCK);
         return new Harness(root, fileStore, rawStore, timelineStore, validation, publish, dashboard);
     }
 

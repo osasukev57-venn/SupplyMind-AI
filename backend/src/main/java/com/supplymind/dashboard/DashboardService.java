@@ -4,6 +4,7 @@ import com.supplymind.config.ConfigManagementService;
 import com.supplymind.dashboard.api.DashboardV1;
 import com.supplymind.foundation.model.MonitorSeriesConfigV1;
 import com.supplymind.foundation.model.MonitorSeriesItemV1;
+import com.supplymind.foundation.storage.DataPaths;
 import com.supplymind.history.HistoryQueryService;
 import com.supplymind.publish.PublishedQueryService;
 import com.supplymind.publish.PublishedRecord;
@@ -12,6 +13,7 @@ import com.supplymind.warning.WarningService;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -43,17 +45,20 @@ public final class DashboardService {
     private final PublishedQueryService published;
     private final HistoryQueryService history;
     private final WarningService warnings;
+    private final Clock clock;
 
     public DashboardService(
             ConfigManagementService configs,
             PublishedQueryService published,
             HistoryQueryService history,
-            WarningService warnings
+            WarningService warnings,
+            Clock clock
     ) {
         this.configs = Objects.requireNonNull(configs, "configs");
         this.published = Objects.requireNonNull(published, "published");
         this.history = Objects.requireNonNull(history, "history");
         this.warnings = Objects.requireNonNull(warnings, "warnings");
+        this.clock = Objects.requireNonNull(clock, "clock");
     }
 
     public DashboardV1.OverviewResponse overview() {
@@ -103,7 +108,26 @@ public final class DashboardService {
         return new DashboardV1.ItemCard(
                 item.itemId(), item.displayName(), item.enabled(),
                 value, businessDate, item.unit(), item.currency(), dataThrough,
-                source, quality, warningSummary(item.itemId()));
+                source, quality, warningSummary(item.itemId()),
+                aggregateSummary(item.itemId()));
+    }
+
+    /**
+     * D7: latest aggregate summary for the item (backend-computed from the persisted aggregate
+     * files via HistoryQueryService - the browser never derives it).
+     */
+    private DashboardV1.AggregateSummary aggregateSummary(String itemId) {
+        int year = OffsetDateTime.now(clock).atZoneSameInstant(DataPaths.SHANGHAI).getYear();
+        var rows = history.queryAggregate(itemId, "month", year, year).rows();
+        if (rows.isEmpty()) {
+            return null;
+        }
+        var latest = rows.stream()
+                .max(Comparator.comparing(com.supplymind.foundation.model.AggregateRecordV1::periodStart))
+                .orElseThrow();
+        return new DashboardV1.AggregateSummary(
+                "month", latest.periodStart(), latest.periodEnd(),
+                latest.avg(), latest.unit());
     }
 
     public DashboardV1.HistoryResponse history(String itemId, String fromDate, String toDate) {
@@ -187,6 +211,8 @@ public final class DashboardService {
         LocalDate to = LocalDate.parse(toDate);
         requireRange(from, to);
         HistoryQueryService.DailyHistoryResult result = history.queryDaily(itemId, from, to);
+        LocalDate referenceDate = OffsetDateTime.now(clock).atZoneSameInstant(DataPaths.SHANGHAI)
+                .toLocalDate();
         List<DashboardV1.QualityRow> rows = new ArrayList<>();
         for (var row : result.rows()) {
             rows.add(new DashboardV1.QualityRow(
@@ -195,7 +221,8 @@ public final class DashboardService {
                     row.accessMethod() == null ? null : row.accessMethod().wireValue(),
                     row.validationStatus() == null ? null : row.validationStatus().wireValue(),
                     row.validationVersion(),
-                    false));
+                    isStale(row.businessDate(), referenceDate),
+                    completenessOf(row)));
         }
         PublishedRecord latest = published.latestPublished(itemId);
         List<DashboardV1.WarningView> warningViews = new ArrayList<>();
@@ -279,6 +306,34 @@ public final class DashboardService {
         if (days > MAX_RANGE_DAYS) {
             throw new IllegalArgumentException("date range too large (max " + MAX_RANGE_DAYS + " days)");
         }
+    }
+
+    /**
+     * D7: stale comes from the REAL backend state - the same rule as the published read model
+     * (DEC-051): a business date more than 30 calendar days before the reference date is stale.
+     * Never hardcoded.
+     */
+    private static boolean isStale(String businessDate, LocalDate referenceDate) {
+        try {
+            return LocalDate.parse(businessDate).isBefore(referenceDate.minusDays(30));
+        } catch (RuntimeException malformed) {
+            return false;
+        }
+    }
+
+    /**
+     * D7: completeness is computed HERE (same semantics as the warning data-quality rule):
+     * (expected - missing) / expected, 12 digits HALF_UP - the browser never derives it.
+     */
+    private static String completenessOf(com.supplymind.foundation.model.DailyRecordV1 row) {
+        long expected = row.expectedCount();
+        long missing = row.missingCount();
+        if (expected <= 0) {
+            return "1.000000000000";
+        }
+        return new java.math.BigDecimal(expected - missing)
+                .divide(java.math.BigDecimal.valueOf(expected), 12, java.math.RoundingMode.HALF_UP)
+                .toPlainString();
     }
 
     /**

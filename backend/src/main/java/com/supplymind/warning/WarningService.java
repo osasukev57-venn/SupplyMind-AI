@@ -213,20 +213,27 @@ public final class WarningService {
                     if (!name.endsWith(".json") || name.endsWith(".manifest.json")) {
                         continue;
                     }
-                    String ref = "warning/" + target + "/" + name;
-                    java.nio.file.Path manifest = dataRoot.resolveDataRef(DataPaths.manifestRef(ref));
-                    if (!java.nio.file.Files.isRegularFile(manifest)
-                            || !ManifestVerifier.matches(dataRoot, ref, file, manifest)) {
-                        continue;
+                    // M6: one broken warning file is SKIPPED - it must never abort the scan of
+                    // the remaining valid warning evidence.
+                    WarningRecordV1 warning;
+                    try {
+                        String ref = "warning/" + target + "/" + name;
+                        java.nio.file.Path manifest = dataRoot.resolveDataRef(DataPaths.manifestRef(ref));
+                        if (!java.nio.file.Files.isRegularFile(manifest)
+                                || !ManifestVerifier.matches(dataRoot, ref, file, manifest)) {
+                            continue;
+                        }
+                        warning = JsonV1Codec.decodeFile(
+                                java.nio.file.Files.readAllBytes(file), WarningRecordV1.class);
+                    } catch (java.io.IOException | RuntimeException broken) {
+                        continue; // skip this file, keep scanning
                     }
-                    WarningRecordV1 warning = JsonV1Codec.decodeFile(
-                            java.nio.file.Files.readAllBytes(file), WarningRecordV1.class);
                     if (itemId.equals(warning.itemId())) {
                         warnings.add(warning);
                     }
                 }
-            } catch (java.io.IOException | RuntimeException ignored) {
-                // a broken warning file is skipped - the query still returns the valid rest
+            } catch (java.io.IOException listingFailed) {
+                continue; // a directory that cannot be listed never aborts the whole query
             }
         }
         warnings.sort(java.util.Comparator.comparing(

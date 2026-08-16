@@ -180,7 +180,7 @@ class DashboardControllerTest {
         WarningService warnings = new WarningService(root,
                 new com.supplymind.warning.WarningStore(root, fileStore, FIXED_CLOCK),
                 FIXED_CLOCK, history);
-        DashboardService dashboard = new DashboardService(configManagement, query, history, warnings);
+        DashboardService dashboard = new DashboardService(configManagement, query, history, warnings, FIXED_CLOCK);
         return new Harness(root, fileStore, rawStore, timelineStore, validation, publish, dashboard);
     }
 

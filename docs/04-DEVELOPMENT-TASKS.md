@@ -4,7 +4,7 @@
 > 规范版本：v1.5（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
 > 当前进度锚点：Day 1～Day 6均已完成并通过各自Stage Gate（保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8；最终完整技术回归105 suites/535 tests/0 failures/0 errors/8 skipped）；D6-T00～D6-T05=`TaskExecutionStatus=DONE`，Day6=`COMPLETE`。AT-AI-000/002/003本地合同=`PASS`，AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`且不被伪报为PASS。
-> Day7实施已开始并完成一轮：D7-T01～D7-T04=`TaskExecutionStatus=REVIEW_PENDING`（实施完成，`readyState=REVIEW_PENDING`，待技术负责人 Code Review 后改 DONE）；实施 commit 见 05-PROGRESS-LEDGER 与 docs/evidence/Day7/DAY7-IMPLEMENTATION.md；后端 Dashboard 套件 13/13、前端 npm test 6/6、全量回归=108 suites/548 tests/0 failures/0 errors/8 skipped（Day1-Day6 代码零修改）。
+> Day7实施进行中：D7-T01～D7-T04=`TaskExecutionStatus=REVIEW_PENDING`（实施完成并完成三轮 Finding 修复：攻击修复、API 契约修复、最终审查修复；`readyState=REVIEW_PENDING`，待技术负责人 Code Review 后改 DONE）；实施与修复 commit 见 05-PROGRESS-LEDGER 与 docs/evidence/Day7/DAY7-IMPLEMENTATION.md；后端 Dashboard 套件 28/28（含正式 MVC contract 5/5）、前端 npm test 6/6、**CURRENT 全量回归=110 suites/563 tests/0 failures/0 errors/8 skipped**（旧快照 108/548、109/554、110/558 均为 HISTORICAL）；Day1-Day6 代码零修改。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
 ## 1. 新窗口执行协议
