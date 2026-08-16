@@ -24,7 +24,7 @@ class DashboardDtoContractTest {
         DashboardV1.OverviewResponse dto = new DashboardV1.OverviewResponse(
                 "FORMAL", List.of(new DashboardV1.ItemCard(
                 "FX.USD.CNY.PBOC_MID", "美元/人民币", true, "6.7904", "2026-08-10",
-                "CNY/1 USD", "CNY", "2026-08-10",
+                "CNY/1 USD", "CNY", "2026-08-10", "1.000000000000",
                 new DashboardV1.SourceView("official_web", "public_official_html",
                         "中国人民银行官网", "PRIMARY", null),
                 new DashboardV1.QualityView("VERIFIED", "VERIFIED", "pboc-basic-validation-v1",
@@ -37,8 +37,8 @@ class DashboardDtoContractTest {
         assertEquals(Set.of("mode", "items", "warnings"), keys(json));
         JsonNode card = json.get("items").get(0);
         assertEquals(Set.of("itemId", "displayName", "enabled", "latestValue", "businessDate",
-                "unit", "currency", "dataThrough", "source", "quality", "warningSummary",
-                "aggregateSummary"), keys(card));
+                "unit", "currency", "dataThrough", "completeness", "source", "quality",
+                "warningSummary", "aggregateSummary"), keys(card));
         assertEquals(Set.of("providerType", "accessMethod", "actualSourceName", "routeDecision",
                 "fallbackReason"), keys(card.get("source")));
         assertEquals(Set.of("status", "validationStatus", "validationVersion", "stale",

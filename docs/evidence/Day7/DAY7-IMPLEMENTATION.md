@@ -60,7 +60,7 @@ Vue3 (frontend/) --HTTP /api/dashboard--> DashboardController --> DashboardServi
 
 ## 攻击修复（Terra Finding，2026-08-16，commit 见 05-PROGRESS-LEDGER）
 
-1. **TrendChart 零业务计算**：删除前端所有数值计算（Number/Math/toFixed/parseFloat 在 `frontend/src` 零出现）；后端 `DashboardService.chartOf` 计算全部展示坐标（固定 640x160、min/max 缩放），`Chart{width,height,points[{label,x,y}]}` 随 DTO 下发，Vue 只渲染 polyline 字符串。
+1. **TrendChart 业务值零计算**：前端不进行任何业务值计算（均值/坐标/聚合/质量状态推导全部在 Java）；`DashboardService.chartOf` 计算全部展示坐标（固定 640x160、min/max 缩放），`Chart{width,height,points[{label,x,y}]}` 随 DTO 下发，Vue 只渲染 polyline 字符串。注意：前端代码中 `Number()` 仅用于把用户选择的日期范围年份提取为查询参数（fromYear/toYear 传参），不参与任何业务值计算——文档口径为"业务值零计算"，不声称"Number 零出现"。
 2. **DTO 不暴露内部 csv 路径**：`missingRefs/corruptRefs`/`evidenceMissingRefs/evidenceCorruptRefs` 全部移除，改为业务引用 `EvidenceIssue{periods[], status(MISSING|CORRUPT), reason}`（daily ref → `YYYY-MM`、aggregate ref → `YYYY grain`）；契约测试断言响应体永不包含 `processed/`。
 3. **API 错误统一**：DashboardController 单一 `okOrRejected`——任何失败（非法日期/非法 grain/数据不可用）都是 `400 {status:REJECTED, message}`；`500` 从 dashboard API 中移除（MockMvc 测试断言非法参数 400 且 message 非空）。
 4. **DashboardService 不再直读 warning 文件**：改为注入 `WarningService`；`WarningService` 新增只读方法 `findRecent(itemId, lookbackMonths)`（manifest 校验扫描，复用既有 DataRoot/ManifestVerifier，不触碰既有方法，Day1-Day6 行为零改动）；DashboardService 的全部 warning 读取走该 service。
@@ -87,14 +87,19 @@ Vue3 (frontend/) --HTTP /api/dashboard--> DashboardController --> DashboardServi
 6. **M6 WarningService**：`findRecent` 改为**逐文件 try/catch**——单个损坏 warning 文件 `continue` 跳过，绝不中断同月其余文件扫描；目录列举失败也只跳过该月。
 7. **M7 Evidence/docs**：CURRENT regression 统一为 110 suites/563 tests/0 failures/0 errors/8 skipped；旧数字（109/558、108/548 等）一律 HISTORICAL（见下表）。
 
+## 最终审查修复 V2（Sol V2 Findings，2026-08-16，commit 见 05-PROGRESS-LEDGER）
+
+1. **M1 Source Management 真实闭环**：新增后端 pending API——`POST /api/dashboard/manual`（校验已知 itemId/必填 businessDate/value → 结构化 `{status:"PENDING", message, itemId, businessDate, value}`，不持久化，Day8 写入边界）；`POST /api/dashboard/import`（multipart 上传，**后端真实解析 CSV**（逐行 preview + 行级错误，真实行号）；xlsx/xls 与不支持类型 → 明确 `REJECTED` + message，前端不再 `file.text()` 假解析）。前端 SourcesView 只展示后端返回的 status/message/previewRows/rowErrors。
+2. **M3 Dashboard Contract**：`ItemCard` 增加 `completeness`（最新 daily 行 (expected−missing)/expected 12 位 HALF_UP）；`aggregateSummary` 改为**跨年选择最新有效聚合**（当前年→前两年，跳过空年）；`stale` 保持 DEC-051 真实计算。新增行为测试：completeness、stale boundary（30 天前不 stale/31 天前 stale）、aggregate latest selection（2026/2025 空 → 取 2024）。
+3. **M2 Cross Year**：新增真实调用测试——metrics(2024..2026) 断言 fromYear/toYear 原样传递 + 两年聚合行均返回；history 跨年 points；前端测试断言聚合年份由用户选择范围派生。
+4. **M6 WarningService**：新增测试——合法 warning 与损坏文件同目录共存时 `findRecent` 跳过坏文件、返回合法记录。
+5. **新增测试**：manual submit（MockMvc PENDING + 缺 value 400）、import submit（CSV 真实解析 + xlsx REJECTED 精确 message）、前端 manual/import/xlsx 提交测试（页面测试 10 项）。
+
 | 回归快照 | suites | tests | 状态 |
 |---|---|---|---|
-| Day6 final（bc6f61a） | 105 | 535 | HISTORICAL |
-| Day7 实施（2ea6a4b） | 108 | 548 | HISTORICAL |
-| 攻击修复（5f1491c） | 109 | 554 | HISTORICAL |
-| API 契约修复（3fd1d35） | 110 | 558 | HISTORICAL |
-| **最终审查修复（本 commit）** | **110** | **563** | **CURRENT** |
+| 最终审查修复（a4006c4） | 110 | 563 | HISTORICAL |
+| **最终审查修复 V2（本 commit）** | **110** | **573** | **CURRENT** |
 
-保持：Day1-Day6 语义与契约零修改（仅 pom 增加 web starter 依赖、warning/dashboard 包只读扩展）、DEC-060 未改、测试断言未降低、前端零计算（SourcesView 仅表单/预览校验，无业务数值计算）。
+保持：Day1-Day6 语义与契约零修改、DEC-060 未改、测试断言未降低、前端业务值零计算。
 
-回归：后端全量 `.\mvnw.cmd clean test` = 109 suites / 554 tests / 0 failures / 0 errors / 8 skipped（+6 MockMvc）；前端 `npm run test` 6/6、`npm run build` PASS；DEC-008 保持（值全链路字符串，坐标仅展示几何）。
+回归：后端全量 `.\mvnw.cmd clean test` = 109 suites / 554 tests / 0 failures / 0 errors / 8 skipped（HISTORICAL，5f1491c 时点）；前端 `npm run test` 6/6、`npm run build` PASS；DEC-008 保持（值全链路字符串，坐标仅展示几何）。CURRENT 回归见上文快照表。

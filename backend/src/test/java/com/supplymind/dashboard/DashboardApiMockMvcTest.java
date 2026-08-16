@@ -47,8 +47,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.mock.web.MockMultipartFile;
 
 /**
  * D7 real MockMvc API tests over the REAL DashboardService (persisted fixture data): HTTP
@@ -228,6 +231,54 @@ class DashboardApiMockMvcTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.manualEntry.status").value("PENDING"))
                 .andExpect(jsonPath("$.importEntry.status").value("PENDING"));
+    }
+
+    @Test
+    void manualSubmitReturnsStructuredBackendPending() throws Exception {
+        mockMvc.perform(post("/api/dashboard/manual")
+                        .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
+                        .param("source", "operator source")
+                        .param("businessDate", "2026-08-10")
+                        .param("value", "6.7904")
+                        .param("unit", "CNY/1 USD"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.message").isNotEmpty())
+                .andExpect(jsonPath("$.itemId").value(MonitorSeriesDefaults.USD_CNY_ITEM_ID))
+                .andExpect(jsonPath("$.value").value("6.7904"));
+    }
+
+    @Test
+    void manualSubmitMissingValueIs400Rejected() throws Exception {
+        mockMvc.perform(post("/api/dashboard/manual")
+                        .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
+                        .param("businessDate", "2026-08-10"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.message").value("value is required"));
+    }
+
+    @Test
+    void importSubmitReallyParsesCsvAndRejectsXlsx() throws Exception {
+        String csv = "itemId,businessDate,value\n"
+                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",2026-08-10,6.7904\n"
+                + "badrow\n";
+        mockMvc.perform(multipart("/api/dashboard/import")
+                        .file(new MockMultipartFile("file", "rows.csv", "text/csv",
+                                csv.getBytes(StandardCharsets.UTF_8))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.previewRows[0].rowNumber").value(2))
+                .andExpect(jsonPath("$.rowErrors[0].rowNumber").value(3));
+
+        mockMvc.perform(multipart("/api/dashboard/import")
+                        .file(new MockMultipartFile("file", "book.xlsx",
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                new byte[]{1, 2, 3})))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.message").value(
+                        "xlsx real parsing is a Day8 write boundary - this entry accepts CSV preview only"));
     }
 
     // ---- fixture ----

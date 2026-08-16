@@ -54,6 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -200,6 +201,166 @@ class DashboardServiceTest {
         assertNull(history.dataThrough());
     }
 
+    @Test
+    void staleBoundaryIsRealAtThirtyDays() throws Exception {
+        Harness harness = harness();
+        publish(harness, pbocRaw("run-dash-stale-001", "6.7904", "2026-08-10"));
+        // FIXED_CLOCK reference date is 2026-08-10: a business date exactly 30 days earlier
+        // (2026-07-11) is NOT stale; 31 days earlier (2026-07-10) IS stale (DEC-051 rule).
+        String dailyRef = DataPaths.dailyRef(MonitorSeriesDefaults.USD_CNY_ITEM_ID, YearMonth.of(2026, 7));
+        List<DailyRecordV1> rows = List.of(
+                dailyRow("2026-07-11", "6.70000000", "run-dash-stale-001"),
+                dailyRow("2026-07-10", "6.69000000", "run-dash-stale-001"));
+        byte[] data = CsvV1Codec.encodeDaily(rows);
+        ManifestV1 manifest = ManifestFactory.csv(dailyRef, data, 2, "2026-07-10", "2026-07-11",
+                List.of("run-dash-stale-001"), RECEIVED_AT);
+        Path target = harness.root.resolveDataRef(dailyRef);
+        Files.createDirectories(target.getParent());
+        Files.write(target, data);
+        Files.write(harness.root.resolveDataRef(DataPaths.manifestRef(dailyRef)),
+                JsonV1Codec.encodeFile(manifest));
+
+        DashboardV1.QualityResponse quality = harness.dashboard.quality(
+                MonitorSeriesDefaults.USD_CNY_ITEM_ID, "2026-07-01", "2026-08-31");
+
+        DashboardV1.QualityRow boundary = quality.rows().stream()
+                .filter(row -> row.businessDate().equals("2026-07-11")).findFirst().orElseThrow();
+        DashboardV1.QualityRow past = quality.rows().stream()
+                .filter(row -> row.businessDate().equals("2026-07-10")).findFirst().orElseThrow();
+        assertFalse(boundary.stale(), "30 days back is the boundary - NOT stale");
+        assertTrue(past.stale(), "31 days back IS stale");
+    }
+
+    private static DailyRecordV1 dailyRow(String businessDate, String avg, String runId) {
+        return new DailyRecordV1("1.0", businessDate, MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+                ProviderType.OFFICIAL_WEB, SOURCE_NAME, AccessMethod.PUBLIC_OFFICIAL_HTML,
+                ProcessingStage.PUBLISHED, ValidationStatus.VERIFIED, "pboc-basic-validation-v1",
+                List.of(1), "arithmetic-mean-v1", 8, 4, RoundingMode.HALF_UP,
+                "weekday-asia-shanghai-v1", avg, 1, avg, 1, 0, true, "CNY", "CNY/1 USD",
+                List.of(new DailyInputRefV1(runId,
+                        "raw/formal/official_web/" + MonitorSeriesDefaults.USD_CNY_ITEM_ID
+                                + "/2026/08/" + runId + ".json", 4)),
+                RECEIVED_AT, null);
+    }
+
+    @Test
+    void completenessIsBackendComputed() throws Exception {
+        Harness harness = harness();
+        publish(harness, pbocRaw("run-dash-comp-001", "6.7904", "2026-08-10"));
+        String dailyRef = DataPaths.dailyRef(MonitorSeriesDefaults.USD_CNY_ITEM_ID, YearMonth.of(2026, 8));
+        writeDailyAt(harness, dailyRef, "2026-08-10", "6.79040000", "run-dash-comp-001");
+
+        DashboardV1.OverviewResponse overview = harness.dashboard.overview();
+        DashboardV1.ItemCard usd = overview.items().stream()
+                .filter(card -> card.itemId().equals(MonitorSeriesDefaults.USD_CNY_ITEM_ID))
+                .findFirst().orElseThrow();
+        assertEquals("1.000000000000", usd.completeness(),
+                "completeness is a backend-computed decimal string");
+    }
+
+    @Test
+    void aggregateSummarySelectsLatestValidRecordAcrossYears() throws Exception {
+        Harness harness = harness();
+        publish(harness, pbocRaw("run-dash-agg-001", "6.7904", "2026-08-10"));
+        // 2024 has a valid aggregate; 2025 and 2026 have NONE - the summary must still pick 2024.
+        String dailyRef = DataPaths.dailyRef(MonitorSeriesDefaults.USD_CNY_ITEM_ID, YearMonth.of(2026, 8));
+        writeDailyAt(harness, dailyRef, "2026-08-10", "6.79040000", "run-dash-agg-001");
+        writeAggregate(harness, "2024-01-01", "2024-01-31", "6.50000000", 2024, "run-dash-agg-001");
+
+        DashboardV1.OverviewResponse overview = harness.dashboard.overview();
+        DashboardV1.ItemCard usd = overview.items().stream()
+                .filter(card -> card.itemId().equals(MonitorSeriesDefaults.USD_CNY_ITEM_ID))
+                .findFirst().orElseThrow();
+        assertNotNull(usd.aggregateSummary(),
+                "an older valid aggregate must not be shadowed by empty current years");
+        assertEquals("2024-01-01", usd.aggregateSummary().periodStart());
+        assertEquals("6.50000000", usd.aggregateSummary().value());
+    }
+
+    @Test
+    void crossYearMetricsAndHistoryPassRealYears() throws Exception {
+        Harness harness = harness();
+        publish(harness, pbocRaw("run-dash-cross-001", "6.7904", "2026-08-10"));
+        String dailyRef24 = DataPaths.dailyRef(MonitorSeriesDefaults.USD_CNY_ITEM_ID, YearMonth.of(2024, 12));
+        String dailyRef26 = DataPaths.dailyRef(MonitorSeriesDefaults.USD_CNY_ITEM_ID, YearMonth.of(2026, 8));
+        writeDailyAt(harness, dailyRef24, "2024-12-20", "6.10000000", "run-dash-cross-001");
+        writeDailyAt(harness, dailyRef26, "2026-08-10", "6.79040000", "run-dash-cross-001");
+        writeAggregate(harness, "2024-12-01", "2024-12-31", "6.10000000", 2024, "run-dash-cross-001");
+        writeAggregate(harness, "2026-08-01", "2026-08-31", "6.79040000", 2026, "run-dash-cross-001");
+
+        DashboardV1.MetricsResponse metrics = harness.dashboard.metrics(
+                MonitorSeriesDefaults.USD_CNY_ITEM_ID, "month", 2024, 2026);
+        assertEquals(2024, metrics.fromYear(), "the real fromYear must be passed through");
+        assertEquals(2026, metrics.toYear(), "the real toYear must be passed through");
+        assertEquals(2, metrics.rows().size(), "aggregates from both years are returned");
+
+        DashboardV1.HistoryResponse history = harness.dashboard.history(
+                MonitorSeriesDefaults.USD_CNY_ITEM_ID, "2024-12-01", "2026-08-31");
+        assertEquals(2, history.points().size(), "daily points span both years");
+        assertTrue(history.points().stream()
+                        .anyMatch(point -> point.businessDate().equals("2024-12-20")),
+                "the 2024 point is present in the cross-year history");
+    }
+
+    @Test
+    void manualPendingReturnsStructuredPendingAndNeverPersists() throws Exception {
+        Harness harness = harness();
+
+        DashboardV1.ManualPendingResponse pending = harness.dashboard.manualPending(
+                MonitorSeriesDefaults.USD_CNY_ITEM_ID, "operator source", "2026-08-10",
+                "6.7904", "CNY/1 USD");
+        assertEquals("PENDING", pending.status());
+        assertFalse(pending.message().isBlank());
+        assertEquals("2026-08-10", pending.businessDate());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> harness.dashboard.manualPending(MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+                        null, "2026-08-10", null, null),
+                "a submission without a value is an invalid request");
+    }
+
+    @Test
+    void importCsvIsReallyParsedAndXlsxIsExplicitlyRejected() throws Exception {
+        Harness harness = harness();
+        String csv = "itemId,businessDate,value\n"
+                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",2026-08-10,6.7904\n"
+                + "badrow\n"
+                + "FX.OTHER,2026-08-12,7.0\n";
+        DashboardV1.ImportResponse response = harness.dashboard.importPending("rows.csv",
+                csv.getBytes(StandardCharsets.UTF_8));
+        assertEquals("PENDING", response.status());
+        assertEquals(2, response.previewRows().size(), "valid rows are really parsed");
+        assertEquals(1, response.rowErrors().size(), "invalid rows are reported per row");
+        assertEquals(3, response.rowErrors().get(0).rowNumber(),
+                "the bad row number is the real file line");
+        assertFalse(response.message().isBlank());
+
+        DashboardV1.ImportResponse xlsx = harness.dashboard.importPending("book.xlsx",
+                new byte[]{1, 2, 3});
+        assertEquals("REJECTED", xlsx.status(),
+                "xlsx real parsing is a Day8 boundary - never pretended");
+    }
+
+    @Test
+    void brokenWarningFileNeverAbortsTheScan() throws Exception {
+        Harness harness = harness();
+        publish(harness, pbocRaw("run-dash-warn-001", "6.7904", "2026-08-10"));
+        writeDaily(harness, "6.79040000");
+        writeWarning(harness, MonitorSeriesDefaults.USD_CNY_ITEM_ID);
+        // A broken warning file (no manifest) sits next to the valid one - it must be SKIPPED.
+        Path brokenDir = harness.root.resolveInternalRelative("warning").resolve("2026-08");
+        Files.createDirectories(brokenDir);
+        Files.write(brokenDir.resolve("broken.json"),
+                "this is not a warning record".getBytes(StandardCharsets.UTF_8));
+
+        List<WarningRecordV1> recent = harness.warnings.findRecent(
+                MonitorSeriesDefaults.USD_CNY_ITEM_ID, 3);
+
+        assertEquals(1, recent.size(),
+                "the valid warning must still be returned when a neighbour file is broken");
+        assertEquals("dash-test-warning", recent.get(0).warningId());
+    }
+
     // ---- fixture ----
 
     private static void publish(Harness harness, RawReceiptV1 raw) throws Exception {
@@ -252,18 +413,23 @@ class DashboardServiceTest {
 
     private static void writeDaily(Harness harness, String avg) throws Exception {
         String ref = DataPaths.dailyRef(MonitorSeriesDefaults.USD_CNY_ITEM_ID, YearMonth.of(2026, 8));
-        DailyRecordV1 row = new DailyRecordV1("1.0", "2026-08-10", MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+        writeDailyAt(harness, ref, "2026-08-10", avg, "run-dash-history-001");
+    }
+
+    private static void writeDailyAt(Harness harness, String ref, String businessDate,
+                                     String avg, String runId) throws Exception {
+        DailyRecordV1 row = new DailyRecordV1("1.0", businessDate, MonitorSeriesDefaults.USD_CNY_ITEM_ID,
                 ProviderType.OFFICIAL_WEB, SOURCE_NAME, AccessMethod.PUBLIC_OFFICIAL_HTML,
                 ProcessingStage.PUBLISHED, ValidationStatus.VERIFIED, "pboc-basic-validation-v1",
                 List.of(1), "arithmetic-mean-v1", 8, 4, RoundingMode.HALF_UP,
                 "weekday-asia-shanghai-v1", avg, 1, avg, 1, 0, true, "CNY", "CNY/1 USD",
-                List.of(new DailyInputRefV1("run-dash-history-001",
+                List.of(new DailyInputRefV1(runId,
                         "raw/formal/official_web/" + MonitorSeriesDefaults.USD_CNY_ITEM_ID
-                                + "/2026/08/run-dash-history-001.json", 4)),
+                                + "/2026/08/" + runId + ".json", 4)),
                 RECEIVED_AT, null);
         byte[] data = CsvV1Codec.encodeDaily(List.of(row));
-        ManifestV1 manifest = ManifestFactory.csv(ref, data, 1, "2026-08-10", "2026-08-10",
-                List.of("run-dash-history-001"), RECEIVED_AT);
+        ManifestV1 manifest = ManifestFactory.csv(ref, data, 1, businessDate, businessDate,
+                List.of(runId), RECEIVED_AT);
         Path target = harness.root.resolveDataRef(ref);
         Files.createDirectories(target.getParent());
         Files.write(target, data);
@@ -273,10 +439,16 @@ class DashboardServiceTest {
 
     private static void writeAggregate(Harness harness, String start, String end, String avg)
             throws Exception {
-        String ref = DataPaths.aggregateRef(MonitorSeriesDefaults.USD_CNY_ITEM_ID, "month", 2026);
+        writeAggregate(harness, start, end, avg, 2026, "run-dash-history-001");
+    }
+
+    private static void writeAggregate(Harness harness, String start, String end, String avg,
+                                       int year, String runId) throws Exception {
+        String ref = DataPaths.aggregateRef(MonitorSeriesDefaults.USD_CNY_ITEM_ID, "month", year);
         String fingerprint = com.supplymind.foundation.model.CanonicalJsonV1.sha256LowerHex(
                 com.supplymind.foundation.model.CanonicalJsonV1.sourceIdentity(
                         ProviderType.OFFICIAL_WEB, SOURCE_NAME, AccessMethod.PUBLIC_OFFICIAL_HTML));
+        // The aggregate inputRef targets the persisted 2026-08 daily fixture (manifest-valid).
         String dailyRef = DataPaths.dailyRef(MonitorSeriesDefaults.USD_CNY_ITEM_ID, YearMonth.of(2026, 8));
         String dailyHash = JsonV1Codec.decodeFile(Files.readAllBytes(
                 harness.root.resolveDataRef(DataPaths.manifestRef(dailyRef))), ManifestV1.class).fileSha256();
@@ -294,7 +466,7 @@ class DashboardServiceTest {
                         RECEIVED_AT, null);
         byte[] data = CsvV1Codec.encodeAggregate(List.of(row));
         ManifestV1 manifest = ManifestFactory.csv(ref, data, 1, start, end,
-                List.of("run-dash-history-001"), RECEIVED_AT);
+                List.of(runId), RECEIVED_AT);
         Path target = harness.root.resolveDataRef(ref);
         Files.createDirectories(target.getParent());
         Files.write(target, data);
@@ -341,7 +513,8 @@ class DashboardServiceTest {
                 new com.supplymind.warning.WarningStore(root, fileStore, FIXED_CLOCK),
                 FIXED_CLOCK, history);
         DashboardService dashboard = new DashboardService(configs, query, history, warnings, FIXED_CLOCK);
-        return new Harness(root, fileStore, rawStore, timelineStore, validation, publish, query, dashboard);
+        return new Harness(root, fileStore, rawStore, timelineStore, validation, publish, query,
+                dashboard, warnings);
     }
 
     private record Harness(
@@ -352,7 +525,8 @@ class DashboardServiceTest {
             LifecycleValidationService validation,
             LifecyclePublishService publish,
             PublishedQueryService published,
-            DashboardService dashboard
+            DashboardService dashboard,
+            WarningService warnings
     ) {
     }
 }

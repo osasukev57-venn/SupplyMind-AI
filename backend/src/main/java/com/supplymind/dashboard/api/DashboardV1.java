@@ -28,6 +28,7 @@ public final class DashboardV1 {
             String unit,
             String currency,
             String dataThrough,
+            String completeness,
             SourceView source,
             QualityView quality,
             String warningSummary,
@@ -35,13 +36,56 @@ public final class DashboardV1 {
     ) {
     }
 
-    /** D7: latest aggregate summary for the item (backend-computed, e.g. current month avg). */
+    /** D7: latest valid aggregate record for the item (backend-selected across years). */
     public record AggregateSummary(
             String grain,
             String periodStart,
             String periodEnd,
             String value,
             String unit
+    ) {
+    }
+
+    /** D7: manual intake accept-into-PENDING contract (Day8 write boundary - nothing persists). */
+    public record ManualPendingResponse(
+            String status,
+            String message,
+            String itemId,
+            String businessDate,
+            String value
+    ) {
+    }
+
+    /**
+     * D7: file import accept-into-PENDING / preview contract. CSV is REALLY parsed by the
+     * backend (row preview + per-row errors); formats the backend cannot really parse (xlsx)
+     * are REJECTED explicitly - never pretended.
+     */
+    public record ImportResponse(
+            String status,
+            String message,
+            String fileName,
+            List<ImportRow> previewRows,
+            List<ImportRowError> rowErrors
+    ) {
+        public ImportResponse {
+            previewRows = previewRows == null ? List.of() : List.copyOf(previewRows);
+            rowErrors = rowErrors == null ? List.of() : List.copyOf(rowErrors);
+        }
+    }
+
+    public record ImportRow(
+            int rowNumber,
+            List<String> cells
+    ) {
+        public ImportRow {
+            cells = cells == null ? List.of() : List.copyOf(cells);
+        }
+    }
+
+    public record ImportRowError(
+            int rowNumber,
+            String message
     ) {
     }
 

@@ -108,26 +108,47 @@ public final class DashboardService {
         return new DashboardV1.ItemCard(
                 item.itemId(), item.displayName(), item.enabled(),
                 value, businessDate, item.unit(), item.currency(), dataThrough,
+                latestCompleteness(item.itemId()),
                 source, quality, warningSummary(item.itemId()),
                 aggregateSummary(item.itemId()));
     }
 
     /**
-     * D7: latest aggregate summary for the item (backend-computed from the persisted aggregate
-     * files via HistoryQueryService - the browser never derives it).
+     * D7: completeness of the item's LATEST daily row (backend-computed; the browser never
+     * derives it). Missing daily data yields null - never a fabricated number.
      */
-    private DashboardV1.AggregateSummary aggregateSummary(String itemId) {
-        int year = OffsetDateTime.now(clock).atZoneSameInstant(DataPaths.SHANGHAI).getYear();
-        var rows = history.queryAggregate(itemId, "month", year, year).rows();
+    private String latestCompleteness(String itemId) {
+        LocalDate today = OffsetDateTime.now(clock).atZoneSameInstant(DataPaths.SHANGHAI).toLocalDate();
+        LocalDate monthStart = today.withDayOfMonth(1);
+        var rows = history.queryDaily(itemId, monthStart, today).rows();
         if (rows.isEmpty()) {
             return null;
         }
         var latest = rows.stream()
-                .max(Comparator.comparing(com.supplymind.foundation.model.AggregateRecordV1::periodStart))
+                .max(Comparator.comparing(com.supplymind.foundation.model.DailyRecordV1::businessDate))
                 .orElseThrow();
-        return new DashboardV1.AggregateSummary(
-                "month", latest.periodStart(), latest.periodEnd(),
-                latest.avg(), latest.unit());
+        return completenessOf(latest);
+    }
+
+    /**
+     * D7: the latest VALID aggregate record - selected across years (current year, then
+     * previous years), never just the max of the current year. Empty years are skipped.
+     */
+    private DashboardV1.AggregateSummary aggregateSummary(String itemId) {
+        int currentYear = OffsetDateTime.now(clock).atZoneSameInstant(DataPaths.SHANGHAI).getYear();
+        for (int year = currentYear; year >= currentYear - 2; year--) {
+            var rows = history.queryAggregate(itemId, "month", year, year).rows();
+            if (rows.isEmpty()) {
+                continue; // a year without aggregates must not block an older valid record
+            }
+            var latest = rows.stream()
+                    .max(Comparator.comparing(com.supplymind.foundation.model.AggregateRecordV1::periodStart))
+                    .orElseThrow();
+            return new DashboardV1.AggregateSummary(
+                    "month", latest.periodStart(), latest.periodEnd(),
+                    latest.avg(), latest.unit());
+        }
+        return null;
     }
 
     public DashboardV1.HistoryResponse history(String itemId, String fromDate, String toDate) {
@@ -271,8 +292,115 @@ public final class DashboardService {
         return new DashboardV1.SourcesResponse(
                 config.mode() == null ? null : config.mode().name(),
                 List.copyOf(items),
-                new DashboardV1.EntryStatus("PENDING", "manual intake HTTP entry is a Day8 contract - use the backend service directly"),
-                new DashboardV1.EntryStatus("PENDING", "file import HTTP entry is a Day8 contract - use the backend service directly"));
+                new DashboardV1.EntryStatus("PENDING", "manual intake HTTP entry accepts submissions into PENDING (Day8 write boundary)"),
+                new DashboardV1.EntryStatus("PENDING", "file import HTTP entry accepts submissions into PENDING (Day8 write boundary)"));
+    }
+
+    /**
+     * D7 M1: manual intake accept-into-PENDING. The submission is VALIDATED (required fields,
+     * known itemId) but NOT persisted - the formal write is a Day8 boundary. The structured
+     * PENDING response is what the frontend displays.
+     */
+    public DashboardV1.ManualPendingResponse manualPending(
+            String itemId, String source, String businessDate, String value, String unit
+    ) {
+        requireKnownItem(itemId);
+        if (businessDate == null || businessDate.isBlank()) {
+            throw new IllegalArgumentException("businessDate is required");
+        }
+        LocalDate.parse(businessDate); // malformed dates are invalid requests
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("value is required");
+        }
+        return new DashboardV1.ManualPendingResponse(
+                "PENDING",
+                "manual intake accepted as PENDING - the formal write is a Day8 boundary, nothing persisted",
+                itemId, businessDate, value);
+    }
+
+    /**
+     * D7 M1: file import accept-into-PENDING / preview. CSV files are REALLY parsed by the
+     * backend (per-row preview + errors, no business-value computation); a format the backend
+     * cannot really parse (xlsx) is REJECTED explicitly - never pretended.
+     */
+    public DashboardV1.ImportResponse importPending(String fileName, byte[] content) {
+        if (fileName == null || fileName.isBlank()) {
+            throw new IllegalArgumentException("fileName is required");
+        }
+        if (content == null || content.length == 0) {
+            throw new IllegalArgumentException("file content is required");
+        }
+        String lower = fileName.toLowerCase();
+        if (lower.endsWith(".xlsx") || lower.endsWith(".xls")) {
+            return new DashboardV1.ImportResponse(
+                    "REJECTED",
+                    "xlsx real parsing is a Day8 write boundary - this entry accepts CSV preview only",
+                    fileName, List.of(), List.of());
+        }
+        if (!lower.endsWith(".csv")) {
+            return new DashboardV1.ImportResponse(
+                    "REJECTED",
+                    "unsupported file type - this entry accepts CSV preview only",
+                    fileName, List.of(), List.of());
+        }
+        List<DashboardV1.ImportRow> preview = new ArrayList<>();
+        List<DashboardV1.ImportRowError> errors = new ArrayList<>();
+        String text = new String(content, java.nio.charset.StandardCharsets.UTF_8);
+        String[] lines = text.split("\r?\n");
+        for (int index = 0; index < lines.length; index++) {
+            if (index == 0 || lines[index].isBlank()) {
+                continue; // header + empty lines are not data rows
+            }
+            String line = lines[index];
+            List<String> cells = splitCsvLine(line);
+            String error = validateImportRow(cells);
+            if (error == null) {
+                preview.add(new DashboardV1.ImportRow(index + 1, List.copyOf(cells)));
+            } else {
+                errors.add(new DashboardV1.ImportRowError(index + 1, error));
+            }
+        }
+        return new DashboardV1.ImportResponse(
+                "PENDING",
+                "import preview parsed " + preview.size() + " rows with " + errors.size()
+                        + " row errors - the formal write is a Day8 boundary, nothing persisted",
+                fileName, List.copyOf(preview), List.copyOf(errors));
+    }
+
+    /** D7: form-level import validation only (missing/blank columns) - no business computation. */
+    private static String validateImportRow(List<String> cells) {
+        if (cells.size() < 3) {
+            return "列数不足（期望至少 3 列：标的, 业务日期, 值）";
+        }
+        if (cells.get(0).isBlank()) {
+            return "标的为空";
+        }
+        if (cells.get(1).isBlank()) {
+            return "业务日期为空";
+        }
+        if (cells.get(2).isBlank()) {
+            return "值为空";
+        }
+        return null;
+    }
+
+    private static List<String> splitCsvLine(String line) {
+        List<String> cells = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean quoted = false;
+        for (int index = 0; index < line.length(); index++) {
+            char ch = line.charAt(index);
+            if (ch == '"') {
+                quoted = !quoted;
+            } else if (ch == ',' && !quoted) {
+                cells.add(current.toString().trim());
+                current.setLength(0);
+            } else {
+                current.append(ch);
+            }
+        }
+        cells.add(current.toString().trim());
+        return cells;
     }
 
     private String warningSummary(String itemId) {

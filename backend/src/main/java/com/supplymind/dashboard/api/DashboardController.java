@@ -3,18 +3,21 @@ package com.supplymind.dashboard.api;
 import com.supplymind.dashboard.DashboardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 /**
- * D7 read-only Dashboard API. Every business value and status is computed by the Java backend
- * (DashboardService -> existing services); the Vue layer only renders the returned strings.
- * Errors are ALWAYS structured 400 {status:REJECTED, message} - invalid parameters and
- * unavailable data never produce a 500 with a raw stack trace.
+ * D7 read-only Dashboard API plus the Day8-boundary PENDING accept endpoints. Every business
+ * value and status is computed by the Java backend (DashboardService -> existing services);
+ * the Vue layer only renders the returned strings. Errors are ALWAYS structured 400
+ * {status:REJECTED, message} - invalid parameters and unavailable data never produce a 500
+ * with a raw stack trace.
  */
 @RestController
 @RequestMapping("/api/dashboard")
@@ -62,6 +65,30 @@ public class DashboardController {
     @GetMapping("/sources")
     public ResponseEntity<?> sources() {
         return okOrRejected(dashboard::sources);
+    }
+
+    /** D7 M1: manual intake accept-into-PENDING (structured response, nothing persisted). */
+    @PostMapping("/manual")
+    public ResponseEntity<?> manual(@RequestParam Map<String, String> body) {
+        return okOrRejected(() -> dashboard.manualPending(
+                body.get("itemId"), body.get("source"), body.get("businessDate"),
+                body.get("value"), body.get("unit")));
+    }
+
+    /** D7 M1: file import accept-into-PENDING / preview (CSV really parsed; xlsx REJECTED). */
+    @PostMapping("/import")
+    public ResponseEntity<?> importFile(@RequestParam("file") MultipartFile file) {
+        try {
+            return ResponseEntity.ok(dashboard.importPending(
+                    file.getOriginalFilename(), file.getBytes()));
+        } catch (java.io.IOException exception) {
+            return rejected("file upload could not be read");
+        } catch (IllegalArgumentException exception) {
+            return rejected(exception.getMessage() == null
+                    ? "invalid request parameters" : exception.getMessage());
+        } catch (RuntimeException exception) {
+            return rejected("dashboard data unavailable for the requested parameters");
+        }
     }
 
     /**

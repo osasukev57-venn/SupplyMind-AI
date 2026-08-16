@@ -1,74 +1,65 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { fetchSources } from '../api/dashboard'
+import { fetchSources, submitImport, submitManual } from '../api/dashboard'
 import type { SourcesResponse } from '../types/dashboard'
 import StatusBadge from '../components/StatusBadge.vue'
 
 const data = ref<SourcesResponse | null>(null)
 const error = ref<string | null>(null)
 
-// Manual entry form (Day8 write boundary: submit only reports PENDING - nothing is persisted).
+// Manual entry: the form is sent to the BACKEND accept-into-PENDING endpoint; the displayed
+// status/message are the backend's structured response (nothing is persisted - Day8 boundary).
 const manualItemId = ref('')
 const manualSource = ref('')
 const manualBusinessDate = ref('')
 const manualValue = ref('')
 const manualUnit = ref('')
-const manualSubmitted = ref(false)
-const manualMessage = ref('')
+const manualStatus = ref<string | null>(null)
+const manualMessage = ref<string | null>(null)
 
-// File import entry (Day8 write boundary: preview only, submit reports PENDING).
-const importFileName = ref('')
+// File import: the raw file (CSV or XLSX) is uploaded to the BACKEND; the preview rows and
+// per-row errors are the backend's real parse result. XLSX is explicitly REJECTED by the
+// backend - the frontend never fakes a parse (no file.text()).
+const importStatus = ref<string | null>(null)
+const importMessage = ref<string | null>(null)
 const importPreview = ref<{ rowNumber: number; cells: string[] }[]>([])
 const importErrors = ref<{ rowNumber: number; message: string }[]>([])
-const importSubmitted = ref(false)
 
-function submitManual(): void {
-  if (!manualItemId.value || !manualValue.value || !manualBusinessDate.value) {
-    manualMessage.value = '请填写标的、业务日期和值'
-    manualSubmitted.value = true
+async function submitManualForm(): Promise<void> {
+  const response = await submitManual({
+    itemId: manualItemId.value,
+    source: manualSource.value,
+    businessDate: manualBusinessDate.value,
+    value: manualValue.value,
+    unit: manualUnit.value
+  })
+  if (response === null) {
+    manualStatus.value = 'REJECTED'
+    manualMessage.value = '提交失败：后端不可用或参数被拒绝'
     return
   }
-  manualSubmitted.value = true
-  manualMessage.value =
-    '已受理（PENDING）— 手动录入的正式写入属 Day8 边界，当前仅记录受理状态，未写库'
+  manualStatus.value = response.status
+  manualMessage.value = response.message
 }
 
-function previewFile(event: Event): void {
+async function onImportFile(event: Event): Promise<void> {
   const input = event.target as HTMLInputElement
   const file = input.files && input.files.length > 0 ? input.files[0] : null
-  importErrors.value = []
+  importStatus.value = null
+  importMessage.value = null
   importPreview.value = []
-  if (!file) {
-    importFileName.value = ''
+  importErrors.value = []
+  if (!file) return
+  const response = await submitImport(file)
+  if (response === null) {
+    importStatus.value = 'REJECTED'
+    importMessage.value = '上传失败：后端不可用'
     return
   }
-  importFileName.value = file.name
-  file.text().then((text) => {
-    const lines = text.split(/\r?\n/)
-    lines.forEach((line, index) => {
-      if (index === 0 || line.trim() === '') return
-      const cells = line.split(',')
-      const message = validateRow(cells)
-      if (message) {
-        importErrors.value.push({ rowNumber: index + 1, message })
-      } else {
-        importPreview.value.push({ rowNumber: index + 1, cells })
-      }
-    })
-  })
-}
-
-/** Form-level validation only (missing/blank columns) - no business-value computation. */
-function validateRow(cells: string[]): string | null {
-  if (cells.length < 3) return '列数不足（期望至少 3 列：标的, 业务日期, 值）'
-  if (!cells[0] || cells[0].trim() === '') return '标的为空'
-  if (!cells[1] || cells[1].trim() === '') return '业务日期为空'
-  if (!cells[2] || cells[2].trim() === '') return '值为空'
-  return null
-}
-
-function submitImport(): void {
-  importSubmitted.value = true
+  importStatus.value = response.status
+  importMessage.value = response.message
+  importPreview.value = response.previewRows
+  importErrors.value = response.rowErrors
 }
 
 onMounted(async () => {
@@ -115,11 +106,11 @@ onMounted(async () => {
 
     <div class="panel">
       <h2>手动录入</h2>
-      <div class="entry-card">
-        <StatusBadge :status="manualSubmitted ? 'PENDING' : '—'" />
-        <span class="entry-label">状态：{{ manualSubmitted ? 'PENDING' : '未提交' }}</span>
+      <div v-if="manualStatus" class="entry-card">
+        <StatusBadge :status="manualStatus" />
+        <span class="entry-label">{{ manualStatus }}</span>
       </div>
-      <form class="manual-form" @submit.prevent="submitManual">
+      <form class="manual-form" @submit.prevent="submitManualForm">
         <label>标的 itemId
           <input v-model="manualItemId" placeholder="如 FX.USD.CNY.PBOC_MID" />
         </label>
@@ -137,19 +128,17 @@ onMounted(async () => {
         </label>
         <button type="submit">提交（PENDING）</button>
       </form>
-      <div v-if="manualSubmitted" class="entry-note">{{ manualMessage }}</div>
+      <div v-if="manualMessage" class="entry-note">{{ manualMessage }}</div>
     </div>
 
     <div class="panel">
       <h2>文件导入</h2>
-      <div class="entry-card">
-        <StatusBadge :status="importSubmitted ? 'PENDING' : '—'" />
-        <span class="entry-label">状态：{{ importSubmitted ? 'PENDING' : '未提交' }}</span>
+      <div v-if="importStatus" class="entry-card">
+        <StatusBadge :status="importStatus" />
+        <span class="entry-label">{{ importStatus }}</span>
       </div>
-      <input type="file" accept=".csv,.xlsx" @change="previewFile" />
-      <div v-if="importFileName" class="entry-note">
-        文件：{{ importFileName }}（预览 {{ importPreview.length }} 行，错误 {{ importErrors.length }} 行）
-      </div>
+      <input type="file" accept=".csv,.xlsx" @change="onImportFile" />
+      <div v-if="importMessage" class="entry-note">{{ importMessage }}</div>
       <div v-if="importErrors.length > 0" class="entry-errors">
         <div v-for="err in importErrors" :key="err.rowNumber" class="error-line">
           第 {{ err.rowNumber }} 行：{{ err.message }}
@@ -173,13 +162,6 @@ onMounted(async () => {
           </tr>
         </tbody>
       </table>
-      <button :disabled="importErrors.length > 0 || importPreview.length === 0"
-        @click="submitImport">
-        提交（PENDING）
-      </button>
-      <div v-if="importSubmitted" class="entry-note">
-        已受理（PENDING）— 文件导入的正式写入属 Day8 边界，当前仅记录受理状态，未写库
-      </div>
     </div>
   </div>
 </template>
@@ -233,9 +215,5 @@ button {
   cursor: pointer;
   font-size: 13px;
   align-self: end;
-}
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 </style>

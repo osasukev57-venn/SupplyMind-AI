@@ -1,6 +1,9 @@
 import { getJson } from './client'
+import { http } from './client'
 import type {
   HistoryResponse,
+  ImportResponse,
+  ManualPendingResponse,
   MetricsResponse,
   OverviewResponse,
   QualityResponse,
@@ -47,4 +50,33 @@ export function fetchQuality(
 
 export function fetchSources(): Promise<SourcesResponse | null> {
   return getJson<SourcesResponse>('/dashboard/sources')
+}
+
+/** D7 M1: manual submission -> backend accept-into-PENDING (nothing persisted). */
+export async function submitManual(fields: {
+  itemId: string
+  source: string
+  businessDate: string
+  value: string
+  unit: string
+}): Promise<ManualPendingResponse | null> {
+  const params = new URLSearchParams(fields)
+  try {
+    const response = await http.post<ManualPendingResponse>('/dashboard/manual', params)
+    return response.data
+  } catch {
+    return null
+  }
+}
+
+/** D7 M1: file import -> backend preview/accept (CSV really parsed; xlsx REJECTED). */
+export async function submitImport(file: File): Promise<ImportResponse | null> {
+  const form = new FormData()
+  form.append('file', file)
+  try {
+    const response = await http.post<ImportResponse>('/dashboard/import', form)
+    return response.data
+  } catch {
+    return null
+  }
 }

@@ -164,3 +164,31 @@ export interface EntryStatus {
   status: string
   message: string
 }
+
+/** Backend accept-into-PENDING response for a manual submission (nothing persisted). */
+export interface ManualPendingResponse {
+  status: string
+  message: string
+  itemId: string
+  businessDate: string
+  value: string
+}
+
+/** Backend import response: CSV really parsed; unsupported formats explicitly REJECTED. */
+export interface ImportResponse {
+  status: string
+  message: string
+  fileName: string
+  previewRows: ImportRow[]
+  rowErrors: ImportRowError[]
+}
+
+export interface ImportRow {
+  rowNumber: number
+  cells: string[]
+}
+
+export interface ImportRowError {
+  rowNumber: number
+  message: string
+}
