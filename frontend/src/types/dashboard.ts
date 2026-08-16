@@ -44,9 +44,29 @@ export interface HistoryResponse {
   fromDate: string
   toDate: string
   points: HistoryPoint[]
-  missingRefs: string[]
-  corruptRefs: string[]
+  chart: Chart
+  evidenceIssues: EvidenceIssue[]
   dataThrough: string | null
+}
+
+export interface Chart {
+  width: number
+  height: number
+  points: ChartPoint[]
+}
+
+/** Backend-computed display coordinate; label carries the exact businessDate + value string. */
+export interface ChartPoint {
+  label: string
+  x: string
+  y: string
+}
+
+/** Business evidence reference (period + status + reason) - internal CSV paths never leave the backend. */
+export interface EvidenceIssue {
+  periods: string[]
+  status: string
+  reason: string
 }
 
 export interface HistoryPoint {
@@ -64,8 +84,7 @@ export interface MetricsResponse {
   fromYear: number
   toYear: number
   rows: MetricRow[]
-  missingRefs: string[]
-  corruptRefs: string[]
+  evidenceIssues: EvidenceIssue[]
 }
 
 export interface MetricRow {
@@ -83,8 +102,7 @@ export interface QualityResponse {
   latestStatus: string
   rows: QualityRow[]
   warnings: WarningView[]
-  evidenceMissingRefs: string[]
-  evidenceCorruptRefs: string[]
+  evidenceIssues: EvidenceIssue[]
 }
 
 export interface QualityRow {

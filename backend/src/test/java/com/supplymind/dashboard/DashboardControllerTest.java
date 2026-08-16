@@ -27,6 +27,7 @@ import com.supplymind.publish.LifecyclePublishService;
 import com.supplymind.publish.PublishedQueryService;
 import com.supplymind.validation.LifecycleValidationService;
 import com.supplymind.config.ConfigManagementService;
+import com.supplymind.warning.WarningService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.http.ResponseEntity;
@@ -107,7 +108,7 @@ class DashboardControllerTest {
         DashboardV1.MetricsResponse body = (DashboardV1.MetricsResponse) response.getBody();
         assertNotNull(body);
         assertEquals("month", body.grain());
-        assertTrue(body.missingRefs().isEmpty() || body.missingRefs().size() >= 0);
+        assertNotNull(body.evidenceIssues());
     }
 
     @Test
@@ -176,8 +177,10 @@ class DashboardControllerTest {
         ConfigManagementService configManagement = new ConfigManagementService(configs,
                 new DataProviderRegistry());
         HistoryQueryService history = new HistoryQueryService(root);
-        DashboardService dashboard = new DashboardService(root, configManagement, query, history,
-                FIXED_CLOCK);
+        WarningService warnings = new WarningService(root,
+                new com.supplymind.warning.WarningStore(root, fileStore, FIXED_CLOCK),
+                FIXED_CLOCK, history);
+        DashboardService dashboard = new DashboardService(configManagement, query, history, warnings);
         return new Harness(root, fileStore, rawStore, timelineStore, validation, publish, dashboard);
     }
 

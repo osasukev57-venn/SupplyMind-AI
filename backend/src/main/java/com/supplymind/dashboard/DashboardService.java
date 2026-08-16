@@ -2,83 +2,75 @@ package com.supplymind.dashboard;
 
 import com.supplymind.config.ConfigManagementService;
 import com.supplymind.dashboard.api.DashboardV1;
-import com.supplymind.foundation.codec.JsonV1Codec;
 import com.supplymind.foundation.model.MonitorSeriesConfigV1;
 import com.supplymind.foundation.model.MonitorSeriesItemV1;
-import com.supplymind.foundation.storage.DataPaths;
-import com.supplymind.foundation.storage.DataRoot;
-import com.supplymind.foundation.storage.ManifestVerifier;
 import com.supplymind.history.HistoryQueryService;
 import com.supplymind.publish.PublishedQueryService;
 import com.supplymind.publish.PublishedRecord;
-import com.supplymind.routing.MaterialRoutePlanService;
 import com.supplymind.warning.WarningRecordV1;
+import com.supplymind.warning.WarningService;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * D7 read-only dashboard service. Controller -> DashboardService -> existing services; the
- * service never opens CSVs itself - it reuses HistoryQueryService, PublishedQueryService,
- * ConfigManagementService and MaterialRoutePlanService, and reads warning evidence only through
- * manifest-verified warning files (the WarningStore is write/exists only). All status
- * derivation happens HERE in Java; the Vue layer only renders the returned strings.
+ * service never opens business files itself - it reuses HistoryQueryService,
+ * PublishedQueryService, ConfigManagementService and WarningService. All status derivation and
+ * every chart coordinate happens HERE in Java; the Vue layer only renders the returned
+ * strings/coordinates. Evidence references in the DTOs are BUSINESS references (period +
+ * status + reason) - internal CSV paths never leave the backend.
  */
 public final class DashboardService {
 
-    private static final int WARNING_SCAN_MONTHS_BACK = 3;
+    private static final int WARNING_LOOKBACK_MONTHS = 3;
+    private static final int CHART_WIDTH = 640;
+    private static final int CHART_HEIGHT = 160;
+    private static final int CHART_PAD = 8;
+    private static final Pattern DAILY_PERIOD = Pattern.compile("processed/daily/[^/]+/(\\d{4}-\\d{2})\\.csv");
+    private static final Pattern AGGREGATE_PERIOD = Pattern.compile(
+            "processed/aggregate/[^/]+/(month|quarter|halfyear|year)/(\\d{4})\\.csv");
 
-    private final DataRoot dataRoot;
     private final ConfigManagementService configs;
     private final PublishedQueryService published;
     private final HistoryQueryService history;
-    private final Clock clock;
+    private final WarningService warnings;
 
     public DashboardService(
-            DataRoot dataRoot,
             ConfigManagementService configs,
             PublishedQueryService published,
             HistoryQueryService history,
-            Clock clock
+            WarningService warnings
     ) {
-        this.dataRoot = Objects.requireNonNull(dataRoot, "dataRoot");
         this.configs = Objects.requireNonNull(configs, "configs");
         this.published = Objects.requireNonNull(published, "published");
         this.history = Objects.requireNonNull(history, "history");
-        this.clock = Objects.requireNonNull(clock, "clock");
+        this.warnings = Objects.requireNonNull(warnings, "warnings");
     }
 
     public DashboardV1.OverviewResponse overview() {
         MonitorSeriesConfigV1 config = configs.active();
         List<DashboardV1.ItemCard> cards = new ArrayList<>();
+        List<String> warningLines = new ArrayList<>();
         for (MonitorSeriesItemV1 item : config.items()) {
             if (!item.enabled()) {
                 continue;
             }
             cards.add(itemCard(item));
-        }
-        List<String> warnings = new ArrayList<>();
-        for (MonitorSeriesItemV1 item : config.items()) {
-            if (item.enabled()) {
-                String summary = warningSummary(item.itemId());
-                if (summary != null) {
-                    warnings.add(summary);
-                }
+            String summary = warningSummary(item.itemId());
+            if (summary != null) {
+                warningLines.add(summary);
             }
         }
         return new DashboardV1.OverviewResponse(
                 config.mode() == null ? null : config.mode().name(),
-                List.copyOf(cards), List.copyOf(warnings));
+                List.copyOf(cards), List.copyOf(warningLines));
     }
 
     private DashboardV1.ItemCard itemCard(MonitorSeriesItemV1 item) {
@@ -95,7 +87,7 @@ public final class DashboardService {
             dataThrough = latest.businessDate();
             quality = new DashboardV1.QualityView(
                     latest.stale() ? "STALE" : "VERIFIED",
-                    latest.validationVersion() == null ? null : "VERIFIED",
+                    "VERIFIED",
                     latest.validationVersion(),
                     latest.stale(),
                     latest.publishedAt() == null ? null : latest.publishedAt().toString());
@@ -124,12 +116,31 @@ public final class DashboardService {
                     row.validationStatus() == null ? null : row.validationStatus().wireValue(),
                     row.validationVersion()));
         }
-        String dataThrough = points.isEmpty() ? null
-                : points.stream().max(Comparator.comparing(DashboardV1.HistoryPoint::businessDate))
-                .orElseThrow().businessDate();
+        List<String> periods = result.missingRefs().stream()
+                .map(DashboardService::dailyPeriodOf)
+                .filter(Objects::nonNull)
+                .toList();
+        DashboardV1.EvidenceIssue missing = periods.isEmpty() ? null
+                : new DashboardV1.EvidenceIssue(List.copyOf(periods), "MISSING",
+                "daily file(s) not found for the requested period");
+        DashboardV1.EvidenceIssue corrupt = result.corruptRefs().isEmpty() ? null
+                : new DashboardV1.EvidenceIssue(
+                result.corruptRefs().stream().map(DashboardService::dailyPeriodOf)
+                        .filter(Objects::nonNull).toList(),
+                "CORRUPT", "daily file(s) failed manifest or decode verification");
+        List<DashboardV1.EvidenceIssue> issues = new ArrayList<>();
+        if (missing != null && !missing.periods().isEmpty()) {
+            issues.add(missing);
+        }
+        if (corrupt != null && !corrupt.periods().isEmpty()) {
+            issues.add(corrupt);
+        }
         return new DashboardV1.HistoryResponse(
                 itemId, fromDate, toDate, List.copyOf(points),
-                List.copyOf(result.missingRefs()), List.copyOf(result.corruptRefs()), dataThrough);
+                chartOf(points), List.copyOf(issues),
+                points.isEmpty() ? null
+                        : points.stream().max(Comparator.comparing(DashboardV1.HistoryPoint::businessDate))
+                        .orElseThrow().businessDate());
     }
 
     public DashboardV1.MetricsResponse metrics(String itemId, String grain, int fromYear, int toYear) {
@@ -141,9 +152,23 @@ public final class DashboardService {
                     row.validationStatus() == null ? null : row.validationStatus().wireValue(),
                     row.validationVersion()));
         }
+        List<DashboardV1.EvidenceIssue> issues = new ArrayList<>();
+        List<String> missing = result.missingRefs().stream()
+                .map(ref -> aggregatePeriodOf(ref, grain))
+                .filter(Objects::nonNull).toList();
+        if (!missing.isEmpty()) {
+            issues.add(new DashboardV1.EvidenceIssue(missing, "MISSING",
+                    "aggregate file(s) not found for the requested period"));
+        }
+        List<String> corrupt = result.corruptRefs().stream()
+                .map(ref -> aggregatePeriodOf(ref, grain))
+                .filter(Objects::nonNull).toList();
+        if (!corrupt.isEmpty()) {
+            issues.add(new DashboardV1.EvidenceIssue(corrupt, "CORRUPT",
+                    "aggregate file(s) failed manifest or decode verification"));
+        }
         return new DashboardV1.MetricsResponse(
-                itemId, grain, fromYear, toYear, List.copyOf(rows),
-                List.copyOf(result.missingRefs()), List.copyOf(result.corruptRefs()));
+                itemId, grain, fromYear, toYear, List.copyOf(rows), List.copyOf(issues));
     }
 
     public DashboardV1.QualityResponse quality(String itemId, String fromDate, String toDate) {
@@ -161,12 +186,33 @@ public final class DashboardService {
                     false));
         }
         PublishedRecord latest = published.latestPublished(itemId);
-        List<DashboardV1.WarningView> warnings = readWarnings(itemId);
+        List<DashboardV1.WarningView> warningViews = new ArrayList<>();
+        for (WarningRecordV1 warning : warnings.findRecent(itemId, WARNING_LOOKBACK_MONTHS)) {
+            warningViews.add(new DashboardV1.WarningView(
+                    warning.warningId(), warning.ruleId(), warning.ruleVersion(),
+                    warning.periodStart(), warning.periodEnd(),
+                    warning.currentValue(), warning.threshold(),
+                    warning.riskLevel() == null ? null : warning.riskLevel().name(),
+                    warning.dataStatus(),
+                    warning.evaluatedAt() == null ? null : warning.evaluatedAt().toString()));
+        }
+        List<DashboardV1.EvidenceIssue> issues = new ArrayList<>();
+        List<String> missing = result.missingRefs().stream()
+                .map(DashboardService::dailyPeriodOf).filter(Objects::nonNull).toList();
+        if (!missing.isEmpty()) {
+            issues.add(new DashboardV1.EvidenceIssue(missing, "MISSING",
+                    "daily file(s) not found for the requested period"));
+        }
+        List<String> corrupt = result.corruptRefs().stream()
+                .map(DashboardService::dailyPeriodOf).filter(Objects::nonNull).toList();
+        if (!corrupt.isEmpty()) {
+            issues.add(new DashboardV1.EvidenceIssue(corrupt, "CORRUPT",
+                    "daily file(s) failed manifest or decode verification"));
+        }
         return new DashboardV1.QualityResponse(
                 itemId,
                 latest == null ? "NO_DATA" : latest.stale() ? "STALE" : "VERIFIED",
-                List.copyOf(rows), List.copyOf(warnings),
-                List.copyOf(result.missingRefs()), List.copyOf(result.corruptRefs()));
+                List.copyOf(rows), List.copyOf(warningViews), List.copyOf(issues));
     }
 
     public DashboardV1.SourcesResponse sources() {
@@ -191,53 +237,51 @@ public final class DashboardService {
     }
 
     private String warningSummary(String itemId) {
-        List<DashboardV1.WarningView> warnings = readWarnings(itemId);
-        if (warnings.isEmpty()) {
+        List<WarningRecordV1> recent = warnings.findRecent(itemId, WARNING_LOOKBACK_MONTHS);
+        if (recent.isEmpty()) {
             return null;
         }
-        return "warnings: " + warnings.size() + " (latest " + warnings.get(0).riskLevel() + ")";
+        return "warnings: " + recent.size() + " (latest "
+                + (recent.get(0).riskLevel() == null ? "unknown" : recent.get(0).riskLevel().name()) + ")";
     }
 
-    /** Reads manifest-verified warning files for one item (newest first, bounded lookback). */
-    private List<DashboardV1.WarningView> readWarnings(String itemId) {
-        List<DashboardV1.WarningView> warnings = new ArrayList<>();
-        YearMonth month = YearMonth.from(OffsetDateTime.now(clock));
-        for (int back = 0; back < WARNING_SCAN_MONTHS_BACK; back++) {
-            YearMonth target = month.minusMonths(back);
-            Path dir = dataRoot.resolveInternalRelative("warning").resolve(target.toString());
-            if (!Files.isDirectory(dir)) {
-                continue;
+    /**
+     * D7: chart coordinates are COMPUTED HERE (fixed display size, min/max scaling) - the Vue
+     * layer only renders the polyline. No browser-side math exists anywhere in the frontend.
+     */
+    private static DashboardV1.Chart chartOf(List<DashboardV1.HistoryPoint> points) {
+        List<DashboardV1.ChartPoint> chartPoints = new ArrayList<>();
+        if (!points.isEmpty()) {
+            double min = points.stream().mapToDouble(p -> Double.parseDouble(p.value())).min().orElse(0);
+            double max = points.stream().mapToDouble(p -> Double.parseDouble(p.value())).max().orElse(0);
+            double span = max - min;
+            if (span == 0) {
+                span = 1;
             }
-            try (Stream<Path> files = Files.list(dir)) {
-                for (Path file : files.toList()) {
-                    if (!file.getFileName().toString().endsWith(".json")) {
-                        continue;
-                    }
-                    String ref = "warning/" + target + "/" + file.getFileName();
-                    Path manifest = dataRoot.resolveDataRef(DataPaths.manifestRef(ref));
-                    if (!Files.isRegularFile(manifest)
-                            || !ManifestVerifier.matches(dataRoot, ref, file, manifest)) {
-                        continue;
-                    }
-                    WarningRecordV1 warning = JsonV1Codec.decodeFile(Files.readAllBytes(file),
-                            WarningRecordV1.class);
-                    if (!itemId.equals(warning.itemId())) {
-                        continue;
-                    }
-                    warnings.add(new DashboardV1.WarningView(
-                            warning.warningId(), warning.ruleId(), warning.ruleVersion(),
-                            warning.periodStart(), warning.periodEnd(),
-                            warning.currentValue(), warning.threshold(),
-                            warning.riskLevel() == null ? null : warning.riskLevel().name(),
-                            warning.dataStatus(),
-                            warning.evaluatedAt() == null ? null : warning.evaluatedAt().toString()));
-                }
-            } catch (IOException | RuntimeException ignored) {
-                // a broken warning file is skipped - the quality page still shows the rest
+            double usable = CHART_WIDTH - CHART_PAD * 2;
+            double step = points.size() == 1 ? 0 : usable / (points.size() - 1);
+            for (int index = 0; index < points.size(); index++) {
+                DashboardV1.HistoryPoint point = points.get(index);
+                double x = CHART_PAD + (points.size() == 1 ? usable / 2 : index * step);
+                double y = CHART_HEIGHT - CHART_PAD
+                        - ((Double.parseDouble(point.value()) - min) / span) * (CHART_HEIGHT - CHART_PAD * 2);
+                chartPoints.add(new DashboardV1.ChartPoint(
+                        point.businessDate() + " " + point.value(),
+                        new java.math.BigDecimal(Double.toString(x)).setScale(1, java.math.RoundingMode.HALF_UP).toPlainString(),
+                        new java.math.BigDecimal(Double.toString(y)).setScale(1, java.math.RoundingMode.HALF_UP).toPlainString()));
             }
         }
-        warnings.sort(Comparator.comparing(DashboardV1.WarningView::createdAt,
-                Comparator.nullsLast(Comparator.reverseOrder())));
-        return warnings;
+        return new DashboardV1.Chart(CHART_WIDTH, CHART_HEIGHT, List.copyOf(chartPoints));
+    }
+
+    /** D7: internal CSV paths never leave the backend - a daily ref maps to its business period. */
+    private static String dailyPeriodOf(String ref) {
+        Matcher matcher = DAILY_PERIOD.matcher(ref);
+        return matcher.find() ? matcher.group(1) : null;
+    }
+
+    private static String aggregatePeriodOf(String ref, String grain) {
+        Matcher matcher = AGGREGATE_PERIOD.matcher(ref);
+        return matcher.find() ? matcher.group(2) + " " + grain : null;
     }
 }

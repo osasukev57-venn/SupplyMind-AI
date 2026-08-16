@@ -34,6 +34,7 @@ import com.supplymind.publish.PublishedQueryService;
 import com.supplymind.validation.LifecycleValidationService;
 import com.supplymind.validation.PbocCandidateStandardizer;
 import com.supplymind.warning.WarningRecordV1;
+import com.supplymind.warning.WarningService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -115,8 +116,12 @@ class DashboardServiceTest {
         assertEquals("6.79040000", point.value(), "daily avg string passes through unchanged");
         assertEquals(SOURCE_NAME, point.actualSourceName());
         assertEquals("VERIFIED", point.validationStatus());
-        assertTrue(history.missingRefs().isEmpty());
+        assertTrue(history.evidenceIssues().isEmpty());
         assertEquals("2026-08-10", history.dataThrough());
+        assertNotNull(history.chart());
+        assertEquals(1, history.chart().points().size(),
+                "the backend supplies the chart coordinates - the browser never computes them");
+        assertEquals("2026-08-10 6.79040000", history.chart().points().get(0).label());
     }
 
     @Test
@@ -154,8 +159,7 @@ class DashboardServiceTest {
         assertEquals(1, quality.warnings().size());
         assertEquals("dash-test-warning", quality.warnings().get(0).warningId());
         assertEquals("HIGH", quality.warnings().get(0).riskLevel());
-        assertTrue(quality.evidenceMissingRefs().isEmpty());
-        assertTrue(quality.evidenceCorruptRefs().isEmpty());
+        assertTrue(quality.evidenceIssues().isEmpty());
     }
 
     @Test
@@ -178,7 +182,7 @@ class DashboardServiceTest {
     }
 
     @Test
-    void historyMissingPeriodIsHonest() throws Exception {
+    void historyMissingPeriodIsHonestAsBusinessReference() throws Exception {
         Harness harness = harness();
         publish(harness, pbocRaw("run-dash-missing-001", "6.7904", "2026-08-10"));
 
@@ -186,7 +190,13 @@ class DashboardServiceTest {
                 MonitorSeriesDefaults.USD_CNY_ITEM_ID, "2026-01-01", "2026-01-31");
 
         assertTrue(history.points().isEmpty(), "missing months must not be interpolated");
-        assertFalse(history.missingRefs().isEmpty(), "the missing daily file is reported");
+        assertFalse(history.evidenceIssues().isEmpty(), "the missing period is reported");
+        DashboardV1.EvidenceIssue issue = history.evidenceIssues().get(0);
+        assertEquals("MISSING", issue.status());
+        assertTrue(issue.periods().contains("2026-01"),
+                "the issue is a BUSINESS period reference, never an internal CSV path");
+        assertFalse(issue.periods().get(0).contains("processed/"),
+                "internal CSV paths must never leave the backend");
         assertNull(history.dataThrough());
     }
 
@@ -327,7 +337,10 @@ class DashboardServiceTest {
         ConfigManagementService configs = new ConfigManagementService(
                 new ConfigActivationStore(root, fileStore, FIXED_CLOCK), new DataProviderRegistry());
         HistoryQueryService history = new HistoryQueryService(root);
-        DashboardService dashboard = new DashboardService(root, configs, query, history, FIXED_CLOCK);
+        WarningService warnings = new WarningService(root,
+                new com.supplymind.warning.WarningStore(root, fileStore, FIXED_CLOCK),
+                FIXED_CLOCK, history);
+        DashboardService dashboard = new DashboardService(configs, query, history, warnings);
         return new Harness(root, fileStore, rawStore, timelineStore, validation, publish, query, dashboard);
     }
 

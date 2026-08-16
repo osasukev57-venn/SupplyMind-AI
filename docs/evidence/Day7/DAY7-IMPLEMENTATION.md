@@ -57,3 +57,13 @@ Vue3 (frontend/) --HTTP /api/dashboard--> DashboardController --> DashboardServi
 
 - D7-T01～D7-T04 = `TaskExecutionStatus=REVIEW_PENDING`（实施完成；Code Review 通过后由技术负责人改 `DONE`）。
 - Day6 COMPLETE 保持；Day6 代码零修改；未 merge main；未 tag；Day6 状态保持 REVIEW_PENDING（Day7 实施不改变 Day6 结论）。
+
+## 攻击修复（Terra Finding，2026-08-16，commit 见 05-PROGRESS-LEDGER）
+
+1. **TrendChart 零业务计算**：删除前端所有数值计算（Number/Math/toFixed/parseFloat 在 `frontend/src` 零出现）；后端 `DashboardService.chartOf` 计算全部展示坐标（固定 640x160、min/max 缩放），`Chart{width,height,points[{label,x,y}]}` 随 DTO 下发，Vue 只渲染 polyline 字符串。
+2. **DTO 不暴露内部 csv 路径**：`missingRefs/corruptRefs`/`evidenceMissingRefs/evidenceCorruptRefs` 全部移除，改为业务引用 `EvidenceIssue{periods[], status(MISSING|CORRUPT), reason}`（daily ref → `YYYY-MM`、aggregate ref → `YYYY grain`）；契约测试断言响应体永不包含 `processed/`。
+3. **API 错误统一**：DashboardController 单一 `okOrRejected`——任何失败（非法日期/非法 grain/数据不可用）都是 `400 {status:REJECTED, message}`；`500` 从 dashboard API 中移除（MockMvc 测试断言非法参数 400 且 message 非空）。
+4. **DashboardService 不再直读 warning 文件**：改为注入 `WarningService`；`WarningService` 新增只读方法 `findRecent(itemId, lookbackMonths)`（manifest 校验扫描，复用既有 DataRoot/ManifestVerifier，不触碰既有方法，Day1-Day6 行为零改动）；DashboardService 的全部 warning 读取走该 service。
+5. **真实 MockMvc API 测试**：新增 `DashboardApiMockMvcTest`（6 项）——standalone MockMvc + 真实 DashboardService（持久化 fixture）：overview 200 契约、history chart/evidenceIssues、缺失期间业务引用、非法日期/grain → 400 REJECTED（非 500）、quality/sources 200。
+
+回归：后端全量 `.\mvnw.cmd clean test` = 109 suites / 554 tests / 0 failures / 0 errors / 8 skipped（+6 MockMvc）；前端 `npm run test` 6/6、`npm run build` PASS；DEC-008 保持（值全链路字符串，坐标仅展示几何）。

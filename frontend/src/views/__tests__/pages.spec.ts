@@ -62,8 +62,12 @@ const history: HistoryResponse = {
       validationVersion: 'pboc-basic-validation-v1'
     }
   ],
-  missingRefs: [],
-  corruptRefs: [],
+  chart: {
+    width: 640,
+    height: 160,
+    points: [{ label: '2026-08-10 6.79040000', x: '320.0', y: '76.0' }]
+  },
+  evidenceIssues: [],
   dataThrough: '2026-08-10'
 }
 
@@ -84,8 +88,7 @@ const quality: QualityResponse = {
     }
   ],
   warnings: [],
-  evidenceMissingRefs: [],
-  evidenceCorruptRefs: []
+  evidenceIssues: []
 }
 
 const sources: SourcesResponse = {
@@ -143,15 +146,23 @@ describe('dashboard pages', () => {
     expect(wrapper.text()).toContain('不可用')
   })
 
-  it('history renders daily points and missing-file notices', async () => {
+  it('history renders daily points and business-period missing notices', async () => {
     vi.mocked(fetchHistory).mockResolvedValue({
       ...history,
-      missingRefs: ['processed/daily/FX.USD.CNY.PBOC_MID/2026-01.csv']
+      evidenceIssues: [
+        {
+          periods: ['2026-01'],
+          status: 'MISSING',
+          reason: 'daily file(s) not found for the requested period'
+        }
+      ]
     })
     const wrapper = mount(HistoryView)
     await flushPromises()
     expect(wrapper.text()).toContain('6.79040000')
-    expect(wrapper.text()).toContain('缺失文件')
+    expect(wrapper.text()).toContain('缺失')
+    expect(wrapper.text()).toContain('2026-01')
+    expect(wrapper.text()).not.toContain('processed/')
   })
 
   it('quality renders rows and warning list', async () => {

@@ -68,7 +68,7 @@ async function load(): Promise<void> {
 
     <div v-if="grain === 'daily' && history" class="panel">
       <h2>趋势（{{ history.points.length }} 个数据点，截至 {{ history.dataThrough ?? '—' }}）</h2>
-      <TrendChart :points="history.points.map((p) => ({ businessDate: p.businessDate, value: p.value }))" />
+      <TrendChart :chart="history.chart" />
       <table class="sm-table">
         <thead>
           <tr>
@@ -89,11 +89,9 @@ async function load(): Promise<void> {
           </tr>
         </tbody>
       </table>
-      <div v-if="history.missingRefs.length > 0" class="muted warn-line">
-        缺失文件（未插值）：{{ history.missingRefs.join('；') }}
-      </div>
-      <div v-if="history.corruptRefs.length > 0" class="muted warn-line">
-        损坏文件：{{ history.corruptRefs.join('；') }}
+      <div v-for="(issue, i) in history.evidenceIssues" :key="i" class="muted warn-line">
+        {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
+        （期间：{{ issue.periods.join('；') }}，未插值）
       </div>
     </div>
 

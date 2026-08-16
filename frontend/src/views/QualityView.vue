@@ -98,14 +98,11 @@ async function load(): Promise<void> {
 
     <div v-if="quality" class="panel">
       <h2>证据状态</h2>
-      <div v-if="quality.evidenceMissingRefs.length > 0" class="muted">
-        缺失：{{ quality.evidenceMissingRefs.join('；') }}
+      <div v-for="(issue, i) in quality.evidenceIssues" :key="i" class="muted">
+        {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
+        （期间：{{ issue.periods.join('；') }}）
       </div>
-      <div v-if="quality.evidenceCorruptRefs.length > 0" class="muted">
-        损坏：{{ quality.evidenceCorruptRefs.join('；') }}
-      </div>
-      <div v-if="quality.evidenceMissingRefs.length === 0 && quality.evidenceCorruptRefs.length === 0"
-        class="muted">引用文件全部通过清单校验</div>
+      <div v-if="quality.evidenceIssues.length === 0" class="muted">引用文件全部通过清单校验</div>
     </div>
   </div>
 </template>

@@ -50,21 +50,31 @@ class DashboardDtoContractTest {
                 "FX.USD.CNY.PBOC_MID", "2026-08-01", "2026-08-31",
                 List.of(new DashboardV1.HistoryPoint("2026-08-10", "6.79040000", "CNY/1 USD",
                         "中国人民银行官网", "VERIFIED", "pboc-basic-validation-v1")),
-                List.of(), List.of(), "2026-08-10");
+                new DashboardV1.Chart(640, 160, List.of(new DashboardV1.ChartPoint(
+                        "2026-08-10 6.79040000", "8.0", "76.0"))),
+                List.of(new DashboardV1.EvidenceIssue(List.of("2026-01"), "MISSING",
+                        "daily file(s) not found")),
+                "2026-08-10");
         JsonNode historyJson = JsonV1Codec.mapper().readTree(JsonV1Codec.encodeCompact(history));
-        assertEquals(Set.of("itemId", "fromDate", "toDate", "points", "missingRefs", "corruptRefs",
+        assertEquals(Set.of("itemId", "fromDate", "toDate", "points", "chart", "evidenceIssues",
                 "dataThrough"), keys(historyJson));
         assertEquals(Set.of("businessDate", "value", "unit", "actualSourceName",
                 "validationStatus", "validationVersion"), keys(historyJson.get("points").get(0)));
+        assertEquals(Set.of("width", "height", "points"), keys(historyJson.get("chart")));
+        assertEquals(Set.of("label", "x", "y"), keys(historyJson.get("chart").get("points").get(0)));
+        assertEquals(Set.of("periods", "status", "reason"), keys(historyJson.get("evidenceIssues").get(0)));
+        assertFalse(historyJson.get("evidenceIssues").get(0).get("periods").get(0).asText()
+                        .contains("processed/"),
+                "internal CSV paths must never appear in the wire contract");
 
         DashboardV1.MetricsResponse metrics = new DashboardV1.MetricsResponse(
                 "FX.USD.CNY.PBOC_MID", "month", 2026, 2026,
                 List.of(new DashboardV1.MetricRow("2026-08-01", "2026-08-31", "6.79040000",
                         "CNY/1 USD", "中国人民银行官网", "VERIFIED", "pboc-basic-validation-v1")),
-                List.of(), List.of());
+                List.of());
         JsonNode metricsJson = JsonV1Codec.mapper().readTree(JsonV1Codec.encodeCompact(metrics));
-        assertEquals(Set.of("itemId", "grain", "fromYear", "toYear", "rows", "missingRefs",
-                "corruptRefs"), keys(metricsJson));
+        assertEquals(Set.of("itemId", "grain", "fromYear", "toYear", "rows", "evidenceIssues"),
+                keys(metricsJson));
         assertEquals(Set.of("periodStart", "periodEnd", "value", "unit", "actualSourceName",
                 "validationStatus", "validationVersion"), keys(metricsJson.get("rows").get(0)));
 
@@ -76,10 +86,10 @@ class DashboardDtoContractTest {
                 List.of(new DashboardV1.WarningView("w1", "r1", "v1", "2026-08-01", "2026-08-31",
                         "7.00000000", "5.00000000", "HIGH", "PUBLISHED_VERIFIED",
                         "2026-08-10T10:00:00+08:00")),
-                List.of(), List.of());
+                List.of(new DashboardV1.EvidenceIssue(List.of("2026-01"), "MISSING", "not found")));
         JsonNode qualityJson = JsonV1Codec.mapper().readTree(JsonV1Codec.encodeCompact(quality));
-        assertEquals(Set.of("itemId", "latestStatus", "rows", "warnings", "evidenceMissingRefs",
-                "evidenceCorruptRefs"), keys(qualityJson));
+        assertEquals(Set.of("itemId", "latestStatus", "rows", "warnings", "evidenceIssues"),
+                keys(qualityJson));
         assertEquals(Set.of("businessDate", "value", "unit", "actualSourceName", "providerType",
                 "accessMethod", "validationStatus", "validationVersion", "stale"),
                 keys(qualityJson.get("rows").get(0)));
@@ -108,7 +118,8 @@ class DashboardDtoContractTest {
                 "FX.USD.CNY.PBOC_MID", "2026-08-01", "2026-08-31",
                 List.of(new DashboardV1.HistoryPoint("2026-08-10",
                         "999999999999.123456789", "CNY/1 USD", "s", "VERIFIED", "v1")),
-                List.of(), List.of(), "2026-08-10");
+                new DashboardV1.Chart(640, 160, List.of()),
+                List.of(), "2026-08-10");
         JsonNode json = JsonV1Codec.mapper().readTree(JsonV1Codec.encodeCompact(history));
         assertEquals("999999999999.123456789", json.get("points").get(0).get("value").asText(),
                 "an 18-digit decimal string must not be mangled by the wire contract");

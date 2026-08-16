@@ -57,8 +57,8 @@ public final class DashboardV1 {
             String fromDate,
             String toDate,
             List<HistoryPoint> points,
-            List<String> missingRefs,
-            List<String> corruptRefs,
+            Chart chart,
+            List<EvidenceIssue> evidenceIssues,
             String dataThrough
     ) {
     }
@@ -73,14 +73,48 @@ public final class DashboardV1 {
     ) {
     }
 
+    /**
+     * D7: chart display coordinates are computed by the BACKEND (fixed size, min/max scaling);
+     * the Vue layer only renders them. label carries the exact businessDate + value string.
+     */
+    public record Chart(
+            int width,
+            int height,
+            List<ChartPoint> points
+    ) {
+        public Chart {
+            points = points == null ? List.of() : List.copyOf(points);
+        }
+    }
+
+    public record ChartPoint(
+            String label,
+            String x,
+            String y
+    ) {
+    }
+
+    /**
+     * D7: evidence issues are BUSINESS references (period + status + reason) - internal CSV
+     * paths never leave the backend.
+     */
+    public record EvidenceIssue(
+            List<String> periods,
+            String status,
+            String reason
+    ) {
+        public EvidenceIssue {
+            periods = periods == null ? List.of() : List.copyOf(periods);
+        }
+    }
+
     public record MetricsResponse(
             String itemId,
             String grain,
             int fromYear,
             int toYear,
             List<MetricRow> rows,
-            List<String> missingRefs,
-            List<String> corruptRefs
+            List<EvidenceIssue> evidenceIssues
     ) {
     }
 
@@ -100,8 +134,7 @@ public final class DashboardV1 {
             String latestStatus,
             List<QualityRow> rows,
             List<WarningView> warnings,
-            List<String> evidenceMissingRefs,
-            List<String> evidenceCorruptRefs
+            List<EvidenceIssue> evidenceIssues
     ) {
     }
 
