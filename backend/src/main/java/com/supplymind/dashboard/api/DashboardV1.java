@@ -49,10 +49,12 @@ public final class DashboardV1 {
     /** D7: manual intake accept-into-PENDING contract (Day8 write boundary - nothing persists). */
     public record ManualPendingResponse(
             String status,
-            String message,
             String itemId,
+            String source,
+            String unit,
             String businessDate,
-            String value
+            String value,
+            String message
     ) {
     }
 

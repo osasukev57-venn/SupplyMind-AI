@@ -297,14 +297,20 @@ public final class DashboardService {
     }
 
     /**
-     * D7 M1: manual intake accept-into-PENDING. The submission is VALIDATED (required fields,
-     * known itemId) but NOT persisted - the formal write is a Day8 boundary. The structured
-     * PENDING response is what the frontend displays.
+     * D7 M1: manual intake accept-into-PENDING. The submission is VALIDATED (known itemId,
+     * required source/businessDate/value/unit) but NOT persisted - the formal write is a Day8
+     * boundary. The structured PENDING response is what the frontend displays.
      */
     public DashboardV1.ManualPendingResponse manualPending(
             String itemId, String source, String businessDate, String value, String unit
     ) {
         requireKnownItem(itemId);
+        if (source == null || source.isBlank()) {
+            throw new IllegalArgumentException("source is required");
+        }
+        if (unit == null || unit.isBlank()) {
+            throw new IllegalArgumentException("unit is required");
+        }
         if (businessDate == null || businessDate.isBlank()) {
             throw new IllegalArgumentException("businessDate is required");
         }
@@ -313,9 +319,8 @@ public final class DashboardService {
             throw new IllegalArgumentException("value is required");
         }
         return new DashboardV1.ManualPendingResponse(
-                "PENDING",
-                "manual intake accepted as PENDING - the formal write is a Day8 boundary, nothing persisted",
-                itemId, businessDate, value);
+                "PENDING", itemId, source, unit, businessDate, value,
+                "manual intake accepted as PENDING - the formal write is a Day8 boundary, nothing persisted");
     }
 
     /**
@@ -369,17 +374,24 @@ public final class DashboardService {
 
     /** D7: form-level import validation only (missing/blank columns) - no business computation. */
     private static String validateImportRow(List<String> cells) {
-        if (cells.size() < 3) {
-            return "列数不足（期望至少 3 列：标的, 业务日期, 值）";
+        // Frozen CSV schema: itemId, source, businessDate, value, unit (5 columns).
+        if (cells.size() < 5) {
+            return "列数不足（期望 5 列：标的, 来源, 业务日期, 值, 单位）";
         }
         if (cells.get(0).isBlank()) {
             return "标的为空";
         }
         if (cells.get(1).isBlank()) {
-            return "业务日期为空";
+            return "来源为空";
         }
         if (cells.get(2).isBlank()) {
+            return "业务日期为空";
+        }
+        if (cells.get(3).isBlank()) {
             return "值为空";
+        }
+        if (cells.get(4).isBlank()) {
+            return "单位为空";
         }
         return null;
     }

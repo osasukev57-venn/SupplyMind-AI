@@ -100,6 +100,12 @@ Vue3 (frontend/) --HTTP /api/dashboard--> DashboardController --> DashboardServi
 | 最终审查修复（a4006c4） | 110 | 563 | HISTORICAL |
 | **最终审查修复 V2（本 commit）** | **110** | **573** | **CURRENT** |
 
-保持：Day1-Day6 语义与契约零修改、DEC-060 未改、测试断言未降低、前端业务值零计算。
+## M1 契约冻结（Terra Final Attack Retest，2026-08-16，commit 见 05-PROGRESS-LEDGER）
+
+1. **Manual API 契约冻结**：`POST /api/dashboard/manual` 必须校验 `source` 与 `unit` 非空——缺失 → 400 `{status:"REJECTED", message:"source is required"|"unit is required"}`；完整请求返回 `{status:"PENDING", itemId, source, unit, businessDate, value, message}`（source/unit 为冻结字段）。
+2. **Import API 契约冻结**：CSV preview 采用冻结 5 列 schema（itemId, source, businessDate, value, unit）；source/unit 缺失 → 进入 `rowErrors`（"来源为空"/"单位为空"），绝不进入 PENDING preview；xlsx 保持 REJECTED（不引入新解析）。
+3. **新增测试**：manual missing source → 400、manual missing unit → 400、manual valid → PENDING 且含 source/unit（service + MockMvc 双覆盖）；CSV 缺 source/unit → row error（"来源为空"/"单位为空"精确断言）、CSV valid → preview 成功（5 列 cells 断言）；前端 manual/import 提交测试更新（后端字段契约）。
+
+保持：Day8 真实写入边界（仍只受理 PENDING）、DEC-008（值全链路字符串）、Day1-Day6 契约零修改、测试断言未降低。
 
 回归：后端全量 `.\mvnw.cmd clean test` = 109 suites / 554 tests / 0 failures / 0 errors / 8 skipped（HISTORICAL，5f1491c 时点）；前端 `npm run test` 6/6、`npm run build` PASS；DEC-008 保持（值全链路字符串，坐标仅展示几何）。CURRENT 回归见上文快照表。

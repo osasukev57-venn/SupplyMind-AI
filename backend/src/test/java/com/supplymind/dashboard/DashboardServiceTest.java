@@ -310,29 +310,48 @@ class DashboardServiceTest {
                 MonitorSeriesDefaults.USD_CNY_ITEM_ID, "operator source", "2026-08-10",
                 "6.7904", "CNY/1 USD");
         assertEquals("PENDING", pending.status());
-        assertFalse(pending.message().isBlank());
+        assertEquals(MonitorSeriesDefaults.USD_CNY_ITEM_ID, pending.itemId());
+        assertEquals("operator source", pending.source(),
+                "source is part of the frozen pending contract");
+        assertEquals("CNY/1 USD", pending.unit(),
+                "unit is part of the frozen pending contract");
         assertEquals("2026-08-10", pending.businessDate());
+        assertEquals("6.7904", pending.value());
+        assertFalse(pending.message().isBlank());
 
         assertThrows(IllegalArgumentException.class,
                 () -> harness.dashboard.manualPending(MonitorSeriesDefaults.USD_CNY_ITEM_ID,
-                        null, "2026-08-10", null, null),
+                        null, "2026-08-10", "6.7904", "CNY/1 USD"),
+                "a submission without a source is an invalid request");
+        assertThrows(IllegalArgumentException.class,
+                () -> harness.dashboard.manualPending(MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+                        "source", "2026-08-10", "6.7904", null),
+                "a submission without a unit is an invalid request");
+        assertThrows(IllegalArgumentException.class,
+                () -> harness.dashboard.manualPending(MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+                        "source", "2026-08-10", null, "CNY/1 USD"),
                 "a submission without a value is an invalid request");
     }
 
     @Test
     void importCsvIsReallyParsedAndXlsxIsExplicitlyRejected() throws Exception {
         Harness harness = harness();
-        String csv = "itemId,businessDate,value\n"
-                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",2026-08-10,6.7904\n"
+        // Frozen CSV schema: itemId, source, businessDate, value, unit.
+        String csv = "itemId,source,businessDate,value,unit\n"
+                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",source A,2026-08-10,6.7904,CNY/1 USD\n"
                 + "badrow\n"
-                + "FX.OTHER,2026-08-12,7.0\n";
+                + "FX.OTHER,source B,2026-08-12,7.0,CNY/1 USD\n"
+                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",,2026-08-13,8.0,CNY/1 USD\n"
+                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",source C,2026-08-14,9.0,\n";
         DashboardV1.ImportResponse response = harness.dashboard.importPending("rows.csv",
                 csv.getBytes(StandardCharsets.UTF_8));
         assertEquals("PENDING", response.status());
         assertEquals(2, response.previewRows().size(), "valid rows are really parsed");
-        assertEquals(1, response.rowErrors().size(), "invalid rows are reported per row");
-        assertEquals(3, response.rowErrors().get(0).rowNumber(),
-                "the bad row number is the real file line");
+        assertEquals(3, response.rowErrors().size(),
+                "missing source/unit rows must enter rowErrors, never PENDING preview");
+        assertEquals(3, response.rowErrors().get(0).rowNumber());
+        assertEquals("来源为空", response.rowErrors().get(1).message());
+        assertEquals("单位为空", response.rowErrors().get(2).message());
         assertFalse(response.message().isBlank());
 
         DashboardV1.ImportResponse xlsx = harness.dashboard.importPending("book.xlsx",

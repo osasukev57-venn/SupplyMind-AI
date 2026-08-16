@@ -149,8 +149,10 @@ onMounted(async () => {
           <tr>
             <th>行号</th>
             <th>标的</th>
+            <th>来源</th>
             <th>业务日期</th>
             <th>值</th>
+            <th>单位</th>
           </tr>
         </thead>
         <tbody>
@@ -159,6 +161,8 @@ onMounted(async () => {
             <td>{{ row.cells[0] }}</td>
             <td>{{ row.cells[1] }}</td>
             <td>{{ row.cells[2] }}</td>
+            <td>{{ row.cells[3] }}</td>
+            <td>{{ row.cells[4] }}</td>
           </tr>
         </tbody>
       </table>

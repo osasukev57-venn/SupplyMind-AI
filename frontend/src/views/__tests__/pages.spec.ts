@@ -212,10 +212,12 @@ describe('dashboard pages', () => {
   it('manual submit calls the backend and shows its structured response', async () => {
     vi.mocked(submitManual).mockResolvedValue({
       status: 'PENDING',
-      message: 'manual intake accepted as PENDING - Day8 boundary',
       itemId: 'FX.USD.CNY.PBOC_MID',
+      source: 'operator source',
+      unit: 'CNY/1 USD',
       businessDate: '2026-08-10',
-      value: '6.7904'
+      value: '6.7904',
+      message: 'manual intake accepted as PENDING - Day8 boundary'
     })
     const wrapper = mount(SourcesView)
     await flushPromises()
@@ -234,12 +236,12 @@ describe('dashboard pages', () => {
       status: 'PENDING',
       message: 'import preview parsed 1 rows with 1 row errors',
       fileName: 'rows.csv',
-      previewRows: [{ rowNumber: 2, cells: ['FX.USD.CNY.PBOC_MID', '2026-08-10', '6.7904'] }],
-      rowErrors: [{ rowNumber: 3, message: '标的为空' }]
+      previewRows: [{ rowNumber: 2, cells: ['FX.USD.CNY.PBOC_MID', 'source A', '2026-08-10', '6.7904', 'CNY/1 USD'] }],
+      rowErrors: [{ rowNumber: 3, message: '来源为空' }]
     })
     const wrapper = mount(SourcesView)
     await flushPromises()
-    const file = new File(['a,b,c'], 'rows.csv', { type: 'text/csv' })
+    const file = new File(['i,s,d,v,u'], 'rows.csv', { type: 'text/csv' })
     const input = wrapper.find('input[type="file"]')
     Object.defineProperty(input.element, 'files', { value: [file] })
     await input.trigger('change')
@@ -247,6 +249,7 @@ describe('dashboard pages', () => {
     expect(submitImport).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('PENDING')
     expect(wrapper.text()).toContain('第 3 行')
+    expect(wrapper.text()).toContain('来源为空')
     expect(wrapper.text()).toContain('6.7904')
   })
 

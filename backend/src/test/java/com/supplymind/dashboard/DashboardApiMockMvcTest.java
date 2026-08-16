@@ -243,16 +243,42 @@ class DashboardApiMockMvcTest {
                         .param("unit", "CNY/1 USD"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PENDING"))
-                .andExpect(jsonPath("$.message").isNotEmpty())
                 .andExpect(jsonPath("$.itemId").value(MonitorSeriesDefaults.USD_CNY_ITEM_ID))
-                .andExpect(jsonPath("$.value").value("6.7904"));
+                .andExpect(jsonPath("$.source").value("operator source"))
+                .andExpect(jsonPath("$.unit").value("CNY/1 USD"))
+                .andExpect(jsonPath("$.businessDate").value("2026-08-10"))
+                .andExpect(jsonPath("$.value").value("6.7904"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void manualSubmitMissingSourceOrUnitIs400Rejected() throws Exception {
+        mockMvc.perform(post("/api/dashboard/manual")
+                        .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
+                        .param("businessDate", "2026-08-10")
+                        .param("value", "6.7904")
+                        .param("unit", "CNY/1 USD"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.message").value("source is required"));
+
+        mockMvc.perform(post("/api/dashboard/manual")
+                        .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
+                        .param("source", "operator source")
+                        .param("businessDate", "2026-08-10")
+                        .param("value", "6.7904"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.message").value("unit is required"));
     }
 
     @Test
     void manualSubmitMissingValueIs400Rejected() throws Exception {
         mockMvc.perform(post("/api/dashboard/manual")
                         .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
-                        .param("businessDate", "2026-08-10"))
+                        .param("source", "operator source")
+                        .param("businessDate", "2026-08-10")
+                        .param("unit", "CNY/1 USD"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("REJECTED"))
                 .andExpect(jsonPath("$.message").value("value is required"));
@@ -260,16 +286,20 @@ class DashboardApiMockMvcTest {
 
     @Test
     void importSubmitReallyParsesCsvAndRejectsXlsx() throws Exception {
-        String csv = "itemId,businessDate,value\n"
-                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",2026-08-10,6.7904\n"
-                + "badrow\n";
+        // Frozen CSV schema: itemId, source, businessDate, value, unit.
+        String csv = "itemId,source,businessDate,value,unit\n"
+                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",source A,2026-08-10,6.7904,CNY/1 USD\n"
+                + "badrow\n"
+                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",,2026-08-12,8.0,CNY/1 USD\n";
         mockMvc.perform(multipart("/api/dashboard/import")
                         .file(new MockMultipartFile("file", "rows.csv", "text/csv",
                                 csv.getBytes(StandardCharsets.UTF_8))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PENDING"))
                 .andExpect(jsonPath("$.previewRows[0].rowNumber").value(2))
-                .andExpect(jsonPath("$.rowErrors[0].rowNumber").value(3));
+                .andExpect(jsonPath("$.previewRows[0].cells[1]").value("source A"))
+                .andExpect(jsonPath("$.rowErrors[0].rowNumber").value(3))
+                .andExpect(jsonPath("$.rowErrors[1].message").value("来源为空"));
 
         mockMvc.perform(multipart("/api/dashboard/import")
                         .file(new MockMultipartFile("file", "book.xlsx",

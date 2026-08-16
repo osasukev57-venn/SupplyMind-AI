@@ -2,7 +2,7 @@
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
 > 当前阶段：Day 1～Day 6=`COMPLETE`（保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8）；D6-T00～D6-T05=`DONE`，Day6 Stage Review=`PASS`，最终完整技术回归=105 suites/535 tests/0 failures/0 errors/8 skipped（HISTORICAL）。AT-AI-000/002/003本地合同=`PASS`；AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。
-> Day7实施中：D7-T01～D7-T04实施完成并经过三轮 Finding 修复（攻击修复、API 契约修复、最终审查修复、最终审查修复 V2）；最终审查 V2 commit=`2b94759`；**CURRENT regression=110 suites/573 tests/0 failures/0 errors/8 skipped**（a4006c4=110/563 及更早快照 108/548、109/554、110/558 均为 HISTORICAL）；前端 npm test 10/10 PASS、npm run build PASS；后端 Dashboard 套件 38/38（Service 17 + Controller 4 + DTO 3 + standalone MockMvc 14 + 正式 MVC 5）；D7-T01～D7-T04=`TaskExecutionStatus=REVIEW_PENDING`（待技术负责人 Code Review 后改 DONE）。Day6 COMPLETE 保持，Day6 代码零修改。
+> Day7实施中：D7-T01～D7-T04实施完成并经过多轮 Finding 修复（攻击修复、API 契约修复、最终审查修复 V1/V2、M1 契约冻结）；M1 契约冻结 commit=`c9561b7`；**CURRENT regression=110 suites/574 tests/0 failures/0 errors/8 skipped**（d2b0965=110/573 及更早快照均为 HISTORICAL）；前端 npm test 10/10 PASS、npm run build PASS；D7-T01～D7-T04=`TaskExecutionStatus=REVIEW_PENDING`（待技术负责人 Code Review 后改 DONE）。Day6 COMPLETE 保持，Day6 代码零修改。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则

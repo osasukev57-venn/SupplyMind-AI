@@ -168,10 +168,12 @@ export interface EntryStatus {
 /** Backend accept-into-PENDING response for a manual submission (nothing persisted). */
 export interface ManualPendingResponse {
   status: string
-  message: string
   itemId: string
+  source: string
+  unit: string
   businessDate: string
   value: string
+  message: string
 }
 
 /** Backend import response: CSV really parsed; unsupported formats explicitly REJECTED. */
