@@ -3,8 +3,8 @@
 > 文档性质：跨窗口可独立执行的任务清单  
 > 规范版本：v1.5（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
-> 当前进度锚点：Day 1～Day 6均已完成并通过各自Stage Gate（保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8；最终完整技术回归105 suites/535 tests/0 failures/0 errors/8 skipped）；D6-T00～D6-T05=`TaskExecutionStatus=DONE`，Day6=`COMPLETE`。AT-AI-000/002/003本地合同=`PASS`，AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`且不被伪报为PASS。
-> Day7实施进行中：D7-T01～D7-T04=`TaskExecutionStatus=REVIEW_PENDING`（实施完成并完成三轮 Finding 修复：攻击修复、API 契约修复、最终审查修复；`readyState=REVIEW_PENDING`，待技术负责人 Code Review 后改 DONE）；实施与修复 commit 见 05-PROGRESS-LEDGER 与 docs/evidence/Day7/DAY7-IMPLEMENTATION.md；后端 Dashboard 套件 28/28（含正式 MVC contract 5/5）、前端 npm test 6/6、**CURRENT 全量回归=110 suites/563 tests/0 failures/0 errors/8 skipped**（旧快照 108/548、109/554、110/558 均为 HISTORICAL）；Day1-Day6 代码零修改。
+> 当前进度锚点：Day 1～Day 7均已完成并通过各自Stage Gate（保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8；最终完整技术回归105 suites/535 tests/0 failures/0 errors/8 skipped）；D6-T00～D6-T05=`TaskExecutionStatus=DONE`，Day6=`COMPLETE`。AT-AI-000/002/003本地合同=`PASS`，AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`且不被伪报为PASS。
+> Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`TaskExecutionStatus=DONE`（实施 + Attack Validation + Final Stage Review 全部 PASS，MAJOR Finding 全部关闭）；最终实施候选=`feaedd3`；CURRENT 全量回归=110 suites/578 backend tests/0 failures/0 errors/8 skipped，前端 11/11 PASS + build PASS；历史候选（1b83410、d2b0965、5f1491c、01d4270 等中间状态）一律 HISTORICAL，详见 docs/05-PROGRESS-LEDGER 与 docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md。Day1-Day6 代码零修改。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
 ## 1. 新窗口执行协议
@@ -538,7 +538,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D7-T01 Vue3应用壳与API契约
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D7T01_IMPLEMENTED_20260816`（Vue3/Vite/TS 壳、hash router、axios 统一客户端、错误不白屏、精确字符串展示；`frontend/` 工程；npm test 6/6；待 Code Review 改 DONE）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=D7T01_DONE_FINAL_CLOSURE_20260817`（Vue3/Vite/TS 壳、hash router、axios 统一客户端、错误不白屏、精确字符串展示；`frontend/` 工程；Final Stage Review PASS）。
 - **任务目标：** 建立Vue3/Vite页面壳、路由、统一API客户端、错误状态和精确小数字符串展示规范。
 - **对应需求：** F01、H09、C类前端冻结。
 - **输入：** 后端接口说明、UI页面清单。
@@ -552,7 +552,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D7-T02 仪表盘与默认监测项
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D7T02_IMPLEMENTED_20260816`（总览卡片：最新值/业务日期/来源/Provider/路线/校验版本/预警摘要；默认项来自 `/api/dashboard/overview`（配置驱动，非页面硬编码）；DEMO 全页水印；未验证值显示 NO_DATA 不伪造）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=D7T02_DONE_FINAL_CLOSURE_20260817`（总览卡片：最新值/业务日期/来源/Provider/路线/校验版本/完整率/聚合摘要/预警摘要；默认项来自 `/api/dashboard/overview`（配置驱动，非页面硬编码）；DEMO 全页水印；未验证值显示 NO_DATA 不伪造；Final Stage Review PASS）。
 - **任务目标：** 展示PBOC EUR/USD，以及SMM来源意图×ADC12/AZ91D、Asian Metal来源意图×ADC12/AZ91D四条材料序列各自当前生效路线、实际来源、均值、质量和预警摘要；指定商业源自动能力单独显示。
 - **对应需求：** H01、F03-F05、F06、H09。
 - **输入：** 已发布数据API、默认series配置。
@@ -566,7 +566,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D7-T03 历史趋势、跨文件与数据质量页面
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D7T03_IMPLEMENTED_20260816`（日/月/季/半年/年切换；SVG 趋势只画后端 points、缺失不插值；聚合表与精确字符串表格；质量页含校验状态/预警/缺失与损坏证据引用）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=D7T03_DONE_FINAL_CLOSURE_20260817`（日/月/季/半年/年切换；SVG 趋势只画后端 points、缺失不插值；聚合表与精确字符串表格；质量页含校验状态/预警/证据 issues；Final Stage Review PASS）。
 - **任务目标：** 支持日期范围和粒度查询，展示跨年趋势、聚合表、缺失区间、来源和校验质量。
 - **对应需求：** H01、H02、H06、F06、F12。
 - **输入：** history、aggregation、quality API。
@@ -580,7 +580,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D7-T04 手工录入、文件导入与来源管理页面
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=D7T04_IMPLEMENTED_20260816`（来源列表/三层路线/降级原因展示；手动录入与文件导入 HTTP 入口按契约返回 `PENDING`（Day8 实现写入口，不伪造完成）；不修改 Manual/LocalImport 既有业务逻辑）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=D7T04_DONE_FINAL_CLOSURE_20260817`（来源列表/三层路线/降级原因展示；Manual/Import 通过真实 ManualMaterialIntakeService/LocalImportService 边界受理（真实 PENDING + runId/rawRef/timelineRef 证据）；模板下载 + Synthetic 演示入口；Final Stage Review PASS）。
 - **任务目标：** 提供Manual表单、合法文件导入、来源能力与三层路线状态、模板下载、预览、逐行错误和synthetic演示入口。
 - **对应需求：** F02、F04-F07、H08、SUP-03、SUP-05、SUP-06、SUP-07。
 - **输入：** Manual/LocalImport/provider API、模板、`routeDecision`和运行模式。

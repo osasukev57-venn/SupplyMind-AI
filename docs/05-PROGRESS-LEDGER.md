@@ -1,8 +1,8 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 1～Day 6=`COMPLETE`（保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8）；D6-T00～D6-T05=`DONE`，Day6 Stage Review=`PASS`，最终完整技术回归=105 suites/535 tests/0 failures/0 errors/8 skipped（HISTORICAL）。AT-AI-000/002/003本地合同=`PASS`；AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。
-> Day7实施中：D7-T01～D7-T04实施完成并经过多轮 Finding 修复（攻击修复、API 契约修复、最终审查修复 V1/V2、M1 契约冻结、Final Stage Review 修复）；Final Stage Review 修复 commit=`beb9d11`；**CURRENT regression=110 suites/578 tests/0 failures/0 errors/8 skipped**（1b83410=110/574 及更早快照均为 HISTORICAL）；前端 npm test 11/11 PASS、npm run build PASS；D7-T01～D7-T04=`TaskExecutionStatus=REVIEW_PENDING`（待技术负责人 Code Review 后改 DONE）。Day6 COMPLETE 保持，Day6 代码零修改。
+> 当前阶段：Day 1～Day 7=`COMPLETE`（Day6 保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8）；D6-T00～D6-T05=`DONE`，Day6 Stage Review=`PASS`，最终完整技术回归=105 suites/535 tests/0 failures/0 errors/8 skipped（HISTORICAL）。AT-AI-000/002/003本地合同=`PASS`；AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。
+> Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`DONE`；**Final Implementation Candidate=`feaedd3`**；**CURRENT regression=110 suites/578 backend tests/0 failures/0 errors/8 skipped**，前端 `npm run test` **11/11 PASS** + `npm run build` PASS；历史候选（1b83410、d2b0965、a4006c4、3fd1d35、5f1491c、01d4270 等中间状态）一律 HISTORICAL（不删除）；Closure Evidence=`docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md`。Day1-Day6 代码零修改。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
