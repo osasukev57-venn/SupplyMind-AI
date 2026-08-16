@@ -303,61 +303,93 @@ class DashboardServiceTest {
     }
 
     @Test
-    void manualPendingReturnsStructuredPendingAndNeverPersists() throws Exception {
+    void manualPendingGoesThroughTheRealManualIntakeBoundary() throws Exception {
         Harness harness = harness();
+        String manualItemId = harness.manualItemId();
 
         DashboardV1.ManualPendingResponse pending = harness.dashboard.manualPending(
-                MonitorSeriesDefaults.USD_CNY_ITEM_ID, "operator source", "2026-08-10",
-                "6.7904", "CNY/1 USD");
+                manualItemId, "operator source", "2026-08-10",
+                "18000.00000000", "CNY/MT");
         assertEquals("PENDING", pending.status());
-        assertEquals(MonitorSeriesDefaults.USD_CNY_ITEM_ID, pending.itemId());
+        assertEquals(manualItemId, pending.itemId());
         assertEquals("operator source", pending.source(),
                 "source is part of the frozen pending contract");
-        assertEquals("CNY/1 USD", pending.unit(),
+        assertEquals("CNY/MT", pending.unit(),
                 "unit is part of the frozen pending contract");
         assertEquals("2026-08-10", pending.businessDate());
-        assertEquals("6.7904", pending.value());
+        assertEquals("18000.00000000", pending.value());
+        assertFalse(pending.runId().isBlank(), "a real runId is persisted evidence");
+        assertFalse(pending.rawRef().isBlank());
+        assertFalse(pending.timelineRef().isBlank());
+        assertTrue(Files.isRegularFile(harness.root.resolveDataRef(pending.rawRef())),
+                "the manual raw is REALLY persisted by the ManualMaterialIntakeService boundary");
+        assertTrue(Files.isRegularFile(harness.root.resolveDataRef(pending.timelineRef())),
+                "the lifecycle timeline is REALLY persisted as PENDING evidence");
         assertFalse(pending.message().isBlank());
 
         assertThrows(IllegalArgumentException.class,
-                () -> harness.dashboard.manualPending(MonitorSeriesDefaults.USD_CNY_ITEM_ID,
-                        null, "2026-08-10", "6.7904", "CNY/1 USD"),
+                () -> harness.dashboard.manualPending(manualItemId,
+                        null, "2026-08-10", "18000.00000000", "CNY/MT"),
                 "a submission without a source is an invalid request");
         assertThrows(IllegalArgumentException.class,
-                () -> harness.dashboard.manualPending(MonitorSeriesDefaults.USD_CNY_ITEM_ID,
-                        "source", "2026-08-10", "6.7904", null),
+                () -> harness.dashboard.manualPending(manualItemId,
+                        "source", "2026-08-10", "18000.00000000", null),
                 "a submission without a unit is an invalid request");
         assertThrows(IllegalArgumentException.class,
+                () -> harness.dashboard.manualPending(manualItemId,
+                        "source", "2026-08-10", "18000.00000000", "CNY/1 USD"),
+                "a unit that does not match the configured item unit is rejected");
+        assertThrows(RuntimeException.class,
                 () -> harness.dashboard.manualPending(MonitorSeriesDefaults.USD_CNY_ITEM_ID,
-                        "source", "2026-08-10", null, "CNY/1 USD"),
-                "a submission without a value is an invalid request");
+                        "source", "2026-08-10", "6.7904", "CNY/1 USD"),
+                "an item without the Manual route cannot be manually submitted");
     }
 
     @Test
-    void importCsvIsReallyParsedAndXlsxIsExplicitlyRejected() throws Exception {
+    void importGoesThroughTheRealLocalImportBoundary() throws Exception {
         Harness harness = harness();
-        // Frozen CSV schema: itemId, source, businessDate, value, unit.
-        String csv = "itemId,source,businessDate,value,unit\n"
-                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",source A,2026-08-10,6.7904,CNY/1 USD\n"
-                + "badrow\n"
-                + "FX.OTHER,source B,2026-08-12,7.0,CNY/1 USD\n"
-                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",,2026-08-13,8.0,CNY/1 USD\n"
-                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",source C,2026-08-14,9.0,\n";
+        String importItemId = harness.importItemId();
+        // Frozen LocalImport template header (schemaVersion,itemId,businessDate,value,unit,
+        // currency,actualSourceName,sourceReference,sourceUrl).
+        String csv = "schemaVersion,itemId,businessDate,value,unit,currency,actualSourceName,sourceReference,sourceUrl\n"
+                + "1.0," + importItemId + ",2026-08-10,18000.00000000,CNY/MT,CNY,import source,ref-1,\n"
+                + "1.0," + importItemId + ",2026-08-11,,CNY/MT,CNY,import source,ref-2,\n";
         DashboardV1.ImportResponse response = harness.dashboard.importPending("rows.csv",
                 csv.getBytes(StandardCharsets.UTF_8));
         assertEquals("PENDING", response.status());
-        assertEquals(2, response.previewRows().size(), "valid rows are really parsed");
-        assertEquals(3, response.rowErrors().size(),
-                "missing source/unit rows must enter rowErrors, never PENDING preview");
+        assertEquals(1, response.acceptedRows().size(), "valid rows are really accepted");
+        DashboardV1.ImportRow accepted = response.acceptedRows().get(0);
+        assertEquals(2, accepted.rowNumber());
+        assertFalse(accepted.runId().isBlank());
+        assertTrue(Files.isRegularFile(harness.root.resolveDataRef(accepted.rawRef())),
+                "the imported raw is REALLY persisted by the LocalImportService boundary");
+        assertTrue(Files.isRegularFile(harness.root.resolveDataRef(accepted.timelineRef())));
+        assertEquals(1, response.rowErrors().size(), "invalid rows are reported per row");
         assertEquals(3, response.rowErrors().get(0).rowNumber());
-        assertEquals("来源为空", response.rowErrors().get(1).message());
-        assertEquals("单位为空", response.rowErrors().get(2).message());
         assertFalse(response.message().isBlank());
 
-        DashboardV1.ImportResponse xlsx = harness.dashboard.importPending("book.xlsx",
-                new byte[]{1, 2, 3});
-        assertEquals("REJECTED", xlsx.status(),
-                "xlsx real parsing is a Day8 boundary - never pretended");
+        DashboardV1.ImportResponse badFile = harness.dashboard.importPending("bad.csv",
+                "not a csv".getBytes(StandardCharsets.UTF_8));
+        assertEquals("REJECTED", badFile.status(),
+                "a file that fails the frozen LocalImport boundary is rejected, never pretended");
+    }
+
+    @Test
+    void importTemplateUsesTheFrozenLocalImportHeader() {
+        Harness harness = harness();
+        String template = harness.dashboard.importTemplate();
+        assertTrue(template.startsWith(
+                        "schemaVersion,itemId,businessDate,value,unit,currency,actualSourceName,sourceReference,sourceUrl"),
+                "the template header is the frozen LocalImport boundary header");
+    }
+
+    @Test
+    void syntheticDemoRunsTheRealDeterministicProvider() {
+        Harness harness = harness();
+        DashboardV1.SyntheticDemoResponse demo = harness.dashboard.syntheticDemo();
+        assertEquals("DEMO_GENERATED", demo.status());
+        assertFalse(demo.itemIds().isEmpty(), "the demo scenario items are generated");
+        assertFalse(demo.message().isBlank());
     }
 
     @Test
@@ -516,7 +548,8 @@ class DashboardServiceTest {
         DataRoot root = DataRoot.forTest(temporaryDirectory.resolve("d7 dashboard root"));
         AtomicMoveSupport.probeOrFail(root);
         AtomicFileStore fileStore = new AtomicFileStore(root, new DirtyMarkerCodec());
-        new ConfigActivationStore(root, fileStore, FIXED_CLOCK).ensureInitialDefault();
+        ConfigActivationStore activationStore = new ConfigActivationStore(root, fileStore, FIXED_CLOCK);
+        activationStore.ensureInitialDefault();
         RawReceiptStore rawStore = new RawReceiptStore(root, fileStore, FIXED_CLOCK);
         TimelineStore timelineStore = new TimelineStore(root, fileStore, FIXED_CLOCK);
         LifecycleValidationService validation =
@@ -525,15 +558,35 @@ class DashboardServiceTest {
         LifecyclePublishService publish =
                 new LifecyclePublishService(root, timelineStore, quarantineStore, FIXED_CLOCK);
         PublishedQueryService query = new PublishedQueryService(root, timelineStore, FIXED_CLOCK);
-        ConfigManagementService configs = new ConfigManagementService(
-                new ConfigActivationStore(root, fileStore, FIXED_CLOCK), new DataProviderRegistry());
+        DataProviderRegistry registry = new DataProviderRegistry();
+        ConfigManagementService configs = new ConfigManagementService(activationStore, registry);
         HistoryQueryService history = new HistoryQueryService(root);
         WarningService warnings = new WarningService(root,
                 new com.supplymind.warning.WarningStore(root, fileStore, FIXED_CLOCK),
                 FIXED_CLOCK, history);
-        DashboardService dashboard = new DashboardService(configs, query, history, warnings, FIXED_CLOCK);
+        com.supplymind.manual.ManualMaterialIntakeService manualIntake =
+                new com.supplymind.manual.ManualMaterialIntakeService(
+                        root, rawStore, timelineStore, new com.supplymind.manual.ManualMaterialNormalizer(),
+                        com.supplymind.manual.OperatorContext.configured("test-operator"),
+                        FIXED_CLOCK);
+        com.supplymind.localimport.LocalImportService localImport =
+                new com.supplymind.localimport.LocalImportService(
+                        root, rawStore,
+                        new com.supplymind.localimport.LocalImportFileStore(root, fileStore, FIXED_CLOCK),
+                        timelineStore, new com.supplymind.localimport.LocalImportCsvParser(),
+                        FIXED_CLOCK);
+        registry.register(new com.supplymind.localimport.SyntheticDemoDataProvider(
+                com.supplymind.localimport.SyntheticDemoDataProvider.defaultScenarioItems()));
+        registry.register(com.supplymind.dashboard.support.DashboardTestProviders.forType(
+                ProviderType.OFFICIAL_WEB, "test-official-web"));
+        registry.register(com.supplymind.dashboard.support.DashboardTestProviders.forType(
+                ProviderType.MANUAL, "test-manual"));
+        registry.register(com.supplymind.dashboard.support.DashboardTestProviders.forType(
+                ProviderType.LOCAL_IMPORT, "test-local-import"));
+        DashboardService dashboard = new DashboardService(configs, query, history, warnings,
+                FIXED_CLOCK, manualIntake, localImport, registry);
         return new Harness(root, fileStore, rawStore, timelineStore, validation, publish, query,
-                dashboard, warnings);
+                dashboard, warnings, configs, activationStore);
     }
 
     private record Harness(
@@ -545,7 +598,48 @@ class DashboardServiceTest {
             LifecyclePublishService publish,
             PublishedQueryService published,
             DashboardService dashboard,
-            WarningService warnings
+            WarningService warnings,
+            ConfigManagementService configs,
+            ConfigActivationStore activationStore
     ) {
+        String manualItemId() {
+            com.supplymind.foundation.model.MonitorSeriesItemV1 item =
+                    new com.supplymind.foundation.model.MonitorSeriesItemV1(
+                            "MAT.MANUAL.TEST.001", "测试手动标的", true, "MANUAL-TEST",
+                            ProviderType.MANUAL, AccessMethod.MANUAL, "测试手动来源",
+                            com.supplymind.foundation.model.RouteDecision.FALLBACK_MANUAL,
+                            "manual route (test)",
+                            RECEIVED_AT, null, "EXT-MANUAL-TEST", null, null,
+                            "manual-material-normalization-v1",
+                            8, 4, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                            "CNY", "CNY", "CNY/MT", null);
+            addItemDirect(item);
+            return item.itemId();
+        }
+
+        String importItemId() {
+            com.supplymind.foundation.model.MonitorSeriesItemV1 item =
+                    new com.supplymind.foundation.model.MonitorSeriesItemV1(
+                            "MAT.IMPORT.TEST.001", "测试导入标的", true, "IMPORT-TEST",
+                            ProviderType.LOCAL_IMPORT, AccessMethod.LOCAL_IMPORT, "测试导入来源",
+                            com.supplymind.foundation.model.RouteDecision.DIRECT_LOCAL_IMPORT, null,
+                            RECEIVED_AT, null, "EXT-IMPORT-TEST", null, null,
+                            "local-import-material-normalization-v1",
+                            8, 4, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                            "CNY", "CNY", "CNY/MT", null);
+            addItemDirect(item);
+            return item.itemId();
+        }
+
+        /** Direct activation (bypasses the provider-capability validate, like ensureInitialDefault). */
+        private void addItemDirect(com.supplymind.foundation.model.MonitorSeriesItemV1 item) {
+            com.supplymind.foundation.model.MonitorSeriesConfigV1 current = configs.active();
+            java.util.List<com.supplymind.foundation.model.MonitorSeriesItemV1> items =
+                    new java.util.ArrayList<>(current.items());
+            items.add(item);
+            activationStore.activate(new com.supplymind.foundation.model.MonitorSeriesConfigV1(
+                    current.schemaVersion(), current.configVersion() + 1, current.mode(),
+                    RECEIVED_AT, items));
+        }
     }
 }

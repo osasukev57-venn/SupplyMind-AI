@@ -164,8 +164,8 @@ class DashboardControllerTest {
         DataRoot root = DataRoot.forTest(temporaryDirectory.resolve("d7 controller root"));
         AtomicMoveSupport.probeOrFail(root);
         AtomicFileStore fileStore = new AtomicFileStore(root, new DirtyMarkerCodec());
-        ConfigActivationStore configs = new ConfigActivationStore(root, fileStore, FIXED_CLOCK);
-        configs.ensureInitialDefault();
+        ConfigActivationStore activationStore = new ConfigActivationStore(root, fileStore, FIXED_CLOCK);
+        activationStore.ensureInitialDefault();
         RawReceiptStore rawStore = new RawReceiptStore(root, fileStore, FIXED_CLOCK);
         TimelineStore timelineStore = new TimelineStore(root, fileStore, FIXED_CLOCK);
         LifecycleValidationService validation =
@@ -174,13 +174,27 @@ class DashboardControllerTest {
         LifecyclePublishService publish =
                 new LifecyclePublishService(root, timelineStore, quarantineStore, FIXED_CLOCK);
         PublishedQueryService query = new PublishedQueryService(root, timelineStore, FIXED_CLOCK);
-        ConfigManagementService configManagement = new ConfigManagementService(configs,
-                new DataProviderRegistry());
+        DataProviderRegistry registry = new DataProviderRegistry();
+        ConfigManagementService configManagement = new ConfigManagementService(activationStore, registry);
         HistoryQueryService history = new HistoryQueryService(root);
         WarningService warnings = new WarningService(root,
                 new com.supplymind.warning.WarningStore(root, fileStore, FIXED_CLOCK),
                 FIXED_CLOCK, history);
-        DashboardService dashboard = new DashboardService(configManagement, query, history, warnings, FIXED_CLOCK);
+        com.supplymind.manual.ManualMaterialIntakeService manualIntake =
+                new com.supplymind.manual.ManualMaterialIntakeService(
+                        root, rawStore, timelineStore, new com.supplymind.manual.ManualMaterialNormalizer(),
+                        com.supplymind.manual.OperatorContext.configured("test-operator"),
+                        FIXED_CLOCK);
+        com.supplymind.localimport.LocalImportService localImport =
+                new com.supplymind.localimport.LocalImportService(
+                        root, rawStore,
+                        new com.supplymind.localimport.LocalImportFileStore(root, fileStore, FIXED_CLOCK),
+                        timelineStore, new com.supplymind.localimport.LocalImportCsvParser(),
+                        FIXED_CLOCK);
+        registry.register(new com.supplymind.localimport.SyntheticDemoDataProvider(
+                com.supplymind.localimport.SyntheticDemoDataProvider.defaultScenarioItems()));
+        DashboardService dashboard = new DashboardService(configManagement, query, history, warnings,
+                FIXED_CLOCK, manualIntake, localImport, registry);
         return new Harness(root, fileStore, rawStore, timelineStore, validation, publish, dashboard);
     }
 

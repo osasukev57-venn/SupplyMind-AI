@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { fetchSources, submitImport, submitManual } from '../api/dashboard'
+import { fetchSources, submitImport, submitManual, submitSyntheticDemo } from '../api/dashboard'
 import type { SourcesResponse } from '../types/dashboard'
 import StatusBadge from '../components/StatusBadge.vue'
 
 const data = ref<SourcesResponse | null>(null)
 const error = ref<string | null>(null)
 
-// Manual entry: the form is sent to the BACKEND accept-into-PENDING endpoint; the displayed
-// status/message are the backend's structured response (nothing is persisted - Day8 boundary).
+// Manual entry: the form goes through the REAL ManualMaterialIntakeService boundary - the
+// backend creates the raw + RECEIVED/PARSED+PENDING lifecycle timeline and returns the real
+// runId/rawRef/timelineRef evidence.
 const manualItemId = ref('')
 const manualSource = ref('')
 const manualBusinessDate = ref('')
@@ -16,14 +17,18 @@ const manualValue = ref('')
 const manualUnit = ref('')
 const manualStatus = ref<string | null>(null)
 const manualMessage = ref<string | null>(null)
+const manualEvidence = ref<{ runId: string; rawRef: string; timelineRef: string } | null>(null)
 
-// File import: the raw file (CSV or XLSX) is uploaded to the BACKEND; the preview rows and
-// per-row errors are the backend's real parse result. XLSX is explicitly REJECTED by the
-// backend - the frontend never fakes a parse (no file.text()).
+// File import: the raw file is uploaded to the backend LocalImport boundary (CSV and XLSX are
+// really parsed); accepted rows are RECEIVED+PENDING evidence with real refs.
 const importStatus = ref<string | null>(null)
 const importMessage = ref<string | null>(null)
-const importPreview = ref<{ rowNumber: number; cells: string[] }[]>([])
+const importAccepted = ref<{ rowNumber: number; runId: string; rawRef: string; timelineRef: string; processingStage: string | null; validationStatus: string | null }[]>([])
 const importErrors = ref<{ rowNumber: number; message: string }[]>([])
+
+// Synthetic demo entry: runs the real deterministic SyntheticDemoDataProvider.
+const demoStatus = ref<string | null>(null)
+const demoMessage = ref<string | null>(null)
 
 async function submitManualForm(): Promise<void> {
   const response = await submitManual({
@@ -40,6 +45,11 @@ async function submitManualForm(): Promise<void> {
   }
   manualStatus.value = response.status
   manualMessage.value = response.message
+  manualEvidence.value = {
+    runId: response.runId,
+    rawRef: response.rawRef,
+    timelineRef: response.timelineRef
+  }
 }
 
 async function onImportFile(event: Event): Promise<void> {
@@ -47,7 +57,7 @@ async function onImportFile(event: Event): Promise<void> {
   const file = input.files && input.files.length > 0 ? input.files[0] : null
   importStatus.value = null
   importMessage.value = null
-  importPreview.value = []
+  importAccepted.value = []
   importErrors.value = []
   if (!file) return
   const response = await submitImport(file)
@@ -58,8 +68,19 @@ async function onImportFile(event: Event): Promise<void> {
   }
   importStatus.value = response.status
   importMessage.value = response.message
-  importPreview.value = response.previewRows
+  importAccepted.value = response.acceptedRows
   importErrors.value = response.rowErrors
+}
+
+async function runSyntheticDemo(): Promise<void> {
+  const response = await submitSyntheticDemo()
+  if (response === null) {
+    demoStatus.value = 'REJECTED'
+    demoMessage.value = '演示数据生成失败：后端不可用'
+    return
+  }
+  demoStatus.value = response.status
+  demoMessage.value = response.message
 }
 
 onMounted(async () => {
@@ -129,13 +150,20 @@ onMounted(async () => {
         <button type="submit">提交（PENDING）</button>
       </form>
       <div v-if="manualMessage" class="entry-note">{{ manualMessage }}</div>
+      <div v-if="manualEvidence" class="entry-note">
+        受理证据：runId={{ manualEvidence.runId }}；rawRef={{ manualEvidence.rawRef }}；
+        timelineRef={{ manualEvidence.timelineRef }}
+      </div>
     </div>
 
     <div class="panel">
       <h2>文件导入</h2>
-      <div v-if="importStatus" class="entry-card">
-        <StatusBadge :status="importStatus" />
-        <span class="entry-label">{{ importStatus }}</span>
+      <div class="entry-card">
+        <StatusBadge :status="importStatus ?? '—'" />
+        <span class="entry-label">状态：{{ importStatus ?? '未提交' }}</span>
+        <a class="template-link" href="/api/dashboard/import/template" download>
+          下载导入模板（CSV）
+        </a>
       </div>
       <input type="file" accept=".csv,.xlsx" @change="onImportFile" />
       <div v-if="importMessage" class="entry-note">{{ importMessage }}</div>
@@ -144,28 +172,38 @@ onMounted(async () => {
           第 {{ err.rowNumber }} 行：{{ err.message }}
         </div>
       </div>
-      <table v-if="importPreview.length > 0" class="sm-table">
+      <table v-if="importAccepted.length > 0" class="sm-table">
         <thead>
           <tr>
             <th>行号</th>
-            <th>标的</th>
-            <th>来源</th>
-            <th>业务日期</th>
-            <th>值</th>
-            <th>单位</th>
+            <th>runId</th>
+            <th>rawRef</th>
+            <th>timelineRef</th>
+            <th>阶段</th>
+            <th>状态</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in importPreview.slice(0, 20)" :key="row.rowNumber">
+          <tr v-for="row in importAccepted.slice(0, 20)" :key="row.rowNumber">
             <td>{{ row.rowNumber }}</td>
-            <td>{{ row.cells[0] }}</td>
-            <td>{{ row.cells[1] }}</td>
-            <td>{{ row.cells[2] }}</td>
-            <td>{{ row.cells[3] }}</td>
-            <td>{{ row.cells[4] }}</td>
+            <td>{{ row.runId }}</td>
+            <td>{{ row.rawRef }}</td>
+            <td>{{ row.timelineRef }}</td>
+            <td>{{ row.processingStage ?? '—' }}</td>
+            <td>{{ row.validationStatus ?? '—' }}</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="panel">
+      <h2>Synthetic 演示数据</h2>
+      <div v-if="demoStatus" class="entry-card">
+        <StatusBadge :status="demoStatus" />
+        <span class="entry-label">{{ demoStatus }}</span>
+      </div>
+      <button @click="runSyntheticDemo">生成演示数据（SyntheticDemo）</button>
+      <div v-if="demoMessage" class="entry-note">{{ demoMessage }}</div>
     </div>
   </div>
 </template>
@@ -209,6 +247,11 @@ onMounted(async () => {
   padding: 6px 8px;
   border: 1px solid var(--sm-border);
   border-radius: 4px;
+}
+.template-link {
+  font-size: 12px;
+  color: var(--sm-accent);
+  margin-left: auto;
 }
 button {
   padding: 6px 14px;

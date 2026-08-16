@@ -18,6 +18,7 @@ export interface ItemCard {
   unit: string | null
   currency: string | null
   dataThrough: string | null
+  completeness: string | null
   source: SourceView
   quality: QualityView
   warningSummary: string | null
@@ -165,7 +166,7 @@ export interface EntryStatus {
   message: string
 }
 
-/** Backend accept-into-PENDING response for a manual submission (nothing persisted). */
+/** Backend accept-into-PENDING response for a manual submission (real persisted evidence). */
 export interface ManualPendingResponse {
   status: string
   itemId: string
@@ -173,24 +174,38 @@ export interface ManualPendingResponse {
   unit: string
   businessDate: string
   value: string
+  runId: string
+  rawRef: string
+  timelineRef: string
   message: string
 }
 
-/** Backend import response: CSV really parsed; unsupported formats explicitly REJECTED. */
+/** Backend import response: real LocalImport boundary - accepted rows are RECEIVED+PENDING evidence. */
 export interface ImportResponse {
   status: string
   message: string
   fileName: string
-  previewRows: ImportRow[]
+  acceptedRows: ImportRow[]
   rowErrors: ImportRowError[]
 }
 
 export interface ImportRow {
   rowNumber: number
-  cells: string[]
+  runId: string
+  rawRef: string
+  timelineRef: string
+  processingStage: string | null
+  validationStatus: string | null
 }
 
 export interface ImportRowError {
   rowNumber: number
   message: string
+}
+
+/** Synthetic demo entry - real deterministic demo generation (never persisted formally). */
+export interface SyntheticDemoResponse {
+  status: string
+  message: string
+  itemIds: string[]
 }

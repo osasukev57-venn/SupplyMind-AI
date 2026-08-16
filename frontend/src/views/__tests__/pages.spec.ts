@@ -8,7 +8,8 @@ vi.mock('../../api/dashboard', () => ({
   fetchQuality: vi.fn(),
   fetchSources: vi.fn(),
   submitManual: vi.fn(),
-  submitImport: vi.fn()
+  submitImport: vi.fn(),
+  submitSyntheticDemo: vi.fn()
 }))
 
 import DashboardView from '../DashboardView.vue'
@@ -22,7 +23,8 @@ import {
   fetchQuality,
   fetchSources,
   submitImport,
-  submitManual
+  submitManual,
+  submitSyntheticDemo
 } from '../../api/dashboard'
 import type { OverviewResponse, HistoryResponse, QualityResponse, SourcesResponse } from '../../types/dashboard'
 
@@ -38,6 +40,7 @@ const overview: OverviewResponse = {
       unit: 'CNY/1 USD',
       currency: 'CNY',
       dataThrough: '2026-08-10',
+      completeness: '1.000000000000',
       source: {
         providerType: 'official_web',
         accessMethod: 'public_official_html',
@@ -212,32 +215,45 @@ describe('dashboard pages', () => {
   it('manual submit calls the backend and shows its structured response', async () => {
     vi.mocked(submitManual).mockResolvedValue({
       status: 'PENDING',
-      itemId: 'FX.USD.CNY.PBOC_MID',
+      itemId: 'MAT.MANUAL.TEST.001',
       source: 'operator source',
-      unit: 'CNY/1 USD',
+      unit: 'CNY/MT',
       businessDate: '2026-08-10',
-      value: '6.7904',
-      message: 'manual intake accepted as PENDING - Day8 boundary'
+      value: '18000.00000000',
+      runId: 'manual-MAT.MANUAL.TEST.001-20260810-abc',
+      rawRef: 'raw/formal/manual/MAT.MANUAL.TEST.001/2026/08/manual-MAT.MANUAL.TEST.001-20260810-abc.json',
+      timelineRef: 'staging/manual-MAT.MANUAL.TEST.001-20260810-abc.json',
+      message: 'manual intake accepted - raw and lifecycle timeline persisted as PENDING'
     })
     const wrapper = mount(SourcesView)
     await flushPromises()
-    await wrapper.find('input[placeholder="如 FX.USD.CNY.PBOC_MID"]').setValue('FX.USD.CNY.PBOC_MID')
+    await wrapper.find('input[placeholder="如 FX.USD.CNY.PBOC_MID"]').setValue('MAT.MANUAL.TEST.001')
     await wrapper.find('input[type="date"]').setValue('2026-08-10')
-    await wrapper.find('input[placeholder="如 6.7904"]').setValue('6.7904')
+    await wrapper.find('input[placeholder="如 6.7904"]').setValue('18000.00000000')
     await wrapper.find('form').trigger('submit.prevent')
     await flushPromises()
     expect(submitManual).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('PENDING')
-    expect(wrapper.text()).toContain('manual intake accepted as PENDING')
+    expect(wrapper.text()).toContain('manual intake accepted')
+    expect(wrapper.text()).toContain('timelineRef')
   })
 
-  it('import submit uploads the file and renders the backend parse result', async () => {
+  it('import submit uploads the file and renders the backend accepted rows', async () => {
     vi.mocked(submitImport).mockResolvedValue({
       status: 'PENDING',
-      message: 'import preview parsed 1 rows with 1 row errors',
+      message: 'import accepted 1 rows as RECEIVED+PENDING with 1 row errors',
       fileName: 'rows.csv',
-      previewRows: [{ rowNumber: 2, cells: ['FX.USD.CNY.PBOC_MID', 'source A', '2026-08-10', '6.7904', 'CNY/1 USD'] }],
-      rowErrors: [{ rowNumber: 3, message: '来源为空' }]
+      acceptedRows: [
+        {
+          rowNumber: 2,
+          runId: 'import-MAT.IMPORT.TEST.001-20260810-abc',
+          rawRef: 'raw/formal/local_import/MAT.IMPORT.TEST.001/2026/08/import-MAT.IMPORT.TEST.001-20260810-abc.json',
+          timelineRef: 'staging/import-MAT.IMPORT.TEST.001-20260810-abc.json',
+          processingStage: 'RECEIVED',
+          validationStatus: 'PENDING'
+        }
+      ],
+      rowErrors: [{ rowNumber: 3, message: 'VALUE_REQUIRED' }]
     })
     const wrapper = mount(SourcesView)
     await flushPromises()
@@ -249,16 +265,16 @@ describe('dashboard pages', () => {
     expect(submitImport).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('PENDING')
     expect(wrapper.text()).toContain('第 3 行')
-    expect(wrapper.text()).toContain('来源为空')
-    expect(wrapper.text()).toContain('6.7904')
+    expect(wrapper.text()).toContain('RECEIVED')
+    expect(wrapper.text()).toContain('timelineRef')
   })
 
   it('import xlsx shows the backend REJECTED status without local parsing', async () => {
     vi.mocked(submitImport).mockResolvedValue({
       status: 'REJECTED',
-      message: 'xlsx real parsing is a Day8 write boundary',
+      message: 'import rejected: UNEXPECTED_HEADER',
       fileName: 'book.xlsx',
-      previewRows: [],
+      acceptedRows: [],
       rowErrors: []
     })
     const wrapper = mount(SourcesView)
@@ -272,7 +288,23 @@ describe('dashboard pages', () => {
     await flushPromises()
     expect(submitImport).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('REJECTED')
-    expect(wrapper.text()).toContain('Day8 write boundary')
+    expect(wrapper.text()).toContain('UNEXPECTED_HEADER')
+  })
+
+  it('synthetic demo entry calls the real provider endpoint', async () => {
+    vi.mocked(submitSyntheticDemo).mockResolvedValue({
+      status: 'DEMO_GENERATED',
+      message: 'deterministic synthetic demo data generated - never persisted',
+      itemIds: ['DEMO.ADC12.001', 'DEMO.AZ91D.001']
+    })
+    const wrapper = mount(SourcesView)
+    await flushPromises()
+    const buttons = wrapper.findAll('button')
+    await buttons[buttons.length - 1].trigger('click')
+    await flushPromises()
+    expect(submitSyntheticDemo).toHaveBeenCalledTimes(1)
+    expect(wrapper.text()).toContain('DEMO_GENERATED')
+    expect(wrapper.text()).toContain('deterministic synthetic demo data')
   })
 
   it('aggregate years come from the user-selected range', async () => {

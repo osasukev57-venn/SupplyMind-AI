@@ -46,19 +46,28 @@ public final class DashboardService {
     private final HistoryQueryService history;
     private final WarningService warnings;
     private final Clock clock;
+    private final com.supplymind.manual.ManualMaterialIntakeService manualIntake;
+    private final com.supplymind.localimport.LocalImportService localImport;
+    private final com.supplymind.provider.DataProviderRegistry registry;
 
     public DashboardService(
             ConfigManagementService configs,
             PublishedQueryService published,
             HistoryQueryService history,
             WarningService warnings,
-            Clock clock
+            Clock clock,
+            com.supplymind.manual.ManualMaterialIntakeService manualIntake,
+            com.supplymind.localimport.LocalImportService localImport,
+            com.supplymind.provider.DataProviderRegistry registry
     ) {
         this.configs = Objects.requireNonNull(configs, "configs");
         this.published = Objects.requireNonNull(published, "published");
         this.history = Objects.requireNonNull(history, "history");
         this.warnings = Objects.requireNonNull(warnings, "warnings");
         this.clock = Objects.requireNonNull(clock, "clock");
+        this.manualIntake = Objects.requireNonNull(manualIntake, "manualIntake");
+        this.localImport = Objects.requireNonNull(localImport, "localImport");
+        this.registry = Objects.requireNonNull(registry, "registry");
     }
 
     public DashboardV1.OverviewResponse overview() {
@@ -297,36 +306,55 @@ public final class DashboardService {
     }
 
     /**
-     * D7 M1: manual intake accept-into-PENDING. The submission is VALIDATED (known itemId,
-     * required source/businessDate/value/unit) but NOT persisted - the formal write is a Day8
-     * boundary. The structured PENDING response is what the frontend displays.
+     * D7 M1: manual intake through the REAL ManualMaterialIntakeService boundary. The
+     * submission is validated (known itemId, unit matching the configured item, required
+     * fields), then an immutable raw + RECEIVED/PARSED+PENDING lifecycle timeline are REALLY
+     * created - the returned runId/rawRef/timelineRef are actual persisted evidence, never a
+     * fake PENDING.
      */
     public DashboardV1.ManualPendingResponse manualPending(
             String itemId, String source, String businessDate, String value, String unit
     ) {
         requireKnownItem(itemId);
-        if (source == null || source.isBlank()) {
-            throw new IllegalArgumentException("source is required");
-        }
+        MonitorSeriesItemV1 item = configs.active().items().stream()
+                .filter(candidate -> candidate.itemId().equals(itemId))
+                .findFirst().orElseThrow();
         if (unit == null || unit.isBlank()) {
             throw new IllegalArgumentException("unit is required");
+        }
+        if (!item.unit().equals(unit)) {
+            throw new IllegalArgumentException(
+                    "unit does not match the configured item unit (" + item.unit() + ")");
+        }
+        if (source == null || source.isBlank()) {
+            throw new IllegalArgumentException("source is required");
         }
         if (businessDate == null || businessDate.isBlank()) {
             throw new IllegalArgumentException("businessDate is required");
         }
-        LocalDate.parse(businessDate); // malformed dates are invalid requests
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException("value is required");
         }
+        com.supplymind.manual.ManualMaterialSubmission submission =
+                com.supplymind.manual.ManualMaterialSubmission.of(
+                        itemId, businessDate, value, unit, item.currency(),
+                        source, source, null);
+        com.supplymind.manual.ManualIntakeOutcome outcome = manualIntake.submit(submission);
+        if (outcome.validationStatus() == com.supplymind.foundation.model.ValidationStatus.REJECTED) {
+            throw new IllegalArgumentException(
+                    outcome.reasonCode() == null ? "manual intake rejected" : outcome.reasonCode());
+        }
         return new DashboardV1.ManualPendingResponse(
                 "PENDING", itemId, source, unit, businessDate, value,
-                "manual intake accepted as PENDING - the formal write is a Day8 boundary, nothing persisted");
+                outcome.runId(), outcome.rawRef(), outcome.timelineRef(),
+                "manual intake accepted - raw and lifecycle timeline persisted as PENDING "
+                        + "(formal verification/publish remain downstream gates)");
     }
 
     /**
-     * D7 M1: file import accept-into-PENDING / preview. CSV files are REALLY parsed by the
-     * backend (per-row preview + errors, no business-value computation); a format the backend
-     * cannot really parse (xlsx) is REJECTED explicitly - never pretended.
+     * D7 M1: file import through the REAL LocalImportService boundary. CSV and XLSX are really
+     * parsed; accepted rows are persisted as RECEIVED+PENDING evidence (real runId/rawRef/
+     * timelineRef), invalid rows are reported per row, file-level failures are REJECTED.
      */
     public DashboardV1.ImportResponse importPending(String fileName, byte[] content) {
         if (fileName == null || fileName.isBlank()) {
@@ -335,84 +363,64 @@ public final class DashboardService {
         if (content == null || content.length == 0) {
             throw new IllegalArgumentException("file content is required");
         }
-        String lower = fileName.toLowerCase();
-        if (lower.endsWith(".xlsx") || lower.endsWith(".xls")) {
+        com.supplymind.localimport.LocalImportResult result = localImport.importFile(content);
+        if (result.fileFailed()) {
             return new DashboardV1.ImportResponse(
                     "REJECTED",
-                    "xlsx real parsing is a Day8 write boundary - this entry accepts CSV preview only",
-                    fileName, List.of(), List.of());
+                    "import rejected: " + result.fileError(),
+                    fileName, List.of(), rowErrorsOf(result));
         }
-        if (!lower.endsWith(".csv")) {
-            return new DashboardV1.ImportResponse(
-                    "REJECTED",
-                    "unsupported file type - this entry accepts CSV preview only",
-                    fileName, List.of(), List.of());
-        }
-        List<DashboardV1.ImportRow> preview = new ArrayList<>();
-        List<DashboardV1.ImportRowError> errors = new ArrayList<>();
-        String text = new String(content, java.nio.charset.StandardCharsets.UTF_8);
-        String[] lines = text.split("\r?\n");
-        for (int index = 0; index < lines.length; index++) {
-            if (index == 0 || lines[index].isBlank()) {
-                continue; // header + empty lines are not data rows
-            }
-            String line = lines[index];
-            List<String> cells = splitCsvLine(line);
-            String error = validateImportRow(cells);
-            if (error == null) {
-                preview.add(new DashboardV1.ImportRow(index + 1, List.copyOf(cells)));
-            } else {
-                errors.add(new DashboardV1.ImportRowError(index + 1, error));
-            }
+        List<DashboardV1.ImportRow> accepted = new ArrayList<>();
+        for (com.supplymind.localimport.LocalImportResult.RowOutcome outcome : result.accepted()) {
+            accepted.add(new DashboardV1.ImportRow(
+                    outcome.rowNumber(), outcome.runId(), outcome.rawRef(), outcome.timelineRef(),
+                    outcome.processingStage() == null ? null : outcome.processingStage().name(),
+                    outcome.validationStatus() == null ? null : outcome.validationStatus().name()));
         }
         return new DashboardV1.ImportResponse(
                 "PENDING",
-                "import preview parsed " + preview.size() + " rows with " + errors.size()
-                        + " row errors - the formal write is a Day8 boundary, nothing persisted",
-                fileName, List.copyOf(preview), List.copyOf(errors));
+                "import accepted " + accepted.size() + " rows as RECEIVED+PENDING with "
+                        + result.rowErrors().size() + " row errors",
+                fileName, List.copyOf(accepted), rowErrorsOf(result));
     }
 
-    /** D7: form-level import validation only (missing/blank columns) - no business computation. */
-    private static String validateImportRow(List<String> cells) {
-        // Frozen CSV schema: itemId, source, businessDate, value, unit (5 columns).
-        if (cells.size() < 5) {
-            return "列数不足（期望 5 列：标的, 来源, 业务日期, 值, 单位）";
+    private static List<DashboardV1.ImportRowError> rowErrorsOf(
+            com.supplymind.localimport.LocalImportResult result
+    ) {
+        List<DashboardV1.ImportRowError> errors = new ArrayList<>();
+        for (com.supplymind.localimport.LocalImportCsvParser.RowError error : result.rowErrors()) {
+            errors.add(new DashboardV1.ImportRowError(error.rowNumber(), error.reason()));
         }
-        if (cells.get(0).isBlank()) {
-            return "标的为空";
-        }
-        if (cells.get(1).isBlank()) {
-            return "来源为空";
-        }
-        if (cells.get(2).isBlank()) {
-            return "业务日期为空";
-        }
-        if (cells.get(3).isBlank()) {
-            return "值为空";
-        }
-        if (cells.get(4).isBlank()) {
-            return "单位为空";
-        }
-        return null;
+        return List.copyOf(errors);
     }
 
-    private static List<String> splitCsvLine(String line) {
-        List<String> cells = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        boolean quoted = false;
-        for (int index = 0; index < line.length(); index++) {
-            char ch = line.charAt(index);
-            if (ch == '"') {
-                quoted = !quoted;
-            } else if (ch == ',' && !quoted) {
-                cells.add(current.toString().trim());
-                current.setLength(0);
-            } else {
-                current.append(ch);
-            }
-        }
-        cells.add(current.toString().trim());
-        return cells;
+    /** D7: frozen import CSV template (the exact LocalImport boundary header + example row). */
+    public String importTemplate() {
+        return String.join(",",
+                com.supplymind.localimport.LocalImportCsvParser.TEMPLATE_HEADER)
+                + "\n1.0,DEMO.ADC12.001,2026-08-10,18000.00000000,CNY/MT,CNY,"
+                + "材料示例来源,demo-reference,\n";
+    }
+
+    /**
+     * D7 M1: synthetic demo entry - runs the REAL deterministic SyntheticDemoDataProvider
+     * (fixed seed, explicit demo identity). Demo data never persists to formal stores and is
+     * never a route candidate; the response states that honestly.
+     */
+    public DashboardV1.SyntheticDemoResponse syntheticDemo() {
+        var provider = registry.find(com.supplymind.localimport.SyntheticDemoDataProvider.PROVIDER_ID)
+                .orElseThrow(() -> new IllegalStateException("synthetic-demo provider is not registered"));
+        com.supplymind.provider.ProviderCollectOutcome outcome = provider.collect(
+                com.supplymind.provider.ProviderCollectRequest.current(
+                        java.util.Set.copyOf(provider.supportedItemIds()).stream().toList()));
+        List<String> itemIds = outcome.raws().stream()
+                .map(com.supplymind.foundation.model.RawReceiptV1::itemId)
+                .sorted().toList();
+        return new DashboardV1.SyntheticDemoResponse(
+                "DEMO_GENERATED",
+                "deterministic synthetic demo data generated for the demo scenario - "
+                        + "never persisted to formal stores, never a route candidate",
+                itemIds);
     }
 
     private String warningSummary(String itemId) {

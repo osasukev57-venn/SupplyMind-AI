@@ -46,7 +46,11 @@ public final class DashboardV1 {
     ) {
     }
 
-    /** D7: manual intake accept-into-PENDING contract (Day8 write boundary - nothing persists). */
+    /**
+     * D7: manual intake accept-into-PENDING contract. The submission goes through the REAL
+     * ManualMaterialIntakeService boundary: an immutable raw + RECEIVED/PARSED+PENDING
+     * lifecycle timeline are actually created - the runId/rawRef/timelineRef are real evidence.
+     */
     public record ManualPendingResponse(
             String status,
             String itemId,
@@ -54,41 +58,57 @@ public final class DashboardV1 {
             String unit,
             String businessDate,
             String value,
+            String runId,
+            String rawRef,
+            String timelineRef,
             String message
     ) {
     }
 
     /**
-     * D7: file import accept-into-PENDING / preview contract. CSV is REALLY parsed by the
-     * backend (row preview + per-row errors); formats the backend cannot really parse (xlsx)
-     * are REJECTED explicitly - never pretended.
+     * D7: file import response. The file is REALLY parsed by the existing LocalImportService
+     * boundary (CSV and XLSX): accepted rows are persisted as RECEIVED+PENDING evidence with
+     * real runId/rawRef/timelineRef; invalid rows are reported per row. File-level failures are
+     * REJECTED explicitly - never pretended.
      */
     public record ImportResponse(
             String status,
             String message,
             String fileName,
-            List<ImportRow> previewRows,
+            List<ImportRow> acceptedRows,
             List<ImportRowError> rowErrors
     ) {
         public ImportResponse {
-            previewRows = previewRows == null ? List.of() : List.copyOf(previewRows);
+            acceptedRows = acceptedRows == null ? List.of() : List.copyOf(acceptedRows);
             rowErrors = rowErrors == null ? List.of() : List.copyOf(rowErrors);
         }
     }
 
     public record ImportRow(
             int rowNumber,
-            List<String> cells
+            String runId,
+            String rawRef,
+            String timelineRef,
+            String processingStage,
+            String validationStatus
     ) {
-        public ImportRow {
-            cells = cells == null ? List.of() : List.copyOf(cells);
-        }
     }
 
     public record ImportRowError(
             int rowNumber,
             String message
     ) {
+    }
+
+    /** D7: synthetic demo entry - REAL deterministic demo generation (never persisted formally). */
+    public record SyntheticDemoResponse(
+            String status,
+            String message,
+            List<String> itemIds
+    ) {
+        public SyntheticDemoResponse {
+            itemIds = itemIds == null ? List.of() : List.copyOf(itemIds);
+        }
     }
 
     public record SourceView(

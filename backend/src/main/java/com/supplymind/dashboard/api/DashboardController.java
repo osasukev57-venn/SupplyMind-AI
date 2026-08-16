@@ -67,7 +67,7 @@ public class DashboardController {
         return okOrRejected(dashboard::sources);
     }
 
-    /** D7 M1: manual intake accept-into-PENDING (structured response, nothing persisted). */
+    /** D7 M1: manual intake accept-into-PENDING (real boundary, structured response). */
     @PostMapping("/manual")
     public ResponseEntity<?> manual(@RequestParam Map<String, String> body) {
         return okOrRejected(() -> dashboard.manualPending(
@@ -75,7 +75,7 @@ public class DashboardController {
                 body.get("value"), body.get("unit")));
     }
 
-    /** D7 M1: file import accept-into-PENDING / preview (CSV really parsed; xlsx REJECTED). */
+    /** D7 M1: file import through the real LocalImport boundary (CSV and XLSX really parsed). */
     @PostMapping("/import")
     public ResponseEntity<?> importFile(@RequestParam("file") MultipartFile file) {
         try {
@@ -89,6 +89,24 @@ public class DashboardController {
         } catch (RuntimeException exception) {
             return rejected("dashboard data unavailable for the requested parameters");
         }
+    }
+
+    /** D7: frozen import CSV template download (the exact LocalImport boundary header). */
+    @GetMapping("/import/template")
+    public ResponseEntity<byte[]> importTemplate() {
+        byte[] body = dashboard.importTemplate()
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .header("Content-Type", "text/csv; charset=UTF-8")
+                .header("Content-Disposition",
+                        "attachment; filename=\"import-template.csv\"")
+                .body(body);
+    }
+
+    /** D7 M1: synthetic demo entry - real deterministic demo generation (never persisted). */
+    @PostMapping("/synthetic-demo")
+    public ResponseEntity<?> syntheticDemo() {
+        return okOrRejected(dashboard::syntheticDemo);
     }
 
     /**

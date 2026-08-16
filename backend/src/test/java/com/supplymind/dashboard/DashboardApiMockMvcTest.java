@@ -49,6 +49,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.mock.web.MockMultipartFile;
@@ -234,81 +236,104 @@ class DashboardApiMockMvcTest {
     }
 
     @Test
-    void manualSubmitReturnsStructuredBackendPending() throws Exception {
+    void manualSubmitGoesThroughTheRealManualIntakeBoundary() throws Exception {
+        String manualItemId = harness.manualItemId();
         mockMvc.perform(post("/api/dashboard/manual")
-                        .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
+                        .param("itemId", manualItemId)
                         .param("source", "operator source")
                         .param("businessDate", "2026-08-10")
-                        .param("value", "6.7904")
-                        .param("unit", "CNY/1 USD"))
+                        .param("value", "18000.00000000")
+                        .param("unit", "CNY/MT"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PENDING"))
-                .andExpect(jsonPath("$.itemId").value(MonitorSeriesDefaults.USD_CNY_ITEM_ID))
+                .andExpect(jsonPath("$.itemId").value(manualItemId))
                 .andExpect(jsonPath("$.source").value("operator source"))
-                .andExpect(jsonPath("$.unit").value("CNY/1 USD"))
+                .andExpect(jsonPath("$.unit").value("CNY/MT"))
                 .andExpect(jsonPath("$.businessDate").value("2026-08-10"))
-                .andExpect(jsonPath("$.value").value("6.7904"))
+                .andExpect(jsonPath("$.value").value("18000.00000000"))
+                .andExpect(jsonPath("$.runId").isNotEmpty())
+                .andExpect(jsonPath("$.rawRef").isNotEmpty())
+                .andExpect(jsonPath("$.timelineRef").isNotEmpty())
                 .andExpect(jsonPath("$.message").isNotEmpty());
     }
 
     @Test
     void manualSubmitMissingSourceOrUnitIs400Rejected() throws Exception {
+        String manualItemId = harness.manualItemId();
         mockMvc.perform(post("/api/dashboard/manual")
-                        .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
+                        .param("itemId", manualItemId)
                         .param("businessDate", "2026-08-10")
-                        .param("value", "6.7904")
-                        .param("unit", "CNY/1 USD"))
+                        .param("value", "18000.00000000")
+                        .param("unit", "CNY/MT"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("REJECTED"))
                 .andExpect(jsonPath("$.message").value("source is required"));
 
         mockMvc.perform(post("/api/dashboard/manual")
-                        .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
+                        .param("itemId", manualItemId)
                         .param("source", "operator source")
                         .param("businessDate", "2026-08-10")
-                        .param("value", "6.7904"))
+                        .param("value", "18000.00000000"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("REJECTED"))
                 .andExpect(jsonPath("$.message").value("unit is required"));
     }
 
     @Test
-    void manualSubmitMissingValueIs400Rejected() throws Exception {
+    void manualSubmitUnitMismatchIs400Rejected() throws Exception {
+        String manualItemId = harness.manualItemId();
         mockMvc.perform(post("/api/dashboard/manual")
-                        .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
+                        .param("itemId", manualItemId)
                         .param("source", "operator source")
                         .param("businessDate", "2026-08-10")
+                        .param("value", "18000.00000000")
                         .param("unit", "CNY/1 USD"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("REJECTED"))
-                .andExpect(jsonPath("$.message").value("value is required"));
+                .andExpect(jsonPath("$.message").value(
+                        "unit does not match the configured item unit (CNY/MT)"));
     }
 
     @Test
-    void importSubmitReallyParsesCsvAndRejectsXlsx() throws Exception {
-        // Frozen CSV schema: itemId, source, businessDate, value, unit.
-        String csv = "itemId,source,businessDate,value,unit\n"
-                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",source A,2026-08-10,6.7904,CNY/1 USD\n"
-                + "badrow\n"
-                + MonitorSeriesDefaults.USD_CNY_ITEM_ID + ",,2026-08-12,8.0,CNY/1 USD\n";
+    void importSubmitGoesThroughTheRealLocalImportBoundary() throws Exception {
+        String importItemId = harness.importItemId();
+        // Frozen LocalImport template header.
+        String csv = "schemaVersion,itemId,businessDate,value,unit,currency,actualSourceName,sourceReference,sourceUrl\n"
+                + "1.0," + importItemId + ",2026-08-10,18000.00000000,CNY/MT,CNY,import source,ref-1,\n"
+                + "1.0," + importItemId + ",2026-08-11,,CNY/MT,CNY,import source,ref-2,\n";
         mockMvc.perform(multipart("/api/dashboard/import")
                         .file(new MockMultipartFile("file", "rows.csv", "text/csv",
                                 csv.getBytes(StandardCharsets.UTF_8))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PENDING"))
-                .andExpect(jsonPath("$.previewRows[0].rowNumber").value(2))
-                .andExpect(jsonPath("$.previewRows[0].cells[1]").value("source A"))
-                .andExpect(jsonPath("$.rowErrors[0].rowNumber").value(3))
-                .andExpect(jsonPath("$.rowErrors[1].message").value("来源为空"));
+                .andExpect(jsonPath("$.acceptedRows[0].rowNumber").value(2))
+                .andExpect(jsonPath("$.acceptedRows[0].runId").isNotEmpty())
+                .andExpect(jsonPath("$.acceptedRows[0].rawRef").isNotEmpty())
+                .andExpect(jsonPath("$.rowErrors[0].rowNumber").value(3));
 
         mockMvc.perform(multipart("/api/dashboard/import")
-                        .file(new MockMultipartFile("file", "book.xlsx",
-                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                new byte[]{1, 2, 3})))
+                        .file(new MockMultipartFile("file", "bad.csv", "text/csv",
+                                "not a csv".getBytes(StandardCharsets.UTF_8))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("REJECTED"))
-                .andExpect(jsonPath("$.message").value(
-                        "xlsx real parsing is a Day8 write boundary - this entry accepts CSV preview only"));
+                .andExpect(jsonPath("$.status").value("REJECTED"));
+    }
+
+    @Test
+    void importTemplateEndpointReturnsTheFrozenHeader() throws Exception {
+        mockMvc.perform(get("/api/dashboard/import/template"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition",
+                        "attachment; filename=\"import-template.csv\""))
+                .andExpect(content().string(org.hamcrest.Matchers.startsWith(
+                        "schemaVersion,itemId,businessDate,value,unit,currency,actualSourceName,sourceReference,sourceUrl")));
+    }
+
+    @Test
+    void syntheticDemoEndpointRunsTheRealProvider() throws Exception {
+        mockMvc.perform(post("/api/dashboard/synthetic-demo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("DEMO_GENERATED"))
+                .andExpect(jsonPath("$.itemIds").isArray());
     }
 
     // ---- fixture ----
@@ -343,8 +368,8 @@ class DashboardApiMockMvcTest {
         DataRoot root = DataRoot.forTest(temporaryDirectory.resolve("d7 mockmvc root"));
         AtomicMoveSupport.probeOrFail(root);
         AtomicFileStore fileStore = new AtomicFileStore(root, new DirtyMarkerCodec());
-        ConfigActivationStore configs = new ConfigActivationStore(root, fileStore, FIXED_CLOCK);
-        configs.ensureInitialDefault();
+        ConfigActivationStore activationStore = new ConfigActivationStore(root, fileStore, FIXED_CLOCK);
+        activationStore.ensureInitialDefault();
         RawReceiptStore rawStore = new RawReceiptStore(root, fileStore, FIXED_CLOCK);
         TimelineStore timelineStore = new TimelineStore(root, fileStore, FIXED_CLOCK);
         LifecycleValidationService validation =
@@ -353,13 +378,34 @@ class DashboardApiMockMvcTest {
         LifecyclePublishService publish =
                 new LifecyclePublishService(root, timelineStore, quarantineStore, FIXED_CLOCK);
         PublishedQueryService query = new PublishedQueryService(root, timelineStore, FIXED_CLOCK);
-        ConfigManagementService configManagement = new ConfigManagementService(configs,
-                new DataProviderRegistry());
+        DataProviderRegistry registry = new DataProviderRegistry();
+        ConfigManagementService configManagement = new ConfigManagementService(activationStore, registry);
         HistoryQueryService history = new HistoryQueryService(root);
         WarningService warnings = new WarningService(root,
                 new WarningStore(root, fileStore, FIXED_CLOCK), FIXED_CLOCK, history);
-        DashboardService dashboard = new DashboardService(configManagement, query, history, warnings, FIXED_CLOCK);
-        return new Harness(root, fileStore, rawStore, timelineStore, validation, publish, dashboard);
+        com.supplymind.manual.ManualMaterialIntakeService manualIntake =
+                new com.supplymind.manual.ManualMaterialIntakeService(
+                        root, rawStore, timelineStore, new com.supplymind.manual.ManualMaterialNormalizer(),
+                        com.supplymind.manual.OperatorContext.configured("test-operator"),
+                        FIXED_CLOCK);
+        com.supplymind.localimport.LocalImportService localImport =
+                new com.supplymind.localimport.LocalImportService(
+                        root, rawStore,
+                        new com.supplymind.localimport.LocalImportFileStore(root, fileStore, FIXED_CLOCK),
+                        timelineStore, new com.supplymind.localimport.LocalImportCsvParser(),
+                        FIXED_CLOCK);
+        registry.register(new com.supplymind.localimport.SyntheticDemoDataProvider(
+                com.supplymind.localimport.SyntheticDemoDataProvider.defaultScenarioItems()));
+        registry.register(com.supplymind.dashboard.support.DashboardTestProviders.forType(
+                ProviderType.OFFICIAL_WEB, "test-official-web"));
+        registry.register(com.supplymind.dashboard.support.DashboardTestProviders.forType(
+                ProviderType.MANUAL, "test-manual"));
+        registry.register(com.supplymind.dashboard.support.DashboardTestProviders.forType(
+                ProviderType.LOCAL_IMPORT, "test-local-import"));
+        DashboardService dashboard = new DashboardService(configManagement, query, history, warnings,
+                FIXED_CLOCK, manualIntake, localImport, registry);
+        return new Harness(root, fileStore, rawStore, timelineStore, validation, publish, dashboard,
+                configManagement, activationStore);
     }
 
     private record Harness(
@@ -369,7 +415,47 @@ class DashboardApiMockMvcTest {
             TimelineStore timeline,
             LifecycleValidationService validation,
             LifecyclePublishService publish,
-            DashboardService dashboard
+            DashboardService dashboard,
+            ConfigManagementService configs,
+            ConfigActivationStore activationStore
     ) {
+        String manualItemId() {
+            com.supplymind.foundation.model.MonitorSeriesItemV1 item =
+                    new com.supplymind.foundation.model.MonitorSeriesItemV1(
+                            "MAT.MANUAL.TEST.001", "测试手动标的", true, "MANUAL-TEST",
+                            ProviderType.MANUAL, AccessMethod.MANUAL, "测试手动来源",
+                            com.supplymind.foundation.model.RouteDecision.FALLBACK_MANUAL,
+                            "manual route (test)",
+                            RECEIVED_AT, null, "EXT-MANUAL-TEST", null, null,
+                            "manual-material-normalization-v1",
+                            8, 4, java.math.RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                            "CNY", "CNY", "CNY/MT", null);
+            addItemDirect(item);
+            return item.itemId();
+        }
+
+        String importItemId() {
+            com.supplymind.foundation.model.MonitorSeriesItemV1 item =
+                    new com.supplymind.foundation.model.MonitorSeriesItemV1(
+                            "MAT.IMPORT.TEST.001", "测试导入标的", true, "IMPORT-TEST",
+                            ProviderType.LOCAL_IMPORT, AccessMethod.LOCAL_IMPORT, "测试导入来源",
+                            com.supplymind.foundation.model.RouteDecision.DIRECT_LOCAL_IMPORT, null,
+                            RECEIVED_AT, null, "EXT-IMPORT-TEST", null, null,
+                            "local-import-material-normalization-v1",
+                            8, 4, java.math.RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
+                            "CNY", "CNY", "CNY/MT", null);
+            addItemDirect(item);
+            return item.itemId();
+        }
+
+        private void addItemDirect(com.supplymind.foundation.model.MonitorSeriesItemV1 item) {
+            com.supplymind.foundation.model.MonitorSeriesConfigV1 current = configs.active();
+            java.util.List<com.supplymind.foundation.model.MonitorSeriesItemV1> items =
+                    new java.util.ArrayList<>(current.items());
+            items.add(item);
+            activationStore.activate(new com.supplymind.foundation.model.MonitorSeriesConfigV1(
+                    current.schemaVersion(), current.configVersion() + 1, current.mode(),
+                    RECEIVED_AT, items));
+        }
     }
 }

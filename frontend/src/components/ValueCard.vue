@@ -18,6 +18,9 @@ defineProps<{ card: ItemCard }>()
     </div>
     <div class="card-meta">来源：{{ card.source.actualSourceName ?? '—' }}</div>
     <div class="card-meta">
+      完整率：{{ card.completeness ?? '—' }}
+    </div>
+    <div class="card-meta">
       路线：{{ card.source.routeDecision ?? '—' }}
       <span v-if="card.source.fallbackReason" class="muted">
         （{{ card.source.fallbackReason }}）

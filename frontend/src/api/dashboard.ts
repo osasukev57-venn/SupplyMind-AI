@@ -7,7 +7,8 @@ import type {
   MetricsResponse,
   OverviewResponse,
   QualityResponse,
-  SourcesResponse
+  SourcesResponse,
+  SyntheticDemoResponse
 } from '../types/dashboard'
 
 /** D7 read-only dashboard API - every business value stays a backend string. */
@@ -69,12 +70,22 @@ export async function submitManual(fields: {
   }
 }
 
-/** D7 M1: file import -> backend preview/accept (CSV really parsed; xlsx REJECTED). */
+/** D7 M1: file import -> backend real LocalImport boundary (CSV/XLSX really parsed). */
 export async function submitImport(file: File): Promise<ImportResponse | null> {
   const form = new FormData()
   form.append('file', file)
   try {
     const response = await http.post<ImportResponse>('/dashboard/import', form)
+    return response.data
+  } catch {
+    return null
+  }
+}
+
+/** D7 M1: synthetic demo entry -> real deterministic demo generation (never persisted). */
+export async function submitSyntheticDemo(): Promise<SyntheticDemoResponse | null> {
+  try {
+    const response = await http.post<SyntheticDemoResponse>('/dashboard/synthetic-demo')
     return response.data
   } catch {
     return null

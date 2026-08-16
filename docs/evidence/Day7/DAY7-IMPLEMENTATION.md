@@ -108,4 +108,24 @@ Vue3 (frontend/) --HTTP /api/dashboard--> DashboardController --> DashboardServi
 
 保持：Day8 真实写入边界（仍只受理 PENDING）、DEC-008（值全链路字符串）、Day1-Day6 契约零修改、测试断言未降低。
 
-回归：后端全量 `.\mvnw.cmd clean test` = 109 suites / 554 tests / 0 failures / 0 errors / 8 skipped（HISTORICAL，5f1491c 时点）；前端 `npm run test` 6/6、`npm run build` PASS；DEC-008 保持（值全链路字符串，坐标仅展示几何）。CURRENT 回归见上文快照表。
+回归（HISTORICAL，1b83410 时点）：110 suites / 574 tests / 0 failures / 0 errors / 8 skipped。
+
+## Final Stage Review 修复（2026-08-16，commit 见 05-PROGRESS-LEDGER）
+
+1. **MAJOR 1 D7-T04 真实 PENDING（不再自证）**：Manual/Import 端点改为**复用既有真实边界**——`POST /api/dashboard/manual` 走 `ManualMaterialIntakeService`（immutable raw + RECEIVED/PARSED+PENDING lifecycle timeline 真实持久化，响应携带真实 runId/rawRef/timelineRef 证据；unit 必须匹配配置 item 单位，仅 Manual 路由标的可提交）；`POST /api/dashboard/import` 走 `LocalImportService`（CSV **与 XLSX** 均真实解析（POI），冻结 9 列模板头，接受行真实持久化为 RECEIVED+PENDING 证据，行级错误逐行报告，文件级失败明确 REJECTED）。删除自造的"假 PENDING"与自定义 CSV 解析。
+2. **MAJOR 2 模板下载 + Synthetic 演示入口**：`GET /api/dashboard/import/template`（冻结 LocalImport 模板头下载，Content-Disposition attachment）；`POST /api/dashboard/synthetic-demo`（真实 `SyntheticDemoDataProvider` 确定性生成，响应 `DEMO_GENERATED`，明确"不持久化到正式存储、非路线候选"）；SourcesView 增加模板下载链接与 Synthetic 演示按钮。
+3. **MAJOR 3 D7-T02 完整率展示**：前端 `ItemCard` 类型补 `completeness` 字段，`ValueCard` 渲染"完整率"（后端计算字符串直出）。
+4. **MAJOR 4 docs 口径统一**：CURRENT regression=**110 suites/578 tests/0 failures/0 errors/8 skipped**；前端 **11/11 PASS**；旧快照一律 HISTORICAL。
+
+| 回归快照 | suites | tests | 状态 |
+|---|---|---|---|
+| Day6 final（bc6f61a） | 105 | 535 | HISTORICAL |
+| Day7 实施（2ea6a4b） | 108 | 548 | HISTORICAL |
+| 攻击修复（5f1491c） | 109 | 554 | HISTORICAL |
+| API 契约修复（3fd1d35） | 110 | 558 | HISTORICAL |
+| 最终审查修复（a4006c4） | 110 | 563 | HISTORICAL |
+| 最终审查修复 V2（d2b0965） | 110 | 573 | HISTORICAL |
+| M1 契约冻结（1b83410） | 110 | 574 | HISTORICAL |
+| **Final Stage Review 修复（本 commit）** | **110** | **578** | **CURRENT** |
+
+保持：Day1-Day6 语义与契约零修改、DEC-060 未改、测试断言未降低、前端业务值零计算。
