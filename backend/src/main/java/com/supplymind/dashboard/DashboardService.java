@@ -33,6 +33,8 @@ public final class DashboardService {
     private static final int CHART_WIDTH = 640;
     private static final int CHART_HEIGHT = 160;
     private static final int CHART_PAD = 8;
+    private static final int MAX_RANGE_DAYS = 3660; // 10 years - same bound as the Agent tools
+    private static final int MAX_YEAR_SPAN = 10;
     private static final Pattern DAILY_PERIOD = Pattern.compile("processed/daily/[^/]+/(\\d{4}-\\d{2})\\.csv");
     private static final Pattern AGGREGATE_PERIOD = Pattern.compile(
             "processed/aggregate/[^/]+/(month|quarter|halfyear|year)/(\\d{4})\\.csv");
@@ -105,9 +107,10 @@ public final class DashboardService {
     }
 
     public DashboardV1.HistoryResponse history(String itemId, String fromDate, String toDate) {
-        Objects.requireNonNull(itemId, "itemId");
+        requireKnownItem(itemId);
         LocalDate from = LocalDate.parse(fromDate);
         LocalDate to = LocalDate.parse(toDate);
+        requireRange(from, to);
         HistoryQueryService.DailyHistoryResult result = history.queryDaily(itemId, from, to);
         List<DashboardV1.HistoryPoint> points = new ArrayList<>();
         for (var row : result.rows()) {
@@ -144,6 +147,13 @@ public final class DashboardService {
     }
 
     public DashboardV1.MetricsResponse metrics(String itemId, String grain, int fromYear, int toYear) {
+        requireKnownItem(itemId);
+        if (fromYear > toYear) {
+            throw new IllegalArgumentException("fromYear must not be after toYear");
+        }
+        if (toYear - fromYear >= MAX_YEAR_SPAN) {
+            throw new IllegalArgumentException("year range too large (max " + MAX_YEAR_SPAN + " years)");
+        }
         HistoryQueryService.AggregateHistoryResult result = history.queryAggregate(itemId, grain, fromYear, toYear);
         List<DashboardV1.MetricRow> rows = new ArrayList<>();
         for (var row : result.rows()) {
@@ -172,8 +182,10 @@ public final class DashboardService {
     }
 
     public DashboardV1.QualityResponse quality(String itemId, String fromDate, String toDate) {
+        requireKnownItem(itemId);
         LocalDate from = LocalDate.parse(fromDate);
         LocalDate to = LocalDate.parse(toDate);
+        requireRange(from, to);
         HistoryQueryService.DailyHistoryResult result = history.queryDaily(itemId, from, to);
         List<DashboardV1.QualityRow> rows = new ArrayList<>();
         for (var row : result.rows()) {
@@ -243,6 +255,30 @@ public final class DashboardService {
         }
         return "warnings: " + recent.size() + " (latest "
                 + (recent.get(0).riskLevel() == null ? "unknown" : recent.get(0).riskLevel().name()) + ")";
+    }
+
+    /**
+     * D7 fail-closed: an itemId that is not in the active configuration is an invalid request
+     * (HTTP 400) - it is never silently answered with empty data.
+     */
+    private void requireKnownItem(String itemId) {
+        Objects.requireNonNull(itemId, "itemId");
+        boolean known = configs.active().items().stream()
+                .anyMatch(item -> item.itemId().equals(itemId));
+        if (!known) {
+            throw new IllegalArgumentException("unknown itemId");
+        }
+    }
+
+    /** D7 fail-closed: from > to and oversized ranges are invalid requests (HTTP 400). */
+    private static void requireRange(LocalDate from, LocalDate to) {
+        if (from.isAfter(to)) {
+            throw new IllegalArgumentException("from must not be after to");
+        }
+        long days = java.time.temporal.ChronoUnit.DAYS.between(from, to);
+        if (days > MAX_RANGE_DAYS) {
+            throw new IllegalArgumentException("date range too large (max " + MAX_RANGE_DAYS + " days)");
+        }
     }
 
     /**

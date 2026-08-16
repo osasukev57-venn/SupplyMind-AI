@@ -66,4 +66,15 @@ Vue3 (frontend/) --HTTP /api/dashboard--> DashboardController --> DashboardServi
 4. **DashboardService 不再直读 warning 文件**：改为注入 `WarningService`；`WarningService` 新增只读方法 `findRecent(itemId, lookbackMonths)`（manifest 校验扫描，复用既有 DataRoot/ManifestVerifier，不触碰既有方法，Day1-Day6 行为零改动）；DashboardService 的全部 warning 读取走该 service。
 5. **真实 MockMvc API 测试**：新增 `DashboardApiMockMvcTest`（6 项）——standalone MockMvc + 真实 DashboardService（持久化 fixture）：overview 200 契约、history chart/evidenceIssues、缺失期间业务引用、非法日期/grain → 400 REJECTED（非 500）、quality/sources 200。
 
+## API 契约修复（Terra Retest Finding，2026-08-16，commit 见 05-PROGRESS-LEDGER）
+
+1. **未知 itemId fail-closed**：`DashboardService.requireKnownItem`——history/metrics/quality 的 itemId 必须存在于活动配置，否则 `IllegalArgumentException("unknown itemId")` → HTTP 400 `{status:"REJECTED", message:"unknown itemId"}`（绝不以 200+空数据掩盖）。
+2. **非法范围拒绝**：`requireRange`——`from > to` → 400 `message:"from must not be after to"`；超过 `MAX_RANGE_DAYS=3660`（10 年，与 Agent 工具同一语义）→ 400 `message:"date range too large (max 3660 days)"`；metrics 增加 `fromYear>toYear` 与 `MAX_YEAR_SPAN=10` 校验。
+3. **Controller 错误消息受控透传**：`okOrRejected` 对 `IllegalArgumentException` 透传受控服务端消息（unknown itemId / 范围 / 日期格式），其余失败统一 400 通用消息；仍无 500、无堆栈泄漏。
+4. **新增 MockMvc 测试**（+4，共 10 项）：unknown itemId → 400 精确 message（history/quality/metrics 三端点）、from>to → 400、oversized range → 400 精确 message、valid request → 200。
+
+保持：DEC-008（值全链路字符串）、Day1-Day6 契约（零修改）、WarningService 边界（findRecent 只读，不触碰既有方法）、前端零计算（本 commit 无前端改动）。
+
+回归：后端全量 `.\mvnw.cmd clean test` = 110 suites / 558 tests / 0 failures / 0 errors / 8 skipped（+4 MockMvc）。
+
 回归：后端全量 `.\mvnw.cmd clean test` = 109 suites / 554 tests / 0 failures / 0 errors / 8 skipped（+6 MockMvc）；前端 `npm run test` 6/6、`npm run build` PASS；DEC-008 保持（值全链路字符串，坐标仅展示几何）。

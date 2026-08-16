@@ -154,6 +154,67 @@ class DashboardApiMockMvcTest {
     }
 
     @Test
+    void unknownItemIdIs400RejectedWithExactMessage() throws Exception {
+        mockMvc.perform(get("/api/dashboard/history")
+                        .param("itemId", "FX.NOT.CONFIGURED")
+                        .param("from", "2026-08-01")
+                        .param("to", "2026-08-31"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.message").value("unknown itemId"));
+
+        mockMvc.perform(get("/api/dashboard/quality")
+                        .param("itemId", "FX.NOT.CONFIGURED")
+                        .param("from", "2026-08-01")
+                        .param("to", "2026-08-31"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.message").value("unknown itemId"));
+
+        mockMvc.perform(get("/api/dashboard/metrics")
+                        .param("itemId", "FX.NOT.CONFIGURED")
+                        .param("grain", "month")
+                        .param("fromYear", "2026")
+                        .param("toYear", "2026"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.message").value("unknown itemId"));
+    }
+
+    @Test
+    void fromAfterToIs400Rejected() throws Exception {
+        mockMvc.perform(get("/api/dashboard/history")
+                        .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
+                        .param("from", "2026-08-31")
+                        .param("to", "2026-08-01"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.message").value("from must not be after to"));
+    }
+
+    @Test
+    void oversizedHistoryRangeIs400Rejected() throws Exception {
+        mockMvc.perform(get("/api/dashboard/history")
+                        .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
+                        .param("from", "2000-01-01")
+                        .param("to", "2050-01-01"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.message").value(
+                        "date range too large (max 3660 days)"));
+    }
+
+    @Test
+    void validHistoryRequestStillReturns200() throws Exception {
+        mockMvc.perform(get("/api/dashboard/history")
+                        .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)
+                        .param("from", "2026-08-01")
+                        .param("to", "2026-08-31"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.points").isArray());
+    }
+
+    @Test
     void qualityAndSourcesEndpointsReturn200() throws Exception {
         mockMvc.perform(get("/api/dashboard/quality")
                         .param("itemId", MonitorSeriesDefaults.USD_CNY_ITEM_ID)

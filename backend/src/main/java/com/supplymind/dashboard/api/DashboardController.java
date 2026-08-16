@@ -65,12 +65,17 @@ public class DashboardController {
     }
 
     /**
-     * D7 unified error contract: every failure is a 400 REJECTED with a controlled message -
-     * a 500 is never returned by the dashboard API.
+     * D7 unified error contract: invalid parameters (unknown itemId, from > to, oversized range,
+     * malformed dates) are 400 REJECTED with the controlled service message; any other failure
+     * is also a 400 REJECTED with a generic message - a 500 is never returned by the dashboard
+     * API. No error response ever leaks a stack trace.
      */
     private static ResponseEntity<?> okOrRejected(java.util.function.Supplier<?> supplier) {
         try {
             return ResponseEntity.ok(supplier.get());
+        } catch (IllegalArgumentException exception) {
+            return rejected(exception.getMessage() == null
+                    ? "invalid request parameters" : exception.getMessage());
         } catch (DateTimeParseException exception) {
             return rejected("from/to must be ISO yyyy-MM-dd dates");
         } catch (RuntimeException exception) {
