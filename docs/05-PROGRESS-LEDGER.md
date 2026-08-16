@@ -57,9 +57,9 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 
 | 字段 | 当前值 |
 |---|---|
-| 当前开发日 | Day 1～Day 7 = `COMPLETE`；Day 8 尚未开始 |
-| 当前任务编号 | Day7 Final Stage Closure；下一可领取任务=D8-T01 |
-| 当前任务状态 | D7-T01～D7-T04=`DONE`；Day7 Stage Review=`PASS`；Day7=`COMPLETE`；Day7 Final Implementation Candidate=`feaedd3`。D8-T01=`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`；D8-T02～D8-T05=`NOT_STARTED`（顺序 Gate，D8-T05 依赖 D8-T04 DONE）。 |
+| 当前开发日 | Day 1～Day 7 = `COMPLETE`；Day 8 实施中（Batch 模式） |
+| 当前任务编号 | Day8 Batch Implementation（D8-T01→D8-T02→D8-T03→D8-T04→D8-T05 Stage Candidate Preparation） |
+| 当前任务状态 | D7-T01～D7-T04=`DONE`；Day7 Stage Review=`PASS`；Day7=`COMPLETE`；Day7 Final Implementation Candidate=`feaedd3`。**Day8ExecutionMode=`BATCH_IMPLEMENTATION_FINAL_STAGE_REVIEW_APPROVED_20260817`**（项目方批准：同一 integration/day8 分支连续实施，无需逐任务等待 Review，但每任务必须满足内部 Gate 后独立 commit；批次结束统一 Final Stage Review）。D8-T01～D8-T05=`TaskExecutionStatus=NOT_STARTED`（`REVIEW_PENDING` 不阻止批次继续；`DONE`/`COMPLETE`/`EFFECTIVE` 禁止在本批次内自行标记）。 |
 | 编码前基线对齐 | `v1.5 FROZEN`：DEC-060、C35～C36保持不变；Java17、Boot3.5.15、Spring AI1.1.8、SupplyMind LLMService门面、只读Tool Adapter与EvidencePack所有权边界均保持。 |
 | 已完成任务 | Day1～Day7全部开发任务及Stage Gate；Day7 Final Implementation Candidate=`feaedd3`。 |
 | 正在进行任务 | 无；D8-T01已具备领取条件但尚未开始。 |
