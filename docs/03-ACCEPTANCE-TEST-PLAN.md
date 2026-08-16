@@ -1,6 +1,6 @@
 # SupplyMind AI 验收测试计划
 
-版本：v1.4  
+版本：v1.5  
 文档状态：P0 验收基线  
 适用平台：Windows x64 / Electron 最终交付包  
 数据持久化约束：仅本地 JSON/CSV 业务文件，不使用数据库
@@ -890,23 +890,46 @@ GD-07用于AT-SRC-005至AT-SRC-008；每个文件生成SHA-256并固定期望状
   4. 恢复网络后按策略恢复采集，不重复发布。
 - 证据：断网前后 API、Dashboard 截图、任务日志、网络状态和恢复后计数；存入 AT-NET-001。
 
-### AT-AI-001 Cloud LLM 故障降级为 Java 模板报告
+### AT-AI-000 Framework Compatibility / Upgrade Gate
 
-- 对应需求：AI-01、H02、PUB-01。
-- 前置条件：本地已有已发布数据；Cloud LLM 已通过可替换接口接入；Java 模板报告可独立运行。
-- 测试数据：GD-06 的 DNS 失败、超时、429、5xx；一个包含未校验数据的提问。
+- 对应需求：C35、DEC-060、D6-T00。
+- 前置条件：固定基线为 `day5-complete` / `36dc178`，Java 17、Spring Boot 3.3.6；历史完整回归为 83 suites、407 tests、0 failures、0 errors、8 skipped。
 - 步骤：
-  1. 在 LLM 正常时询问一个周期比较问题并记录依据。
-  2. 依次注入四类 Cloud LLM 故障。
-  3. 在每种故障下生成供应链风险报告，并执行采集、查询、聚合和预警。
-  4. 询问涉及未校验数据的问题。
-- 预期：
-  1. LLM 正常报告引用已发布数据、来源、周期和更新时间。
-  2. 每类故障都明确标记降级，并由 Java 模板基于同一 EvidencePack 生成结构化风险报告，不伪造原因。
-  3. 采集、校验、聚合、查询和预警全部继续工作。
-  4. 未校验数据无论 LLM 是否正常均不得被提供。
-  5. Cloud LLM Key 不进入前端、URL、日志或证据。
-- 证据：四类故障日志、Java 模板报告、核心 API 成功结果、Agent 截图、预警记录、脱敏配置检查；存入 AT-AI-001。
+  1. 仅将框架基线升级为 Spring Boot 3.5.15、Spring AI 1.1.8，生成依赖树并检查无Boot 4.x、Spring AI 2.x、预发布版本和数据库栈。
+  2. 从干净构建执行 Day 1～Day 5 完整回归，逐项核对原有测试类、测试用例与skip原因。
+  3. 对比升级前后业务文件黄金字节、manifest、BigDecimal结果、调度、validation、publish与warning合同。
+  4. 模拟拒绝条件并验证可回退至固定基线，无数据迁移和历史改写。
+- 预期：全部既有语义和合同无回归；测试数量变化有逐项证据且无核心测试静默skip；若需大规模生产重写或无法兼容，Gate=FAIL并拒绝升级。
+- 证据：精确版本与依赖树、完整Surefire原始结果、测试清点、黄金字节diff、升级/回退报告；存入AT-AI-000。
+
+### AT-AI-001 Cloud LLM / Spring AI Adapter 故障降级为 Java 模板报告
+
+- 对应需求：AI-01、H02、PUB-01、C12、C13、C36。
+- 前置条件：本地已有已发布数据；SupplyMind `LLMService`与Spring AI adapter已接入；Java模板报告可独立运行。
+- 测试数据：缺失API Key、DNS失败、超时、429、5xx、畸形响应、空响应、非法tool request；一个涉及未校验数据的提问。
+- 步骤：
+  1. 使用本地stub按同一端口完成成功响应合同，不要求真实API Key。
+  2. 逐项注入上述故障并生成风险报告，同时执行采集、查询、聚合和预警。
+  3. 询问涉及未校验数据的问题并检查所有业务出口。
+  4. 若另行执行真实Cloud gated run，固化runner证据；没有凭据时保持AcceptanceStatus=NOT_RUN或BLOCKED，不得宣称PASS。
+- 预期：每类故障明确标记degraded，由Java模板基于同一EvidencePack生成结构化报告；核心链继续工作；未校验数据不可见；秘密不进入前端、URL、日志、EvidencePack或证据。
+- 证据：本地合同与故障注入runner、模板报告、核心API结果、脱敏配置检查；真实Cloud如执行则另存gated runner；存入AT-AI-001。
+
+### AT-AI-002 Spring AI 只读 Tool Calling 与生产 Service 复用
+
+- 对应需求：C20、C21、C36、D6-T01。
+- 前置条件：D6-T00=Done；七个冻结Tool Adapter可由本地确定性ChatModel stub选择。
+- 步骤：逐一选择 `series.resolve`、`history.query`、`period.metrics`、`quality.inspect`、`cost.impact`、`warning.explain`、`provenance.trace`；注入越权参数、提示注入、未发布/未校验引用和未知工具名。
+- 预期：仅Tool Adapter声明`@Tool`或稳定`ToolCallback`；应用层校验并执行既有只读Service；只读PUBLISHED+VERIFIED类数据；不得访问任意文件、网络、数据库、配置写、回填写、预警状态写或shell；非法请求fail-closed并降级。
+- 证据：工具注册表、input/output DTO、调用trace、权限负向测试、Service复用证明；存入AT-AI-002。
+
+### AT-AI-003 EvidencePack 追溯与 AgentReport 持久化
+
+- 对应需求：C20、C22、C36、D6-T02、D6-T04。
+- 前置条件：`AGENT-EVIDENCE-SCHEMA-V1`已冻结；存在已发布可追溯fixture。
+- 步骤：生成EvidencePack与LLM/Java模板两种AgentReport；逐项核对tool input/output、精确数值字符串、businessDate/period、来源、质量、warning、版本、file/source refs和lineage；篡改或删除引用后重放核验。
+- 预期：EvidencePack与AgentReport由SupplyMind拥有且不含Spring AI DTO；模型记忆、对话历史和tool transcript不能替代证据；数字/结论必须可回指；引用失效或篡改fail-closed；报告按冻结路径和manifest规则原子持久化。
+- 证据：schema黄金文件、EvidencePack、AgentReport、manifest、篡改负向结果、重启读取记录；存入AT-AI-003。
 
 ### AT-WIN-001 干净 Windows 解压并启动便携 Electron EXE
 
@@ -993,7 +1016,7 @@ GD-07用于AT-SRC-005至AT-SRC-008；每个文件生成SHA-256并固定期望状
 | Day 3 | 六类Provider、材料三层路由、FreePublic、Manual、LocalImport/Synthetic | AT-SRC-001=PASS、AT-SRC-005-D3=PASS、AT-SRC-008-D3=PASS（DEC-058 阶段子用例；父用例 AT-SRC-005/008 保持`NOT_RUN`至后续阶段完成）；AT-SRC-007-D3=PASS（Manual 保底路线）；四个来源意图×材料序列各有non-synthetic路线；指定源不可用仅条件N/A（AT-SRC-006=`BLOCKED`，EXT-10 非阻断） |
 | Day 4 | 全Provider校验门禁、加工、五级聚合和来源治理 | AT-PUB、AT-PREC、AT-AGG及选定AT-SRC-006/007通过；GD-01至GD-07均有SHA-256 |
 | Day 5 | 轮转、跨文件/跨年、动态配置、回填和预警 | AT-TIME、AT-XR、AT-CFG、AT-ALT后端路径通过 |
-| Day 6 | 受控工具、EvidencePack、LLM抽象和Java模板降级 | 工具不重算业务值；报告引用actualSourceName；Cloud故障仍产出模板报告 |
+| Day 6 | AT-AI-000框架升级Gate、七个只读Tool Adapter、SupplyMind EvidencePack、LLMService+Spring AI adapter和Java模板降级 | AT-AI-000、AT-AI-002、AT-AI-003本地合同通过；工具不重算业务值；报告引用actualSourceName；Cloud真实gated run未执行时保持NOT_RUN/BLOCKED，故障仍产出模板报告 |
 | Day 7 | Vue仪表盘、历史、质量、手工录入与导入页面 | Manual提交先PENDING；真实来源跨页面一致；不显示未校验数据 |
 | Day 8 | 动态配置、预警、Agent与Web预验收 | H01-H09、SUP-01至SUP-08的Web侧P0通过；功能冻结 |
 | Day 9 | Electron、捆绑JRE、动态端口、生命周期和便携ZIP | 桌面冒烟通过；data在EXE同级可见；无数据库和外部运行时 |

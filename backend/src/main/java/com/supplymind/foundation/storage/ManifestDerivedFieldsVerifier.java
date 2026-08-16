@@ -92,7 +92,8 @@ final class ManifestDerivedFieldsVerifier {
                 || dataRef.startsWith("quarantine/")
                 || dataRef.startsWith("runtime/conflicts/raw/")
                 || dataRef.startsWith("runtime/jobs/active/")
-                || dataRef.startsWith("warning/");
+                || dataRef.startsWith("warning/")
+                || dataRef.startsWith("report/");
     }
 
     private static DerivedFields deriveJson(String dataRef, byte[] dataBytes) {
@@ -136,6 +137,12 @@ final class ManifestDerivedFieldsVerifier {
         }
         if (dataRef.startsWith("warning/")) {
             JsonV1Codec.decodeFile(dataBytes, com.supplymind.warning.WarningRecordV1.class);
+            return jsonFields(List.of());
+        }
+        if (dataRef.startsWith("report/")) {
+            // D6-T04 Agent reports: manifest carries no source run ids (embedded EvidencePack is
+            // the lineage), but the report must decode as an AGENT-REPORT-V1 document.
+            JsonV1Codec.decodeFile(dataBytes, com.supplymind.agent.report.AgentReportV1.class);
             return jsonFields(List.of());
         }
         throw new StorageException("No JSON manifest derivation rule is registered for " + dataRef);

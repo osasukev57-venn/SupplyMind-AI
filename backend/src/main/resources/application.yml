@@ -2,7 +2,13 @@ spring:
   application:
     name: supplymind-backend
   main:
-    web-application-type: none
+    web-application-type: servlet
 
 supplymind:
   data-root: ${user.dir}/data
+  agent:
+    llm:
+      provider: ${SUPPLYMIND_LLM_PROVIDER:openai-compatible}
+      model: ${SUPPLYMIND_LLM_MODEL:}
+      base-url: ${SUPPLYMIND_LLM_BASE_URL:}
+      api-key: ${SUPPLYMIND_LLM_API_KEY:}

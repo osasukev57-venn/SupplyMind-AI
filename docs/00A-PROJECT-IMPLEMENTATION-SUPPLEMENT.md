@@ -5,6 +5,8 @@
 > 纳入基线日期：2026-08-08  
 > 适用范围：SupplyMind AI P0 数据接入、开发排序、验收与风险判定
 
+> 架构实施增补（2026-08-13）：Day 6 尚未进入正式实现时，项目批准以 DEC-060 和 D6-T00 受控门禁评估 Spring Boot 3.5.15 + Spring AI 1.1.8；本增补不改写下方项目方原文，也不改变 Day 1～Day 5 已冻结业务语义。
+
 ## 1. 项目方原文
 
 > “选择供应链成本监测与动态调价预警智能体的同学们，请优先完成汇率爬取和存取。如有关大宗交易网站因会员限制，反爬机制无法自动获取信源，则保留手动填写接口，或者查找同类免费信源网站。”
@@ -83,3 +85,12 @@ DataProvider
 - 对大宗原材料，指定源可合法自动获取时验证自动通道；不可合法自动获取时，使用“免费公开信源”或“手动填写”仍可满足 P0 接入要求。
 - 商业源自动采集未实现必须如实展示能力状态，但不再单独阻止整个 P0 交付。
 - synthetic 仍只用于演示和测试，不能替代真实汇率或冒充真实材料来源。
+
+## 5. Day 6 Agent实施架构增补
+
+1. Java 17 保持不变；Day 6 在正式实现前先执行 `D6-T00 Framework Compatibility / Upgrade Gate`，候选组合固定为 Spring Boot `3.5.15` 与 Spring AI `1.1.8`。仅允许稳定 release，禁止 Spring Boot 4.x、Spring AI 2.x、SNAPSHOT、MILESTONE、RC。
+2. SupplyMind 保留自有 `LLMService` 业务门面；Spring AI `ChatClient`/`ChatModel` 只在 infrastructure adapter 内实现该门面，用于模型请求响应和受控 Tool Calling，不得把 Spring AI 类型扩散到业务服务、EvidencePack 或报告契约。
+3. Agent Tool 必须经 SupplyMind 自有只读 Tool Adapter/Application Layer 注册。模型只可选择已登记工具；输入校验、Java Tool 执行、输出校验、权限控制和 EvidencePack 构造均由应用程序负责。禁止向模型提供任意文件、网络爬取、配置写入、回填写入、规则修改、数据库或 Shell 工具。
+4. EvidencePack 与 AgentReport 继续由 SupplyMind 定义、校验和持久化；Spring AI conversation history、prompt transcript 或模型 memory 不得替代正式证据对象。
+5. API key、base URL、model、timeout 必须外部化配置且不得提交秘密。云模型缺失密钥、超时、限流、5xx、空响应、非法工具请求或畸形响应时，仍由同一 EvidencePack 生成确定性 Java 模板报告，不得使核心数据链或 Agent API 整体 500。
+6. D6-T00 必须以 `day5-complete` / `36dc178` 为升级基线执行 Day 1～Day 5 全量回归和依赖审计。若升级要求改变文件字节、JSON/CSV schema、BigDecimal、调度、validation/publish、warning 或大规模重写既有业务代码，则拒绝升级并放弃 framework-upgrade commit，回到 Spring Boot 3.3.6 的轻量 Agent 方案；不得通过修改已冻结业务语义迁就框架。

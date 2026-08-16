@@ -62,8 +62,7 @@ public final class WarningService {
         }
         BigDecimal currentAvg = new BigDecimal(current.avg());
         BigDecimal baselineAvg = new BigDecimal(baseline.avg());
-        BigDecimal changeRatio = currentAvg.subtract(baselineAvg)
-                .divide(baselineAvg, 12, java.math.RoundingMode.HALF_UP);
+        BigDecimal changeRatio = com.supplymind.processing.CostImpactCalculator.changeRatio(currentAvg, baselineAvg);
         boolean triggered = rule.direction() == WarningRuleV1.Direction.ABOVE
                 ? changeRatio.compareTo(rule.thresholdValue()) > 0
                 : changeRatio.compareTo(rule.thresholdValue()) < 0;
@@ -74,7 +73,7 @@ public final class WarningService {
                 rule, periodStart, periodEnd, null,
                 changeRatio.toPlainString(), rule.thresholdValue().toPlainString(),
                 rule.ruleKind() == WarningRuleV1.RuleKind.COST_IMPACT
-                        ? costImpact(rule, changeRatio).toPlainString()
+                        ? com.supplymind.processing.CostImpactCalculator.costImpact(changeRatio).toPlainString()
                         : changeRatio.toPlainString(),
                 WarningRecordV1.RiskLevel.HIGH,
                 List.of(DataPaths.aggregateRef(rule.itemId(), rule.grain(),
@@ -118,10 +117,9 @@ public final class WarningService {
     }
 
     private BigDecimal costImpact(WarningRuleV1 rule, BigDecimal changeRatio) {
-        // EXT-08 cost weights are not confirmed: a demo weight of exactly 1 is used and the
-        // rule is explicitly marked demoRule. BigDecimal only, never double/float.
-        return changeRatio.multiply(new BigDecimal("1"), java.math.MathContext.DECIMAL64)
-                .setScale(12, java.math.RoundingMode.HALF_UP);
+        // EXT-08 cost weights are not confirmed: the demo weight of exactly 1 is applied by the
+        // shared CostImpactCalculator and the rule is explicitly marked demoRule.
+        return com.supplymind.processing.CostImpactCalculator.costImpact(changeRatio);
     }
 
     private AggregateRecordV1 currentPeriodRow(String itemId, String grain, String start, String end) {

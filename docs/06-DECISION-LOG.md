@@ -1,7 +1,7 @@
 # SupplyMind AI 架构与项目决策日志
 
 > 文档编号：SMA-DEC-001  
-> 版本：v1.4  
+> 版本：v1.5  
 > 状态：生效  
 > 基线日期：2026-08-08
 
@@ -50,7 +50,7 @@
 | DEC-024 [B][C] | 唯一配置项`supplymind.data-root`解析为规范化绝对路径；测试显式注入临时目录，最终Electron显式传入EXE同级data，本地开发才可默认`${user.dir}/data`。不可写时fail-fast，不静默回退到userData/隐藏目录/第二data。 | H03要求检查程序目录数据文件并保证测试隔离。 | Electron数据路径、storage、备份、部署、验收。 | 受控可修改。 | 安装形态变化必须仍提供唯一显式dataRoot并同步迁移/验收。 |
 | DEC-025 [C] | 最终用户运行不依赖 Docker；不创建 Dockerfile/docker-compose 作为最终部署方案。 | Docker 会违反便携桌面和干净机零前置目标。 | 发布、文档、测试和用户支持。 | P0 不可修改。 | P0 后可增加仅供开发/CI 的容器方案，但不得写入最终用户前置条件。 |
 | DEC-026 [C] | 模型调用通过项目自有 LLMService 解耦；业务层不暴露某家供应商 SDK 类型。 | 支持未来云模型切换和本地模型接入，避免 Agent 业务逻辑绑定厂商。 | llm、agent、配置、测试。 | P0 冻结。 | 可扩展接口能力，但必须保留现有业务请求/响应兼容或提供迁移版本。 |
-| DEC-027 [C] | P0 实现 CloudLLMService，并保留 LocalLLMService 接口；Ollama/Qwen 连通性为 P1，正式本地模型为 P2。 | 10 天内优先验证 Agent 业务链路，避免 GPU 和模型部署阻塞 P0。 | AI 范围、资源、验收和路线图。 | P0 冻结，P1/P2 可扩展。 | P0 完成且有独立时间、硬件和评价集后才进入本地模型工作。 |
+| DEC-027 [C] | P0 实现Cloud LLM能力并保留LocalLLMService接口；Ollama/Qwen连通性为P1，正式本地模型为P2。**历史修订：P0 Cloud plumbing/CloudLLMService自行实现方式已由DEC-060的SupplyMind LLMService + Spring AI adapter替代；本决策的Cloud优先、Local扩展点及P1/P2范围边界继续有效。** | 10 天内优先验证 Agent 业务链路，避免 GPU 和模型部署阻塞 P0。 | AI 范围、资源、验收和路线图。 | P0 冻结，P1/P2 可扩展；实现方式见DEC-060。 | P0 完成且有独立时间、硬件和评价集后才进入本地模型工作。 |
 | DEC-028 [C] | Agent 必须调用 Java 受控工具；均值、成本、风险等级、数据有效性均由 Java 确定性计算。 | LLM 数值和规则判断不可作为可审计业务真相。 | Agent 编排、工具、安全、测试、简历亮点。 | P0 不可修改。 | 可增加工具，不得把确定性计算权交给 LLM。 |
 | DEC-029 [C] | P0 Agent 工具至少包括 series.resolve、history.query、period.metrics、quality.inspect、cost.impact、warning.explain、provenance.trace。 | 覆盖标的解析、历史、指标、质量、成本、预警和血缘的完整证据链。 | Agent、API、EvidencePack、验收。 | 可增加，不可减少。 | 减少工具必须证明等价能力仍存在，并更新验收、报告 schema 和回归测试。 |
 | DEC-030 [C] | LLM 只接收 Java 生成的 EvidencePack；输出后由后端核验证据引用并保存结构化报告。 | 防止模型读取未验证文件、编造来源或产生无证据结论。 | Prompt、工具调用、报告、审计。 | P0 冻结。 | 只可增强 EvidencePack，不得移除后端证据核验。 |
@@ -85,6 +85,30 @@
 | DEC-058 [C] | 跨阶段 Acceptance 状态模型正式冻结（技术负责人 Sol 正式裁决，Chosen Model=`Parent Acceptance Case + Stage-scoped Subcases`）。**问题**：AT-SRC-005/007/008 为跨阶段 testcase，Day3 只完成部分范围时无法用 `PASS` 表示局部完成，而冻结 AcceptanceStatus 命名空间（docs/03 §3：PASS/FAIL/BLOCKED/N/A_APPROVED_FALLBACK/NOT_RUN）又无 PARTIAL token。**决策**：父用例保留完整端到端验收语义；新增阶段子用例 `AT-SRC-005-D3/-D4`、`AT-SRC-007-D3/-D4`、`AT-SRC-008-D3/-D4/-DX`。**Rules**：1. 父用例保持完整端到端语义与最终 expected results（Final P0 UNCHANGED）；2. 阶段子用例使用现有冻结 AcceptanceStatus；3. 未实施阶段子用例=`NOT_RUN`；4. 已完成且完整满足自身预期的阶段子用例=`PASS`；5. 任何 mandatory stage subcase=`FAIL` 时父用例不得 PASS；6. 父用例只有所有 mandatory stage subcases=`PASS` 并完成完整 evidence reconciliation 才 `PASS`；7. Stage Gate 引用对应阶段子用例，不要求未来阶段使父用例提前 PASS（Day 3 Gate 引用 AT-SRC-005-D3/007-D3/008-D3=`PASS`，父用例 AT-SRC-005/007/008 当前=`NOT_RUN`）；8. 最终 P0 不降低；9. AT-SRC-006 不属于本拆分，继续 `BLOCKED` 且当前 Stage Blocking=`NO`（EXT-10=`OPEN_EXTERNAL_NON_BLOCKING`，Manual 合法路线满足 Day3 三选一）。禁止新增 PARTIAL/DAY3_PARTIAL_PASS/STAGE_PARTIAL 等 token。 | 跨阶段 testcase 无法用 PASS 表示局部完成，冻结命名空间又无 PARTIAL；阶段 Gate 需要引用可判定的阶段范围。 | AT-SRC-005/007/008 及其阶段子用例、Day3/后续 Stage Gate、docs/01/02/03/04/05 状态表达、验收证据。 | P0 受控可修改（仅改变 Acceptance 组织/阶段记录方式，不降低 parent testcase 最终 expected results）。 | 变更必须同步 docs/03 子用例定义、docs/01/02 Gate 引用、docs/04/05 当前状态与对应证据；Final P0 语义不变。 |
 
 | DEC-059 [C] | 材料校验规则正式冻结（技术负责人 Sol 正式裁决，supersede D4-T01 决策缺口）。**validationVersion**：当前正式版本=`material-basic-validation-v2`；`material-basic-validation-v1` 仅作为历史版本保留（语义不得静默修改、不得用于 D4-T02 新发布）。**value**：ADC12/AZ91D 的 value 必须 `BigDecimal(value) > 0`；`value <= 0`=`REJECTED`（OUT_OF_RANGE）；禁止 float/double、禁止未经裁决的上限、禁止历史相对涨跌幅判断。**版本化配置**：monitor-series item 显式包含 `materialValidation`（valueMinExclusive="0"、valueMaxInclusive=null、staleThresholdDays=7、canonicalSpecCode=ADC12/AZ91D、acceptedSpecAliases=[]）；四个 P0 series 必须显式具有；禁止运行时隐式默认；任一 required validation config 缺失 → 配置激活 fail-closed，不得生成 VERIFIED/VERIFIED_WITH_NOTICE。**stale**：staleThresholdDays=7、Asia/Shanghai、NATURAL_DAY；calendarAgeDays > 7 才 stale、==7 不 stale；stale=`VERIFIED_WITH_NOTICE`（STALE_BUSINESS_DATE）；禁止回退 PBOC DEC-050 的 30 日规则。**spec**：`normalized-exact`（Unicode NFKC → trim → ASCII uppercase → 与 canonicalSpecCode 精确比较）；ADC12 canonical=`ADC12`、AZ91D canonical=`AZ91D`、acceptedSpecAliases=[]；unknown/incompatible spec=`REJECTED`（SPEC_MISMATCH）；不同 canonical spec 不得进入同一 daily/aggregate；EXT-02 继续 `OPEN_EXTERNAL`。**持久化/追溯**：validation 结果必须保存 validationVersion 与 configVersion（raw.configVersion 已冻结），历史记录未来仍可解释所用规则。未来 alias/spec/range/stale 变化必须新 config version + 新 validationVersion，不得改写历史结果。 | 材料校验需要确定性的数值/时效/规格规则；冻结文档与 DEC-057 §7 未提供具体数值，由本裁决补齐并 supersede D4-T01 决策缺口。 | 材料 validation、material-basic-validation-v2、MonitorSeriesItemV1.materialValidation、D4-T01~T05、AT-SRC-005-D4/007-D4/008-D4、验收证据。 | P0 受控可修改。 | 变更必须新 config version + 新 validationVersion 并同步 FILE-SCHEMA、验证器与黄金回归；不得改写历史结果。 |
+| DEC-060 [C] | Day6 Spring AI迁移正式冻结：Java保持17；当前Spring Boot3.3.6仅可经D6-T00升级到3.5.15；Spring AI精确为1.1.8；禁止Boot4.x、Spring AI2.x和预发布。采用“SupplyMind LLMService application port + Spring AI infrastructure adapter”；Spring AI只承担LLM传输、请求/响应映射和受控tool-calling选择，SupplyMind继续拥有工具校验/执行、EvidencePack、AgentReport、确定性Java计算、证据核验、报告持久化与模板降级。 | Spring AI v1.1.8官方构建基线为Java17/Spring Boot3.5.15；该组合能引入稳定tool calling而不把框架侵入既有业务合同。 | D6-T00～D6-T05、C12/C20～C22/C35/C36、AT-AI-000～003、AGENT-EVIDENCE-SCHEMA-V1；Day1～Day5业务语义和Day7 Vue计划不变。 | P0受控可修改。 | 任何版本/边界变化必须新Decision并重跑完整兼容Gate；D6-T00失败必须回退`day5-complete`/`36dc178` Boot3.3.6基线，不得修改冻结业务规则迁就框架。 |
+
+### DEC-060 详细决议：Day6 Spring AI Migration Boundary
+
+- **Context：** Day1～Day5已在Java17 + Spring Boot3.3.6完成；Day6需要可维护的Cloud LLM与tool calling能力，同时不得重写已冻结的文件、计算、validation、publish、scheduler和warning链。
+- **Options：**
+  1. 继续自研全部LLM HTTP/function-calling plumbing——拒绝，重复维护厂商协议与tool lifecycle。
+  2. 保留SupplyMind `LLMService`门面，在infrastructure内以Spring AI adapter实现——采用。
+  3. 让Spring AI类型直接进入application/domain/EvidencePack并把Service自动暴露为工具——拒绝，框架侵入、越权和迁移风险过高。
+  4. 直接迁移Boot4/Spring AI2或预发布版本——拒绝，超出稳定P0与Java17兼容Gate。
+- **Decision：** 精确目标为Java17、Spring Boot3.5.15、Spring AI1.1.8。Spring AI BOM和starter只允许由D6-T00引入；D6-T00完成前实际运行基线仍是Boot3.3.6。
+- **Compatibility basis：** Spring AI v1.1.8官方源码父POM声明Java17与Spring Boot3.5.15；选择同一精确组合，避免自行拼接未被该版本基线证明的Boot版本。
+- **Supersession：** 本Decision仅替代DEC-027中“自研CloudLLMService plumbing”的实现方式；保留其Cloud优先、LocalLLMService扩展点以及Ollama/Qwen=P1、正式本地模型=P2的范围边界。
+- **LLM boundary：** SupplyMind `LLMService`是唯一application port；`ChatClient`/`ChatModel`及厂商对象只在infrastructure adapter。未来`LocalLLMService`实现同一端口，不成为P0依赖。
+- **Tool boundary：** 仅SupplyMind Tool Adapter可声明`@Tool`或稳定`ToolCallback`；工具名精确为series.resolve、history.query、period.metrics、quality.inspect、cost.impact、warning.explain、provenance.trace。全部READ_ONLY、显式DTO/evidenceRefs；模型只选择，应用层校验并执行。禁止任意文件、数据库、crawler/HTTP、配置写、回填写、预警状态写和shell。
+- **Evidence ownership：** EvidencePackV1与AgentReportV1由SupplyMind定义、codec和持久化；Spring AI memory、conversation history、tool transcript或模型响应均不是正式证据。数字与结论必须引用可核验的source/file/version lineage。
+- **Business calculation ownership：** BigDecimal、均值/聚合、成本影响、风险等级、quality、warning和publish Gate继续由确定性Java代码负责；LLM不得重算或裁决有效性。
+- **Configuration and secrets：** provider/baseUrl/apiKey/model/timeout外部化；密钥不得进入源码、前端、URL、日志、EvidencePack、报告或证据。
+- **Fallback：** 缺Key、DNS/断网、timeout、401/429、5xx、畸形/空响应或非法工具请求时，使用同一EvidencePack生成Java模板AgentReport，明确degraded/degradeReason；核心采集、查询、聚合、预警API不得整体失败。
+- **Upgrade Gate：** 新增D6-T00（CORE_R2）。必须从`day5-complete`/`36dc178`完整运行Day1～Day5回归，逐项清点历史83 suites/407 tests/8 skipped，检查文件黄金字节与依赖树；数量变化须解释且核心测试不得静默skip。
+- **Reject/Rollback：** 若升级要求大规模改写生产代码、改变schema/业务字节/语义、引入数据库/Boot4/AI2/预发布，或完整回归失败，则拒绝升级并丢弃该增量，恢复Boot3.3.6固定基线；保留本Decision的业务边界，等待后续新Decision。
+- **Risks/Consequences：** 增加框架传递依赖、自动配置、外部模型不稳定、tool越权和秘密泄漏风险；以精确版本、D6-T00、adapter隔离、只读合同、EvidencePack核验和模板降级控制。代价是D6-T01～T05全部被D6-T00阻塞。
+- **Acceptance impact：** 新增AT-AI-000/002/003并修订AT-AI-001；本地stub可完成合同与故障验收，无真实Key时Cloud gated用例必须保持NOT_RUN/BLOCKED，禁止伪造PASS。
+
 
 ## 3. 待外部确认但尚未形成决策的事项
 
