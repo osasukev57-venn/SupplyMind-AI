@@ -596,7 +596,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D8-T01 动态监测配置与历史回填闭环
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`（仅表示允许领取，不代表已开始；Day8 尚未开始）。
 - **任务目标：** 在不改代码、不重启的前提下新增、停用和替换监测项，并为新增项触发当前值采集、历史导入/回填和聚合重算。
 - **对应需求：** H07、H08、H09、F07、F08。
 - **输入：** 配置Schema、Provider能力、系列唯一键、历史数据服务和配置管理API。
@@ -912,6 +912,6 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ## 推荐启动顺序
 
-- Day 1～Day 6均为`COMPLETE`；Day6最终技术候选=`bc6f61a`，DEC-060=`APPROVED`且实现保持不变。
-- 当前唯一可领取P0任务为D7-T01（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`）；Day7实现尚未开始。
+- Day 1～Day 7均为`COMPLETE`；Day7最终实施候选=`feaedd3`，Day7 Stage Review=`PASS`，D7-T01～D7-T04=`DONE`；Day6最终技术候选=`bc6f61a`，DEC-060=`APPROVED`且实现保持不变。
+- 当前唯一可领取P0任务为D8-T01（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`）；READY仅表示允许领取，不代表`IN_PROGRESS`/`DONE`或Day8已开始；Day8尚未开始。
 - P1/P2仅在P0验收全绿、Day 8功能冻结未被破坏且仍有时间时启动。
