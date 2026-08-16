@@ -97,6 +97,19 @@ class AgentApiTest {
         assertTrue(body.reportRef().startsWith("report/2026-08/"));
         assertFalse(body.toolTrace().isEmpty());
         assertTrue(body.toolTrace().stream().allMatch(trace -> trace.readOnly()));
+        // D8-T03: report-level projection is present and sourced from the verified report.
+        assertEquals("JAVA_TEMPLATE", body.generatedBy(),
+                "the fallback path is honestly labelled as JAVA_TEMPLATE");
+        assertNotNull(body.scope());
+        assertTrue(body.scope().itemIds().contains(FX_ITEM));
+        assertNotNull(body.claims());
+        assertFalse(body.claims().isEmpty(), "claims restate verified report content");
+        assertTrue(body.claims().stream().allMatch(claim -> !claim.evidenceRefs().isEmpty()),
+                "claims always carry traceable evidenceRefs");
+        assertNotNull(body.dataThrough(), "dataThrough comes from the EvidencePack facts");
+        assertNotNull(body.limitations(), "limitations are mapped from the report");
+        assertTrue(body.limitations().stream().anyMatch(limit -> limit.contains("fallback")),
+                "the fallback limitation is honestly mapped");
     }
 
     @Test

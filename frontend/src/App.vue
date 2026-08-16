@@ -13,6 +13,7 @@ import { RouterLink, RouterView } from 'vue-router'
         <RouterLink to="/sources">来源与录入</RouterLink>
         <RouterLink to="/config">动态配置</RouterLink>
         <RouterLink to="/warning">预警</RouterLink>
+        <RouterLink to="/agent">Agent</RouterLink>
       </nav>
     </header>
     <main class="app-main">

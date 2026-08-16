@@ -37,6 +37,11 @@ export const router = createRouter({
       path: '/warning',
       name: 'warning',
       component: () => import('../views/WarningView.vue')
+    },
+    {
+      path: '/agent',
+      name: 'agent',
+      component: () => import('../views/AgentView.vue')
     }
   ]
 })
