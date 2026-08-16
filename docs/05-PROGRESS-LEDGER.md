@@ -3,6 +3,7 @@
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
 > 当前阶段：Day 1～Day 7=`COMPLETE`（Day6 保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8）；D6-T00～D6-T05=`DONE`，Day6 Stage Review=`PASS`，最终完整技术回归=105 suites/535 tests/0 failures/0 errors/8 skipped（HISTORICAL）。AT-AI-000/002/003本地合同=`PASS`；AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`DONE`；**Final Implementation Candidate=`feaedd3`**；**CURRENT regression=110 suites/578 backend tests/0 failures/0 errors/8 skipped**，前端 `npm run test` **11/11 PASS** + `npm run build` PASS；历史候选（1b83410、d2b0965、a4006c4、3fd1d35、5f1491c、01d4270 等中间状态）一律 HISTORICAL（不删除）；Closure Evidence=`docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md`。Day1-Day6 代码零修改。
+> Day8实施中（技术负责人裁决：D8-T01→D8-T02→D8-T03→D8-T04→D8-T05 顺序批准；每个任务独立commit/测试/evidence，状态最多`REVIEW_PENDING`，Review PASS 后才 DONE）。D8-T05=`TaskExecutionStatus=NOT_STARTED`（P0功能冻结与Day8 Stage Closure，依赖D8-T04 DONE，见 docs/04）。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -56,9 +57,9 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 
 | 字段 | 当前值 |
 |---|---|
-| 当前开发日 | Day 1～Day 7 = `COMPLETE`；Day 8尚未开始 |
+| 当前开发日 | Day 1～Day 7 = `COMPLETE`；Day 8 尚未开始 |
 | 当前任务编号 | Day7 Final Stage Closure；下一可领取任务=D8-T01 |
-| 当前任务状态 | D7-T01～D7-T04=`DONE`；Day7 Stage Review=`PASS`；Day7=`COMPLETE`；Day7 Final Implementation Candidate=`feaedd3`。D8-T01=`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`。 |
+| 当前任务状态 | D7-T01～D7-T04=`DONE`；Day7 Stage Review=`PASS`；Day7=`COMPLETE`；Day7 Final Implementation Candidate=`feaedd3`。D8-T01=`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`；D8-T02～D8-T05=`NOT_STARTED`（顺序 Gate，D8-T05 依赖 D8-T04 DONE）。 |
 | 编码前基线对齐 | `v1.5 FROZEN`：DEC-060、C35～C36保持不变；Java17、Boot3.5.15、Spring AI1.1.8、SupplyMind LLMService门面、只读Tool Adapter与EvidencePack所有权边界均保持。 |
 | 已完成任务 | Day1～Day7全部开发任务及Stage Gate；Day7 Final Implementation Candidate=`feaedd3`。 |
 | 正在进行任务 | 无；D8-T01已具备领取条件但尚未开始。 |
