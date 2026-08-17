@@ -222,36 +222,21 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.form-grid label {
-  display: flex;
-  flex-direction: column;
-  font-size: 13px;
-  color: var(--sm-muted);
-  gap: 4px;
-}
-.form-grid input,
-.form-grid select {
-  font-size: 13px;
-  padding: 6px 8px;
-  border: 1px solid var(--sm-border);
-  border-radius: 4px;
-}
 button {
-  font-size: 13px;
-  padding: 6px 12px;
-  border: 1px solid var(--sm-border);
-  border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
   margin-right: 6px;
 }
-button:hover {
-  background: #f0f2f5;
+textarea {
+  font-family: inherit;
+  font-size: 13.5px;
+  padding: 7px 9px;
+  border: 1px solid var(--sm-border-strong);
+  border-radius: var(--sm-radius-sm);
+  background: var(--sm-surface);
+  color: var(--sm-text);
+}
+textarea:focus {
+  outline: none;
+  border-color: var(--sm-focus);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sm-focus) 22%, transparent);
 }
 </style>

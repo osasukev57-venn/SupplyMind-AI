@@ -79,26 +79,28 @@ async function load(): Promise<void> {
     <div v-if="grain === 'daily' && history" class="panel">
       <h2>趋势（{{ history.points.length }} 个数据点，截至 {{ history.dataThrough ?? '—' }}）</h2>
       <TrendChart :chart="history.chart" />
-      <table class="sm-table">
-        <thead>
-          <tr>
-            <th>业务日期</th>
-            <th>值（原字符串）</th>
-            <th>单位</th>
-            <th>来源</th>
-            <th>状态</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="point in history.points" :key="point.businessDate">
-            <td>{{ point.businessDate }}</td>
-            <td>{{ point.value }}</td>
-            <td>{{ point.unit ?? '—' }}</td>
-            <td>{{ point.actualSourceName ?? '—' }}</td>
-            <td><StatusBadge :status="point.validationStatus" /></td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="sm-table">
+          <thead>
+            <tr>
+              <th>业务日期</th>
+              <th>值（原字符串）</th>
+              <th>单位</th>
+              <th>来源</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="point in history.points" :key="point.businessDate">
+              <td class="num">{{ point.businessDate }}</td>
+              <td class="num">{{ point.value }}</td>
+              <td>{{ point.unit ?? '—' }}</td>
+              <td>{{ point.actualSourceName ?? '—' }}</td>
+              <td><StatusBadge :status="point.validationStatus" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <div v-for="(issue, i) in history.evidenceIssues" :key="i" class="muted warn-line">
         {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
         （期间：{{ issue.periods.join('；') }}，未插值）
@@ -107,28 +109,30 @@ async function load(): Promise<void> {
 
     <div v-if="grain !== 'daily' && metrics" class="panel">
       <h2>聚合（{{ metrics.grain }}，{{ metrics.rows.length }} 行，{{ metrics.fromYear }}~{{ metrics.toYear }}）</h2>
-      <table class="sm-table">
-        <thead>
-          <tr>
-            <th>期间起</th>
-            <th>期间止</th>
-            <th>值（原字符串）</th>
-            <th>单位</th>
-            <th>来源</th>
-            <th>状态</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(row, i) in metrics.rows" :key="i">
-            <td>{{ row.periodStart }}</td>
-            <td>{{ row.periodEnd }}</td>
-            <td>{{ row.value }}</td>
-            <td>{{ row.unit ?? '—' }}</td>
-            <td>{{ row.actualSourceName ?? '—' }}</td>
-            <td><StatusBadge :status="row.validationStatus" /></td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="sm-table">
+          <thead>
+            <tr>
+              <th>期间起</th>
+              <th>期间止</th>
+              <th>值（原字符串）</th>
+              <th>单位</th>
+              <th>来源</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(row, i) in metrics.rows" :key="i">
+              <td class="num">{{ row.periodStart }}</td>
+              <td class="num">{{ row.periodEnd }}</td>
+              <td class="num">{{ row.value }}</td>
+              <td>{{ row.unit ?? '—' }}</td>
+              <td>{{ row.actualSourceName ?? '—' }}</td>
+              <td><StatusBadge :status="row.validationStatus" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <div v-for="(issue, i) in metrics.evidenceIssues" :key="i" class="muted warn-line">
         {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
         （期间：{{ issue.periods.join('；') }}）
@@ -143,6 +147,22 @@ async function load(): Promise<void> {
   gap: 12px;
   flex-wrap: wrap;
   align-items: center;
+}
+.controls select,
+.controls input {
+  font-family: inherit;
+  font-size: 13.5px;
+  padding: 7px 9px;
+  border: 1px solid var(--sm-border-strong);
+  border-radius: var(--sm-radius-sm);
+  background: var(--sm-surface);
+  color: var(--sm-text);
+}
+.controls select:focus,
+.controls input:focus {
+  outline: none;
+  border-color: var(--sm-focus);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sm-focus) 22%, transparent);
 }
 .warn-line {
   margin-top: 8px;

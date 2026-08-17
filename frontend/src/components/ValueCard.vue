@@ -41,24 +41,29 @@ defineProps<{ card: ItemCard }>()
 
 <style scoped>
 .card {
-  background: #fff;
+  background: var(--sm-surface);
   border: 1px solid var(--sm-border);
-  border-radius: 8px;
+  border-radius: var(--sm-radius);
   padding: 14px 16px;
+  box-shadow: var(--sm-shadow);
 }
 .card-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 .card-name {
   font-weight: 600;
+  font-size: 13.5px;
 }
 .card-value {
+  font-family: var(--sm-font-mono);
   font-size: 26px;
   font-variant-numeric: tabular-nums;
   margin: 8px 0 4px;
   color: var(--sm-accent);
+  word-break: break-all;
 }
 .card-meta {
   font-size: 12px;

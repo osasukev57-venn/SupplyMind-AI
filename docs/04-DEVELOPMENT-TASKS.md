@@ -596,7 +596,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D8-T01 动态监测配置与历史回填闭环
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`（仅表示允许领取，不代表已开始；Day8 尚未开始）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`（Day8 Batch 实施完成 + Final Stage Finding 修复完成，待统一 Final Stage Review）。
 - **任务目标：** 在不改代码、不重启的前提下新增、停用和替换监测项，并为新增项触发当前值采集、历史导入/回填和聚合重算。
 - **对应需求：** H07、H08、H09、F07、F08。
 - **输入：** 配置Schema、Provider能力、系列唯一键、历史数据服务和配置管理API。
@@ -610,7 +610,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D8-T02 预警规则、记录与确认闭环
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=IN_PROGRESS`（Day8 Batch 实施中，见 docs/05 Day8ExecutionMode）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`（Day8 Batch 实施完成 + DEC-061 权威绑定修复完成，待统一 Final Stage Review）。
 - **任务目标：** 对Java计算结果执行阈值、环比/同比和数据质量规则，持久化可追溯预警并支持确认（DEC-061 确认 sidecar）。
 - **对应需求：** F09、F10、F11、H02。
 - **输入：** 已发布日值与聚合值、完整率、stale状态、可配置规则。
@@ -624,7 +624,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D8-T03 工业供应链Agent工作台
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`（Day8 Batch 实施完成 + EvidenceLink/计算口径/风险视图修复完成，待统一 Final Stage Review）。
 - **任务目标：** 将用户问题编排为受控工具调用、EvidencePack和可追溯风险报告，而非开放式聊天。
 - **对应需求：** F13、F14、H01、H02。
 - **输入：** D6工具注册表、EvidencePack、LLM抽象、Java模板降级、预警服务。
@@ -638,7 +638,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D8-T04 Web形态P0预验收
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`（Web P0 浏览器/API 证据归档完成，待统一 Final Stage Review）。
 - **任务目标：** 在Electron封装前按验收计划完成浏览器形态全链路预验收并关闭P0缺陷。
 - **对应需求：** H01-H09、F01-F14。
 - **输入：** D1-D8已完成成果、03验收计划、固定测试夹具。
@@ -652,13 +652,13 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D8-T05 P0功能冻结与Day8 Stage Closure
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`（Stage Candidate 准备完成，待统一 Final Stage Review）。
 - **任务目标：** 建立Day 8功能冻结点，固定Schema、API、默认配置、夹具和候选版本，并提交Day8 Stage Review候选。
 - **对应需求：** H01-H09、F01-F14。
 - **输入：** D8-T01～D8-T04最终通过结果、测试/evidence、冻结清单。
 - **创建或修改文件：** Day8功能冻结清单、版本说明、已知问题、Schema/API基线和任务台账。
 - **输出：** Day8功能冻结清单；最终版本/commit；后端与前端回归结果；关键文件SHA-256；重建验证；Day8 Stage evidence；下一阶段状态。
-- **依赖任务：** D8-T04（`TaskExecutionStatus=DONE`）。
+- **依赖任务：** D8-T04（`TaskExecutionStatus=REVIEW_PENDING`，待最终 Review 后改 DONE）。
 - **具体测试：** 从干净工作副本重建前后端产物并复核固定夹具结果与文件格式一致。
 - **Definition of Done：** 冻结内容可复现；只允许阻断缺陷修复进入候选版本；每次修复均有回归证据；Day8 只有最终 Stage Review `PASS` 后才能 D8-T01～D8-T05=`DONE`、Day8=`COMPLETE`、功能冻结=`EFFECTIVE`。
 - **失败回退：** 撤销候选标记并回到最近通过预验收的版本，不在封装分支继续叠加功能。

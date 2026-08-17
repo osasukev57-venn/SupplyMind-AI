@@ -59,16 +59,16 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 |---|---|
 | 当前开发日 | Day 1～Day 7 = `COMPLETE`；Day 8 Batch 实施完成（Stage Candidate 待 Review） |
 | 当前任务编号 | Day8 Batch Implementation（D8-T01→D8-T02→D8-T03→D8-T04→D8-T05 Stage Candidate Preparation）完成 |
-| 当前任务状态 | D7-T01～D7-T04=`DONE`；Day7 Stage Review=`PASS`；Day7=`COMPLETE`。**Day8ExecutionMode=`BATCH_IMPLEMENTATION_FINAL_STAGE_REVIEW_APPROVED_20260817`**。**D8-T01～D8-T05=`TaskExecutionStatus=REVIEW_PENDING`**（Batch 实施完成，待技术负责人统一 Final Stage Review；禁止自行标 DONE/COMPLETE/EFFECTIVE）。实施 commit：D8-T01=`f70ff18`、D8-T02=`9c88a84`、D8-T03=`ec2f0b5`、D8-T04=`4745080`。**CURRENT regression=115 suites/608 backend tests/0 failures/0 errors/8 skipped**（与 Day5/Day6 基线 skipped 逐项相同）；前端 `npm run test` **28/28 PASS** + `npm run build` PASS；evidence=`docs/evidence/Day8/`。Day8=`NOT_COMPLETE`；Feature Freeze=`PENDING_FINAL_STAGE_REVIEW`；未 merge main；未开始 Day9。 |
+| 当前任务状态 | D7-T01～D7-T04=`DONE`；Day7 Stage Review=`PASS`；Day7=`COMPLETE`。**Day8ExecutionMode=`BATCH_IMPLEMENTATION_FINAL_STAGE_REVIEW_APPROVED_20260817`**。**D8-T01～D8-T05=`TaskExecutionStatus=REVIEW_PENDING`**（Batch 实施 + Final Stage 5 个 MAJOR Finding 修复完成，待技术负责人统一 Final Stage Review；禁止自行标 DONE/COMPLETE/EFFECTIVE）。实施 commit：D8-T01=`f70ff18`、D8-T02=`9c88a84`、D8-T03=`ec2f0b5`、D8-T04=`4745080`；**Final Stage Fix Commit=`4ed6060`**（M1 动态 PBOC 目标+自动链、M2 DEC-061 权威绑定、M3 EvidenceLink/计算口径/风险、M4 Web P0 证据归档）。**CURRENT regression=116 suites/625 backend tests/0 failures/0 errors/8 skipped**（与 Day5/Day6 基线 skipped 逐项相同；115/608 及更早为 HISTORICAL）；前端 `npm run test` **30/30 PASS** + `npm run build` PASS；evidence=`docs/evidence/Day8/`。Day8=`NOT_COMPLETE`；Feature Freeze=`PENDING_FINAL_STAGE_REVIEW`；未 merge main；未开始 Day9。 |
 | 编码前基线对齐 | `v1.5 FROZEN`：DEC-060、C35～C36保持不变；Java17、Boot3.5.15、Spring AI1.1.8、SupplyMind LLMService门面、只读Tool Adapter与EvidencePack所有权边界均保持；DEC-061（warning ack sidecar）已登记。 |
 | 已完成任务 | Day1～Day7全部开发任务及Stage Gate；Day8 Batch 实施（D8-T01～D8-T05 Stage Candidate Preparation）。 |
 | 正在进行任务 | 无；等待 Day8 Final Stage Review。 |
 | 阻塞项 | 无 Day8 阻塞项；真实Cloud LLM验证=`PENDING_EXTERNAL`且不阻塞Java模板P0闭环。 |
-| 最近验收结果 | Day8 Web P0 预验收（D8-T04）：AT-CFG-001 浏览器执行 PASS、AT-UI-001/002 PASS（含 F3 修复）、AT-ALT-001/002 PASS、AT-SRC-007-DX PASS（含 F2 修复）、AT-AI Web 降级链 PASS（含 F1 修复）；重启恢复 PASS。真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。 |
+| 最近验收结果 | Day8 Final Stage Finding 修复后 Web P0：M1 替换自动链（当前采集+回填 AWAITING_MANUAL_INPUT 诚实）、重启恢复（configVersion/jobs 保持）、M3 Agent 工作台（风险/计算口径/EvidenceLink 渲染、无数据诚实无链接）、M2 ack 权威绑定（7 个篡改攻击 PASS）、预警 demo 求值 NOT_TRIGGERED 诚实。真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。 |
 | 新增风险 | 无新的 Day8 P0 风险；Cloud 真实连接能力仍须在具备合法凭据时独立执行，不得回写当前本地合同结论。 |
 | 下一任务 | Day8 Final Stage Review（技术负责人）；Review PASS 后 D8-T01～D8-T05=`DONE`、Day8=`COMPLETE`、Feature Freeze=`EFFECTIVE`，再创建 integration/day9。 |
-| 最近一次可运行版本 | Day8 Stage Candidate（integration/day8）；115 suites/608 tests/0 failures/0 errors/8 skipped；Frontend 28/28 + build PASS；JAR SHA-256 见 D8-T05 evidence。 |
-| 最近一次Git提交 | Day8 Final Stage Candidate（见提交记录）。 |
+| 最近一次可运行版本 | Day8 Stage Candidate（integration/day8）；116 suites/625 tests/0 failures/0 errors/8 skipped；Frontend 30/30 + build PASS；JAR SHA-256 见 D8-T05 evidence。 |
+| 最近一次Git提交 | Day8 Final Stage Fix Commit=`4ed6060`（见提交记录）。 |
 | 是否偏离计划 | 否；DEC-060不变，工具仍为7个只读工具，Write Tool=NONE，未引入RAG/Vector/MCP/数据库，Day1～Day5合同无回归。 |
 | 最后更新人/窗口 | 技术负责人 / Day7 Final Status Micro-Fix |
 | 最后更新时间 | 2026-08-17（Asia/Shanghai） |

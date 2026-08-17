@@ -26,30 +26,32 @@
 | D8-T02 commit | `9c88a84` |
 | D8-T03 commit | `ec2f0b5` |
 | D8-T04 commit | `4745080` |
-| Final Stage Candidate | 见文末 commit |
-| 后端 JAR | `backend/target/supplymind-backend-0.1.0-SNAPSHOT.jar`（50,101,727 bytes） |
-| JAR SHA-256 | `859C24931E0B5F51C6F80E7B30E4279268EF0EE75AAEE70DDBC7CFC955F16715` |
+| Final Stage Fix Commit | `4ed6060`（M1-M4 findings fix） |
+| Final Stage Review Candidate | 见文末 commit |
+| 后端 JAR | `backend/target/supplymind-backend-0.1.0-SNAPSHOT.jar`（50,112,874 bytes） |
+| JAR SHA-256 | `54A2175E847C1112EC0EE1116DC5E07B4C53FFB10E581D91CF6AD1ED0F943873` |
 | backend/pom.xml SHA-256 | `184372BEEF1A45FC5E065BDF86E5D381826ABE4CDD9C4E73865DE5A28F0401F5` |
 | frontend/package.json SHA-256 | `1EBEE57B122026BEAF24889F8EA9D2ECDE369FA181E58DA1A3BF1394B9C71625` |
 | frontend/package-lock.json SHA-256 | `5E9585124B59E62E707CE865DCFE9E25FB3D96198D27E8A867F15235BE01545C` |
-| docs/04 SHA-256 | `887FAEAD62C18A94C1C0F2D4171C4A9D02AB03F0E4495626AA37F12F9D0C2BAF` |
-| docs/05 SHA-256 | `712826703D524DAC9A54052605CCD7DC849E04F5CC4A0F0AAE42DA0CC2604431` |
+| docs/04 SHA-256 | `4392A0E56CD60EA992D1B7C0D503B0DAB38362A05D12C7BCBAC9132C29883591` |
+| docs/05 SHA-256 | `460AEA2ED42E3AFD6A83D29B4D56511C17B563EA772F998E920A92D6C7A3A2B2` |
 | docs/06 SHA-256 | `24FB7D49B50A92E60423ACA67395BBE95C34D97672AF5150C79705A999D32E91` |
 | FILE-SCHEMA-V1 SHA-256 | `FA56B800F8153B94F5A728552E605B7F5AE79B2BC6B640E0B4D2E09851A4C59D` |
+| artifacts SHA-256 manifest | `docs/evidence/Day8/artifacts/SHA256-MANIFEST.txt`（6 个工件各自 SHA） |
 
 ## 3. 统一回归（真实执行）
 
 ### 后端 `.\mvnw.cmd clean test`
-- suites：**115**
-- tests：**608**
+- suites：**116**
+- tests：**625**
 - failures：**0**
 - errors：**0**
 - skipped：**8**（与 Day5/Day6 基线逐项相同：AtSrc002 gated、Day5TimeContractHarness、Aggregate/DailyRealRawEvidence、PbocOfficialWebRealNetworkAttempt、PbocRawClosedLoopSmokeGate、PublishRealRawEvidence、PbocValidationRealRawEvidence——真实联网/raw 门禁 + D10 物理时间，未新增 skip）
-- 旧快照均 HISTORICAL：Day7=110/578；D8-T01=112/592；D8-T02=113/605；D8-T03=115/607
+- 旧快照均 HISTORICAL：Day7=110/578；D8-T01=112/592；D8-T02=113/605；D8-T03=115/607；D8-T05 前=116/608
 - 测试后 `backend/data` 无残留
 
 ### 前端 `npm run test` / `npm run build`
-- tests：**28/28 PASS**（Test Files 4/4）
+- tests：**30/30 PASS**（Test Files 4/4）
 - build（vue-tsc --noEmit + vite）：**PASS**（dist 产出）
 
 ### Day1-Day7 回归
@@ -59,7 +61,7 @@
 
 - `mvnw.cmd clean test` 从干净工作副本完整重建并回归（见上）
 - `npm run test` + `npm run build` 从干净依赖重建前端产物
-- 浏览器形态预验收证据见 `D8-T04-WEB-P0-PREACCEPTANCE-20260817.md`
+- 浏览器形态预验收证据见 `D8-T04-WEB-P0-PREACCEPTANCE-20260817.md` 与 `DAY8-FINAL-STAGE-FINDINGS-FIX-20260817.md`；正式 Web P0 工件见 `artifacts/`（截图 + runner JSON + SHA manifest）
 
 ## 5. Evidence Index（docs/evidence/Day8/）
 
@@ -70,6 +72,8 @@
 | D8-T03 | `D8-T03-AGENT-WORKBENCH-20260817.md` |
 | D8-T04 | `D8-T04-WEB-P0-PREACCEPTANCE-20260817.md` |
 | D8-T05 | 本文件 |
+| Final Stage Fix | `DAY8-FINAL-STAGE-FINDINGS-FIX-20260817.md` |
+| Web P0 工件 | `artifacts/`（config-page/m1-replace-auto-chain/m3-agent-workbench/warning-page 截图、restart-recovery-api.txt、web-p0-runner-summary.json、SHA256-MANIFEST.txt） |
 | 决策 | docs/06 DEC-061；docs/04 D8-T02/D8-T05；docs/05 Day8ExecutionMode |
 
 ## 6. 状态（候选，待 Final Stage Review）

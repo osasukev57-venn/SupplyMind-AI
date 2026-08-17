@@ -452,36 +452,7 @@ onMounted(refresh)
 </template>
 
 <style scoped>
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.form-grid label {
-  display: flex;
-  flex-direction: column;
-  font-size: 13px;
-  color: var(--sm-muted);
-  gap: 4px;
-}
-.form-grid input,
-.form-grid select {
-  font-size: 13px;
-  padding: 6px 8px;
-  border: 1px solid var(--sm-border);
-  border-radius: 4px;
-}
 button {
-  font-size: 13px;
-  padding: 6px 12px;
-  border: 1px solid var(--sm-border);
-  border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
   margin-right: 6px;
-}
-button:hover {
-  background: #f0f2f5;
 }
 </style>

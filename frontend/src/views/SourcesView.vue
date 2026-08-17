@@ -242,25 +242,47 @@ onMounted(async () => {
   flex-direction: column;
   font-size: 12px;
   gap: 4px;
+  color: var(--sm-muted);
 }
 .manual-form input {
-  padding: 6px 8px;
-  border: 1px solid var(--sm-border);
-  border-radius: 4px;
+  font-family: inherit;
+  padding: 7px 9px;
+  border: 1px solid var(--sm-border-strong);
+  border-radius: var(--sm-radius-sm);
+  background: var(--sm-surface);
+  color: var(--sm-text);
+  font-size: 13.5px;
+}
+.manual-form input:focus {
+  outline: none;
+  border-color: var(--sm-focus);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sm-focus) 22%, transparent);
 }
 .template-link {
   font-size: 12px;
   color: var(--sm-accent);
   margin-left: auto;
+  text-decoration: none;
+}
+.template-link:hover {
+  text-decoration: underline;
 }
 button {
-  padding: 6px 14px;
+  padding: 7px 14px;
   border: 1px solid var(--sm-accent);
   background: var(--sm-accent);
   color: #fff;
-  border-radius: 4px;
+  border-radius: var(--sm-radius-sm);
   cursor: pointer;
   font-size: 13px;
+  font-weight: 550;
   align-self: end;
+  transition: background-color 0.15s ease;
+}
+button:hover {
+  background: var(--sm-accent-strong);
+}
+button:active {
+  transform: translateY(1px);
 }
 </style>

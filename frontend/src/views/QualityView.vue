@@ -45,57 +45,61 @@ async function load(): Promise<void> {
 
     <div v-if="quality" class="panel">
       <h2>最新状态：<StatusBadge :status="quality.latestStatus" /></h2>
-      <table class="sm-table">
-        <thead>
-          <tr>
-            <th>业务日期</th>
-            <th>值</th>
-            <th>来源</th>
-            <th>Provider</th>
-            <th>校验状态</th>
-            <th>校验版本</th>
-            <th>完整率</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in quality.rows" :key="row.businessDate">
-            <td>{{ row.businessDate }}</td>
-            <td>{{ row.value }}</td>
-            <td>{{ row.actualSourceName ?? '—' }}</td>
-            <td>{{ row.providerType ?? '—' }}</td>
-            <td><StatusBadge :status="row.validationStatus" /></td>
-            <td>{{ row.validationVersion ?? '—' }}</td>
-            <td>{{ row.completeness }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="sm-table">
+          <thead>
+            <tr>
+              <th>业务日期</th>
+              <th>值</th>
+              <th>来源</th>
+              <th>Provider</th>
+              <th>校验状态</th>
+              <th>校验版本</th>
+              <th>完整率</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in quality.rows" :key="row.businessDate">
+              <td class="num">{{ row.businessDate }}</td>
+              <td class="num">{{ row.value }}</td>
+              <td>{{ row.actualSourceName ?? '—' }}</td>
+              <td>{{ row.providerType ?? '—' }}</td>
+              <td><StatusBadge :status="row.validationStatus" /></td>
+              <td>{{ row.validationVersion ?? '—' }}</td>
+              <td class="num">{{ row.completeness }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <div v-if="quality.rows.length === 0" class="muted">该区间无已发布数据</div>
     </div>
 
     <div v-if="quality && quality.warnings.length > 0" class="panel">
       <h2>预警（{{ quality.warnings.length }}）</h2>
-      <table class="sm-table">
-        <thead>
-          <tr>
-            <th>预警 ID</th>
-            <th>期间</th>
-            <th>当前值</th>
-            <th>阈值</th>
-            <th>风险</th>
-            <th>状态</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="w in quality.warnings" :key="w.warningId">
-            <td>{{ w.warningId }}</td>
-            <td>{{ w.periodStart }} ~ {{ w.periodEnd }}</td>
-            <td>{{ w.value }}</td>
-            <td>{{ w.threshold }}</td>
-            <td>{{ w.riskLevel ?? '—' }}</td>
-            <td>{{ w.status ?? '—' }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="sm-table">
+          <thead>
+            <tr>
+              <th>预警 ID</th>
+              <th>期间</th>
+              <th>当前值</th>
+              <th>阈值</th>
+              <th>风险</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="w in quality.warnings" :key="w.warningId">
+              <td class="num">{{ w.warningId }}</td>
+              <td>{{ w.periodStart }} ~ {{ w.periodEnd }}</td>
+              <td class="num">{{ w.value }}</td>
+              <td class="num">{{ w.threshold }}</td>
+              <td>{{ w.riskLevel ?? '—' }}</td>
+              <td>{{ w.status ?? '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div v-if="quality" class="panel">
@@ -108,3 +112,20 @@ async function load(): Promise<void> {
     </div>
   </div>
 </template>
+
+<style scoped>
+select {
+  font-family: inherit;
+  font-size: 13.5px;
+  padding: 7px 9px;
+  border: 1px solid var(--sm-border-strong);
+  border-radius: var(--sm-radius-sm);
+  background: var(--sm-surface);
+  color: var(--sm-text);
+}
+select:focus {
+  outline: none;
+  border-color: var(--sm-focus);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sm-focus) 22%, transparent);
+}
+</style>
