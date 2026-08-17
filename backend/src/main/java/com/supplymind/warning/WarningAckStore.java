@@ -48,19 +48,82 @@ public final class WarningAckStore {
         return Files.isRegularFile(dataRoot.resolveDataRef(ackRef));
     }
 
-    public WarningAcknowledgementV1 read(String warningRef, String warningId) {
-        String ackRef = ackRefOf(warningRef, warningId);
+    /**
+     * M2: the SINGLE authoritative acknowledgement read/verification entry. It verifies ALL of:
+     * 1) ack file + manifest; 2) decodes WarningAcknowledgementV1; 3) schema/status validity;
+     * 4) ack.warningId == requested warningId; 5) ack.warningRef == canonical warning ref;
+     * 6) original warning file exists; 7) original warning manifest verifies; 8) decodes the
+     * original WarningRecordV1; 9) original warning.warningId matches; 10) recomputes the
+     * original warning SHA-256; 11) equals ack.warningFileSha256 EXACTLY.
+     *
+     * <p>Any failure fails closed (StorageException) - a tampered sidecar or a tampered
+     * original warning can NEVER surface as acknowledged=true. A missing ack file returns
+     * {@code Optional.empty()} (the warning is genuinely not acknowledged yet).
+     * Every caller (WarningQueryService, WarningController) MUST use this entry - no weaker
+     * per-caller check exists.
+     */
+    public java.util.Optional<WarningAcknowledgementV1> readVerified(WarningRecordV1 warning) {
+        Objects.requireNonNull(warning, "warning");
+        String warningRef = DataPaths.warningRef(warning.warningMonth(), warning.warningId());
+        String ackRef = ackRefOf(warningRef, warning.warningId());
         Path ackPath = dataRoot.resolveDataRef(ackRef);
-        Path manifestPath = dataRoot.resolveDataRef(DataPaths.manifestRef(ackRef));
-        if (!Files.isRegularFile(ackPath)
-                || !ManifestVerifier.matches(dataRoot, ackRef, ackPath, manifestPath, List.of())) {
-            throw new StorageException("Warning acknowledgement is missing or fails its manifest: " + warningId);
+        if (!Files.isRegularFile(ackPath)) {
+            return java.util.Optional.empty();
         }
+        Path ackManifest = dataRoot.resolveDataRef(DataPaths.manifestRef(ackRef));
+        if (!ManifestVerifier.matches(dataRoot, ackRef, ackPath, ackManifest, List.of())) {
+            throw new StorageException(
+                    "Warning acknowledgement fails its manifest (tampered sidecar): " + warning.warningId());
+        }
+        WarningAcknowledgementV1 ack;
         try {
-            return JsonV1Codec.decodeFile(Files.readAllBytes(ackPath), WarningAcknowledgementV1.class);
-        } catch (IOException exception) {
-            throw new StorageException("Unable to read warning acknowledgement " + warningId, exception);
+            ack = JsonV1Codec.decodeFile(Files.readAllBytes(ackPath), WarningAcknowledgementV1.class);
+        } catch (IOException | RuntimeException decodeFailed) {
+            throw new StorageException(
+                    "Warning acknowledgement cannot be decoded (tampered sidecar): " + warning.warningId(), decodeFailed);
         }
+        if (ack.status() != WarningAcknowledgementV1.AckStatus.ACKNOWLEDGED) {
+            throw new StorageException(
+                    "Warning acknowledgement has an invalid status (v1 only ACKNOWLEDGED): " + warning.warningId());
+        }
+        if (!warning.warningId().equals(ack.warningId())) {
+            throw new StorageException(
+                    "Warning acknowledgement warningId does not match the requested warning: " + warning.warningId());
+        }
+        if (!warningRef.equals(ack.warningRef())) {
+            throw new StorageException(
+                    "Warning acknowledgement warningRef does not match the canonical warning ref: " + warning.warningId());
+        }
+        Path warningPath = dataRoot.resolveDataRef(warningRef);
+        Path warningManifest = dataRoot.resolveDataRef(DataPaths.manifestRef(warningRef));
+        if (!Files.isRegularFile(warningPath)
+                || !ManifestVerifier.matches(dataRoot, warningRef, warningPath, warningManifest, List.of())) {
+            throw new StorageException(
+                    "Original warning fails its manifest (tampered warning): " + warning.warningId());
+        }
+        WarningRecordV1 persisted;
+        try {
+            persisted = JsonV1Codec.decodeFile(Files.readAllBytes(warningPath), WarningRecordV1.class);
+        } catch (IOException | RuntimeException decodeFailed) {
+            throw new StorageException(
+                    "Original warning cannot be decoded (tampered warning): " + warning.warningId(), decodeFailed);
+        }
+        if (!warning.warningId().equals(persisted.warningId())) {
+            throw new StorageException(
+                    "Original warning warningId does not match the requested warning: " + warning.warningId());
+        }
+        String currentSha = FileDigest.sha256(warningPath);
+        if (!ack.warningFileSha256().equals(currentSha)) {
+            throw new StorageException(
+                    "Warning acknowledgement SHA-256 does not bind to the current original warning bytes: "
+                            + warning.warningId());
+        }
+        return java.util.Optional.of(ack);
+    }
+
+    /** Convenience: true only when readVerified returns a value; any violation fails closed. */
+    public boolean isAcknowledgedVerified(WarningRecordV1 warning) {
+        return readVerified(warning).isPresent();
     }
 
     /**

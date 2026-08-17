@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { queryAgent } from '../api/agent'
-import type { AgentQueryResponse } from '../types/agent'
+import type { AgentQueryResponse, EvidenceLinkView } from '../types/agent'
 import StatusBadge from '../components/StatusBadge.vue'
 
 /**
- * D8-T03 industrial supply-chain Agent workbench. The page sends the user question to the
+ * D8-T03/M3 industrial supply-chain Agent workbench. The page sends the user question to the
  * backend orchestration (controlled tool calls + EvidencePack + verified report); it renders
- * the returned facts/tool timeline/claims/limitations and NEVER computes values, risk levels,
- * recommendations or calculation results itself. LLM vs Java-template output is honestly
- * labelled via generatedBy/degraded.
+ * the returned facts/tool timeline/claims/limitations/evidence navigation and NEVER computes
+ * values, risk levels, recommendations or calculation results itself. LLM vs Java-template
+ * output is honestly labelled via generatedBy/degraded. Evidence links are RouterLink
+ * navigations built ONLY from the backend-provided route/query parameters.
  */
 
 const question = ref('')
@@ -44,17 +46,13 @@ function modeLabel() {
   return result.value?.degraded ? 'JAVA_TEMPLATE' : (result.value?.generatedBy ?? 'UNKNOWN')
 }
 
-function evidenceKind(ref: string): 'history' | 'quality' | 'warning' | 'other' {
-  if (ref.startsWith('processed/daily') || ref.startsWith('processed/aggregate')) {
-    return 'history'
-  }
-  if (ref.startsWith('warning/')) {
-    return 'warning'
-  }
-  if (ref.startsWith('report/')) {
-    return 'quality'
-  }
-  return 'other'
+/** The link query string is backend-provided; the frontend never parses file paths. */
+function linkTarget(link: EvidenceLinkView): string {
+  return link.query ? `${link.route}?${link.query}` : link.route
+}
+
+function evidenceKind(link: EvidenceLinkView): string {
+  return link.targetView === 'HISTORY' ? '历史' : link.targetView === 'WARNING' ? '预警' : '质量'
 }
 </script>
 
@@ -163,14 +161,66 @@ function evidenceKind(ref: string): 'history' | 'quality' | 'warning' | 'other' 
       </ul>
       <p v-else class="muted">无结论</p>
 
-      <h3>证据引用</h3>
-      <ul v-if="result.evidenceRefs.length > 0" class="claim-list">
-        <li v-for="ref in result.evidenceRefs" :key="ref">
-          <span class="muted">{{ evidenceKind(ref) === 'history' ? '历史' : evidenceKind(ref) === 'warning' ? '预警' : '证据' }}：</span>
-          {{ ref }}
+      <h3>风险/质量视图（仅 Java 事实）</h3>
+      <table v-if="result.risk" class="sm-table">
+        <tbody>
+          <tr>
+            <td>风险等级</td>
+            <td><StatusBadge :status="result.risk.riskLevel ?? 'UNKNOWN'" /></td>
+          </tr>
+          <tr v-if="result.risk.currentValue">
+            <td>当前值</td>
+            <td>{{ result.risk.currentValue }}</td>
+          </tr>
+          <tr v-if="result.risk.dataStatus">
+            <td>数据状态</td>
+            <td>{{ result.risk.dataStatus }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p v-else class="muted">无风险/质量事实</p>
+
+      <h3 v-if="result.recommendations.length > 0">建议（后端给出，前端不计算）</h3>
+      <ul v-if="result.recommendations.length > 0" class="claim-list">
+        <li v-for="(recommendation, index) in result.recommendations" :key="index">
+          {{ recommendation }}
         </li>
       </ul>
-      <p v-else class="muted">无证据引用</p>
+
+      <h3 v-if="result.calculationBasis">计算口径（validation/calculation/calendar 版本）</h3>
+      <table v-if="result.calculationBasis" class="sm-table">
+        <tbody>
+          <tr>
+            <td>validationVersion</td>
+            <td>{{ result.calculationBasis.validationVersion ?? '-' }}</td>
+          </tr>
+          <tr>
+            <td>calculationVersion</td>
+            <td>{{ result.calculationBasis.calculationVersion ?? '-' }}</td>
+          </tr>
+          <tr>
+            <td>calendarVersion</td>
+            <td>{{ result.calculationBasis.calendarVersion ?? '-' }}</td>
+          </tr>
+          <tr>
+            <td>configVersions</td>
+            <td>{{ result.calculationBasis.configVersions.join('、') || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>证据引用（可点击跳转，参数来自后端）</h3>
+      <ul v-if="result.evidenceLinks.length > 0" class="claim-list">
+        <li v-for="link in result.evidenceLinks" :key="link.evidenceId">
+          <RouterLink :to="linkTarget(link)" class="evidence-link">
+            {{ evidenceKind(link) }}：{{ link.evidenceType }}（{{ link.itemId }}）
+          </RouterLink>
+          <span v-if="link.businessDate || link.periodStart" class="muted">
+            [{{ link.businessDate ?? link.periodStart }} {{ link.grain ?? '' }}]
+          </span>
+        </li>
+      </ul>
+      <p v-else class="muted">无可用证据链接</p>
 
       <h3 v-if="result.limitations.length > 0">限制与说明</h3>
       <ul v-if="result.limitations.length > 0" class="claim-list">
@@ -235,5 +285,12 @@ button:hover {
   padding-left: 18px;
   font-size: 13px;
   line-height: 1.7;
+}
+.evidence-link {
+  color: var(--sm-accent);
+  text-decoration: none;
+}
+.evidence-link:hover {
+  text-decoration: underline;
 }
 </style>

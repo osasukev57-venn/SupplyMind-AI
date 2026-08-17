@@ -114,16 +114,24 @@ class DynamicConfigWorkflowServiceTest {
                         .anyMatch(item -> item.itemId().equals(GBP_ITEM) && item.enabled()),
                 "GBP appears enabled in the panel configuration");
         assertNotNull(result.backfillJobs());
-        assertFalse(result.backfillJobs().isEmpty(), "the ADD creates a real backfill job");
-        ConfigV1.BackfillJobView job = result.backfillJobs().get(0);
-        assertEquals(GBP_ITEM, job.itemId());
-        assertEquals("2026-08-10", job.fromDate());
-        assertEquals("2026-08-11", job.toDate());
-        assertEquals("WAITING", job.status());
-
-        ConfigV1.BackfillJobView run = harness.workflow().runBackfill(job.jobId());
-        assertEquals("SUCCEEDED", run.status(),
-                "the automatic route really runs acquisition->validation->publish->daily->aggregate");
+        assertFalse(result.backfillJobs().isEmpty(), "the ADD auto-creates jobs");
+        // M1: jobs[0] is the ALWAYS-attempted current-value acquisition; jobs[1] is the backfill.
+        assertTrue(result.backfillJobs().size() >= 2,
+                "current acquisition + backfill range both create jobs");
+        ConfigV1.BackfillJobView currentJob = result.backfillJobs().get(0);
+        assertEquals(GBP_ITEM, currentJob.itemId());
+        assertTrue(currentJob.status().equals("SUCCEEDED")
+                        || currentJob.status().equals("PARTIAL_SUCCESS")
+                        || currentJob.status().equals("AWAITING_MANUAL_INPUT")
+                        || currentJob.status().equals("FAILED"),
+                "the current acquisition is AUTO-RUN, never left WAITING: " + currentJob.status());
+        ConfigV1.BackfillJobView historyJob = result.backfillJobs().get(1);
+        assertEquals(GBP_ITEM, historyJob.itemId());
+        assertEquals("2026-08-10", historyJob.fromDate());
+        assertEquals("2026-08-11", historyJob.toDate());
+        // M1: the backfill is AUTO-RUN by the ADD chain - it is never left WAITING.
+        assertEquals("SUCCEEDED", historyJob.status(),
+                "the ADD chain auto-runs the backfill through acquisition->validation->publish->daily->aggregate");
         assertTrue(Files.isRegularFile(harness.root().resolveDataRef(
                         com.supplymind.foundation.storage.DataPaths.dailyRef(
                                 GBP_ITEM, java.time.YearMonth.of(2026, 8)))),
@@ -194,12 +202,70 @@ class DynamicConfigWorkflowServiceTest {
                 "MAT.MANUAL.NEW.001", "新手工标的", "SMM", "ADC12", "2026-08-01", "2026-08-31");
 
         ConfigV1.WorkflowResult result = harness.workflow().addItem(manual);
-        ConfigV1.BackfillJobView job = result.backfillJobs().get(0);
 
-        ConfigV1.BackfillJobView run = harness.workflow().runBackfill(job.jobId());
-        assertEquals("AWAITING_MANUAL_INPUT", run.status(),
-                "a Manual target without real input must honestly report AWAITING_MANUAL_INPUT");
-        assertFalse("SUCCEEDED".equals(run.status()), "never fake SUCCEEDED for a manual target");
+        assertFalse(result.backfillJobs().isEmpty());
+        for (ConfigV1.BackfillJobView job : result.backfillJobs()) {
+            assertTrue(job.status().equals("AWAITING_MANUAL_INPUT")
+                            || job.status().equals("PARTIAL_SUCCESS")
+                            || job.status().equals("FAILED"),
+                    "a Manual target without real input must honestly report AWAITING_MANUAL_INPUT"
+                            + "/PARTIAL_SUCCESS/FAILED, never fake SUCCEEDED and never left WAITING: "
+                            + job.status());
+            assertFalse("SUCCEEDED".equals(job.status()), "never fake SUCCEEDED for a manual target");
+        }
+    }
+
+    @Test
+    void addWithoutBackfillRangeStillTriggersTheCurrentAcquisition() {
+        Harness harness = harness();
+        // M1: current-value acquisition must NOT depend on backfillFrom/backfillTo being filled.
+        ConfigV1.AddItemRequest manual = manualRequest(
+                "MAT.MANUAL.CURRENT.001", "无范围手工标的", "SMM", "ADC12", null, null);
+
+        ConfigV1.WorkflowResult result = harness.workflow().addItem(manual);
+
+        assertFalse(result.backfillJobs().isEmpty(),
+                "a range-less ADD still auto-creates and runs the current acquisition - never 0 jobs");
+        assertEquals(1, result.backfillJobs().size());
+        ConfigV1.BackfillJobView current = result.backfillJobs().get(0);
+        assertEquals("MAT.MANUAL.CURRENT.001", current.itemId());
+        assertEquals("AWAITING_MANUAL_INPUT", current.status(),
+                "the current acquisition for a Manual target honestly awaits real input");
+    }
+
+    @Test
+    void replaceWithoutBackfillRangeStillTriggersTheCurrentAcquisition() {
+        Harness harness = harness();
+        // M1: the REPLACE page no longer sends null/null - but even if a caller omits the range,
+        // the current acquisition must still run (no more "0 jobs" replacements).
+        ConfigV1.ReplaceItemRequest smm = new ConfigV1.ReplaceItemRequest(
+                MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID,
+                manualRequest("MAT.REPL-01.SMM", "AZ91D替代材料（SMM意图）", "SMM", "AZ91D", null, null));
+
+        ConfigV1.WorkflowResult result = harness.workflow().replaceItem(smm);
+
+        assertFalse(result.backfillJobs().isEmpty(),
+                "a replacement must auto-create and run the current acquisition");
+        assertEquals(1, result.backfillJobs().size());
+        ConfigV1.BackfillJobView current = result.backfillJobs().get(0);
+        assertEquals("MAT.REPL-01.SMM", current.itemId());
+        assertEquals("AWAITING_MANUAL_INPUT", current.status(),
+                "a Manual replacement honestly reaches AWAITING_MANUAL_INPUT - never fake auto-complete");
+    }
+
+    @Test
+    void oneSidedBackfillRangeIsRejectedByTheControlledDto() {
+        Harness harness = harness();
+        assertThrows(com.supplymind.foundation.model.SchemaValidationException.class,
+                () -> manualRequest("MAT.MANUAL.ONE.001", "单边手工标的", "SMM", "ADC12",
+                        "2026-08-01", null),
+                "backfillFrom without backfillTo is rejected (both-or-neither)");
+        assertThrows(com.supplymind.foundation.model.SchemaValidationException.class,
+                () -> manualRequest("MAT.MANUAL.TWO.001", "单边手工标的", "SMM", "ADC12",
+                        null, "2026-08-31"),
+                "backfillTo without backfillFrom is rejected (both-or-neither)");
+        assertTrue(harness.workflow().configView().configVersion() == 1,
+                "a rejected request never touches the active configuration");
     }
 
     @Test
@@ -208,7 +274,7 @@ class DynamicConfigWorkflowServiceTest {
         ConfigV1.AddItemRequest manual = manualRequest(
                 "MAT.MANUAL.RETRY.001", "重试手工标的", "SMM", "ADC12", "2026-08-01", "2026-08-31");
         ConfigV1.WorkflowResult result = harness.workflow().addItem(manual);
-        String jobId = result.backfillJobs().get(0).jobId();
+        String jobId = result.backfillJobs().get(result.backfillJobs().size() - 1).jobId();
         harness.workflow().runBackfill(jobId);
 
         ConfigV1.BackfillJobView retried = harness.workflow().retryBackfill(jobId);
@@ -276,9 +342,10 @@ class DynamicConfigWorkflowServiceTest {
         ConfigV1.AddItemRequest manual = manualRequest(
                 "MAT.MANUAL.LIST.001", "列表手工标的", "SMM", "ADC12", "2026-08-01", "2026-08-31");
         ConfigV1.WorkflowResult result = harness.workflow().addItem(manual);
-        assertEquals(1, result.backfillJobs().size());
-        assertEquals(1, harness.workflow().backfillJobs().size(),
-                "the real backfill job is listed alongside the excluded time-state file");
+        assertEquals(2, result.backfillJobs().size(),
+                "current acquisition + backfill range both auto-created");
+        assertEquals(2, harness.workflow().backfillJobs().size(),
+                "the real jobs are listed alongside the excluded time-state file");
     }
 
     // ---- request builders ----
@@ -388,48 +455,43 @@ class DynamicConfigWorkflowServiceTest {
                 java.util.LinkedHashMap<String, String> rejected = new java.util.LinkedHashMap<>();
                 java.util.ArrayList<com.supplymind.foundation.model.RawReceiptV1> raws =
                         new java.util.ArrayList<>();
+                // M1: a HISTORY request covers exactly [historyStartDate..historyEndDate]; a
+                // CURRENT request covers the reference day. Each call produces the requested
+                // range deterministically (no shared next-day counter), so the auto current
+                // acquisition and the auto backfill never starve each other.
+                LocalDate from = request.collectionMode() == com.supplymind.provider.CollectionMode.HISTORY
+                        ? request.historyStartDate()
+                        : LocalDate.parse("2026-08-17");
+                LocalDate to = request.collectionMode() == com.supplymind.provider.CollectionMode.HISTORY
+                        ? request.historyEndDate()
+                        : from;
                 for (String itemId : request.itemIds()) {
                     if (!supportedItemIds().contains(itemId)) {
                         rejected.put(itemId, "UNSUPPORTED_TARGET");
                         continue;
                     }
-                    String businessDate = nextPendingDay(itemId);
-                    if (businessDate == null) {
-                        rejected.put(itemId, "NO_PENDING_DAY");
-                        continue;
+                    for (LocalDate businessDate = from; !businessDate.isAfter(to); businessDate = businessDate.plusDays(1)) {
+                        byte[] payload = ("{\"fx\":\"" + businessDate + "\"}").getBytes(StandardCharsets.UTF_8);
+                        String runId = "auto-" + itemId + "-" + businessDate.toString().replace("-", "");
+                        String acquisitionId = "auto-acq-" + runId;
+                        String unit = GBP_ITEM.equals(itemId) ? "CNY/1 GBP" : "CNY/1 USD";
+                        raws.add(new com.supplymind.foundation.model.RawReceiptV1(
+                                "1.0", com.supplymind.foundation.model.RawReceiptV1.deriveRawRef(
+                                Mode.FORMAL, ProviderType.OFFICIAL_WEB, itemId, NOW, runId),
+                                acquisitionId, runId, Mode.FORMAL,
+                                ProviderType.OFFICIAL_WEB, AccessMethod.PUBLIC_OFFICIAL_HTML, configVersion,
+                                "中国人民银行官网（授权中国外汇交易中心公布）",
+                                "https://example.test/fx", "fx-ref", itemId,
+                                businessDate.toString(), businessDate.toString(), null, NOW, NOW, null,
+                                "7.1200", unit, "CNY", null, 200, "text/html; charset=UTF-8", "base64",
+                                java.util.Base64.getEncoder().encodeToString(payload),
+                                com.supplymind.foundation.storage.FileDigest.sha256(payload),
+                                null, NOW,
+                                com.supplymind.foundation.storage.DataPaths.acquisitionRef(acquisitionId), null));
                     }
-                    byte[] payload = ("{\"fx\":\"" + businessDate + "\"}").getBytes(StandardCharsets.UTF_8);
-                    String runId = "auto-" + itemId + "-" + businessDate.replace("-", "");
-                    String acquisitionId = "auto-acq-" + runId;
-                    String unit = GBP_ITEM.equals(itemId) ? "CNY/1 GBP" : "CNY/1 USD";
-                    raws.add(new com.supplymind.foundation.model.RawReceiptV1(
-                            "1.0", com.supplymind.foundation.model.RawReceiptV1.deriveRawRef(
-                            Mode.FORMAL, ProviderType.OFFICIAL_WEB, itemId, NOW, runId),
-                            acquisitionId, runId, Mode.FORMAL,
-                            ProviderType.OFFICIAL_WEB, AccessMethod.PUBLIC_OFFICIAL_HTML, configVersion,
-                            "中国人民银行官网（授权中国外汇交易中心公布）",
-                            "https://example.test/fx", "fx-ref", itemId,
-                            businessDate, businessDate, null, NOW, NOW, null,
-                            "7.1200", unit, "CNY", null, 200, "text/html; charset=UTF-8", "base64",
-                            java.util.Base64.getEncoder().encodeToString(payload),
-                            com.supplymind.foundation.storage.FileDigest.sha256(payload),
-                            null, NOW,
-                            com.supplymind.foundation.storage.DataPaths.acquisitionRef(acquisitionId), null));
                 }
                 return new ProviderCollectOutcome("1.0", "auto-fx-history", null, null, null,
                         raws, List.of(), rejected);
-            }
-
-            private String nextPendingDay(String itemId) {
-                String collected = collectedDays.getOrDefault(itemId, "");
-                for (int day = 10; day <= 11; day++) {
-                    String candidate = "2026-08-" + String.format("%02d", day);
-                    if (!collected.contains(candidate)) {
-                        collectedDays.put(itemId, collected + "," + candidate);
-                        return candidate;
-                    }
-                }
-                return null;
             }
         };
     }

@@ -34,6 +34,35 @@ export interface ClaimView {
   evidenceRefs: string[]
 }
 
+/** M3: controlled evidence navigation descriptor (route params from the backend, never parsed). */
+export interface EvidenceLinkView {
+  evidenceId: string
+  evidenceType: string
+  itemId: string
+  businessDate: string | null
+  periodStart: string | null
+  periodEnd: string | null
+  grain: string | null
+  targetView: 'HISTORY' | 'WARNING' | 'QUALITY'
+  route: string
+  query: string
+}
+
+export interface CalculationBasisView {
+  validationVersion: string | null
+  calculationVersion: string | null
+  calendarVersion: string | null
+  configVersions: string[]
+}
+
+export interface RiskView {
+  riskLevel: string | null
+  currentValue: string | null
+  baselineValue: string | null
+  threshold: string | null
+  dataStatus: string | null
+}
+
 export interface AgentQueryResponse {
   requestId: string
   answer: string | null
@@ -52,6 +81,9 @@ export interface AgentQueryResponse {
   recommendations: string[]
   claims: ClaimView[]
   dataThrough: string | null
+  evidenceLinks: EvidenceLinkView[]
+  calculationBasis: CalculationBasisView | null
+  risk: RiskView | null
 }
 
 export interface AgentQueryRequest {

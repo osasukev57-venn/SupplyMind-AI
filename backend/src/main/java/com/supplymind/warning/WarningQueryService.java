@@ -29,9 +29,11 @@ import java.util.stream.Stream;
 public final class WarningQueryService {
 
     private final DataRoot dataRoot;
+    private final WarningAckStore ackStore;
 
-    public WarningQueryService(DataRoot dataRoot) {
+    public WarningQueryService(DataRoot dataRoot, WarningAckStore ackStore) {
         this.dataRoot = Objects.requireNonNull(dataRoot, "dataRoot");
+        this.ackStore = Objects.requireNonNull(ackStore, "ackStore");
     }
 
     /** All manifest-verified warnings for one item over the exact [from,to] range, newest first. */
@@ -66,13 +68,13 @@ public final class WarningQueryService {
                 .findFirst();
     }
 
-    /** Whether the warning already has a manifest-valid DEC-061 acknowledgement sidecar. */
+    /**
+     * M2: delegates to the SINGLE authoritative DEC-061 verification entry (WarningAckStore.
+     * readVerified). A warning is acknowledged=true ONLY when the sidecar AND the original
+     * warning file fully bind (warningId/ref/SHA-256/manifests); any tampering fails closed.
+     */
     public boolean isAcknowledged(WarningRecordV1 warning) {
-        String ackRef = ackRefOf(warning);
-        Path ackPath = dataRoot.resolveDataRef(ackRef);
-        Path manifest = dataRoot.resolveDataRef(DataPaths.manifestRef(ackRef));
-        return Files.isRegularFile(ackPath)
-                && ManifestVerifier.matches(dataRoot, ackRef, ackPath, manifest, List.of());
+        return ackStore.isAcknowledgedVerified(warning);
     }
 
     public String ackRefOf(WarningRecordV1 warning) {

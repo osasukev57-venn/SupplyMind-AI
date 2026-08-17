@@ -5,11 +5,16 @@ import com.supplymind.warning.api.WarningV1;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -39,6 +44,14 @@ class WarningApiMvcContractTest {
 
     @MockBean
     private WarningAckStore ackStore;
+
+    @TestConfiguration
+    static class ClockConfig {
+        @Bean
+        Clock foundationClock() {
+            return Clock.fixed(Instant.parse("2026-08-17T02:00:00Z"), ZoneOffset.UTC);
+        }
+    }
 
     private static final WarningRecordV1 RECORD = new WarningRecordV1(
             "1.0", "w1", "demo-price-change-x", "demo-v1", "MAT.ADC12.SMM", "month",

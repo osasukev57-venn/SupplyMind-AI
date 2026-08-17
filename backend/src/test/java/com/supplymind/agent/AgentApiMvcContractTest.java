@@ -105,7 +105,56 @@ class AgentApiMvcContractTest {
                 .andExpect(jsonPath("$.claims[0].evidenceRefs[0]").value(
                         "processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv"))
                 .andExpect(jsonPath("$.dataThrough").value("2026-08-10"))
-                .andExpect(jsonPath("$.facts[0].value").value("6.79040000"));
+                .andExpect(jsonPath("$.facts[0].value").value("6.79040000"))
+                // M3: controlled evidence navigation links projected from VERIFIED entries
+                .andExpect(jsonPath("$.evidenceLinks[0].evidenceId").value("e1"))
+                .andExpect(jsonPath("$.evidenceLinks[0].evidenceType").value("DAILY"))
+                .andExpect(jsonPath("$.evidenceLinks[0].itemId").value("FX.USD.CNY.PBOC_MID"))
+                .andExpect(jsonPath("$.evidenceLinks[0].targetView").value("HISTORY"))
+                .andExpect(jsonPath("$.evidenceLinks[0].route").value("/history"))
+                .andExpect(jsonPath("$.evidenceLinks[0].query").value(
+                        "itemId=FX.USD.CNY.PBOC_MID&from=2026-08-10&to=2026-08-10&grain=daily"))
+                // M3: calculation basis from the verified lineage
+                .andExpect(jsonPath("$.calculationBasis.validationVersion").value("pboc-basic-validation-v1"))
+                .andExpect(jsonPath("$.calculationBasis.calculationVersion").value("arithmetic-mean-v1"))
+                .andExpect(jsonPath("$.calculationBasis.calendarVersion").value("weekday-asia-shanghai-v1"))
+                .andExpect(jsonPath("$.calculationBasis.configVersions[0]").value("1"));
+    }
+
+    @Test
+    void nonVerifiedEvidenceNeverProducesANavigationLink() throws Exception {
+        EvidencePackV1.Scope scope = new EvidencePackV1.Scope(
+                List.of("FX.USD.CNY.PBOC_MID"), "2026-08-10", null, null, "Asia/Shanghai");
+        EvidencePackV1 pack = new EvidencePackV1(
+                "AGENT-EVIDENCE-SCHEMA-V1", "pack-2", "req-2", "FORMAL", "无数据",
+                OffsetDateTime.parse("2026-08-10T10:00:00+08:00"), scope,
+                List.of(new EvidencePackV1.ToolExecution(0, "history.query", "v1", true,
+                        "{\"itemId\":\"x\"}", "{\"points\":[]}", ToolStatus.NO_DATA, List.of())),
+                List.of(),
+                List.of(new EvidencePackV1.EvidenceRefEntry("e9", "DAILY",
+                        "processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv", "b".repeat(64),
+                        EvidenceStatus.MISSING, "NO_FILE", null, null, null,
+                        null, null, null, null, null, null, List.of())),
+                List.of(), List.of(), List.of());
+        AgentReportV1 report = new AgentReportV1(
+                "AGENT-REPORT-V1", "report-2", "req-2", pack, "JAVA_TEMPLATE", null, null,
+                true, "TOOL_EXECUTION_REJECTED",
+                List.of(), List.of(), List.of(), List.of("no data"),
+                OffsetDateTime.parse("2026-08-10T10:00:00+08:00"));
+        AgentOrchestrator.AgentResult result = new AgentOrchestrator.AgentResult(
+                pack,
+                new LLMService.LLMResponse(LLMService.LLMStatus.UNAVAILABLE, null, "UNAVAILABLE", List.of()),
+                "report/2026-08/report-2.json", report, true, "TOOL_EXECUTION_REJECTED");
+        when(orchestrator.answer(any(AgentOrchestrator.AgentQueryInput.class))).thenReturn(result);
+
+        mockMvc.perform(post("/api/agent/query")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"question\":\"无数据\",\"itemId\":\"FX.USD.CNY.PBOC_MID\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.evidenceLinks").isArray())
+                .andExpect(jsonPath("$.evidenceLinks.length()").value(0))
+                .andExpect(jsonPath("$.calculationBasis").doesNotExist())
+                .andExpect(jsonPath("$.degraded").value(true));
     }
 }
 

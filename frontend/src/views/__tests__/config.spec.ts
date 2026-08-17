@@ -181,27 +181,41 @@ describe('ConfigView (D8-T01)', () => {
     wrapper.unmount()
   })
 
-  it('replace sends oldItemId plus a controlled new item and shows the result', async () => {
+  it('replace requires the backfill range and shows the auto-chain job statuses', async () => {
     vi.mocked(replaceItem).mockResolvedValue({
       config: { ...config, configVersion: 4 },
-      backfillJobs: []
+      backfillJobs: [
+        { ...job, jobId: 'backfill-MAT.REPL-01.SMM-2026-08-17-2026-08-17', status: 'AWAITING_MANUAL_INPUT' },
+        { ...job, jobId: 'backfill-MAT.REPL-01.SMM-2026-08-01-2026-08-31', status: 'AWAITING_MANUAL_INPUT' }
+      ]
     })
     const wrapper = mount(ConfigView, { attachTo: document.body })
     await flushPromises()
-    const buttons = wrapper.findAll('button')
-    const replaceButton = buttons.find((button) => button.text() === '替换（旧项停用，历史不删除）')
+    const replaceButton = () =>
+      wrapper.findAll('button').find((button) => button.text().startsWith('替换（旧项停用'))
     const inputs = wrapper.findAll('input')
     await inputs[8].setValue('MAT.AZ91D.SMM')
     await inputs[9].setValue('MAT.REPL-01.SMM')
     await inputs[10].setValue('AZ91D替代材料（SMM意图）')
-    await replaceButton?.trigger('click')
+    // M1: without the required backfill range the page rejects the submission client-side.
+    await replaceButton()?.trigger('click')
+    await flushPromises()
+    expect(replaceItem).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('替换表单必填历史回填范围')
+    // With the range filled in, the request carries it and the page shows job statuses.
+    await inputs[12].setValue('2026-08-01')
+    await inputs[13].setValue('2026-08-31')
+    await replaceButton()?.trigger('click')
     await flushPromises()
 
     const request = vi.mocked(replaceItem).mock.calls[0][0]
     expect(request.oldItemId).toBe('MAT.AZ91D.SMM')
     expect(request.newItem.itemId).toBe('MAT.REPL-01.SMM')
     expect(request.newItem.routeDecision).toBe('fallback_manual')
+    expect(request.newItem.backfillFrom).toBe('2026-08-01')
+    expect(request.newItem.backfillTo).toBe('2026-08-31')
     expect(wrapper.text()).toContain('已替换 MAT.AZ91D.SMM -> MAT.REPL-01.SMM')
+    expect(wrapper.text()).toContain('AWAITING_MANUAL_INPUT')
     wrapper.unmount()
   })
 
@@ -221,9 +235,9 @@ describe('ConfigView (D8-T01)', () => {
     const wrapper = mount(ConfigView, { attachTo: document.body })
     await flushPromises()
     const inputs = wrapper.findAll('input')
-    await inputs[12].setValue('FX.GBP.CNY.PBOC_MID')
-    await inputs[13].setValue('2026-08-01')
-    await inputs[14].setValue('2026-08-31')
+    await inputs[14].setValue('FX.GBP.CNY.PBOC_MID')
+    await inputs[15].setValue('2026-08-01')
+    await inputs[16].setValue('2026-08-31')
     await wrapper.findAll('button').find((button) => button.text() === '创建回填任务')?.trigger('click')
     await flushPromises()
     expect(createBackfillJob).toHaveBeenCalledWith('FX.GBP.CNY.PBOC_MID', '2026-08-01', '2026-08-31')

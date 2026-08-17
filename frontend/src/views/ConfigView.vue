@@ -50,6 +50,8 @@ const oldItemId = ref('')
 const replItemId = ref('')
 const replDisplayName = ref('')
 const replSourceIntent = ref('SMM')
+const replBackfillFrom = ref('')
+const replBackfillTo = ref('')
 
 // backfill form
 const jobItemId = ref('')
@@ -149,7 +151,10 @@ async function submitAdd() {
     errorMessage.value = '新增失败：后端不可用或参数被拒绝（服务端 capability 校验为准）'
     return
   }
-  notice.value = `已激活 configVersion=${result.config.configVersion}；回填任务 ${result.backfillJobs.length} 个`
+  const jobSummary = result.backfillJobs
+    .map((job) => `${job.itemId}:${job.status}`)
+    .join('；')
+  notice.value = `已激活 configVersion=${result.config.configVersion}；采集/回填任务 ${result.backfillJobs.length} 个（${jobSummary}）`
   applyResult(result)
   newItemId.value = ''
   newDisplayName.value = ''
@@ -174,8 +179,13 @@ async function toggleEnabled(item: { itemId: string; enabled: boolean }) {
 async function submitReplace() {
   errorMessage.value = null
   notice.value = null
+  // M1: the replacement page MUST collect the backfill range - it no longer sends null/null.
   if (!oldItemId.value || !replItemId.value || !replDisplayName.value) {
     errorMessage.value = '替换表单必填：旧 itemId、新 itemId、显示名'
+    return
+  }
+  if (!replBackfillFrom.value || !replBackfillTo.value) {
+    errorMessage.value = '替换表单必填历史回填范围（起止日期）'
     return
   }
   const base: AddItemRequest = {
@@ -205,19 +215,24 @@ async function submitReplace() {
       canonicalSpecCode: replItemId.value.split('.')[1] ?? 'AZ91D',
       acceptedSpecAliases: []
     },
-    backfillFrom: null,
-    backfillTo: null
+    backfillFrom: replBackfillFrom.value,
+    backfillTo: replBackfillTo.value
   }
   const result = await replaceItem({ oldItemId: oldItemId.value, newItem: base })
   if (!result) {
     errorMessage.value = '替换失败：后端不可用或参数被拒绝'
     return
   }
-  notice.value = `已替换 ${oldItemId.value} -> ${replItemId.value}（configVersion=${result.config.configVersion}）`
+  const jobSummary = result.backfillJobs
+    .map((job) => `${job.itemId}:${job.status}`)
+    .join('；')
+  notice.value = `已替换 ${oldItemId.value} -> ${replItemId.value}（configVersion=${result.config.configVersion}；采集/回填：${jobSummary}）`
   applyResult(result)
   oldItemId.value = ''
   replItemId.value = ''
   replDisplayName.value = ''
+  replBackfillFrom.value = ''
+  replBackfillTo.value = ''
 }
 
 async function submitCreateJob() {
@@ -337,8 +352,11 @@ onMounted(refresh)
         <label>新 itemId <input v-model="replItemId" placeholder="如 MAT.REPL-01.SMM" /></label>
         <label>新显示名 <input v-model="replDisplayName" placeholder="如 AZ91D替代材料（SMM意图）" /></label>
         <label>来源意图 <input v-model="replSourceIntent" placeholder="SMM 或 Asian Metal" /></label>
+        <label>历史回填起点 <input v-model="replBackfillFrom" type="date" /></label>
+        <label>历史回填终点 <input v-model="replBackfillTo" type="date" /></label>
       </div>
-      <button @click="submitReplace">替换（旧项停用，历史不删除）</button>
+      <button @click="submitReplace">替换（旧项停用，历史不删除；自动当前采集+回填）</button>
+      <p class="muted">替换会自动触发当前值采集尝试并运行历史回填；Manual 路线诚实进入等待录入状态。</p>
     </section>
 
     <section class="panel">

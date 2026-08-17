@@ -57,9 +57,24 @@ public final class ConfigHistoryQueryService {
                 String ref = DataPaths.configHistoryRef(configVersion);
                 Path manifest = dataRoot.resolveDataRef(DataPaths.manifestRef(ref));
                 boolean verified = ManifestVerifier.matches(dataRoot, ref, snapshot, manifest, List.of());
+                // M1: manifest integrity alone is NOT "decode verification". The snapshot must
+                // actually decode as MonitorSeriesConfigV1 AND its configVersion must match the
+                // filename - any schema/decode/version mismatch is an explicit verified=false.
+                if (verified) {
+                    try {
+                        com.supplymind.foundation.model.MonitorSeriesConfigV1 decoded =
+                                JsonV1Codec.decodeFile(Files.readAllBytes(snapshot),
+                                        com.supplymind.foundation.model.MonitorSeriesConfigV1.class);
+                        if (decoded.configVersion() != configVersion) {
+                            verified = false;
+                        }
+                    } catch (IOException | RuntimeException decodeFailed) {
+                        verified = false;
+                    }
+                }
                 entries.add(new ConfigV1.HistoryEntry(
                         configVersion, verified,
-                        verified ? null : "config/history/" + fileName + " fails manifest or decode verification"));
+                        verified ? null : "config/history/" + fileName + " fails manifest, decode or configVersion verification"));
             }
         } catch (IOException exception) {
             throw new com.supplymind.foundation.storage.StorageException(

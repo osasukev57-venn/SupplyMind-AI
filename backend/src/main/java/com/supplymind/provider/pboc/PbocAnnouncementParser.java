@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -107,9 +108,44 @@ public final class PbocAnnouncementParser {
 
         String publishedAtRaw = extractPublishedAtRaw(text, detailUri);
         OffsetDateTime publishedAt = parsePublishedAt(publishedAtRaw, detailUri);
-        String usd = exactlyOnePositiveDecimal(text, "1美元对人民币", detailUri);
-        String eur = exactlyOnePositiveDecimal(text, "1欧元对人民币", detailUri);
-        return new PbocAnnouncement(title, titleDate.raw(), titleDate.date(), publishedAtRaw, publishedAt, usd, eur);
+        // M1: extract EVERY "1X对人民币" anchor from the announcement so configured targets
+        // (USD/EUR/GBP by configuration metadata) can each resolve their own raw value.
+        // A configured anchor that the official page does not contain fails closed in the
+        // provider (never fabricated, never an old-value fallback).
+        Map<String, String> rates = extractAllRates(text, detailUri);
+        return new PbocAnnouncement(title, titleDate.raw(), titleDate.date(), publishedAtRaw, publishedAt, rates);
+    }
+
+    /**
+     * M1: all middle-rate anchors present in the announcement body, keyed by the anchor text
+     * (e.g. "1美元对人民币", "1欧元对人民币", "1英镑对人民币"). Duplicate anchors fail closed;
+     * a non-positive value fails closed. The provider selects by the configured
+     * sourceFieldKey - it never guesses a currency from the itemId.
+     */
+    static Map<String, String> extractAllRates(String text, URI uri) {
+        Pattern anchorPattern = Pattern.compile("1[^\\s0-9]{1,12}对人民币\\s*([0-9]+(?:\\.[0-9]+)?)\\s*元");
+        Matcher matcher = anchorPattern.matcher(text);
+        Map<String, String> rates = new java.util.LinkedHashMap<>();
+        while (matcher.find()) {
+            String anchor = matcher.group(0).substring(0, matcher.group(0).indexOf("人民币") + 3);
+            String value = matcher.group(1);
+            if (rates.containsKey(anchor)) {
+                throw rejected("DETAIL", uri, "PBOC anchor " + anchor + " must map to exactly one decimal value");
+            }
+            try {
+                if (new java.math.BigDecimal(value).signum() <= 0) {
+                    throw rejected("DETAIL", uri, "PBOC anchor " + anchor + " must map to a positive decimal value");
+                }
+            } catch (NumberFormatException exception) {
+                throw new PbocCollectionException(PbocCollectionFailureKind.PARSE_REJECTED, "DETAIL", uri, null,
+                        "PBOC anchor " + anchor + " has an invalid decimal value", exception);
+            }
+            rates.put(anchor, value);
+        }
+        if (rates.isEmpty()) {
+            throw rejected("DETAIL", uri, "PBOC announcement detail has no middle-rate anchors");
+        }
+        return Map.copyOf(rates);
     }
 
     public String decodeHtml(URI uri, byte[] entityBytes, String contentType) {

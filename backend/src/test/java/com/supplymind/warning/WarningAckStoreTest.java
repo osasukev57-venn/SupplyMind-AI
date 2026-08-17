@@ -1,10 +1,12 @@
 package com.supplymind.warning;
 
+import com.supplymind.foundation.codec.JsonV1Codec;
 import com.supplymind.foundation.storage.AtomicFileStore;
 import com.supplymind.foundation.storage.AtomicMoveSupport;
 import com.supplymind.foundation.storage.DataPaths;
 import com.supplymind.foundation.storage.DataRoot;
 import com.supplymind.foundation.storage.DirtyMarkerCodec;
+import com.supplymind.foundation.storage.ManifestFactory;
 import com.supplymind.foundation.storage.ManifestVerifier;
 import com.supplymind.foundation.storage.StorageException;
 import org.junit.jupiter.api.Test;
@@ -61,8 +63,7 @@ class WarningAckStoreTest {
         assertTrue(ManifestVerifier.matches(harness.root(), ackRef, ackPath, manifest, List.of()),
                 "the ack sidecar has a valid adjacent manifest");
 
-        WarningAcknowledgementV1 persisted = harness.ackStore().read(
-                DataPaths.warningRef(warning.warningMonth(), warning.warningId()), warning.warningId());
+        WarningAcknowledgementV1 persisted = harness.ackStore().readVerified(warning).orElseThrow();
         assertEquals(ack.dispositionNote(), persisted.dispositionNote());
         assertEquals(ack.warningFileSha256(), persisted.warningFileSha256());
     }
@@ -83,7 +84,7 @@ class WarningAckStoreTest {
                 () -> harness.ackStore().acknowledge(warning, "不同处置备注", NOW),
                 "a different ack under the same warningId fails closed (immutable conflict)");
         assertEquals("已核实",
-                harness.ackStore().read(warningRef, warning.warningId()).dispositionNote(),
+                harness.ackStore().readVerified(warning).orElseThrow().dispositionNote(),
                 "the first ack is never overwritten");
     }
 
@@ -94,8 +95,7 @@ class WarningAckStoreTest {
         harness.ackStore().acknowledge(warning, "重启验证", NOW);
 
         Harness restarted = new Harness(harness.root());
-        WarningAcknowledgementV1 restored = restarted.ackStore().read(
-                DataPaths.warningRef(warning.warningMonth(), warning.warningId()), warning.warningId());
+        WarningAcknowledgementV1 restored = restarted.ackStore().readVerified(warning).orElseThrow();
         assertEquals(WarningAcknowledgementV1.AckStatus.ACKNOWLEDGED, restored.status(),
                 "restart restores the ACKNOWLEDGED state from the manifest-valid sidecar");
         assertTrue(restarted.query().isAcknowledged(warning),
@@ -174,6 +174,166 @@ class WarningAckStoreTest {
                 "a broken warning file is skipped - the remaining valid evidence still returns");
     }
 
+    // ---- M2: DEC-061 authoritative binding attacks ----
+
+    @Test
+    void unmodifiedAckReadsBackThroughTheAuthoritativeEntry() {
+        Harness harness = harness();
+        WarningRecordV1 warning = harness.store().store(warningRecord());
+        harness.ackStore().acknowledge(warning, "权威入口验证", NOW);
+
+        assertTrue(harness.ackStore().readVerified(warning).isPresent(),
+                "the unmodified ack + original warning pass the authoritative verification");
+        assertTrue(harness.query().isAcknowledged(warning),
+                "the query layer uses the same authoritative entry");
+        assertTrue(harness.ackStore().readVerified(warning).orElseThrow()
+                        .warningFileSha256().equals(
+                                com.supplymind.foundation.storage.FileDigest.sha256(
+                                        harness.root().resolveDataRef(DataPaths.warningRef(
+                                                warning.warningMonth(), warning.warningId())))),
+                "the recomputed original SHA-256 binds to the ack");
+    }
+
+    @Test
+    void tamperedAckWarningIdWithRewrittenManifestFailsClosed() throws Exception {
+        Harness harness = harness();
+        WarningRecordV1 warning = harness.store().store(warningRecord());
+        harness.ackStore().acknowledge(warning, "篡改测试", NOW);
+
+        String ackRef = DataPaths.warningAckRef(warning.warningMonth(), warning.warningId());
+        Path ackPath = harness.root().resolveDataRef(ackRef);
+        WarningAcknowledgementV1 ack = JsonV1Codec.decodeFile(
+                readBytes(ackPath), WarningAcknowledgementV1.class);
+        WarningAcknowledgementV1 forged = new WarningAcknowledgementV1(
+                "1.0", "w-forged-00000000000000000000000000000002", ack.warningRef(),
+                ack.warningFileSha256(), ack.status(), ack.acknowledgedAt(), ack.dispositionNote());
+        rewriteWithManifest(harness.root(), ackRef, forged);
+
+        assertThrows(StorageException.class,
+                () -> harness.ackStore().readVerified(warning),
+                "a forged warningId in the ack fails closed even with a rewritten manifest");
+        assertThrows(StorageException.class,
+                () -> harness.query().isAcknowledged(warning),
+                "the query layer must fail closed too - never a silent acknowledged=true");
+    }
+
+    @Test
+    void tamperedAckWarningRefWithRewrittenManifestFailsClosed() throws Exception {
+        Harness harness = harness();
+        WarningRecordV1 warning = harness.store().store(warningRecord());
+        harness.ackStore().acknowledge(warning, "篡改测试", NOW);
+
+        String ackRef = DataPaths.warningAckRef(warning.warningMonth(), warning.warningId());
+        Path ackPath = harness.root().resolveDataRef(ackRef);
+        WarningAcknowledgementV1 ack = JsonV1Codec.decodeFile(
+                readBytes(ackPath), WarningAcknowledgementV1.class);
+        WarningAcknowledgementV1 forged = new WarningAcknowledgementV1(
+                "1.0", ack.warningId(), "warning/2026-08/other-warning.json",
+                ack.warningFileSha256(), ack.status(), ack.acknowledgedAt(), ack.dispositionNote());
+        rewriteWithManifest(harness.root(), ackRef, forged);
+
+        assertThrows(StorageException.class,
+                () -> harness.ackStore().readVerified(warning),
+                "a forged warningRef in the ack fails closed even with a rewritten manifest");
+        assertThrows(StorageException.class,
+                () -> harness.query().isAcknowledged(warning));
+    }
+
+    @Test
+    void tamperedAckShaWithRewrittenManifestFailsClosed() throws Exception {
+        Harness harness = harness();
+        WarningRecordV1 warning = harness.store().store(warningRecord());
+        harness.ackStore().acknowledge(warning, "篡改测试", NOW);
+
+        String ackRef = DataPaths.warningAckRef(warning.warningMonth(), warning.warningId());
+        Path ackPath = harness.root().resolveDataRef(ackRef);
+        WarningAcknowledgementV1 ack = JsonV1Codec.decodeFile(
+                readBytes(ackPath), WarningAcknowledgementV1.class);
+        WarningAcknowledgementV1 forged = new WarningAcknowledgementV1(
+                "1.0", ack.warningId(), ack.warningRef(), "0".repeat(64),
+                ack.status(), ack.acknowledgedAt(), ack.dispositionNote());
+        rewriteWithManifest(harness.root(), ackRef, forged);
+
+        assertThrows(StorageException.class,
+                () -> harness.ackStore().readVerified(warning),
+                "a forged warningFileSha256 in the ack fails closed even with a rewritten manifest");
+        assertThrows(StorageException.class,
+                () -> harness.query().isAcknowledged(warning));
+    }
+
+    @Test
+    void tamperedOriginalWarningWithRewrittenWarningManifestFailsClosed() throws Exception {
+        Harness harness = harness();
+        WarningRecordV1 warning = harness.store().store(warningRecord());
+        harness.ackStore().acknowledge(warning, "篡改测试", NOW);
+
+        // Tamper the ORIGINAL warning bytes and rewrite ITS manifest too - a synchronized
+        // replacement must still fail because the ack's warningFileSha256 no longer binds.
+        String warningRef = DataPaths.warningRef(warning.warningMonth(), warning.warningId());
+        WarningRecordV1 altered = new WarningRecordV1(
+                "1.0", warning.warningId(), "demo-price-change-x", "demo-v1",
+                "MAT.ADC12.SMM", "month", "2026-08-01", "2026-08-31", null,
+                "0.99", "0.987", "0.052", WarningRecordV1.RiskLevel.HIGH,
+                warning.evidenceRefs(), "PUBLISHED_VERIFIED", NOW, "b".repeat(64), true,
+                "TEST/DEMO threshold - tampered");
+        rewriteWithManifest(harness.root(), warningRef, altered);
+
+        assertThrows(StorageException.class,
+                () -> harness.ackStore().readVerified(warning),
+                "a tampered original warning fails the SHA binding even with its manifest rewritten");
+        assertThrows(StorageException.class,
+                () -> harness.query().isAcknowledged(warning));
+    }
+
+    @Test
+    void missingOriginalWarningManifestFailsClosed() throws Exception {
+        Harness harness = harness();
+        WarningRecordV1 warning = harness.store().store(warningRecord());
+        harness.ackStore().acknowledge(warning, "篡改测试", NOW);
+
+        String warningRef = DataPaths.warningRef(warning.warningMonth(), warning.warningId());
+        Files.deleteIfExists(harness.root().resolveDataRef(DataPaths.manifestRef(warningRef)));
+
+        assertThrows(StorageException.class,
+                () -> harness.ackStore().readVerified(warning),
+                "a missing original warning manifest fails closed");
+        assertThrows(StorageException.class,
+                () -> harness.query().isAcknowledged(warning));
+    }
+
+    @Test
+    void sidecarAndManifestSynchronouslyReplacedStillFailsTheBinding() throws Exception {
+        Harness harness = harness();
+        WarningRecordV1 warning = harness.store().store(warningRecord());
+        harness.ackStore().acknowledge(warning, "篡改测试", NOW);
+
+        // Replace BOTH the sidecar and its manifest with a fully self-consistent forged ack that
+        // points to a DIFFERENT warningId - the binding check must still reject it.
+        String ackRef = DataPaths.warningAckRef(warning.warningMonth(), warning.warningId());
+        WarningAcknowledgementV1 forged = new WarningAcknowledgementV1(
+                "1.0", "w-forged-sync-00000000000000000000000000000003",
+                "warning/2026-08/w-forged-sync-00000000000000000000000000000003.json",
+                "1".repeat(64), WarningAcknowledgementV1.AckStatus.ACKNOWLEDGED, NOW, "同步替换");
+        rewriteWithManifest(harness.root(), ackRef, forged);
+
+        assertThrows(StorageException.class,
+                () -> harness.ackStore().readVerified(warning),
+                "a synchronized sidecar+manifest replacement can never produce acknowledged=true");
+        assertThrows(StorageException.class,
+                () -> harness.query().isAcknowledged(warning));
+    }
+
+    private static void rewriteWithManifest(DataRoot root, String dataRef, Object document) throws Exception {
+        byte[] bytes = JsonV1Codec.encodeFile(document);
+        Path path = root.resolveDataRef(dataRef);
+        Files.createDirectories(path.getParent());
+        Files.write(path, bytes);
+        com.supplymind.foundation.model.ManifestV1 manifest = ManifestFactory.json(
+                dataRef, bytes, List.of(), NOW);
+        Files.write(root.resolveDataRef(DataPaths.manifestRef(dataRef)),
+                JsonV1Codec.encodeFile(manifest));
+    }
+
     // ---- fixture ----
 
     private Harness harness() {
@@ -209,7 +369,8 @@ class WarningAckStoreTest {
         Harness(DataRoot root) {
             this(root, new WarningStore(root, new AtomicFileStore(root, new DirtyMarkerCodec()), CLOCK),
                     new WarningAckStore(root, new AtomicFileStore(root, new DirtyMarkerCodec()), CLOCK),
-                    new WarningQueryService(root));
+                    new WarningQueryService(root,
+                            new WarningAckStore(root, new AtomicFileStore(root, new DirtyMarkerCodec()), CLOCK)));
         }
     }
 }

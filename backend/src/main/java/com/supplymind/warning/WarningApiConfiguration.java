@@ -18,8 +18,8 @@ import java.time.Clock;
 public class WarningApiConfiguration {
 
     @Bean
-    WarningQueryService warningQueryService(DataRoot dataRoot) {
-        return new WarningQueryService(dataRoot);
+    WarningQueryService warningQueryService(DataRoot dataRoot, WarningAckStore warningAckStore) {
+        return new WarningQueryService(dataRoot, warningAckStore);
     }
 
     @Bean
@@ -31,8 +31,9 @@ public class WarningApiConfiguration {
     WarningController warningController(
             WarningService warningService,
             WarningQueryService warningQueryService,
-            WarningAckStore warningAckStore
+            WarningAckStore warningAckStore,
+            java.time.Clock foundationClock
     ) {
-        return new WarningController(warningService, warningQueryService, warningAckStore);
+        return new WarningController(warningService, warningQueryService, warningAckStore, foundationClock);
     }
 }

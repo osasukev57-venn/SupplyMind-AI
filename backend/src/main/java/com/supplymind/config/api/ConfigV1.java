@@ -135,6 +135,11 @@ public final class ConfigV1 {
             if (backfillTo != null) {
                 ModelRules.isoDateText(backfillTo, "backfillTo");
             }
+            // M1: a backfill range must be both-or-neither - a one-sided date request is invalid.
+            if ((backfillFrom == null) != (backfillTo == null)) {
+                throw new SchemaValidationException(
+                        "backfillFrom and backfillTo must be provided together (both or neither)");
+            }
             if (backfillFrom != null && backfillTo != null && backfillFrom.compareTo(backfillTo) > 0) {
                 throw new SchemaValidationException("backfillFrom must not be after backfillTo");
             }

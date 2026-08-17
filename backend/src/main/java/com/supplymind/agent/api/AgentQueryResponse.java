@@ -1,6 +1,7 @@
 package com.supplymind.agent.api;
 
 import com.supplymind.agent.evidence.EvidencePackV1;
+import com.supplymind.agent.evidence.EvidenceStatus;
 import com.supplymind.agent.orchestration.AgentOrchestrator;
 import com.supplymind.agent.report.AgentReportV1;
 
@@ -8,12 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * D8-T03 Agent API structured response. D6-T04 fields (requestId/answer/llmStatus/degraded/
+ * D8-T03/M3 Agent API structured response. D6-T04 fields (requestId/answer/llmStatus/degraded/
  * degradeReason/toolTrace/evidenceRefs/reportRef/facts) are PRESERVED verbatim; D8-T03 adds
- * the report-level projection (generatedBy/model/provider, intent/scope, calculation basis,
- * risk/quality view, recommendations, limitations, claims and dataThrough) mapped ONLY from the
- * verified AgentReportV1/EvidencePackV1 - the frontend never re-derives risk, recommendations
- * or results. Evidence references are controlled descriptors, never absolute paths.
+ * the report-level projection (generatedBy/model/provider, intent/scope, limitations,
+ * recommendations, claims and dataThrough) mapped ONLY from the verified
+ * AgentReportV1/EvidencePackV1. M3 adds CONTROLLED evidence navigation links (target view +
+ * route parameters - never file paths), the calculation basis and a risk/quality projection -
+ * the frontend never re-derives risk, recommendations, results or navigable links.
  */
 public record AgentQueryResponse(
         String requestId,
@@ -33,7 +35,11 @@ public record AgentQueryResponse(
         List<String> limitations,
         List<String> recommendations,
         List<ClaimView> claims,
-        String dataThrough
+        String dataThrough,
+        // ---- D8-M3 additions ----
+        List<EvidenceLinkView> evidenceLinks,
+        CalculationBasisView calculationBasis,
+        RiskView risk
 ) {
     public record ToolExecutionView(
             int invocationIndex,
@@ -84,7 +90,70 @@ public record AgentQueryResponse(
         }
     }
 
-    /** Builds the full D8-T03 projection from a verified AgentResult. */
+    /**
+     * M3: a CONTROLLED evidence navigation descriptor. It is projected ONLY from the verified
+     * EvidencePack metadata (refType/status/businessDate/periodStart/periodEnd) - the frontend
+     * never parses internal file paths and never sees absolute paths, dataRoot or Windows
+     * paths. targetView is HISTORY/WARNING/QUALITY; route/query carry the parameters needed to
+     * re-execute the target query in the frontend router.
+     */
+    public record EvidenceLinkView(
+            String evidenceId,
+            String evidenceType,
+            String itemId,
+            String businessDate,
+            String periodStart,
+            String periodEnd,
+            String grain,
+            String targetView,
+            String route,
+            String query
+    ) {
+    }
+
+    /** M3: calculation/validation basis projected from the verified evidence lineage. */
+    public record CalculationBasisView(
+            String validationVersion,
+            String calculationVersion,
+            String calendarVersion,
+            List<String> configVersions
+    ) {
+        public CalculationBasisView {
+            configVersions = configVersions == null ? List.of() : List.copyOf(configVersions);
+        }
+    }
+
+    /** M3: risk/quality view projected from Java/EvidencePack/Warning facts only. */
+    public record RiskView(
+            String riskLevel,
+            String currentValue,
+            String baselineValue,
+            String threshold,
+            String dataStatus
+    ) {
+    }
+
+    /** M3: backend-projected grain for an aggregate evidence ref. */
+    static String aggregateGrainOf(String ref) {
+        String[] segments = ref == null ? new String[0] : ref.split("/");
+        if (segments.length >= 4 && "processed".equals(segments[0])
+                && "aggregate".equals(segments[1])) {
+            return segments[3];
+        }
+        return null;
+    }
+
+    static String grainOf(String ref) {
+        if (ref == null) {
+            return null;
+        }
+        if (ref.startsWith("processed/daily/")) {
+            return "daily";
+        }
+        return aggregateGrainOf(ref);
+    }
+
+    /** Builds the full D8-T03/M3 projection from a verified AgentResult. */
     public static AgentQueryResponse of(AgentOrchestrator.AgentResult result) {
         EvidencePackV1 pack = result.evidencePack();
         List<ToolExecutionView> executions = new ArrayList<>();
@@ -109,6 +178,83 @@ public record AgentQueryResponse(
                 .filter(value -> value != null)
                 .max(java.util.Comparator.naturalOrder())
                 .orElse(null);
+        // M3: navigable links ONLY from VERIFIED evidence entries (MISSING/INVALID/UNAVAILABLE
+        // never produce a fake link). Projected from metadata, never from file-path parsing.
+        // The link itemId is the EvidencePack scope itemId - EvidenceRefEntry carries no
+        // itemId field, so the frontend is never asked to guess one from a file path.
+        List<EvidenceLinkView> links = new ArrayList<>();
+        String linkItemId = pack.scope() == null || pack.scope().itemIds().isEmpty()
+                ? "" : pack.scope().itemIds().get(0);
+        for (EvidencePackV1.EvidenceRefEntry entry : pack.evidenceRefs()) {
+            if (entry.status() != EvidenceStatus.VERIFIED) {
+                continue;
+            }
+            String targetView;
+            String route;
+            String query;
+            if (entry.ref() != null && entry.ref().startsWith("warning/")) {
+                targetView = "WARNING";
+                route = "/warning";
+                query = "itemId=" + linkItemId + "&from=1900-01-01&to=2999-12-31";
+            } else if (entry.ref() != null && entry.ref().startsWith("processed/aggregate/")) {
+                targetView = "HISTORY";
+                route = "/history";
+                String from = entry.periodStart() == null ? "1900-01-01" : entry.periodStart();
+                String to = entry.periodEnd() == null ? "2999-12-31" : entry.periodEnd();
+                // M3: the aggregate grain is projected by the BACKEND from the ref metadata
+                // (processed/aggregate/<itemId>/<grain>/<year>.csv) - never parsed by the client.
+                String grain = aggregateGrainOf(entry.ref());
+                query = "itemId=" + linkItemId + "&from=" + from + "&to=" + to
+                        + "&grain=" + (grain == null ? "month" : grain);
+            } else if (entry.ref() != null && entry.ref().startsWith("processed/daily/")) {
+                targetView = "HISTORY";
+                route = "/history";
+                String businessDate = entry.businessDate() == null ? "" : entry.businessDate();
+                query = "itemId=" + linkItemId + "&from=" + businessDate + "&to=" + businessDate
+                        + "&grain=daily";
+            } else {
+                targetView = "QUALITY";
+                route = "/quality";
+                String businessDate = entry.businessDate() == null ? "" : entry.businessDate();
+                query = "itemId=" + linkItemId + "&from=" + businessDate + "&to=" + businessDate;
+            }
+            links.add(new EvidenceLinkView(
+                    entry.evidenceRefId(), entry.refType(), linkItemId,
+                    entry.businessDate(), entry.periodStart(), entry.periodEnd(),
+                    grainOf(entry.ref()), targetView, route, query));
+        }
+        // M3: calculation basis from the first lineage-complete verified entry.
+        CalculationBasisView basis = null;
+        for (EvidencePackV1.EvidenceRefEntry entry : pack.evidenceRefs()) {
+            if (entry.status() != EvidenceStatus.VERIFIED) {
+                continue;
+            }
+            if (entry.validationVersion() != null || entry.calculationVersion() != null
+                    || entry.calendarVersion() != null || !entry.configVersions().isEmpty()) {
+                basis = new CalculationBasisView(
+                        entry.validationVersion(), entry.calculationVersion(),
+                        entry.calendarVersion(), entry.configVersions());
+                break;
+            }
+        }
+        // M3: risk/quality view from Warning facts only - the frontend never derives it.
+        RiskView risk = null;
+        for (EvidencePackV1.Fact fact : pack.facts()) {
+            if (fact.factType() != null && fact.factType().contains("WARNING")) {
+                risk = new RiskView(fact.value(), null, null, null,
+                        fact.validationStatus());
+                break;
+            }
+        }
+        if (risk == null) {
+            for (EvidencePackV1.Fact fact : pack.facts()) {
+                if (fact.factType() != null && fact.factType().contains("RISK")) {
+                    risk = new RiskView(fact.value(), fact.value(), null, null,
+                            fact.validationStatus());
+                    break;
+                }
+            }
+        }
         return new AgentQueryResponse(
                 pack.requestId(),
                 result.llmResponse().explanation() != null && !result.llmResponse().explanation().isBlank()
@@ -137,6 +283,9 @@ public record AgentQueryResponse(
                 report == null ? List.of() : report.limitations(),
                 report == null ? List.of() : report.recommendations(),
                 claims,
-                dataThrough);
+                dataThrough,
+                links,
+                basis,
+                risk);
     }
 }
