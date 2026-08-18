@@ -115,6 +115,9 @@ function evidenceKind(link: EvidenceLinkView): string {
       </div>
 
       <div class="section-body flat" v-if="result.risk">
+        <div v-if="result.risk.demoRule" class="demo-banner">
+          当前风险结果来自演示规则，仅用于验证分析流程，不代表正式业务阈值。
+        </div>
         <table class="sm-table">
           <thead>
             <tr>

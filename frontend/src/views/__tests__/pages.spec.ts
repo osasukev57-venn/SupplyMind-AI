@@ -218,6 +218,8 @@ describe('dashboard pages', () => {
     expect(wrapper.text()).toContain('6.79040000')
     expect(wrapper.text()).toContain('缺失')
     expect(wrapper.text()).toContain('2026-01')
+    expect(wrapper.text()).toContain('请求期间尚无可用数据')
+    expect(wrapper.text()).not.toContain('daily file(s) not found')
     expect(wrapper.text()).not.toContain('processed/')
   })
 

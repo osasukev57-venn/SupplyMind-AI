@@ -130,7 +130,8 @@ public record AgentQueryResponse(
             String currentValue,
             String baselineValue,
             String threshold,
-            String dataStatus
+            String dataStatus,
+            boolean demoRule
     ) {
     }
 
@@ -249,7 +250,8 @@ public record AgentQueryResponse(
                     projection.currentValue(),
                     projection.baselineValue(),
                     projection.threshold(),
-                    projection.dataStatus());
+                    projection.dataStatus(),
+                    projection.demoRule());
         }
         return new AgentQueryResponse(
                 pack.requestId(),

@@ -60,6 +60,8 @@ public final class WarningExplainToolAdapter {
             List<Map<String, Object>> rows = new ArrayList<>();
             List<String> evidenceRefs = new ArrayList<>();
             for (WarningRecordV1 warning : warnings) {
+                String evidenceRef = DataPaths.warningRef(
+                        YearMonth.parse(warning.periodStart().substring(0, 7)), warning.warningId());
                 Map<String, Object> entry = new LinkedHashMap<>();
                 entry.put("warningId", warning.warningId());
                 entry.put("itemId", warning.itemId());
@@ -74,9 +76,11 @@ public final class WarningExplainToolAdapter {
                 entry.put("riskLevel", warning.riskLevel().name());
                 entry.put("dataStatus", warning.dataStatus());
                 entry.put("demoRule", warning.demoRule());
+                // Row-scoped binding: one warning row may only support a projection through
+                // its own immutable warning evidence.
+                entry.put("evidenceRefs", List.of(evidenceRef));
                 rows.add(entry);
-                evidenceRefs.add(DataPaths.warningRef(
-                        YearMonth.parse(warning.periodStart().substring(0, 7)), warning.warningId()));
+                evidenceRefs.add(evidenceRef);
             }
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("warnings", rows);

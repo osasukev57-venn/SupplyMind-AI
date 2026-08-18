@@ -201,7 +201,7 @@ public final class AgentOrchestrator {
                 degraded, degradeReason,
                 factSummaries, claims, List.of(), List.copyOf(limitations), OffsetDateTime.now());
         String reportRef = reportStore.store(report);
-        RiskProjectionV1 riskProjection = buildRiskProjection(evidenceSource, evidencePack);
+        RiskProjectionV1 riskProjection = buildRiskProjection(evidenceSource, evidencePack, mode);
         return new AgentResult(evidencePack, phaseAResponse, reportRef, report, degraded, degradeReason,
                 riskProjection);
     }
@@ -214,11 +214,12 @@ public final class AgentOrchestrator {
      * risk view. Tool identity is the structured toolName equality - never string contains.
      */
     private static RiskProjectionV1 buildRiskProjection(
-            List<ToolResult> toolResults, EvidencePackV1 evidencePack
+            List<ToolResult> toolResults, EvidencePackV1 evidencePack, String mode
     ) {
-        Set<String> verifiedRefs = evidencePack.evidenceRefs().stream()
+        Set<String> modeAllowedRefs = evidencePack.evidenceRefs().stream()
                 .filter(entry -> entry.status() == EvidenceStatus.VERIFIED
                         && lineageCompleteFor(entry))
+                .filter(entry -> !("FORMAL".equals(mode) && isDemoOrSynthetic(entry)))
                 .map(EvidencePackV1.EvidenceRefEntry::ref)
                 .collect(java.util.stream.Collectors.toSet());
         for (ToolResult result : toolResults) {
@@ -247,16 +248,17 @@ public final class AgentOrchestrator {
                 Object riskLevel = row.get("riskLevel");
                 Object currentValue = row.get("currentValue");
                 Object warningId = row.get("warningId");
-                if (riskLevel == null || currentValue == null || warningId == null) {
+                Object itemId = row.get("itemId");
+                if (riskLevel == null || currentValue == null || warningId == null || itemId == null) {
                     continue; // incomplete structured row: no projection
                 }
-                List<String> rowRefs = rowRefsOfRow(result, verifiedRefs);
+                List<String> rowRefs = warningRowRefs(row, modeAllowedRefs);
                 if (rowRefs.isEmpty()) {
-                    continue; // no VERIFIED lineage-complete evidence: no risk view
+                    continue; // no VERIFIED, mode-allowed, row-owned evidence: no risk view
                 }
                 return new RiskProjectionV1(
                         String.valueOf(warningId),
-                        String.valueOf(row.get("itemId")),
+                        String.valueOf(itemId),
                         row.get("grain") == null ? null : String.valueOf(row.get("grain")),
                         row.get("periodStart") == null ? null : String.valueOf(row.get("periodStart")),
                         row.get("periodEnd") == null ? null : String.valueOf(row.get("periodEnd")),
@@ -265,14 +267,20 @@ public final class AgentOrchestrator {
                         row.get("baselineValue") == null ? null : String.valueOf(row.get("baselineValue")),
                         row.get("threshold") == null ? null : String.valueOf(row.get("threshold")),
                         row.get("dataStatus") == null ? null : String.valueOf(row.get("dataStatus")),
+                        Boolean.TRUE.equals(row.get("demoRule")),
                         rowRefs);
             }
         }
         return null;
     }
 
-    private static List<String> rowRefsOfRow(ToolResult result, Set<String> verifiedRefs) {
-        return result.evidenceRefs().stream().filter(verifiedRefs::contains).toList();
+    private static List<String> warningRowRefs(Map<?, ?> row, Set<String> modeAllowedRefs) {
+        Object value = row.get("evidenceRefs");
+        if (!(value instanceof List<?> refs) || refs.isEmpty()) {
+            return List.of();
+        }
+        return refs.stream().map(String::valueOf)
+                .filter(modeAllowedRefs::contains).distinct().toList();
     }
 
     private static EvidenceBuild buildEvidencePack(

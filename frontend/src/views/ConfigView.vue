@@ -25,7 +25,8 @@ import {
   jobStatusLabel,
   modeLabel,
   providerLabel,
-  routeLabel
+  routeLabel,
+  sourceDisplayName
 } from '../lib/labels'
 
 /**
@@ -349,7 +350,7 @@ onMounted(refresh)
       </div>
       <div class="section-body flat">
         <div class="table-scroll">
-          <table class="sm-table">
+          <table class="sm-table responsive-data-table">
             <thead>
               <tr>
                 <th>监测项</th>
@@ -368,7 +369,7 @@ onMounted(refresh)
                   <div class="id-cell muted">{{ item.itemId }}</div>
                 </td>
                 <td><StatusBadge :status="item.enabled ? 'ENABLED' : 'DISABLED'" /></td>
-                <td>{{ item.actualSourceName }}</td>
+                <td>{{ sourceDisplayName(item.actualSourceName) }}</td>
                 <td>{{ providerLabel(item.providerType) }}</td>
                 <td>
                   {{ routeLabel(item.routeDecision) }}
@@ -561,7 +562,7 @@ onMounted(refresh)
       </div>
       <div class="section-body flat">
         <div class="table-scroll">
-          <table v-if="capabilities.length > 0" class="sm-table">
+          <table v-if="capabilities.length > 0" class="sm-table responsive-data-table">
             <thead>
               <tr>
                 <th>接入方式</th>
@@ -574,7 +575,7 @@ onMounted(refresh)
             <tbody>
               <tr v-for="capability in capabilities" :key="capability.providerId">
                 <td>{{ providerLabel(capability.providerType) }}</td>
-                <td>{{ capability.actualSourceName }}</td>
+                <td>{{ sourceDisplayName(capability.actualSourceName) }}</td>
                 <td>{{ capability.supportsCurrentData ? '支持' : '不支持' }}</td>
                 <td>{{ capability.supportsHistoryData ? '支持' : '不支持' }}</td>
                 <td>{{ capability.configuredRateKinds.join('、') || '—' }}</td>

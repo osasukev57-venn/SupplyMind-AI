@@ -110,7 +110,8 @@ const response: AgentQueryResponse = {
     currentValue: '0.087',
     baselineValue: null,
     threshold: null,
-    dataStatus: 'PUBLISHED_VERIFIED'
+    dataStatus: 'PUBLISHED_VERIFIED',
+    demoRule: true
   }
 }
 
@@ -182,6 +183,7 @@ describe('AgentView (D8-T03)', () => {
     expect(wrapper.text()).toContain('\u914d\u7f6e\u7248\u672c')
     expect(wrapper.text()).toContain('HIGH')
     expect(wrapper.text()).toContain('PUBLISHED_VERIFIED')
+    expect(wrapper.text()).toContain('当前风险结果来自演示规则')
     // M3: no absolute paths / dataRoot in the page.
     expect(wrapper.text()).not.toContain('data-root')
     expect(wrapper.text()).not.toMatch(/[A-Za-z]:[\\/]/)

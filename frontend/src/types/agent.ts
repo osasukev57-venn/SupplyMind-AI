@@ -61,6 +61,7 @@ export interface RiskView {
   baselineValue: string | null
   threshold: string | null
   dataStatus: string | null
+  demoRule: boolean
 }
 
 export interface AgentQueryResponse {

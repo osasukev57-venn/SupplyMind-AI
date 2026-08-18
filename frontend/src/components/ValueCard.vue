@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ItemCard } from '../types/dashboard'
 import StatusBadge from './StatusBadge.vue'
-import { fallbackReasonLabel, routeLabel } from '../lib/labels'
+import { fallbackReasonLabel, routeLabel, sourceDisplayName } from '../lib/labels'
 
 defineProps<{ card: ItemCard }>()
 </script>
@@ -21,7 +21,7 @@ defineProps<{ card: ItemCard }>()
       <span>业务日期 {{ card.businessDate ?? '—' }}</span>
     </div>
     <dl class="card-details">
-      <div><dt>数据来源</dt><dd>{{ card.source.actualSourceName ?? '—' }}</dd></div>
+      <div><dt>数据来源</dt><dd>{{ sourceDisplayName(card.source.actualSourceName) }}</dd></div>
       <div><dt>完整率</dt><dd>{{ card.completeness ?? '—' }}</dd></div>
       <div>
         <dt>采集路线</dt>

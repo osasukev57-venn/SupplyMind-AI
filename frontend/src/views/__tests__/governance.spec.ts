@@ -270,6 +270,7 @@ describe('governance isolation (UI product copy)', () => {
     // Wire enums must not appear as primary user copy.
     expect(configText).not.toMatch(/official_web/)
     expect(configText).not.toMatch(/FALLBACK_MANUAL/)
+    expect(configText).not.toMatch(/\bManual\b|\bLocalImport\b|\bSyntheticDemo\b/)
     configWrapper.unmount()
 
     const sourcesWrapper = mountWithRouter(SourcesView)
@@ -278,6 +279,7 @@ describe('governance isolation (UI product copy)', () => {
     const sourcesText = sourcesWrapper.text()
     expect(sourcesText).not.toMatch(/official_web/)
     expect(sourcesText).not.toMatch(/FALLBACK_MANUAL/)
+    expect(sourcesText).not.toMatch(/\bManual\b|\bLocalImport\b|\bSyntheticDemo\b/)
     sourcesWrapper.unmount()
   })
 })

@@ -60,6 +60,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -140,7 +141,8 @@ class AgentApiTest {
         var response = controller.query(Map.of(
                 "question", "该序列是否有预警风险",
                 "itemId", FX_ITEM,
-                "month", "2026-08"));
+                "month", "2026-08",
+                "mode", "DEMO"));
 
         assertEquals(200, response.getStatusCode().value());
         com.supplymind.agent.api.AgentQueryResponse body =
@@ -159,9 +161,31 @@ class AgentApiTest {
         assertEquals("0.052", body.risk().baselineValue());
         assertEquals("0.05", body.risk().threshold());
         assertEquals("PUBLISHED_VERIFIED", body.risk().dataStatus());
-        // M3: the risk view is projected from the structured warning row backed by the
-        // VERIFIED warning evidence ref (independent of the FORMAL demo/synthetic usable-ref
-        // gate which governs LLM facts, not the backend-owned risk projection).
+        assertTrue(body.risk().demoRule(), "the API must preserve the demo-rule boundary");
+        // M3: DEMO mode may project the structured demo warning, but only through the
+        // row-owned VERIFIED warning evidence ref.
+    }
+
+    @Test
+    void formalModeNeverProjectsDemoWarningAsFormalBusinessRisk() throws Exception {
+        Harness harness = harness();
+        writeWarningFixture(harness.root(), harness.files());
+        com.supplymind.agent.api.AgentQueryController controller =
+                new com.supplymind.agent.api.AgentQueryController(orchestrator(harness));
+
+        var response = controller.query(Map.of(
+                "question", "该序列是否有预警风险",
+                "itemId", FX_ITEM,
+                "month", "2026-08",
+                "mode", "FORMAL"));
+
+        assertEquals(200, response.getStatusCode().value());
+        com.supplymind.agent.api.AgentQueryResponse body =
+                (com.supplymind.agent.api.AgentQueryResponse) response.getBody();
+        assertNotNull(body);
+        assertNull(body.risk(), "FORMAL mode must not turn a demo warning into a business risk");
+        assertTrue(body.limitations().stream().anyMatch(text -> text.contains("demo/synthetic")),
+                "the exclusion must remain visible in the formal audit limitations");
     }
 
     private static void writeWarningFixture(DataRoot root, AtomicFileStore files) throws Exception {

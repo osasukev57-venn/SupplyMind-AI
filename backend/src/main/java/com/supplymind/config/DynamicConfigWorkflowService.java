@@ -73,10 +73,11 @@ public final class DynamicConfigWorkflowService {
         Objects.requireNonNull(request, "request");
         MonitorSeriesItemV1 item = toItem(request, null);
         MonitorSeriesConfigV1 activated = configs.addItem(item);
+        ConfigV1.WorkflowResult.IntakeChain intake = runIntakeChain(request);
         return new ConfigV1.WorkflowResult(
                 toConfigView(activated),
-                runIntakeChain(request).currentIntake(),
-                runIntakeChain(request).backfillJobs());
+                intake.currentIntake(),
+                intake.backfillJobs());
     }
 
     /** ENABLE/DISABLE: pure activation; no jobs are created for a mere toggle. */
@@ -94,10 +95,11 @@ public final class DynamicConfigWorkflowService {
         Objects.requireNonNull(request, "request");
         MonitorSeriesItemV1 replacement = toItem(request.newItem(), request.oldItemId());
         MonitorSeriesConfigV1 activated = configs.replaceItem(request.oldItemId(), replacement);
+        ConfigV1.WorkflowResult.IntakeChain intake = runIntakeChain(request.newItem());
         return new ConfigV1.WorkflowResult(
                 toConfigView(activated),
-                runIntakeChain(request.newItem()).currentIntake(),
-                runIntakeChain(request.newItem()).backfillJobs());
+                intake.currentIntake(),
+                intake.backfillJobs());
     }
 
     /**

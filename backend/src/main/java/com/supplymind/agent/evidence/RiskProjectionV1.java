@@ -22,6 +22,7 @@ public record RiskProjectionV1(
         String baselineValue,
         String threshold,
         String dataStatus,
+        boolean demoRule,
         List<String> evidenceRefs
 ) {
     public RiskProjectionV1 {

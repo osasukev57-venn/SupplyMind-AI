@@ -471,6 +471,8 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
   .side-nav a { white-space: nowrap; margin: 0; }
   .sidebar-foot { display: none; }
   .app-main { padding: 16px 14px 32px; }
+  /* Preserve readable data density: wide operational tables scroll instead of crushing columns. */
+  table.responsive-data-table { min-width: 860px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

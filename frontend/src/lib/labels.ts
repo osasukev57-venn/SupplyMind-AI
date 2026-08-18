@@ -84,6 +84,15 @@ const REASON_LABELS: Record<string, string> = {
   SOURCE_DRIFT: '来源数据漂移'
 }
 
+const SOURCE_ID_LABELS: Record<string, string> = {
+  'pboc-official-web': '中国人民银行官网',
+  'am-authorized-api': 'Asian Metal 授权接口',
+  'smm-authorized-api': '上海有色网授权接口',
+  Manual: '人工录入',
+  LocalImport: '本地文件导入',
+  SyntheticDemo: '演示数据'
+}
+
 /** Map an enum wire value to a display label; unknown values pass through untouched. */
 export function providerLabel(value: string | null | undefined): string {
   if (value == null) return '—'
@@ -128,4 +137,21 @@ export function grainLabel(value: string | null | undefined): string {
 export function fallbackReasonLabel(value: string | null | undefined): string {
   if (value == null) return '—'
   return REASON_LABELS[value] ?? value
+}
+
+/** Presentation-only source name cleanup. The authoritative source value remains unchanged. */
+export function sourceDisplayName(value: string | null | undefined): string {
+  if (value == null || value.trim() === '') return '—'
+  const direct = SOURCE_ID_LABELS[value]
+  if (direct) return direct
+  return value
+    .replace(/\s*[（(](Manual|LocalImport|SyntheticDemo|am-authorized-api|smm-authorized-api|pboc-official-web)[）)]/g, '')
+    .trim()
+}
+
+/** EvidenceIssue.reason is audit detail; the product surface renders a stable action-oriented message. */
+export function evidenceIssueMessage(status: string | null | undefined): string {
+  if (status === 'MISSING') return '请求期间尚无可用数据'
+  if (status === 'CORRUPT' || status === 'INVALID') return '数据证据未通过完整性校验'
+  return '数据证据当前不可用'
 }

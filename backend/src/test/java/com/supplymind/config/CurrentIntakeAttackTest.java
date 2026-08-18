@@ -87,8 +87,8 @@ class CurrentIntakeAttackTest {
         ConfigV1.WorkflowResult result = harness.workflow().addItem(gbpRequest(null, null));
 
         // M1: the CURRENT acquisition really ran through provider.collect(CURRENT).
-        assertTrue(harness.transport().requestedUris().size() > beforeRequests,
-                "the real provider was actually invoked (list + detail fetched)");
+        assertEquals(beforeRequests + 2, harness.transport().requestedUris().size(),
+                "one workflow invocation must perform exactly one list+detail CURRENT acquisition");
         assertNotNull(result.currentIntake(), "the workflow exposes the CURRENT intake outcome");
         assertEquals("SUCCEEDED", result.currentIntake().status(),
                 "PBOC has current capability: CURRENT must succeed");
@@ -114,6 +114,8 @@ class CurrentIntakeAttackTest {
         ConfigV1.WorkflowResult result = harness.workflow().addItem(
                 gbpRequest("2026-08-01", "2026-08-17"));
 
+        assertEquals(List.of(LIST_URI, DETAIL_URI), harness.transport().requestedUris(),
+                "history orchestration must not replay the CURRENT HTTP acquisition");
         assertEquals("SUCCEEDED", result.currentIntake().status(),
                 "CURRENT succeeds - it only consults supportsCurrentData");
         assertEquals(1, result.backfillJobs().size(),
@@ -145,9 +147,6 @@ class CurrentIntakeAttackTest {
     @Test
     void replaceRunsCurrentThroughTheRealProviderAndKeepsHistoryJobCount() throws Exception {
         Harness harness = harness("announcement-detail-normal-with-gbp.html");
-        ConfigV1.ReplaceItemRequest request = new ConfigV1.ReplaceItemRequest(
-                MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID,
-                gbpRequest("2026-08-01", "2026-08-17"));
         // replaceItem on a Manual old item: the REPLACEMENT drives the intake chain.
         // For a real-PBOC replacement we must use a replacement that is an OFFICIAL_WEB target.
         ConfigV1.ReplaceItemRequest fxReplace = new ConfigV1.ReplaceItemRequest(
@@ -156,6 +155,8 @@ class CurrentIntakeAttackTest {
 
         ConfigV1.WorkflowResult result = harness.workflow().replaceItem(fxReplace);
 
+        assertEquals(List.of(LIST_URI, DETAIL_URI), harness.transport().requestedUris(),
+                "REPLACE must execute the replacement CURRENT acquisition exactly once");
         assertEquals("SUCCEEDED", result.currentIntake().status(),
                 "the replacement's CURRENT acquisition really ran through the real provider");
         assertEquals(1, result.backfillJobs().size());
@@ -170,6 +171,8 @@ class CurrentIntakeAttackTest {
 
         assertNotNull(result.currentIntake());
         assertEquals("SUCCEEDED", result.currentIntake().status());
+        assertEquals(List.of(LIST_URI, DETAIL_URI), harness.transport().requestedUris(),
+                "CURRENT is exactly one list+detail provider call, not two repeated acquisitions");
         // The provider contract: a CURRENT request carries no history dates.
         assertEquals(0, result.backfillJobs().size(),
                 "CURRENT is not a one-day backfill job - no runtime/jobs file is created for it");

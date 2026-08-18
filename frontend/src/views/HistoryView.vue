@@ -4,7 +4,7 @@ import { fetchHistory, fetchMetrics } from '../api/dashboard'
 import type { HistoryResponse, MetricsResponse } from '../types/dashboard'
 import TrendChart from '../components/TrendChart.vue'
 import StatusBadge from '../components/StatusBadge.vue'
-import { grainLabel } from '../lib/labels'
+import { evidenceIssueMessage, grainLabel, sourceDisplayName } from '../lib/labels'
 
 const items = ref<{ itemId: string; displayName: string }[]>([])
 const itemId = ref('')
@@ -109,14 +109,14 @@ async function load(): Promise<void> {
                 <td class="num">{{ point.businessDate }}</td>
                 <td class="num">{{ point.value }}</td>
                 <td>{{ point.unit ?? '—' }}</td>
-                <td>{{ point.actualSourceName ?? '—' }}</td>
+                <td>{{ sourceDisplayName(point.actualSourceName) }}</td>
                 <td><StatusBadge :status="point.validationStatus" /></td>
               </tr>
             </tbody>
           </table>
         </div>
         <div v-for="(issue, i) in history.evidenceIssues" :key="i" class="muted warn-line">
-          {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
+          {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ evidenceIssueMessage(issue.status) }}
           （期间：{{ issue.periods.join('；') }}，未插值）
         </div>
       </div>
@@ -146,14 +146,14 @@ async function load(): Promise<void> {
                 <td class="num">{{ row.periodEnd }}</td>
                 <td class="num">{{ row.value }}</td>
                 <td>{{ row.unit ?? '—' }}</td>
-                <td>{{ row.actualSourceName ?? '—' }}</td>
+                <td>{{ sourceDisplayName(row.actualSourceName) }}</td>
                 <td><StatusBadge :status="row.validationStatus" /></td>
               </tr>
             </tbody>
           </table>
         </div>
         <div v-for="(issue, i) in metrics.evidenceIssues" :key="i" class="muted warn-line">
-          {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
+          {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ evidenceIssueMessage(issue.status) }}
           （期间：{{ issue.periods.join('；') }}）
         </div>
       </div>

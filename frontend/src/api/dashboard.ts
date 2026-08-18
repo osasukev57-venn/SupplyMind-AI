@@ -70,7 +70,7 @@ export async function submitManual(fields: {
   }
 }
 
-/** D7 M1: file import -> backend real LocalImport boundary (CSV/XLSX really parsed). */
+/** File import -> backend intake boundary (CSV/XLSX really parsed and persisted). */
 export async function submitImport(file: File): Promise<ImportResponse | null> {
   const form = new FormData()
   form.append('file', file)

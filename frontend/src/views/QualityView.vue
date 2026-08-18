@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import { fetchQuality } from '../api/dashboard'
 import type { QualityResponse } from '../types/dashboard'
 import StatusBadge from '../components/StatusBadge.vue'
-import { providerLabel } from '../lib/labels'
+import { evidenceIssueMessage, providerLabel, sourceDisplayName } from '../lib/labels'
 
 const itemId = ref('')
 const items = ref<{ itemId: string; displayName: string }[]>([])
@@ -76,7 +76,7 @@ async function load(): Promise<void> {
               <tr v-for="row in quality.rows" :key="row.businessDate">
                 <td class="num">{{ row.businessDate }}</td>
                 <td class="num">{{ row.value }}</td>
-                <td>{{ row.actualSourceName ?? '—' }}</td>
+                <td>{{ sourceDisplayName(row.actualSourceName) }}</td>
                 <td>{{ providerLabel(row.providerType) }}</td>
                 <td><StatusBadge :status="row.validationStatus" /></td>
                 <td class="id-cell">{{ row.validationVersion ?? '—' }}</td>
@@ -128,7 +128,7 @@ async function load(): Promise<void> {
       </div>
       <div class="section-body">
         <div v-for="(issue, i) in quality.evidenceIssues" :key="i" class="muted warn-line">
-          {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
+          {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ evidenceIssueMessage(issue.status) }}
           （期间：{{ issue.periods.join('；') }}）
         </div>
         <div v-if="quality.evidenceIssues.length === 0" class="muted">引用的数据文件全部通过完整性校验</div>

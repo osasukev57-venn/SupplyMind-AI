@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import { fetchSources, submitImport, submitManual, submitSyntheticDemo } from '../api/dashboard'
 import type { SourcesResponse } from '../types/dashboard'
 import StatusBadge from '../components/StatusBadge.vue'
-import { accessLabel, fallbackReasonLabel, modeLabel, providerLabel, routeLabel, stageLabel, validationLabel } from '../lib/labels'
+import { accessLabel, fallbackReasonLabel, modeLabel, providerLabel, routeLabel, sourceDisplayName, stageLabel, validationLabel } from '../lib/labels'
 
 const data = ref<SourcesResponse | null>(null)
 const error = ref<string | null>(null)
@@ -117,7 +117,7 @@ onMounted(async () => {
       </div>
       <div class="section-body flat">
         <div class="table-scroll">
-          <table class="sm-table">
+          <table class="sm-table responsive-data-table">
             <thead>
               <tr>
                 <th>监测项</th>
@@ -138,7 +138,7 @@ onMounted(async () => {
                 <td><StatusBadge :status="item.enabled ? 'ENABLED' : 'DISABLED'" /></td>
                 <td>{{ item.sourceIntent ?? '—' }}</td>
                 <td>{{ providerLabel(item.providerType) }}</td>
-                <td>{{ item.actualSourceName ?? '—' }}</td>
+                <td>{{ sourceDisplayName(item.actualSourceName) }}</td>
                 <td>
                   {{ routeLabel(item.routeDecision) }}
                   <span v-if="item.fallbackReason" class="muted">（{{ fallbackReasonLabel(item.fallbackReason) }}）</span>
