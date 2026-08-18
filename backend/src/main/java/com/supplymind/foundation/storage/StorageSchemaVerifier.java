@@ -71,6 +71,15 @@ final class StorageSchemaVerifier {
             if (!dataRef.equals(DataPaths.backfillJobRef(job.jobId()))) {
                 throw new StorageException("BackfillJobStateV1.jobId must match its atomic target: " + dataRef);
             }
+        } else if (dataRef.startsWith("warning/") && dataRef.endsWith(".ack.json")) {
+            // DEC-061 acknowledgement sidecar: a distinct immutable document next to the warning.
+            com.supplymind.warning.WarningAcknowledgementV1 ack = JsonV1Codec.decodeFile(
+                    bytes, com.supplymind.warning.WarningAcknowledgementV1.class);
+            String expected = DataPaths.warningAckRef(ack.warningMonth(), ack.warningId());
+            if (!dataRef.equals(expected)) {
+                throw new StorageException(
+                        "WarningAcknowledgementV1 identity must match its atomic target: " + dataRef);
+            }
         } else if (dataRef.startsWith("warning/")) {
             com.supplymind.warning.WarningRecordV1 warning = JsonV1Codec.decodeFile(
                     bytes, com.supplymind.warning.WarningRecordV1.class);

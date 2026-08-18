@@ -1,0 +1,16 @@
+Day8 Web P0 Pre-Acceptance - Restart Recovery API Evidence (2026-08-17)
+
+Backend restarted (full JVM stop + fresh start).
+
+GET /api/config/items
+  configVersion=2
+  MAT.AZ91D.SMM enabled=False
+  MAT.REPL-01.SMM enabled=True supersedesItemId=MAT.AZ91D.SMM
+
+GET /api/backfill/jobs
+  jobs=2
+  backfill-MAT.REPL-01.SMM-2026-08-01-2026-08-31: AWAITING_MANUAL_INPUT
+  backfill-MAT.REPL-01.SMM-2026-08-17-2026-08-17: AWAITING_MANUAL_INPUT
+
+Conclusion: config history/active state and backfill job checkpoints survive restart;
+Manual replacement honestly stays AWAITING_MANUAL_INPUT.

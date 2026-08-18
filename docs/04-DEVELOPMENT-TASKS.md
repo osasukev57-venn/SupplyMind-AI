@@ -3,7 +3,8 @@
 > 文档性质：跨窗口可独立执行的任务清单  
 > 规范版本：v1.5（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
-> 当前进度锚点：Day 1～Day 6均已完成并通过各自Stage Gate。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8；最终完整技术回归105 suites/535 tests/0 failures/0 errors/8 skipped）；D6-T00～D6-T05=`TaskExecutionStatus=DONE`，Day6=`COMPLETE`。AT-AI-000/002/003本地合同=`PASS`，AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`且不被伪报为PASS。D7-T01=`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`，尚未开始Day7实现。
+> 当前进度锚点：Day 1～Day 7均已完成并通过各自Stage Gate（保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8；最终完整技术回归105 suites/535 tests/0 failures/0 errors/8 skipped）；D6-T00～D6-T05=`TaskExecutionStatus=DONE`，Day6=`COMPLETE`。AT-AI-000/002/003本地合同=`PASS`，AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`且不被伪报为PASS。
+> Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`TaskExecutionStatus=DONE`（实施 + Attack Validation + Final Stage Review 全部 PASS，MAJOR Finding 全部关闭）；最终实施候选=`feaedd3`；CURRENT 全量回归=110 suites/578 backend tests/0 failures/0 errors/8 skipped，前端 11/11 PASS + build PASS；历史候选（1b83410、d2b0965、5f1491c、01d4270 等中间状态）一律 HISTORICAL，详见 docs/05-PROGRESS-LEDGER 与 docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md。Day1-Day6 代码零修改。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
 ## 1. 新窗口执行协议
@@ -537,7 +538,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D7-T01 Vue3应用壳与API契约
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`（D6-T05与Day6 Stage Gate均已完成，尚未领取）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=D7T01_DONE_FINAL_CLOSURE_20260817`（Vue3/Vite/TS 壳、hash router、axios 统一客户端、错误不白屏、精确字符串展示；`frontend/` 工程；Final Stage Review PASS）。
 - **任务目标：** 建立Vue3/Vite页面壳、路由、统一API客户端、错误状态和精确小数字符串展示规范。
 - **对应需求：** F01、H09、C类前端冻结。
 - **输入：** 后端接口说明、UI页面清单。
@@ -551,7 +552,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D7-T02 仪表盘与默认监测项
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=D7T02_DONE_FINAL_CLOSURE_20260817`（总览卡片：最新值/业务日期/来源/Provider/路线/校验版本/完整率/聚合摘要/预警摘要；默认项来自 `/api/dashboard/overview`（配置驱动，非页面硬编码）；DEMO 全页水印；未验证值显示 NO_DATA 不伪造；Final Stage Review PASS）。
 - **任务目标：** 展示PBOC EUR/USD，以及SMM来源意图×ADC12/AZ91D、Asian Metal来源意图×ADC12/AZ91D四条材料序列各自当前生效路线、实际来源、均值、质量和预警摘要；指定商业源自动能力单独显示。
 - **对应需求：** H01、F03-F05、F06、H09。
 - **输入：** 已发布数据API、默认series配置。
@@ -565,7 +566,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D7-T03 历史趋势、跨文件与数据质量页面
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=D7T03_DONE_FINAL_CLOSURE_20260817`（日/月/季/半年/年切换；SVG 趋势只画后端 points、缺失不插值；聚合表与精确字符串表格；质量页含校验状态/预警/证据 issues；Final Stage Review PASS）。
 - **任务目标：** 支持日期范围和粒度查询，展示跨年趋势、聚合表、缺失区间、来源和校验质量。
 - **对应需求：** H01、H02、H06、F06、F12。
 - **输入：** history、aggregation、quality API。
@@ -579,7 +580,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D7-T04 手工录入、文件导入与来源管理页面
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=D7T04_DONE_FINAL_CLOSURE_20260817`（来源列表/三层路线/降级原因展示；Manual/Import 通过真实 ManualMaterialIntakeService/LocalImportService 边界受理（真实 PENDING + runId/rawRef/timelineRef 证据）；模板下载 + Synthetic 演示入口；Final Stage Review PASS）。
 - **任务目标：** 提供Manual表单、合法文件导入、来源能力与三层路线状态、模板下载、预览、逐行错误和synthetic演示入口。
 - **对应需求：** F02、F04-F07、H08、SUP-03、SUP-05、SUP-06、SUP-07。
 - **输入：** Manual/LocalImport/provider API、模板、`routeDecision`和运行模式。
@@ -595,7 +596,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D8-T01 动态监测配置与历史回填闭环
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY8_FINAL_STAGE_REVIEW_PASS_20260818`；Final Implementation=`239d025`。单次 ADD/REPLACE 只执行一条 CURRENT intake，精确 list+detail 两次 HTTP 请求；无范围不伪造 backfill，历史能力失败保持 fail-closed。
 - **任务目标：** 在不改代码、不重启的前提下新增、停用和替换监测项，并为新增项触发当前值采集、历史导入/回填和聚合重算。
 - **对应需求：** H07、H08、H09、F07、F08。
 - **输入：** 配置Schema、Provider能力、系列唯一键、历史数据服务和配置管理API。
@@ -609,21 +610,21 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D8-T02 预警规则、记录与确认闭环
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
-- **任务目标：** 对Java计算结果执行阈值、环比/同比和数据质量规则，持久化可追溯预警并支持确认。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY8_FINAL_STAGE_REVIEW_PASS_DEC061_BINDING_20260818`；WarningAckStore 14 项 sidecar/原 warning SHA/同步篡改/重启攻击全部 PASS，DEC-061 保持有效。
+- **任务目标：** 对Java计算结果执行阈值、环比/同比和数据质量规则，持久化可追溯预警并支持确认（DEC-061 确认 sidecar）。
 - **对应需求：** F09、F10、F11、H02。
 - **输入：** 已发布日值与聚合值、完整率、stale状态、可配置规则。
-- **创建或修改文件：** warning服务、规则执行器、warning JSON仓储、warning页面/API和测试。
+- **创建或修改文件：** warning确认sidecar（WarningAcknowledgementV1/WarningAckStore）、warning查询（真实 from/to）、warning页面/API（/api/warnings）和测试。
 - **输出：** warningId、规则版本、证据引用、严重级别、状态、创建/确认时间和处置备注。
 - **依赖任务：** D4-T04、D5-T03、D7-T01。
-- **具体测试：** 阈值命中/未命中、缺失数据、规则变更、重复执行幂等、跨月轮转、确认后重启保持。
-- **Definition of Done：** LLM不参与规则判定；每条预警可回溯到数据与公式；重复调度不产生重复记录。
+- **具体测试：** 阈值命中/未命中、缺失数据、规则变更、重复执行幂等、跨月轮转、确认后重启保持（DEC-061：原warning不可改写、sidecar CREATE_NEW/幂等/冲突fail-closed、ack文件不得被当WarningRecord解码）。
+- **Definition of Done：** LLM不参与规则判定；每条预警可回溯到数据与公式；重复调度不产生重复记录；确认走独立sidecar且原warning逐字节不变；EXT-07/EXT-08保持`OPEN_EXTERNAL`，页面/API显示demoRule=true。
 - **失败回退：** 暂停故障规则并显示规则不可用，不把未计算结果当作正常。
 - **是否阻塞后续：** 是，阻塞Agent风险报告和最终展示。
 
 ### D8-T03 工业供应链Agent工作台
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY8_FINAL_STAGE_REVIEW_PASS_FORMAL_DEMO_BOUNDARY_20260818`；风险投影只接受行级自有 VERIFIED+lineage-complete evidence，FORMAL 排除 demo/synthetic，DEMO 结果显式标识 demoRule。
 - **任务目标：** 将用户问题编排为受控工具调用、EvidencePack和可追溯风险报告，而非开放式聊天。
 - **对应需求：** F13、F14、H01、H02。
 - **输入：** D6工具注册表、EvidencePack、LLM抽象、Java模板降级、预警服务。
@@ -637,7 +638,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D8-T04 Web形态P0预验收
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY8_FINAL_STAGE_REVIEW_PASS_AUDITABLE_RUNNER_20260818`。非Windows P0 matrix 逐 caseId 绑定真实 Surefire XML/正式 gated AT-SRC-002 runner 或浏览器工件；AT-SRC-006 按 EXT-10=`OPEN_EXTERNAL_NON_BLOCKING` 诚实 BLOCKED，Windows/真实Cloud外部用例保持 NOT_RUN，不伪报 PASS。
 - **任务目标：** 在Electron封装前按验收计划完成浏览器形态全链路预验收并关闭P0缺陷。
 - **对应需求：** H01-H09、F01-F14。
 - **输入：** D1-D8已完成成果、03验收计划、固定测试夹具。
@@ -649,25 +650,26 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 - **失败回退：** 冻结新增功能，按数据正确性、可恢复性、展示顺序修复，不把缺陷推迟到Electron阶段。
 - **是否阻塞后续：** 是，未通过不得进入封装。
 
-### D8-T05 P0功能冻结与发布候选基线
+### D8-T05 P0功能冻结与Day8 Stage Closure
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
-- **任务目标：** 建立Day 8功能冻结点，固定Schema、API、默认配置、夹具和候选版本。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY8_FINAL_STAGE_REVIEW_PASS_FREEZE_EFFECTIVE_20260818`。Final Implementation=`239d025`；117 suites/632 backend tests/0 failures/0 errors/8 skipped；frontend 33/33 + build PASS；可复现 JAR 两次 SHA-256 完全一致。
+- **任务目标：** 建立Day 8功能冻结点，固定Schema、API、默认配置、夹具和候选版本，并提交Day8 Stage Review候选。
 - **对应需求：** H01-H09、F01-F14。
-- **输入：** Web预验收报告、决策日志、配置与数据Schema。
-- **创建或修改文件：** 版本说明、冻结清单、已知问题、Schema/API基线和任务台账。
-- **输出：** 可封装的release candidate、版本号、校验和与冻结后变更审批规则。
-- **依赖任务：** D8-T04。
+- **输入：** D8-T01～D8-T04最终通过结果、测试/evidence、冻结清单。
+- **创建或修改文件：** Day8功能冻结清单、版本说明、已知问题、Schema/API基线和任务台账。
+- **输出：** Day8功能冻结清单；最终版本/commit；后端与前端回归结果；关键文件SHA-256；重建验证；Day8 Stage evidence；下一阶段状态。
+- **依赖任务：** D8-T04（`TaskExecutionStatus=DONE`）。
 - **具体测试：** 从干净工作副本重建前后端产物并复核固定夹具结果与文件格式一致。
-- **Definition of Done：** 冻结内容可复现；只允许阻断缺陷修复进入候选版本；每次修复均有回归证据。
+- **Definition of Done：** 冻结内容可复现；只允许阻断缺陷修复进入候选版本；每次修复均有回归证据；Day8 只有最终 Stage Review `PASS` 后才能 D8-T01～D8-T05=`DONE`、Day8=`COMPLETE`、功能冻结=`EFFECTIVE`。
 - **失败回退：** 撤销候选标记并回到最近通过预验收的版本，不在封装分支继续叠加功能。
 - **是否阻塞后续：** 是，阻塞Day 9。
+- **禁止：** D8-T05新增业务功能；新增schema/Provider/Agent工具/规则；把D9/D10内容提前塞入D8-T05；把未执行验收改`PASS`。
 
 ## Day 9：Electron便携封装与Windows运行闭环
 
 ### D9-T01 Electron壳与后端进程托管
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`（Day8已完成，仅表示允许领取；尚未开始Day9）。
 - **任务目标：** 用Electron封装冻结的Vue静态资源，启动并托管Spring Boot子进程，形成可双击运行的桌面应用。
 - **对应需求：** H03、H04、F01及Windows最终交付约束。
 - **输入：** D8-T05候选版本、前后端构建产物、Electron主进程设计。
@@ -911,6 +913,6 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ## 推荐启动顺序
 
-- Day 1～Day 6均为`COMPLETE`；Day6最终技术候选=`bc6f61a`，DEC-060=`APPROVED`且实现保持不变。
-- 当前唯一可领取P0任务为D7-T01（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`）；Day7实现尚未开始。
+- Day 1～Day 8均为`COMPLETE`；Day8 Final Implementation=`239d025`，Final Stage Review=`PASS`，D8-T01～D8-T05=`DONE`，Feature Freeze=`EFFECTIVE`；Day6/Day7冻结合同保持不变。
+- 当前唯一可领取P0任务为D9-T01（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`）；READY仅表示允许领取，不代表`IN_PROGRESS`或Day9已经开始。
 - P1/P2仅在P0验收全绿、Day 8功能冻结未被破坏且仍有时间时启动。

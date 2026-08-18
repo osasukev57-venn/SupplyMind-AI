@@ -23,6 +23,8 @@ data/quarantine/<itemId>/YYYY-MM/<runId>.json
 data/processed/daily/<itemId>/YYYY-MM.csv
 data/processed/aggregate/<itemId>/{month,quarter,halfyear,year}/YYYY.csv
 data/warning/YYYY-MM/<warningId>.json
+data/warning/YYYY-MM/<warningId>.ack.json
+data/warning/YYYY-MM/<warningId>.ack.json.manifest.json
 data/report/YYYY-MM/<reportId>.json
 data/runtime/jobs/{active,history/YYYY-MM}/*.json
 data/runtime/dirty/*.json
@@ -122,6 +124,14 @@ Daily 的 processingStage 固定 `PUBLISHED`，validationStatus 仅 `VERIFIED` �
 Aggregate 固定表头：`schemaVersion,grain,periodStart,periodEnd,itemId,providerType,actualSourceName,accessMethod,validationStatus,validationVersion,configVersions,calculationVersion,calculationScale,displayScale,roundingMode,calendarVersion,sum,validCount,avg,min,max,expectedCount,missingCount,complete,qualityStatus,currency,unit,sourceFingerprint,inputRefs,calculatedAt`。
 
 Aggregate 的 qualityStatus 仅 `COMPLETE`/`INCOMPLETE`，必须分别对应 complete=true/false。sourceFingerprint 是无 BOM/空白/末尾换行的紧凑 JSON（字段顺序 providerType、actualSourceName、accessMethod）的 SHA-256。inputRefs 的对象字段顺序为 dailyFileRef、businessDate、validationVersion、fileSha256，并按 businessDate/dailyFileRef/validationVersion/fileSha256 升序。`calculatedAt`（DEC-055 确定性语义）表示该 aggregate 行实际参与计算的全部正式 daily inputs 中 `max(daily.updatedAt)`（按 Instant 比较后统一转换为 Asia/Shanghai 的 ISO-8601 offset datetime），**不是 processing 执行时间**；month/quarter/halfyear/year 四级全部直接从各自周期内正式 daily 行独立计算，禁止从下级聚合继承；相同逻辑 daily 输入跨执行时间重算必须逐字节一致；daily updatedAt 缺失/非法或输入不可解析必须 fail-closed。
+
+## WarningAcknowledgementV1（DEC-061）
+
+确认 sidecar 与 `WarningRecordV1` 是**两个独立文件**。原 `data/warning/YYYY-MM/<warningId>.json` 永久不可改写；确认只写 `data/warning/YYYY-MM/<warningId>.ack.json`（+ 相邻 `.ack.json.manifest.json`）。
+
+`WarningAcknowledgementV1` 固定字段顺序：`schemaVersion`（固定 `"1.0"`）、`warningId`、`warningRef`（指向原 warning 的相对 dataRoot 引用，如 `warning/2026-08/<warningId>.json`）、`warningFileSha256`（原 warning 业务文件 SHA-256）、`status`（v1 只允许 `ACKNOWLEDGED`）、`acknowledgedAt`（服务端 Clock 生成的 ISO-8601 offset datetime，客户端不得指定）、`dispositionNote`（非空受控文本，上限 500 字符，禁止 `/`、`\`、`..`、`:`、`;`、换行）。
+
+写入规则：原 warning + manifest 必须可验证且 warningId 一致；CREATE_NEW；同完整字节重试幂等；同 warningId 不同确认内容 fail-closed（不可变冲突）；不覆盖原 warning；重启后经 sidecar 恢复 ACKNOWLEDGED 状态。查询规则：WarningRecord 扫描只识别 `<warningId>.json`，排除 `.ack.json`/`.manifest.json`/tmp/bak；ack 查询独立校验 manifest 与 warningFileSha256 绑定。
 
 ## ManifestV1 与 DirtyMarkerV1
 

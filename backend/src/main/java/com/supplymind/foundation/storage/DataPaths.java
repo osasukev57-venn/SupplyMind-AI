@@ -109,6 +109,13 @@ public final class DataPaths {
         return "warning/" + warningMonth + "/" + warningId + ".json";
     }
 
+    /** DEC-061 warning acknowledgement sidecar under the same warning/YYYY-MM pattern. */
+    public static String warningAckRef(YearMonth warningMonth, String warningId) {
+        Objects.requireNonNull(warningMonth, "warningMonth");
+        requireIdentifier(warningId, "warningId");
+        return "warning/" + warningMonth + "/" + warningId + ".ack.json";
+    }
+
     /** D6-T04 Agent report evidence under the frozen report/YYYY-MM pattern (AGENT-EVIDENCE-SCHEMA-V1). */
     public static String reportRef(YearMonth reportMonth, String reportId) {
         Objects.requireNonNull(reportMonth, "reportMonth");

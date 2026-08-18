@@ -1,0 +1,89 @@
+{
+  "suite": "Day8 Final Stage Review Web P0 Evidence Runner",
+  "evidenceStatus": "HISTORICAL_SUPERSEDED",
+  "currentAuthority": false,
+  "supersededBy": "backend-surefire-summary.json + backend-surefire-xml.zip + web-p0-full-matrix.json",
+  "mode": "BATCH_IMPLEMENTATION_FINAL_STAGE_REVIEW_APPROVED_20260817",
+  "date": "2026-08-17",
+  "backend": {
+    "baseUrl": "http://127.0.0.1:8080",
+    "frontend": "http://localhost:5174",
+    "jar": "supplymind-backend-0.1.0-SNAPSHOT.jar"
+  },
+  "cases": [
+    {
+      "caseId": "M1-WEB-01",
+      "scope": "Replace AZ91D (MAT.AZ91D.SMM -> MAT.REPL-01.SMM) with backfill range via real browser",
+      "startedAt": "2026-08-17T00:18:21+08:00",
+      "finishedAt": "2026-08-17T00:18:46+08:00",
+      "result": "PASS",
+      "assertions": [
+        "replace form REQUIRES the backfill range (client-side validation before any request)",
+        "configVersion advanced 1 -> 2",
+        "old MAT.AZ91D.SMM disabled, never deleted",
+        "MAT.REPL-01.SMM enabled with supersedesItemId=MAT.AZ91D.SMM",
+        "AUTO-CHAIN created 2 jobs: current acquisition (2026-08-17) + history backfill (2026-08-01..31)",
+        "both jobs honestly AWAITING_MANUAL_INPUT (Manual route - never fake SUCCEEDED, never left WAITING)"
+      ],
+      "evidenceRefs": [
+        "docs/evidence/Day8/artifacts/m1-replace-auto-chain.png",
+        "docs/evidence/Day8/artifacts/config-page.png"
+      ]
+    },
+    {
+      "caseId": "M1-WEB-02",
+      "scope": "Restart recovery - configVersion, disabled/replaced items and backfill job checkpoints persist",
+      "startedAt": "2026-08-17T00:20:00+08:00",
+      "finishedAt": "2026-08-17T00:20:15+08:00",
+      "result": "PASS",
+      "assertions": [
+        "configVersion=2 after full backend restart",
+        "MAT.AZ91D.SMM still disabled",
+        "MAT.REPL-01.SMM still enabled, supersedesItemId intact",
+        "both backfill jobs (history + current) still AWAITING_MANUAL_INPUT"
+      ],
+      "evidenceRefs": [
+        "docs/evidence/Day8/artifacts/restart-recovery-api.txt"
+      ]
+    },
+    {
+      "caseId": "M3-WEB-01",
+      "scope": "Agent workbench renders risk/quality view + evidence link section; honest no-link state",
+      "startedAt": "2026-08-17T00:19:01+08:00",
+      "finishedAt": "2026-08-17T00:19:25+08:00",
+      "result": "PASS",
+      "assertions": [
+        "question submitted -> JAVA_TEMPLATE fallback honestly labelled (degraded + degradeReason)",
+        "risk/quality view section rendered (only Java facts - none here, shown honestly)",
+        "evidence link section rendered as RouterLink navigation targets (route/query from backend DTO)",
+        "no published data -> 'no usable evidence link' honest state, NO fabricated links",
+        "limitations list rendered (series.resolve: itemId is required / fallback note)"
+      ],
+      "evidenceRefs": [
+        "docs/evidence/Day8/artifacts/m3-agent-workbench.png"
+      ]
+    },
+    {
+      "caseId": "D8T02-WEB-01",
+      "scope": "Warning page - evaluate demo rule with no published aggregate data",
+      "startedAt": "2026-08-17T00:19:38+08:00",
+      "finishedAt": "2026-08-17T00:19:57+08:00",
+      "result": "PASS",
+      "assertions": [
+        "evaluate (demoRule=true) returns NOT_TRIGGERED honestly (no fabricated warning)",
+        "EXT-07/EXT-08 remain OPEN_EXTERNAL; demo rule marker displayed",
+        "warning list over real from/to returns empty with no errors"
+      ],
+      "evidenceRefs": [
+        "docs/evidence/Day8/artifacts/warning-page.png"
+      ]
+    }
+  ],
+  "console": {
+    "errors": [
+      "favicon.ico 404 (static asset - not a business error, no stack leak)"
+    ],
+    "warnings": []
+  },
+  "note": "HISTORICAL runner snapshot retained for audit. Its CURRENT-as-backfill wording was rejected by Final Review and is not current semantics. Current authority is the 2026-08-18 runner archive/matrix; CURRENT is a distinct intake and creates zero backfill jobs unless an explicit history range is supplied. Real Cloud LLM remains NOT_RUN/PENDING_EXTERNAL."
+}

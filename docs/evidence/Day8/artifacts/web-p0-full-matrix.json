@@ -1,0 +1,1039 @@
+{
+  "suite": "Day8 Final Findings Closure - Full Non-Windows P0 Matrix",
+  "date": "2026-08-17",
+  "generatedBy": "capture-day8-final-runner-evidence.ps1 from immutable Surefire XML + tracked browser artifacts",
+  "matrix": [
+    {
+      "caseId": "AT-SRC-001",
+      "scope": "source legality + three-tier degradation",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing acceptance suite (backend regression)",
+      "assertions": [
+        "routeDecision deterministic",
+        "fallback reason recorded",
+        "no silent source switch"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.MaterialDay3AcceptanceTest",
+        "com.supplymind.routing.MaterialRoutingTest"
+      ]
+    },
+    {
+      "caseId": "AT-SRC-002",
+      "scope": "PBOC dual-currency real acquisition + file closure",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-10",
+      "finishedAt": "2026-08-10",
+      "result": "PASS",
+      "basis": "previously frozen real gated run (businessDate 2026-08-10)",
+      "assertions": [
+        "raw/lifecycle/daily/aggregate/restart verified"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/AT-SRC-002/TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml",
+        "docs/evidence/AT-SRC-002/at-src-002-summary.json"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/AT-SRC-002/TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml": "6E9D7C50A88CC9A8FCE740DF6D1E0BD17E9BA60BDD457DE033BFEE8227E2B1D8",
+        "docs/evidence/AT-SRC-002/at-src-002-summary.json": "D4330F415488BF1E41F95D7796B92549A0AAB9A45D25A3FBEBB68B007FE6DA62"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.AtSrc002AcceptanceTest"
+      ]
+    },
+    {
+      "caseId": "AT-SRC-003",
+      "scope": "SMM authorized auto capability",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "N/A_APPROVED_FALLBACK via routeDecision tests; Manual fallback PASS",
+      "assertions": [
+        "no fake auto capability",
+        "manual fallback legal"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.MaterialRoutePlanProductionTest",
+        "com.supplymind.day5.r2.Day5FinalProviderCapabilityDeclarationTest"
+      ]
+    },
+    {
+      "caseId": "AT-SRC-004",
+      "scope": "Asian Metal authorized auto capability",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "same fallback handling as AT-SRC-003",
+      "assertions": [
+        "no fake auto capability",
+        "manual fallback legal"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.MaterialRoutePlanProductionTest",
+        "com.supplymind.day5.r2.Day5FinalProviderCapabilityDeclarationTest"
+      ]
+    },
+    {
+      "caseId": "AT-SRC-005-D4",
+      "scope": "material routes P0 judgement (Day4 scope)",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing Day4 acceptance suite",
+      "assertions": [
+        "four P0 sequences each have a legal non-synthetic route"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.day4.foundation.AtSrcDay4ReconciliationHarnessTest",
+        "com.supplymind.day4.foundation.FutureMaterialDay4ContractTest"
+      ]
+    },
+    {
+      "caseId": "AT-SRC-006",
+      "scope": "FreePublic full-legal real source",
+      "executionMode": "BLOCKED",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "BLOCKED",
+      "basis": "EXT-10: no approved free public source exists; not executable legally",
+      "assertions": [],
+      "note": "BLOCKED is an honest state, not PASS",
+      "evidenceFiles": [
+        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+      ],
+      "evidenceSha": {
+        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
+      }
+    },
+    {
+      "caseId": "AT-SRC-007-D4",
+      "scope": "Manual provider entry + governance gate (Day4 scope)",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing Day4 suite + manual intake tests",
+      "assertions": [
+        "manual reaches PARSED+PENDING",
+        "PENDING invisible to formal exits",
+        "operator audit"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.MaterialDay3AcceptanceTest",
+        "com.supplymind.manual.ManualMaterialIntakeTest"
+      ]
+    },
+    {
+      "caseId": "AT-SRC-008-D4",
+      "scope": "source identity non-impersonation (Day4 scope)",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing provenance/source tests",
+      "assertions": [
+        "actualSourceName preserved verbatim",
+        "no SMM/Asian Metal impersonation"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.MaterialDay3AcceptanceTest",
+        "com.supplymind.localimport.SyntheticDemoIsolationTest"
+      ]
+    },
+    {
+      "caseId": "AT-PUB-001",
+      "scope": "publish gate for legal data",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing publish gate suite",
+      "assertions": [
+        "only PUBLISHED+VERIFIED-class visible"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.publish.PublishGateTest",
+        "com.supplymind.day4.foundation.AtPubDay4ContractHarnessTest"
+      ]
+    },
+    {
+      "caseId": "AT-PUB-002",
+      "scope": "unverified/invalid data not displayed",
+      "executionMode": "WEB_BROWSER",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "dashboard NO_DATA honesty (browser artifact live-dashboard-light.png)",
+      "assertions": [
+        "no fabricated value",
+        "NO_DATA shown"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/live-dashboard-light.png"
+      ],
+      "evidenceSha": {
+        "docs/evidence/Day8/artifacts/live-dashboard-light.png": "7E16D5EB4F9843C1D879A8ED1D847B73879BA224417B531409F00420E5D089B4"
+      }
+    },
+    {
+      "caseId": "AT-PUB-003",
+      "scope": "raw tamper/repeat/conflict",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing raw conflict/idempotency suite",
+      "assertions": [
+        "idempotent replay",
+        "conflict evidence",
+        "never overwrite"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.storage.RawAndConfigStoreTest",
+        "com.supplymind.foundation.storage.RawAcquisitionLinkVerifierTest"
+      ]
+    },
+    {
+      "caseId": "AT-PREC-001",
+      "scope": "BigDecimal precision / tiny decimals",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing precision suite",
+      "assertions": [
+        "exact decimal strings survive"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.day4.foundation.AtPrecDay4ContractHarnessTest",
+        "com.supplymind.foundation.model.QuarantineAndPrecisionV1Test"
+      ]
+    },
+    {
+      "caseId": "AT-PREC-002",
+      "scope": "decimal string formatting",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing codec suite",
+      "assertions": [
+        "toPlainString only",
+        "no scientific notation"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.codec.CsvV1CodecTest",
+        "com.supplymind.foundation.codec.JsonV1CodecTest"
+      ]
+    },
+    {
+      "caseId": "AT-PREC-003",
+      "scope": "no float/double in value path",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing precision suite",
+      "assertions": [
+        "no float/double computation"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.day4.foundation.AtPrecDay4ContractHarnessTest",
+        "com.supplymind.processing.AggregateCalculatorTest"
+      ]
+    },
+    {
+      "caseId": "AT-AGG-001",
+      "scope": "four-level aggregation",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing aggregate suite",
+      "assertions": [
+        "month/quarter/halfyear/year persisted"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.day4.foundation.AtAggDay4ContractHarnessTest",
+        "com.supplymind.processing.MaterialDailyAggregateTest"
+      ]
+    },
+    {
+      "caseId": "AT-AGG-002",
+      "scope": "aggregate display",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing aggregate display tests",
+      "assertions": [
+        "fixed headers",
+        "natural periods"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.day4.foundation.Day4DailyAggregateSchemaContractTest",
+        "com.supplymind.processing.AggregateProcessingServiceTest"
+      ]
+    },
+    {
+      "caseId": "AT-AGG-003",
+      "scope": "missing days do not pollute aggregates",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing aggregate suite",
+      "assertions": [
+        "no zero-fill",
+        "valid counts correct"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.processing.DailyProcessingServiceTest",
+        "com.supplymind.processing.AggregateCalculatorTest"
+      ]
+    },
+    {
+      "caseId": "AT-FILE-000",
+      "scope": "D1 file contract + atomic writes + recovery",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing foundation acceptance suite",
+      "assertions": [
+        "golden bytes",
+        "atomic move",
+        "recovery"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.acceptance.IndependentFormatContractAcceptanceTest",
+        "com.supplymind.foundation.acceptance.AtFile000RecoveryManifestRootAcceptanceTest"
+      ]
+    },
+    {
+      "caseId": "AT-FILE-001",
+      "scope": "data dir directly inspectable JSON/CSV",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing file schema suite",
+      "assertions": [
+        "no hidden store",
+        "files visible"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.storage.DataRootAndPathsTest",
+        "com.supplymind.foundation.acceptance.GoldenFixtureContractAcceptanceTest"
+      ]
+    },
+    {
+      "caseId": "AT-FILE-002",
+      "scope": "four-level persistence + restart",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing persistence suite",
+      "assertions": [
+        "restart read",
+        "manifest verified"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.processing.AggregateProcessingServiceTest",
+        "com.supplymind.foundation.storage.ManifestDerivedFieldsVerifierTest"
+      ]
+    },
+    {
+      "caseId": "AT-TIME-001",
+      "scope": "clock forward rotation",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing time rotation suite",
+      "assertions": [
+        "month/quarter/year boundaries",
+        "idempotent"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.rotation.TimeRotationServiceTest",
+        "com.supplymind.day5.foundation.Day5TimeContractHarnessTest"
+      ]
+    },
+    {
+      "caseId": "AT-TIME-002",
+      "scope": "clock backward rotation",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing time rotation suite",
+      "assertions": [
+        "no duplicate publish",
+        "state recoverable"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.rotation.TimeRotationServiceTest",
+        "com.supplymind.day5.r2.Day5R2RotationHistoryCapabilityAttackTest"
+      ]
+    },
+    {
+      "caseId": "AT-TIME-003",
+      "scope": "physical Windows system time forward",
+      "executionMode": "WINDOWS_EXCLUDED",
+      "startedAt": null,
+      "finishedAt": null,
+      "result": "NOT_RUN",
+      "basis": "D10-T02 reserved: requires clean VM physical time manipulation",
+      "assertions": [],
+      "evidenceFiles": [
+        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+      ],
+      "evidenceSha": {
+        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
+      }
+    },
+    {
+      "caseId": "AT-TIME-004",
+      "scope": "physical Windows system time backward",
+      "executionMode": "WINDOWS_EXCLUDED",
+      "startedAt": null,
+      "finishedAt": null,
+      "result": "NOT_RUN",
+      "basis": "D10-T02 reserved: requires clean VM physical time manipulation",
+      "assertions": [],
+      "evidenceFiles": [
+        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+      ],
+      "evidenceSha": {
+        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
+      }
+    },
+    {
+      "caseId": "AT-XR-001",
+      "scope": "cross-year file join",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing cross-year suite",
+      "assertions": [
+        "merge/dedupe/sort stable"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.history.HistoryQueryServiceTest",
+        "com.supplymind.day5.foundation.Day5CrossYearHistoryContractHarnessTest"
+      ]
+    },
+    {
+      "caseId": "AT-XR-002",
+      "scope": "missing/corrupt file isolation",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing cross-year suite",
+      "assertions": [
+        "missing reported",
+        "corrupt isolated",
+        "no silent gap"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.history.HistoryQueryServiceTest",
+        "com.supplymind.day5.foundation.Day5CrossYearHistoryContractHarnessTest"
+      ]
+    },
+    {
+      "caseId": "AT-CFG-001",
+      "scope": "dynamic disable EUR",
+      "executionMode": "WEB_BROWSER",
+      "startedAt": "2026-08-17T00:18:21+08:00",
+      "finishedAt": "2026-08-17T00:18:46+08:00",
+      "result": "PASS",
+      "basis": "browser artifact m1-replace-auto-chain.png + API",
+      "assertions": [
+        "disable via UI",
+        "panel hides",
+        "restart persists"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/m1-replace-auto-chain.png"
+      ],
+      "evidenceSha": {
+        "docs/evidence/Day8/artifacts/m1-replace-auto-chain.png": "8D901193003655A2B938D3DC83B3DE53706332E6EC9CEF27B03575E06B79EB20"
+      }
+    },
+    {
+      "caseId": "AT-CFG-002",
+      "scope": "dynamic add GBP + current data",
+      "executionMode": "WEB_BROWSER",
+      "startedAt": "2026-08-17T00:18:21+08:00",
+      "finishedAt": "2026-08-17T00:18:46+08:00",
+      "result": "PASS",
+      "basis": "CurrentIntakeAttackTest + browser",
+      "assertions": [
+        "real CURRENT request",
+        "GBP raw/timeline persisted",
+        "no fake completion"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.config.CurrentIntakeAttackTest",
+        "com.supplymind.config.DynamicConfigWorkflowServiceTest"
+      ]
+    },
+    {
+      "caseId": "AT-CFG-003",
+      "scope": "GBP history backfill + mean + restart recovery",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing backfill orchestration suite + CurrentIntakeAttackTest history-fail-closed",
+      "assertions": [
+        "checkpoint resume",
+        "idempotent",
+        "honest capability states"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.backfill.BackfillOrchestratorTest",
+        "com.supplymind.config.CurrentIntakeAttackTest"
+      ]
+    },
+    {
+      "caseId": "AT-CFG-004",
+      "scope": "dynamic replace AZ91D",
+      "executionMode": "WEB_BROWSER",
+      "startedAt": "2026-08-17T00:18:21+08:00",
+      "finishedAt": "2026-08-17T00:18:46+08:00",
+      "result": "PASS",
+      "basis": "browser artifact m1-replace-auto-chain.png",
+      "assertions": [
+        "old disabled",
+        "new independent item",
+        "ADC12 unchanged",
+        "history preserved"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/m1-replace-auto-chain.png"
+      ],
+      "evidenceSha": {
+        "docs/evidence/Day8/artifacts/m1-replace-auto-chain.png": "8D901193003655A2B938D3DC83B3DE53706332E6EC9CEF27B03575E06B79EB20"
+      }
+    },
+    {
+      "caseId": "AT-UI-001",
+      "scope": "panel reconfiguration after config change",
+      "executionMode": "WEB_BROWSER",
+      "startedAt": "2026-08-17T00:18:46+08:00",
+      "finishedAt": "2026-08-17T00:18:46+08:00",
+      "result": "PASS",
+      "basis": "browser artifact live-dashboard-light.png (EUR hidden after disable)",
+      "assertions": [
+        "panel reflects config",
+        "no error page"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/live-dashboard-light.png"
+      ],
+      "evidenceSha": {
+        "docs/evidence/Day8/artifacts/live-dashboard-light.png": "7E16D5EB4F9843C1D879A8ED1D847B73879BA224417B531409F00420E5D089B4"
+      }
+    },
+    {
+      "caseId": "AT-UI-002",
+      "scope": "old item hidden but history not deleted",
+      "executionMode": "WEB_BROWSER",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "history selector includes disabled items (frontend test)",
+      "assertions": [
+        "old item still selectable in history",
+        "no file deletion"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.dashboard.DashboardServiceTest",
+        "com.supplymind.config.ConfigManagementServiceTest"
+      ]
+    },
+    {
+      "caseId": "AT-ALT-001",
+      "scope": "deterministic warning + unverified isolation",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing warning suite + browser evaluate NOT_TRIGGERED honest",
+      "assertions": [
+        "threshold semantics",
+        "no unverified trigger"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.warning.WarningServiceTest",
+        "com.supplymind.day5.foundation.Day5AlertContractHarnessTest"
+      ]
+    },
+    {
+      "caseId": "AT-ALT-002",
+      "scope": "warning ack sidecar + restart recovery (DEC-061)",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "WarningAckStoreTest 14/14",
+      "assertions": [
+        "sidecar binding",
+        "tamper fail-closed",
+        "restart restore"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.warning.WarningAckStoreTest",
+        "com.supplymind.warning.WarningApiMvcContractTest"
+      ]
+    },
+    {
+      "caseId": "AT-NET-001",
+      "scope": "offline local history + acquisition failure",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing network-failure suite",
+      "assertions": [
+        "local history readable",
+        "failure honest"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.history.HistoryQueryServiceTest",
+        "com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest"
+      ]
+    },
+    {
+      "caseId": "AT-AI-000",
+      "scope": "framework compatibility gate",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "D6-T00 already closed PASS",
+      "assertions": [
+        "Java17/Boot3.5.15/AI1.1.8"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip",
+        "docs/evidence/Day8/artifacts/maven-dependency-tree.txt"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041",
+        "docs/evidence/Day8/artifacts/maven-dependency-tree.txt": "B22E671CA49F26C5A0D000B9BB91FEF2494C3FE17641FE02F5D3B4AED2826596"
+      },
+      "runnerSuites": [
+        "com.supplymind.agent.AgentSpringAiToolCallingTest",
+        "com.supplymind.foundation.acceptance.FoundationStartupAcceptanceTest"
+      ]
+    },
+    {
+      "caseId": "AT-AI-001",
+      "scope": "Cloud LLM failure degradation to Java template",
+      "executionMode": "WEB_BROWSER",
+      "startedAt": "2026-08-17T00:19:01+08:00",
+      "finishedAt": "2026-08-17T00:19:25+08:00",
+      "result": "PASS",
+      "basis": "browser artifact m3-agent-workbench.png (JAVA_TEMPLATE labelled)",
+      "assertions": [
+        "degraded honest",
+        "template report produced"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/m3-agent-workbench.png"
+      ],
+      "evidenceSha": {
+        "docs/evidence/Day8/artifacts/m3-agent-workbench.png": "97CDE49FDE739B47D97875191DA0764CC0B6A19D7D0FE977FFA04A84B63A2FA9"
+      }
+    },
+    {
+      "caseId": "AT-AI-001-REAL",
+      "scope": "real Cloud LLM gated run",
+      "executionMode": "EXTERNAL_DEPENDENCY",
+      "startedAt": null,
+      "finishedAt": null,
+      "result": "NOT_RUN",
+      "basis": "no real Cloud credentials configured; PENDING_EXTERNAL",
+      "assertions": [],
+      "note": "NOT_RUN is honest - never PASS without real Cloud execution",
+      "evidenceFiles": [
+        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+      ],
+      "evidenceSha": {
+        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
+      }
+    },
+    {
+      "caseId": "AT-AI-002",
+      "scope": "read-only tool calling + production service reuse",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing agent tool boundary suite",
+      "assertions": [
+        "7 tools read-only",
+        "no write/fs/http/db"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.agent.AgentToolBoundaryTest",
+        "com.supplymind.agent.Day6R2IndependentSpringAiAttackTest"
+      ]
+    },
+    {
+      "caseId": "AT-AI-003",
+      "scope": "EvidencePack traceability + AgentReport persistence",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing evidence suite + M3 risk projection test",
+      "assertions": [
+        "evidence refs verified",
+        "report persisted"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest",
+        "com.supplymind.agent.Day6FinalStageFullBindingAttackTest"
+      ]
+    },
+    {
+      "caseId": "AT-WIN-001",
+      "scope": "clean Windows portable Electron EXE",
+      "executionMode": "WINDOWS_EXCLUDED",
+      "startedAt": null,
+      "finishedAt": null,
+      "result": "NOT_RUN",
+      "basis": "Day 9 scope: Electron packaging not started (D9 gated on D8-T05)",
+      "assertions": [],
+      "evidenceFiles": [
+        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+      ],
+      "evidenceSha": {
+        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
+      }
+    },
+    {
+      "caseId": "AT-WIN-002",
+      "scope": "Electron dynamic port + health + local comms",
+      "executionMode": "WINDOWS_EXCLUDED",
+      "startedAt": null,
+      "finishedAt": null,
+      "result": "NOT_RUN",
+      "basis": "Day 9 scope: Electron packaging not started",
+      "assertions": [],
+      "evidenceFiles": [
+        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+      ],
+      "evidenceSha": {
+        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
+      }
+    },
+    {
+      "caseId": "AT-OPS-001",
+      "scope": "no database stack / file-only business storage",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing dependency audit suite",
+      "assertions": [
+        "no JDBC/JPA/db drivers/docker"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip",
+        "docs/evidence/Day8/artifacts/maven-dependency-tree.txt"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041",
+        "docs/evidence/Day8/artifacts/maven-dependency-tree.txt": "B22E671CA49F26C5A0D000B9BB91FEF2494C3FE17641FE02F5D3B4AED2826596"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.storage.DataRootAndPathsTest",
+        "com.supplymind.foundation.acceptance.FoundationStartupAcceptanceTest"
+      ]
+    },
+    {
+      "caseId": "AT-OPS-002",
+      "scope": "portable data dir inspectability + move + backup",
+      "executionMode": "BACKEND_API",
+      "startedAt": "2026-08-17",
+      "finishedAt": "2026-08-17",
+      "result": "PASS",
+      "basis": "existing file/inspectability suite",
+      "assertions": [
+        "data dir visible",
+        "move works"
+      ],
+      "evidenceFiles": [
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
+      ],
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.storage.DataRootAndPathsTest",
+        "com.supplymind.foundation.storage.AtomicFileRecoveryTest"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 44,
+    "pass": 38,
+    "blocked": 1,
+    "notRun": 5,
+    "windowsExcluded": 4,
+    "externalDependency": 1,
+    "note": "Counts recomputed from the matrix on 2026-08-18; AT-TIME-003/004 + AT-WIN-001/002 are WINDOWS_EXCLUDED AND NOT_RUN (non-Windows P0 matrix scope)."
+  }
+}

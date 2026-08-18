@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,7 +46,7 @@ public class AgentQueryController {
                 body.getOrDefault("mode", "FORMAL"));
         try {
             AgentOrchestrator.AgentResult result = orchestrator.answer(input);
-            return ResponseEntity.ok(toResponse(result));
+            return ResponseEntity.ok(AgentQueryResponse.of(result));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(Map.of(
                     "status", "REJECTED",
@@ -58,34 +56,5 @@ public class AgentQueryController {
                     "status", "UNAVAILABLE",
                     "message", "agent pipeline unavailable"));
         }
-    }
-
-    private static AgentQueryResponse toResponse(AgentOrchestrator.AgentResult result) {
-        EvidencePackV1 pack = result.evidencePack();
-        List<AgentQueryResponse.ToolExecutionView> executions = new ArrayList<>();
-        for (EvidencePackV1.ToolExecution execution : pack.toolExecutions()) {
-            executions.add(new AgentQueryResponse.ToolExecutionView(
-                    execution.invocationIndex(), execution.toolName(), execution.toolVersion(),
-                    execution.readOnly(), String.valueOf(execution.input()),
-                    String.valueOf(execution.output()), execution.status().name(),
-                    execution.evidenceRefs()));
-        }
-        List<String> evidenceRefs = pack.evidenceRefs().stream()
-                .map(EvidencePackV1.EvidenceRefEntry::ref).toList();
-        return new AgentQueryResponse(
-                pack.requestId(),
-                result.report() == null ? null : result.report().claims().isEmpty()
-                        ? null : result.report().claims().get(0).text(),
-                result.llmResponse().status().name(),
-                result.report() != null && result.report().degraded(),
-                result.report() == null ? null : result.report().degradeReason(),
-                executions,
-                evidenceRefs,
-                result.reportRef(),
-                result.report() == null ? List.of() : result.report().factsSummary().stream()
-                        .map(fact -> new AgentQueryResponse.FactView(
-                                fact.factId(), fact.statement(), fact.value(),
-                                fact.businessDate(), fact.period(), fact.validationStatus()))
-                        .toList());
     }
 }

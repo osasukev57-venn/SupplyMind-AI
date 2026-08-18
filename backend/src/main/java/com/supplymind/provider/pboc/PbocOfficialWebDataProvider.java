@@ -35,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,9 +61,6 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
 
     /** D3-T01 registry-unique provider identity. */
     public static final String PROVIDER_ID = "pboc-official-web";
-
-    private static final Set<String> SUPPORTED_ITEM_IDS = Set.of(
-            MonitorSeriesDefaults.USD_CNY_ITEM_ID, MonitorSeriesDefaults.EUR_CNY_ITEM_ID);
 
     private final DataRoot dataRoot;
     private final RawReceiptStore rawReceiptStore;
@@ -107,7 +105,17 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
 
     @Override
     public Set<String> supportedItemIds() {
-        return SUPPORTED_ITEM_IDS;
+        // M1: config-driven - the PBOC provider covers every enabled OFFICIAL_WEB exchange-rate
+        // target in the active configuration (USD/EUR defaults plus dynamic targets like GBP).
+        try {
+            MonitorSeriesConfigV1 config = loadActiveConfig();
+            return config.items().stream()
+                    .filter(item -> isConfiguredPbocTarget(item) && item.enabled())
+                    .map(MonitorSeriesItemV1::itemId)
+                    .collect(java.util.stream.Collectors.toSet());
+        } catch (RuntimeException exception) {
+            return Set.of();
+        }
     }
 
     /**
@@ -126,35 +134,81 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
     public ProviderCollectOutcome collect(ProviderCollectRequest request) {
         Objects.requireNonNull(request, "request");
         Map<String, String> rejected = new LinkedHashMap<>();
+        // M1: target support is decided by ACTIVE CONFIGURATION METADATA (providerType/
+        // accessMethod/rateKind/sourceIntent/route), never by a hard-coded USD/EUR itemId set.
+        // A dynamically added GBP target is therefore collectible through the real provider.
+        List<MonitorSeriesItemV1> supportedTargets = new ArrayList<>();
+        MonitorSeriesConfigV1 config = loadActiveConfig();
         for (String itemId : request.itemIds()) {
-            if (!SUPPORTED_ITEM_IDS.contains(itemId)) {
+            MonitorSeriesItemV1 item = resolveConfiguredPbocTarget(config, itemId);
+            if (item == null) {
                 rejected.put(itemId, "UNSUPPORTED_TARGET");
+            } else {
+                supportedTargets.add(item);
             }
         }
         if (rejected.size() == request.itemIds().size()) {
             return ProviderCollectOutcome.rejectedOnly(PROVIDER_ID, rejected);
         }
-        PbocCollectionResult result = collectLatestAnnouncement();
+        // D3-T01 frozen contract: a PBOC request always also covers the configured USD/EUR pair
+        // when they are enabled in the active configuration (dual-currency announcement).
+        if (!supportedTargets.isEmpty()) {
+            for (String frozenId : List.of(
+                    MonitorSeriesDefaults.USD_CNY_ITEM_ID, MonitorSeriesDefaults.EUR_CNY_ITEM_ID)) {
+                MonitorSeriesItemV1 frozen = resolveConfiguredPbocTarget(config, frozenId);
+                if (frozen != null && supportedTargets.stream().noneMatch(item -> item.itemId().equals(frozenId))) {
+                    supportedTargets.add(frozen);
+                }
+            }
+        }
+        PbocCollectionResult result = collectLatestAnnouncement(config, supportedTargets, rejected);
         return new ProviderCollectOutcome(
                 SchemaV1.VERSION,
                 PROVIDER_ID,
                 result.acquisitionId(),
                 result.businessDate(),
                 result.payloadSha256(),
-                List.of(result.usdRaw(), result.eurRaw()),
-                List.of(result.usdTimeline(), result.eurTimeline()),
-                rejected);
+                result.raws(),
+                result.timelines(),
+                mergedRejected(rejected, result.rejectedTargets()));
+    }
+
+    private static Map<String, String> mergedRejected(Map<String, String> requested, Map<String, String> resultRejected) {
+        Map<String, String> merged = new LinkedHashMap<>(requested);
+        resultRejected.forEach(merged::putIfAbsent);
+        return Map.copyOf(merged);
     }
 
     public PbocCollectionResult collectLatestAnnouncement() {
+        // Legacy entry: resolve the frozen USD/EUR pair plus any other configured PBOC target.
+        MonitorSeriesConfigV1 config = loadActiveConfig();
+        List<MonitorSeriesItemV1> targets = new ArrayList<>();
+        targets.add(requireFrozenPbocItem(config, MonitorSeriesDefaults.USD_CNY_ITEM_ID,
+                "USD", "1美元对人民币", "USD", "CNY/1 USD"));
+        targets.add(requireFrozenPbocItem(config, MonitorSeriesDefaults.EUR_CNY_ITEM_ID,
+                "EUR", "1欧元对人民币", "EUR", "CNY/1 EUR"));
+        for (MonitorSeriesItemV1 item : config.items()) {
+            if (isConfiguredPbocTarget(item) && !targets.contains(item)) {
+                targets.add(item);
+            }
+        }
+        return collectLatestAnnouncement(config, targets, Map.of());
+    }
+
+    /**
+     * M1: one announcement fetch shared by every requested target. raw-first (DEC-056) keeps
+     * the full HTTP entity bytes as a source acquisition before any parsing; each configured
+     * target then resolves its own raw/timeline from the announcement by its configured
+     * sourceFieldKey anchor. A configured anchor absent from the official page fails closed
+     * for that target - no fabricated value, no old-value fallback, no fake success.
+     */
+    private PbocCollectionResult collectLatestAnnouncement(
+            MonitorSeriesConfigV1 config,
+            List<MonitorSeriesItemV1> targets,
+            Map<String, String> requestedRejected
+    ) {
         URI currentUri = ANNOUNCEMENT_LIST_URI;
         try {
-            MonitorSeriesConfigV1 config = loadActiveConfig();
-            MonitorSeriesItemV1 usd = requireFrozenPbocItem(config, MonitorSeriesDefaults.USD_CNY_ITEM_ID,
-                    "USD", "1美元对人民币", "USD", "CNY/1 USD");
-            MonitorSeriesItemV1 eur = requireFrozenPbocItem(config, MonitorSeriesDefaults.EUR_CNY_ITEM_ID,
-                    "EUR", "1欧元对人民币", "EUR", "CNY/1 EUR");
-
             PbocHttpResponse listResponse = transport.get(ANNOUNCEMENT_LIST_URI);
             requireSuccessfulHtml("LIST", listResponse);
             URI detailUri = parser.discoverLatestDetailUri(listResponse.responseUri(),
@@ -175,17 +229,60 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
             PbocAnnouncement announcement = parser.parseDetail(detailUri,
                     parser.decodeHtml(detailUri, entityBytes, detailResponse.contentType()));
 
-            RawReceiptV1 usdRaw = resolveItemRaw(config, usd, acquisition, announcement, listResponse.responseUri(),
-                    detailResponse, entityBytes, payloadSha256, receivedAt);
-            RawReceiptV1 eurRaw = resolveItemRaw(config, eur, acquisition, announcement, listResponse.responseUri(),
-                    detailResponse, entityBytes, payloadSha256, receivedAt);
+            // Fail-closed BEFORE any item raw is written: every requested target whose anchor
+            // is absent from the official page rejects the whole run (never a partial write,
+            // never a fabricated value, never an old-value fallback).
+            Map<String, String> rejectedTargets = new LinkedHashMap<>();
+            for (MonitorSeriesItemV1 item : targets) {
+                if (!announcement.rateByAnchor().containsKey(item.sourceFieldKey())) {
+                    rejectedTargets.put(item.itemId(), "CONFIGURED_ANCHOR_NOT_ON_PAGE");
+                }
+            }
+            boolean usdRequested = targets.stream().anyMatch(
+                    item -> item.itemId().equals(MonitorSeriesDefaults.USD_CNY_ITEM_ID));
+            boolean eurRequested = targets.stream().anyMatch(
+                    item -> item.itemId().equals(MonitorSeriesDefaults.EUR_CNY_ITEM_ID));
+            if ((usdRequested && rejectedTargets.containsKey(MonitorSeriesDefaults.USD_CNY_ITEM_ID))
+                    || (eurRequested && rejectedTargets.containsKey(MonitorSeriesDefaults.EUR_CNY_ITEM_ID))) {
+                throw new PbocCollectionException(PbocCollectionFailureKind.PARSE_REJECTED, "DETAIL",
+                        detailResponse.responseUri(), detailResponse.statusCode(),
+                        "PBOC announcement must expose the requested USD/CNY and EUR/CNY anchors");
+            }
+            if (rejectedTargets.size() == targets.size()) {
+                return new PbocCollectionResult(acquisitionId, listResponse.responseUri(),
+                        detailResponse.responseUri(), announcement.businessDate().toString(), payloadSha256,
+                        null, null, null, null, List.of(), List.of(), rejectedTargets);
+            }
 
-            LifecycleTimelineV1 usdTimeline = storeInitialTimelineIfMissing(usdRaw);
-            LifecycleTimelineV1 eurTimeline = storeInitialTimelineIfMissing(eurRaw);
+            List<RawReceiptV1> raws = new ArrayList<>();
+            List<LifecycleTimelineV1> timelines = new ArrayList<>();
+            RawReceiptV1 usdRaw = null;
+            RawReceiptV1 eurRaw = null;
+            LifecycleTimelineV1 usdTimeline = null;
+            LifecycleTimelineV1 eurTimeline = null;
+            for (MonitorSeriesItemV1 item : targets) {
+                if (rejectedTargets.containsKey(item.itemId())) {
+                    continue;
+                }
+                String rawValue = announcement.rateByAnchor().get(item.sourceFieldKey());
+                RawReceiptV1 raw = resolveItemRaw(config, item, acquisition, announcement, listResponse.responseUri(),
+                        detailResponse, entityBytes, payloadSha256, receivedAt, rawValue);
+                LifecycleTimelineV1 timeline = storeInitialTimelineIfMissing(raw);
+                raws.add(raw);
+                timelines.add(timeline);
+                if (item.itemId().equals(MonitorSeriesDefaults.USD_CNY_ITEM_ID)) {
+                    usdRaw = raw;
+                    usdTimeline = timeline;
+                } else if (item.itemId().equals(MonitorSeriesDefaults.EUR_CNY_ITEM_ID)) {
+                    eurRaw = raw;
+                    eurTimeline = timeline;
+                }
+            }
 
             recordDiagnostic("SUCCESS", "COMPLETE", detailResponse.responseUri(), detailResponse.statusCode(), "NONE");
             return new PbocCollectionResult(acquisitionId, listResponse.responseUri(), detailResponse.responseUri(),
-                    announcement.businessDate().toString(), payloadSha256, usdRaw, eurRaw, usdTimeline, eurTimeline);
+                    announcement.businessDate().toString(), payloadSha256, usdRaw, eurRaw, usdTimeline, eurTimeline,
+                    raws, timelines, rejectedTargets);
         } catch (PbocCollectionException exception) {
             recordDiagnostic(exception.failureKind().name(), exception.stage(), exception.uri(), exception.httpStatus(),
                     exception.getCause() == null ? "NONE" : exception.getCause().getClass().getSimpleName());
@@ -237,7 +334,8 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
             PbocHttpResponse detailResponse,
             byte[] entityBytes,
             String payloadSha256,
-            OffsetDateTime receivedAt
+            OffsetDateTime receivedAt,
+            String rawValue
     ) {
         Optional<RawReceiptV1> existing = rawReceiptStore.findByBusinessKey(
                 config.mode(), item.providerType(), item.itemId(), announcement.businessDate().toString());
@@ -248,7 +346,7 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
             }
             String conflictRef = rawReceiptStore.writeBusinessKeyConflictEvidence(
                     createRawReceipt(config, item, acquisition, announcement, listUri,
-                            detailResponse, entityBytes, payloadSha256, receivedAt),
+                            detailResponse, entityBytes, payloadSha256, receivedAt, rawValue),
                     existingReceipt,
                     receivedAt);
             throw new PbocCollectionException(PbocCollectionFailureKind.PERSISTENCE_FAILED, "PERSISTENCE",
@@ -258,7 +356,7 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
                     new RawReceiptConflictException(conflictRef, null));
         }
         RawReceiptV1 raw = createRawReceipt(config, item, acquisition, announcement, listUri,
-                detailResponse, entityBytes, payloadSha256, receivedAt);
+                detailResponse, entityBytes, payloadSha256, receivedAt, rawValue);
         rawReceiptStore.store(raw);
         return raw;
     }
@@ -277,6 +375,36 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
             throw new PbocCollectionException(PbocCollectionFailureKind.CONFIG_REJECTED, "CONFIG", null, null,
                     "PBOC collection cannot read the active monitor-series configuration", exception);
         }
+    }
+
+    /**
+     * M1: a target is a supported PBOC target ONLY by active-configuration metadata -
+     * providerType/accessMethod/sourceIntent/rateKind/route/actualSourceName - never by
+     * itemId strings. Returns null when the itemId is not configured or not a PBOC target.
+     */
+    private static MonitorSeriesItemV1 resolveConfiguredPbocTarget(
+            MonitorSeriesConfigV1 config, String itemId
+    ) {
+        try {
+            MonitorSeriesItemV1 item = config.requireItem(itemId);
+            return isConfiguredPbocTarget(item) ? item : null;
+        } catch (RuntimeException exception) {
+            return null;
+        }
+    }
+
+    /** M1: the configuration metadata that makes a target collectible by this provider. */
+    static boolean isConfiguredPbocTarget(MonitorSeriesItemV1 item) {
+        return "PBOC".equals(item.sourceIntent())
+                && item.providerType() == ProviderType.OFFICIAL_WEB
+                && item.accessMethod() == AccessMethod.PUBLIC_OFFICIAL_HTML
+                && MonitorSeriesDefaults.PBOC_SOURCE_NAME.equals(item.actualSourceName())
+                && item.routeDecision() == RouteDecision.PRIMARY
+                && "CNY".equals(item.currency())
+                && item.rateKind() != null && MonitorSeriesDefaults.PBOC_RATE_KIND.equals(item.rateKind())
+                && item.sourceFieldKey() != null
+                && item.sourceFieldKey().startsWith("1")
+                && item.sourceFieldKey().endsWith("\u5bf9\u4eba\u6c11\u5e01");
     }
 
     private static MonitorSeriesItemV1 requireFrozenPbocItem(
@@ -311,11 +439,10 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
     private RawReceiptV1 createRawReceipt(
             MonitorSeriesConfigV1 config, MonitorSeriesItemV1 item, RawAcquisitionV1 acquisition,
             PbocAnnouncement announcement, URI listUri, PbocHttpResponse detailResponse, byte[] entityBytes,
-            String payloadSha256, OffsetDateTime receivedAt
+            String payloadSha256, OffsetDateTime receivedAt, String rawValue
     ) {
         String runId = runId(item.externalCode(), announcement.businessDate().toString(), payloadSha256);
         String rawRef = RawReceiptV1.deriveRawRef(config.mode(), item.providerType(), item.itemId(), receivedAt, runId);
-        String rawValue = "USD".equals(item.externalCode()) ? announcement.usdRawValue() : announcement.eurRawValue();
         String sourceReference = "PBOC公告列表=" + listUri + ";公告标题=" + announcement.title();
         return new RawReceiptV1(
                 SchemaV1.VERSION, rawRef, acquisition.acquisitionId(), runId, config.mode(), item.providerType(),

@@ -60,6 +60,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -97,6 +98,19 @@ class AgentApiTest {
         assertTrue(body.reportRef().startsWith("report/2026-08/"));
         assertFalse(body.toolTrace().isEmpty());
         assertTrue(body.toolTrace().stream().allMatch(trace -> trace.readOnly()));
+        // D8-T03: report-level projection is present and sourced from the verified report.
+        assertEquals("JAVA_TEMPLATE", body.generatedBy(),
+                "the fallback path is honestly labelled as JAVA_TEMPLATE");
+        assertNotNull(body.scope());
+        assertTrue(body.scope().itemIds().contains(FX_ITEM));
+        assertNotNull(body.claims());
+        assertFalse(body.claims().isEmpty(), "claims restate verified report content");
+        assertTrue(body.claims().stream().allMatch(claim -> !claim.evidenceRefs().isEmpty()),
+                "claims always carry traceable evidenceRefs");
+        assertNotNull(body.dataThrough(), "dataThrough comes from the EvidencePack facts");
+        assertNotNull(body.limitations(), "limitations are mapped from the report");
+        assertTrue(body.limitations().stream().anyMatch(limit -> limit.contains("fallback")),
+                "the fallback limitation is honestly mapped");
     }
 
     @Test
@@ -113,6 +127,83 @@ class AgentApiTest {
         assertEquals("REJECTED", body.get("status"));
         assertFalse(String.valueOf(body.get("message")).contains("Exception"),
                 "no stack trace may leak through the API");
+    }
+
+    @Test
+    void warningExplainProducesTheRealStructuredRiskViewThroughTheProductionChain() throws Exception {
+        Harness harness = harness();
+        // M3: persist a REAL warning evidence file so warning.explain has something to read.
+        writeWarningFixture(harness.root(), harness.files());
+        AgentOrchestrator orchestrator = orchestrator(harness);
+        com.supplymind.agent.api.AgentQueryController controller =
+                new com.supplymind.agent.api.AgentQueryController(orchestrator);
+
+        var response = controller.query(Map.of(
+                "question", "该序列是否有预警风险",
+                "itemId", FX_ITEM,
+                "month", "2026-08",
+                "mode", "DEMO"));
+
+        assertEquals(200, response.getStatusCode().value());
+        com.supplymind.agent.api.AgentQueryResponse body =
+                (com.supplymind.agent.api.AgentQueryResponse) response.getBody();
+        assertNotNull(body);
+        assertTrue(body.toolTrace().stream().anyMatch(trace -> trace.toolName().equals("warning.explain")),
+                "the fallback path must invoke warning.explain for a month-scoped question");
+        String warningOutput = body.toolTrace().stream()
+                .filter(trace -> trace.toolName().equals("warning.explain"))
+                .map(com.supplymind.agent.api.AgentQueryResponse.ToolExecutionView::output)
+                .findFirst().orElse("");
+        assertTrue(warningOutput.contains("w-m3"), "warning.explain must surface the persisted warning: " + warningOutput);
+        assertNotNull(body.risk(), "the real warning.explain ToolResult must produce a RiskView");
+        assertEquals("HIGH", body.risk().riskLevel());
+        assertEquals("0.087", body.risk().currentValue());
+        assertEquals("0.052", body.risk().baselineValue());
+        assertEquals("0.05", body.risk().threshold());
+        assertEquals("PUBLISHED_VERIFIED", body.risk().dataStatus());
+        assertTrue(body.risk().demoRule(), "the API must preserve the demo-rule boundary");
+        // M3: DEMO mode may project the structured demo warning, but only through the
+        // row-owned VERIFIED warning evidence ref.
+    }
+
+    @Test
+    void formalModeNeverProjectsDemoWarningAsFormalBusinessRisk() throws Exception {
+        Harness harness = harness();
+        writeWarningFixture(harness.root(), harness.files());
+        com.supplymind.agent.api.AgentQueryController controller =
+                new com.supplymind.agent.api.AgentQueryController(orchestrator(harness));
+
+        var response = controller.query(Map.of(
+                "question", "该序列是否有预警风险",
+                "itemId", FX_ITEM,
+                "month", "2026-08",
+                "mode", "FORMAL"));
+
+        assertEquals(200, response.getStatusCode().value());
+        com.supplymind.agent.api.AgentQueryResponse body =
+                (com.supplymind.agent.api.AgentQueryResponse) response.getBody();
+        assertNotNull(body);
+        assertNull(body.risk(), "FORMAL mode must not turn a demo warning into a business risk");
+        assertTrue(body.limitations().stream().anyMatch(text -> text.contains("demo/synthetic")),
+                "the exclusion must remain visible in the formal audit limitations");
+    }
+
+    private static void writeWarningFixture(DataRoot root, AtomicFileStore files) throws Exception {
+        java.time.YearMonth month = java.time.YearMonth.of(2026, 8);
+        String warningId = "w-m3-00000000000000000000000000000001";
+        String ref = DataPaths.warningRef(month, warningId);
+        com.supplymind.warning.WarningRecordV1 warning = new com.supplymind.warning.WarningRecordV1(
+                "1.0", warningId, "demo-price-change-x", "demo-v1", FX_ITEM, "month",
+                "2026-08-01", "2026-08-31", null, "0.05", "0.087", "0.052",
+                com.supplymind.warning.WarningRecordV1.RiskLevel.HIGH,
+                List.of("processed/aggregate/FX.USD.CNY.PBOC_MID/month/2026.csv"),
+                "PUBLISHED_VERIFIED", AT, "a".repeat(64), true,
+                "TEST/DEMO threshold - not a final business threshold (EXT-07 open)");
+        byte[] data = com.supplymind.foundation.codec.JsonV1Codec.encodeFile(warning);
+        ManifestV1 manifest = ManifestFactory.json(ref, data, List.of(), AT);
+        files.commit("warning-fixture", DirtyTransactionType.SINGLE_FILE, AT,
+                List.of(new FileTransactionTarget(DirtyTargetRole.BUSINESS_FILE, ref, data,
+                        com.supplymind.foundation.codec.JsonV1Codec.encodeFile(manifest), true)));
     }
 
     private AgentOrchestrator orchestrator(Harness harness) {

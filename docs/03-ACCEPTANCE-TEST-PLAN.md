@@ -873,6 +873,26 @@ GD-07用于AT-SRC-005至AT-SRC-008；每个文件生成SHA-256并固定期望状
   5. Agent 解释与确定性预警记录一致。
 - 证据：阈值配置、四组输入、预警JSON、Dashboard截图、Agent回答；存入AT-ALT-001。
 
+### AT-ALT-002 预警确认 sidecar 与重启恢复（DEC-061）
+
+- 对应需求：ALT-01、F10、H02。
+- 前置条件：AT-ALT-001 至少一条预警已持久化（`warning/YYYY-MM/<warningId>.json` 与 manifest）。
+- 测试数据：一条合法预警、一条重复确认请求、一条不同处置备注的冲突确认请求。
+- 步骤：
+  1. 查询预警列表与详情（真实 from/to 范围）。
+  2. 提交确认（dispositionNote）；重复提交同内容；提交不同内容。
+  3. 核对原 warning 文件与 ack sidecar 文件字节。
+  4. 重启应用后再次查询确认状态。
+- 预期：
+  1. 确认后 `warning/YYYY-MM/<warningId>.ack.json` + manifest 存在且 verified；原 warning 文件逐字节不变。
+  2. 同内容重复确认幂等（不产生第二个 sidecar、不报错）。
+  3. 同 warningId 不同确认内容 fail-closed（400 REJECTED）。
+  4. dispositionNote 为空/超长/含路径或分隔符被拒绝（400）。
+  5. 未知 warningId 确认被拒绝（400 unknown warningId）。
+  6. 重启后 ACKNOWLEDGED 状态保持（sidecar manifest 可验证）。
+  7. 预警列表查询只识别 `<warningId>.json`，不把 ack/manifest 文件当预警记录。
+- 证据：sidecar JSON、manifest、原 warning 前后 SHA-256、冲突/非法请求响应、重启后查询；存入AT-ALT-002。
+
 ### AT-NET-001 断网下的本地历史与采集失败
 
 - 对应需求：H02、H03、WIN-01、SRC-01、SRC-02。

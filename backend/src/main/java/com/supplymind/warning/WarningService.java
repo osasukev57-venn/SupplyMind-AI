@@ -186,4 +186,59 @@ public final class WarningService {
                 itemId, grain, threshold, WarningRuleV1.Direction.ABOVE, 1, true,
                 "TEST/DEMO threshold - not a final business threshold (EXT-07 open)");
     }
+
+    /**
+     * D7 read-only query: the manifest-verified warning records for one item over a bounded
+     * month lookback, newest first. Persisted warnings are immutable evidence - this never
+     * evaluates or writes anything. Uses the same DataRoot/manifest integrity checks as every
+     * other read path; unreadable files are skipped, never fabricated.
+     */
+    public List<WarningRecordV1> findRecent(String itemId, int lookbackMonths) {
+        Objects.requireNonNull(itemId, "itemId");
+        if (lookbackMonths < 0) {
+            throw new IllegalArgumentException("lookbackMonths must not be negative");
+        }
+        List<WarningRecordV1> warnings = new ArrayList<>();
+        java.time.YearMonth month = java.time.YearMonth.from(OffsetDateTime.now(clock));
+        for (int back = 0; back <= lookbackMonths; back++) {
+            java.time.YearMonth target = month.minusMonths(back);
+            java.nio.file.Path dir = dataRoot.resolveInternalRelative("warning")
+                    .resolve(target.toString());
+            if (!java.nio.file.Files.isDirectory(dir)) {
+                continue;
+            }
+            try (Stream<java.nio.file.Path> files = java.nio.file.Files.list(dir)) {
+                for (java.nio.file.Path file : files.toList()) {
+                    String name = file.getFileName().toString();
+                    if (!name.endsWith(".json") || name.endsWith(".manifest.json")) {
+                        continue;
+                    }
+                    // M6: one broken warning file is SKIPPED - it must never abort the scan of
+                    // the remaining valid warning evidence.
+                    WarningRecordV1 warning;
+                    try {
+                        String ref = "warning/" + target + "/" + name;
+                        java.nio.file.Path manifest = dataRoot.resolveDataRef(DataPaths.manifestRef(ref));
+                        if (!java.nio.file.Files.isRegularFile(manifest)
+                                || !ManifestVerifier.matches(dataRoot, ref, file, manifest)) {
+                            continue;
+                        }
+                        warning = JsonV1Codec.decodeFile(
+                                java.nio.file.Files.readAllBytes(file), WarningRecordV1.class);
+                    } catch (java.io.IOException | RuntimeException broken) {
+                        continue; // skip this file, keep scanning
+                    }
+                    if (itemId.equals(warning.itemId())) {
+                        warnings.add(warning);
+                    }
+                }
+            } catch (java.io.IOException listingFailed) {
+                continue; // a directory that cannot be listed never aborts the whole query
+            }
+        }
+        warnings.sort(java.util.Comparator.comparing(
+                WarningRecordV1::evaluatedAt,
+                java.util.Comparator.nullsLast(java.util.Comparator.reverseOrder())));
+        return List.copyOf(warnings);
+    }
 }
