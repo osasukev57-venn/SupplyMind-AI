@@ -18,6 +18,8 @@ const paths = require('./paths');
 const { pickFreePort } = require('./port');
 const { waitForBackend } = require('./health');
 const { backendArgs } = require('./backend');
+const { acquireSingleInstance } = require('./instance');
+const { stopChild } = require('./lifecycle');
 
 const HEALTH_TIMEOUT_MS = 30_000;
 const KILL_GRACE_MS = 5_000;
@@ -26,19 +28,9 @@ let childProcess = null;
 let mainWindow = null;
 let backendUrl = '';
 
-const gotLock = app.requestSingleInstanceLock();
-if (!gotLock) {
+if (!acquireSingleInstance(app, () => mainWindow)) {
   app.quit();
 } else {
-  app.on('second-instance', () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) {
-        mainWindow.restore();
-      }
-      mainWindow.focus();
-    }
-  });
-
   app.whenReady().then(async () => {
     Menu.setApplicationMenu(null);
     try {
@@ -62,9 +54,14 @@ if (!gotLock) {
       const backendUrlLog = path.join(dirs.logs, 'backend-url.txt');
       fs.writeFileSync(backendUrlLog, `${backendUrl}\n`, { flag: 'w' });
 
+      const spawnArgs = backendArgs(port, dirs.data, dirs.jreBin, dirs.jar, dirs.web).args;
+      // D9-T04: enable the backend parent-watchdog so a force-killed Electron cannot
+      // leave a Java process behind. Purely opt-in via the explicit parent-pid flag.
+      spawnArgs.push(`--supplymind.desktop.parent-pid=${process.pid}`);
+
       childProcess = spawn(
         dirs.jreBin,
-        backendArgs(port, dirs.data, dirs.jreBin, dirs.jar, dirs.web).args,
+        spawnArgs,
         {
           cwd: dirs.root,
           env: process.env,
@@ -139,23 +136,17 @@ function createWindow() {
   });
 }
 
+/**
+ * D9-T04 graceful backend shutdown via the shared lifecycle module (SIGTERM, then
+ * taskkill /T /F fallback). No orphan Java process can survive a normal quit.
+ */
 async function stopBackend() {
   if (!childProcess) {
     return;
   }
   const child = childProcess;
   childProcess = null;
-  child.kill();
-  await new Promise((resolve) => {
-    const timeout = setTimeout(resolve, KILL_GRACE_MS);
-    child.once('exit', () => {
-      clearTimeout(timeout);
-      resolve();
-    });
-  });
-  if (child.exitCode === null) {
-    child.kill('SIGKILL');
-  }
+  await stopChild(child, KILL_GRACE_MS);
 }
 
 app.on('window-all-closed', async () => {
