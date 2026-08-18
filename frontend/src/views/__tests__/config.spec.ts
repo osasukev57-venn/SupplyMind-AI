@@ -127,16 +127,17 @@ describe('ConfigView (D8-T01)', () => {
     vi.mocked(fetchBackfillJobs).mockResolvedValue({ jobs: [job] })
   })
 
-  it('renders the current items with backend status and configVersion', async () => {
+  it('renders the current items with backend status and summary strip', async () => {
     const wrapper = mount(ConfigView, { attachTo: document.body })
     await flushPromises()
-    expect(wrapper.text()).toContain('configVersion=2')
+    expect(wrapper.text()).toContain('配置版本')
+    expect(wrapper.text()).toContain('2')
     expect(wrapper.text()).toContain('FX.USD.CNY.PBOC_MID')
     expect(wrapper.text()).toContain('MAT.AZ91D.SMM')
     expect(wrapper.text()).toContain('CNY/1 USD')
     expect(wrapper.text()).toContain('元/吨')
-    expect(wrapper.text()).toContain('backfill-FX.GBP.CNY.PBOC_MID-2026-08-01-2026-08-31')
-    expect(wrapper.text()).toContain('WAITING')
+    expect(wrapper.text()).toContain('FX.GBP.CNY.PBOC_MID')
+    expect(wrapper.text()).toContain('等待中')
     wrapper.unmount()
   })
 
@@ -153,23 +154,27 @@ describe('ConfigView (D8-T01)', () => {
     await wrapper.findAll('button').find((button) => button.text() === '停用')?.trigger('click')
     await flushPromises()
     expect(setEnabled).toHaveBeenCalledWith('FX.USD.CNY.PBOC_MID', false)
-    expect(wrapper.text()).toContain('停用 FX.USD.CNY.PBOC_MID 成功')
+    expect(wrapper.text()).toContain('美元/人民币 已停用')
     wrapper.unmount()
   })
 
-  it('add form sends a CONTROLLED request and shows the backend configVersion', async () => {
+  it('add form sends a CONTROLLED request and shows the product result', async () => {
     vi.mocked(addItem).mockResolvedValue({
       config: { ...config, configVersion: 3 },
+      currentIntake: { itemId: 'FX.GBP.CNY.PBOC_MID', status: 'SUCCEEDED', rawCount: 1, failureReasons: [] },
       backfillJobs: [job]
     })
     const wrapper = mount(ConfigView, { attachTo: document.body })
+    await flushPromises()
+    // Open the add form section first.
+    await wrapper.findAll('button').find((button) => button.text() === '新增监测项')?.trigger('click')
     await flushPromises()
     const inputs = wrapper.findAll('input')
     await inputs[0].setValue('FX.GBP.CNY.PBOC_MID')
     await inputs[1].setValue('英镑/人民币中间价')
     await inputs[4].setValue('CNY/1 GBP')
     await inputs[5].setValue('GBP')
-    await wrapper.findAll('button').find((button) => button.text().startsWith('新增并激活'))?.trigger('click')
+    await wrapper.findAll('button').find((button) => button.text() === '新增并立即采集')?.trigger('click')
     await flushPromises()
 
     const request = vi.mocked(addItem).mock.calls[0][0] as AddItemRequest
@@ -177,13 +182,16 @@ describe('ConfigView (D8-T01)', () => {
     expect('configVersion' in request).toBe(false)
     expect('routeEffectiveAt' in request).toBe(false)
     expect('supersedesItemId' in request).toBe(false)
-    expect(wrapper.text()).toContain('已激活 configVersion=3')
+    expect(wrapper.text()).toContain('已新增 英镑/人民币中间价')
+    expect(wrapper.text()).toContain('当前采集')
+    expect(wrapper.text()).toContain('已完成')
     wrapper.unmount()
   })
 
   it('replace requires the backfill range and shows the auto-chain job statuses', async () => {
     vi.mocked(replaceItem).mockResolvedValue({
       config: { ...config, configVersion: 4 },
+      currentIntake: { itemId: 'MAT.REPL-01.SMM', status: 'AWAITING_MANUAL_INPUT', rawCount: 0, failureReasons: [] },
       backfillJobs: [
         { ...job, jobId: 'backfill-MAT.REPL-01.SMM-2026-08-17-2026-08-17', status: 'AWAITING_MANUAL_INPUT' },
         { ...job, jobId: 'backfill-MAT.REPL-01.SMM-2026-08-01-2026-08-31', status: 'AWAITING_MANUAL_INPUT' }
@@ -191,20 +199,22 @@ describe('ConfigView (D8-T01)', () => {
     })
     const wrapper = mount(ConfigView, { attachTo: document.body })
     await flushPromises()
+    await wrapper.findAll('button').find((button) => button.text() === '替换监测项')?.trigger('click')
+    await flushPromises()
     const replaceButton = () =>
-      wrapper.findAll('button').find((button) => button.text().startsWith('替换（旧项停用'))
+      wrapper.findAll('button').find((button) => button.text() === '执行替换')
     const inputs = wrapper.findAll('input')
-    await inputs[8].setValue('MAT.AZ91D.SMM')
-    await inputs[9].setValue('MAT.REPL-01.SMM')
-    await inputs[10].setValue('AZ91D替代材料（SMM意图）')
+    await inputs[0].setValue('MAT.AZ91D.SMM')
+    await inputs[1].setValue('MAT.REPL-01.SMM')
+    await inputs[2].setValue('AZ91D替代材料（SMM意图）')
     // M1: without the required backfill range the page rejects the submission client-side.
     await replaceButton()?.trigger('click')
     await flushPromises()
     expect(replaceItem).not.toHaveBeenCalled()
-    expect(wrapper.text()).toContain('替换表单必填历史回填范围')
+    expect(wrapper.text()).toContain('请填写历史回填的起止日期')
     // With the range filled in, the request carries it and the page shows job statuses.
-    await inputs[12].setValue('2026-08-01')
-    await inputs[13].setValue('2026-08-31')
+    await inputs[4].setValue('2026-08-01')
+    await inputs[5].setValue('2026-08-31')
     await replaceButton()?.trigger('click')
     await flushPromises()
 
@@ -214,8 +224,8 @@ describe('ConfigView (D8-T01)', () => {
     expect(request.newItem.routeDecision).toBe('fallback_manual')
     expect(request.newItem.backfillFrom).toBe('2026-08-01')
     expect(request.newItem.backfillTo).toBe('2026-08-31')
-    expect(wrapper.text()).toContain('已替换 MAT.AZ91D.SMM -> MAT.REPL-01.SMM')
-    expect(wrapper.text()).toContain('AWAITING_MANUAL_INPUT')
+    expect(wrapper.text()).toContain('已替换 MAT.AZ91D.SMM → MAT.REPL-01.SMM')
+    expect(wrapper.text()).toContain('等待人工录入')
     wrapper.unmount()
   })
 
@@ -226,7 +236,7 @@ describe('ConfigView (D8-T01)', () => {
     await wrapper.findAll('button').find((button) => button.text() === '运行')?.trigger('click')
     await flushPromises()
     expect(runBackfillJob).toHaveBeenCalledWith(job.jobId)
-    expect(wrapper.text()).toContain(`任务 ${job.jobId} 状态=SUCCEEDED`)
+    expect(wrapper.text()).toContain(`任务 FX.GBP.CNY.PBOC_MID：已完成`)
     wrapper.unmount()
   })
 
@@ -235,9 +245,9 @@ describe('ConfigView (D8-T01)', () => {
     const wrapper = mount(ConfigView, { attachTo: document.body })
     await flushPromises()
     const inputs = wrapper.findAll('input')
-    await inputs[14].setValue('FX.GBP.CNY.PBOC_MID')
-    await inputs[15].setValue('2026-08-01')
-    await inputs[16].setValue('2026-08-31')
+    await inputs[0].setValue('FX.GBP.CNY.PBOC_MID')
+    await inputs[1].setValue('2026-08-01')
+    await inputs[2].setValue('2026-08-31')
     await wrapper.findAll('button').find((button) => button.text() === '创建回填任务')?.trigger('click')
     await flushPromises()
     expect(createBackfillJob).toHaveBeenCalledWith('FX.GBP.CNY.PBOC_MID', '2026-08-01', '2026-08-31')
@@ -248,7 +258,7 @@ describe('ConfigView (D8-T01)', () => {
     vi.mocked(fetchConfigItems).mockResolvedValue(null)
     const wrapper = mount(ConfigView, { attachTo: document.body })
     await flushPromises()
-    expect(wrapper.text()).toContain('无监测项或后端不可用')
+    expect(wrapper.text()).toContain('暂无监测项')
     wrapper.unmount()
   })
 })

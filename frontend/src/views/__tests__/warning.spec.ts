@@ -51,7 +51,9 @@ describe('WarningView (D8-T02)', () => {
     expect(wrapper.text()).toContain('demo-price-change-x')
     expect(wrapper.text()).toContain('0.087')
     expect(wrapper.text()).toContain('HIGH')
-    expect(wrapper.text()).toContain('DEMO')
+    // Product copy: demo rules are labelled 演示模式, not the raw DEMO token.
+    expect(wrapper.text()).toContain('演示模式')
+    expect(wrapper.text()).not.toMatch(/\bDEMO\b/)
     wrapper.unmount()
   })
 
@@ -68,11 +70,11 @@ describe('WarningView (D8-T02)', () => {
     await flushPromises()
     await flushPromises()
     const confirmButtons = () =>
-      wrapper.findAll('button').filter((button) => button.text() === '确认')
+      wrapper.findAll('button').filter((button) => button.text() === '确认处理')
     await confirmButtons()[0].trigger('click')
     const textarea = wrapper.find('textarea')
     await textarea.setValue('已核实')
-    await confirmButtons()[1].trigger('click')
+    await wrapper.findAll('button').find((button) => button.text() === '确认')?.trigger('click')
     await flushPromises()
 
     expect(acknowledgeWarning).toHaveBeenCalledWith('MAT.ADC12.SMM', 'w1', '已核实')
@@ -85,12 +87,12 @@ describe('WarningView (D8-T02)', () => {
     await flushPromises()
     await flushPromises()
     const confirmButtons = () =>
-      wrapper.findAll('button').filter((button) => button.text() === '确认')
+      wrapper.findAll('button').filter((button) => button.text() === '确认处理')
     await confirmButtons()[0].trigger('click')
-    await confirmButtons()[1].trigger('click')
+    await wrapper.findAll('button').find((button) => button.text() === '确认')?.trigger('click')
     await flushPromises()
     expect(acknowledgeWarning).not.toHaveBeenCalled()
-    expect(wrapper.text()).toContain('处置备注不能为空')
+    expect(wrapper.text()).toContain('请填写处置备注')
     wrapper.unmount()
   })
 
@@ -98,16 +100,21 @@ describe('WarningView (D8-T02)', () => {
     vi.mocked(evaluateWarning).mockResolvedValue({ status: 'TRIGGERED', warning })
     const wrapper = mount(WarningView, { attachTo: document.body })
     await flushPromises()
-    const inputs = wrapper.findAll('input')
-    await inputs[5].setValue('2026-08-01')
-    await inputs[6].setValue('2026-08-31')
-    await wrapper.findAll('button').find((button) => button.text().startsWith('执行'))?.trigger('click')
+    // Toggle the evaluate section open, then fill its period fields (last two date inputs).
+    await wrapper.findAll('button').find((button) => button.text() === '规则试算')?.trigger('click')
+    await flushPromises()
+    const dateInputs = wrapper.findAll('input[type="date"]')
+    const last = dateInputs.length
+    await dateInputs[last - 2].setValue('2026-08-01')
+    await dateInputs[last - 1].setValue('2026-08-31')
+    await wrapper.findAll('button').find((button) => button.text() === '试算')?.trigger('click')
     await flushPromises()
     expect(evaluateWarning).toHaveBeenCalled()
     const request = vi.mocked(evaluateWarning).mock.calls[0][0]
     expect('demoRule' in request).toBe(false)
     expect(request.ruleKind).toBe('PRICE_CHANGE')
-    expect(wrapper.text()).toContain('触发')
+    expect(request.periodStart).toBe('2026-08-01')
+    expect(wrapper.text()).toContain('触发预警')
     wrapper.unmount()
   })
 
@@ -116,7 +123,7 @@ describe('WarningView (D8-T02)', () => {
     const wrapper = mount(WarningView, { attachTo: document.body })
     await flushPromises()
     await flushPromises()
-    expect(wrapper.text()).toContain('预警查询失败')
+    expect(wrapper.text()).toContain('预警查询暂时不可用，请稍后重试')
     wrapper.unmount()
   })
 })

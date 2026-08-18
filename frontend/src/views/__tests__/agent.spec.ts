@@ -133,8 +133,11 @@ describe('AgentView (D8-T03)', () => {
     expect(request.mode).toBe('FORMAL')
 
     expect(wrapper.text()).toContain('ADC12 \u8fd1\u671f\u8d8b\u52bf\u5e73\u7a33')
+    // The report-source badge keeps the technical token (JAVA_TEMPLATE); the user-facing
+    // degraded note uses product copy.
     expect(wrapper.text()).toContain('JAVA_TEMPLATE')
-    expect(wrapper.text()).toContain('Java \u6a21\u677f\u964d\u7ea7')
+    expect(wrapper.text()).toContain('\u667a\u80fd\u5206\u6790\u670d\u52a1\u4e0d\u53ef\u7528')
+    expect(wrapper.text()).toContain('\u672c\u5730\u53ef\u4fe1\u62a5\u544a')
     expect(wrapper.text()).toContain('history.query')
     expect(wrapper.text()).toContain('19850.50')
     expect(wrapper.text()).toContain('\u8d8b\u52bf\u5e73\u7a33')
@@ -173,7 +176,10 @@ describe('AgentView (D8-T03)', () => {
     expect(wrapper.text()).toContain('material-basic-validation-v2')
     expect(wrapper.text()).toContain('arithmetic-mean-v1')
     expect(wrapper.text()).toContain('weekday-asia-shanghai-v1')
-    expect(wrapper.text()).toContain('configVersions')
+    // The calculation-basis section uses product labels, not raw field names.
+    expect(wrapper.text()).toContain('\u8ba1\u7b97\u53e3\u5f84')
+    expect(wrapper.text()).toContain('\u6821\u9a8c\u7248\u672c')
+    expect(wrapper.text()).toContain('\u914d\u7f6e\u7248\u672c')
     expect(wrapper.text()).toContain('HIGH')
     expect(wrapper.text()).toContain('PUBLISHED_VERIFIED')
     // M3: no absolute paths / dataRoot in the page.
@@ -197,7 +203,7 @@ describe('AgentView (D8-T03)', () => {
     await wrapper.find('textarea').setValue('\u6d4b\u8bd5\u95ee\u9898')
     await wrapper.findAll('button').find((button) => button.text().includes('\u63d0\u4ea4\u5206\u6790'))?.trigger('click')
     await flushPromises()
-    expect(wrapper.text()).toContain('Agent \u67e5\u8be2\u5931\u8d25')
+    expect(wrapper.text()).toContain('\u670d\u52a1\u6682\u65f6\u4e0d\u53ef\u7528\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5')
     wrapper.unmount()
   })
 

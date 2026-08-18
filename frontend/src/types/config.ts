@@ -110,8 +110,16 @@ export interface BackfillJobView {
   updatedAt: string | null
 }
 
+export interface CurrentIntakeView {
+  itemId: string
+  status: string
+  rawCount: number
+  failureReasons: string[]
+}
+
 export interface WorkflowResult {
   config: ConfigView
+  currentIntake: CurrentIntakeView | null
   backfillJobs: BackfillJobView[]
 }
 

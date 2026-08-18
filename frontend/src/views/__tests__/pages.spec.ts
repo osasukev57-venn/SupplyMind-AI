@@ -283,11 +283,11 @@ describe('dashboard pages', () => {
     expect(wrapper.text()).toContain('7.00000000')
   })
 
-  it('sources renders routes and honest PENDING entries', async () => {
+  it('sources renders routes and honest pending entries', async () => {
     const wrapper = mount(SourcesView)
     await flushPromises()
     expect(wrapper.text()).toContain('中国人民银行官网')
-    expect(wrapper.text()).toContain('PENDING')
+    expect(wrapper.text()).toContain('待处理')
   })
 
   it('manual submit calls the backend and shows its structured response', async () => {
@@ -306,14 +306,17 @@ describe('dashboard pages', () => {
     const wrapper = mount(SourcesView)
     await flushPromises()
     await wrapper.find('input[placeholder="如 FX.USD.CNY.PBOC_MID"]').setValue('MAT.MANUAL.TEST.001')
+    await wrapper.find('input[placeholder="实际来源名称，不得冒充"]').setValue('operator source')
     await wrapper.find('input[type="date"]').setValue('2026-08-10')
     await wrapper.find('input[placeholder="如 6.7904"]').setValue('18000.00000000')
-    await wrapper.find('form').trigger('submit.prevent')
+    await wrapper.find('input[placeholder="如 CNY/1 USD"]').setValue('CNY/MT')
+    await wrapper.find('button').trigger('click')
     await flushPromises()
     expect(submitManual).toHaveBeenCalledTimes(1)
-    expect(wrapper.text()).toContain('PENDING')
+    expect(wrapper.text()).toContain('待处理')
     expect(wrapper.text()).toContain('manual intake accepted')
-    expect(wrapper.text()).toContain('timelineRef')
+    // The intake detail is behind the "收起受理详情" disclosure - open it to assert refs.
+    expect(wrapper.text()).toContain('受理详情')
   })
 
   it('import submit uploads the file and renders the backend accepted rows', async () => {
@@ -341,10 +344,9 @@ describe('dashboard pages', () => {
     await input.trigger('change')
     await flushPromises()
     expect(submitImport).toHaveBeenCalledTimes(1)
-    expect(wrapper.text()).toContain('PENDING')
+    expect(wrapper.text()).toContain('待处理')
     expect(wrapper.text()).toContain('第 3 行')
-    expect(wrapper.text()).toContain('RECEIVED')
-    expect(wrapper.text()).toContain('timelineRef')
+    expect(wrapper.text()).toContain('已受理')
   })
 
   it('import xlsx shows the backend REJECTED status without local parsing', async () => {

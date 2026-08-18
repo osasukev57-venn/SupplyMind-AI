@@ -4,6 +4,7 @@ import { fetchHistory, fetchMetrics } from '../api/dashboard'
 import type { HistoryResponse, MetricsResponse } from '../types/dashboard'
 import TrendChart from '../components/TrendChart.vue'
 import StatusBadge from '../components/StatusBadge.vue'
+import { grainLabel } from '../lib/labels'
 
 const items = ref<{ itemId: string; displayName: string }[]>([])
 const itemId = ref('')
@@ -15,8 +16,8 @@ const metrics = ref<MetricsResponse | null>(null)
 const error = ref<string | null>(null)
 
 onMounted(async () => {
-  // D8-T04 (AT-UI-002): the history selector must list ALL configured items INCLUDING
-  // disabled ones - a stopped target stays selectable for historical queries (H09/H06).
+  // The history selector lists ALL configured items INCLUDING stopped ones - a stopped
+  // target stays selectable for historical queries and its history is never deleted.
   const config = await import('../api/config').then((m) => m.fetchConfigItems())
   if (config) {
     items.value = config.items.map((item) => ({
@@ -35,9 +36,8 @@ async function load(): Promise<void> {
   if (grain.value === 'daily') {
     history.value = await fetchHistory(itemId.value, from.value, to.value)
     metrics.value = null
-    if (history.value === null) error.value = '历史数据不可用'
+    if (history.value === null) error.value = '历史数据暂时不可用，请稍后重试'
   } else {
-    // M2: the aggregate years come from the USER-SELECTED range - never a fixed year.
     const fromYear = Number(from.value.slice(0, 4))
     const toYear = Number(to.value.slice(0, 4))
     if (fromYear > toYear) {
@@ -47,104 +47,126 @@ async function load(): Promise<void> {
     }
     metrics.value = await fetchMetrics(itemId.value, grain.value, fromYear, toYear)
     history.value = null
-    if (metrics.value === null) error.value = '聚合数据不可用'
+    if (metrics.value === null) error.value = '聚合数据暂时不可用，请稍后重试'
   }
 }
 </script>
 
 <template>
   <div>
-    <div class="panel">
-      <h2>历史趋势 / 聚合</h2>
-      <div class="controls">
-        <select v-model="itemId" @change="load">
-          <option v-for="item in items" :key="item.itemId" :value="item.itemId">
-            {{ item.displayName }}
-          </option>
-        </select>
-        <input v-model="from" type="date" @change="load" />
-        <input v-model="to" type="date" @change="load" />
-        <select v-model="grain" @change="load">
-          <option value="daily">日（daily）</option>
-          <option value="month">月（month）</option>
-          <option value="quarter">季（quarter）</option>
-          <option value="halfyear">半年（halfyear）</option>
-          <option value="year">年（year）</option>
-        </select>
+    <header class="page-head">
+      <div class="page-eyebrow">监测</div>
+      <h1 class="page-title">历史趋势</h1>
+      <p class="page-desc">按日期范围与粒度查看历史走势和聚合结果。趋势图只绘制系统返回的数据点，缺失区间不做插值。</p>
+    </header>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="controls">
+          <select v-model="itemId" @change="load">
+            <option v-for="item in items" :key="item.itemId" :value="item.itemId">
+              {{ item.displayName }}
+            </option>
+          </select>
+          <input v-model="from" type="date" @change="load" />
+          <span class="muted">至</span>
+          <input v-model="to" type="date" @change="load" />
+          <select v-model="grain" @change="load">
+            <option value="daily">按日</option>
+            <option value="month">按月</option>
+            <option value="quarter">按季</option>
+            <option value="halfyear">按半年</option>
+            <option value="year">按年</option>
+          </select>
+        </div>
       </div>
-    </div>
+    </section>
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
-    <div v-if="grain === 'daily' && history" class="panel">
-      <h2>趋势（{{ history.points.length }} 个数据点，截至 {{ history.dataThrough ?? '—' }}）</h2>
-      <TrendChart :chart="history.chart" />
-      <div class="table-scroll">
-        <table class="sm-table">
-          <thead>
-            <tr>
-              <th>业务日期</th>
-              <th>值（原字符串）</th>
-              <th>单位</th>
-              <th>来源</th>
-              <th>状态</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="point in history.points" :key="point.businessDate">
-              <td class="num">{{ point.businessDate }}</td>
-              <td class="num">{{ point.value }}</td>
-              <td>{{ point.unit ?? '—' }}</td>
-              <td>{{ point.actualSourceName ?? '—' }}</td>
-              <td><StatusBadge :status="point.validationStatus" /></td>
-            </tr>
-          </tbody>
-        </table>
+    <section v-if="grain === 'daily' && history" class="section">
+      <div class="section-head">
+        <h2>每日趋势</h2>
+        <span class="muted">{{ history.points.length }} 个数据点，截至 {{ history.dataThrough ?? '—' }}</span>
       </div>
-      <div v-for="(issue, i) in history.evidenceIssues" :key="i" class="muted warn-line">
-        {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
-        （期间：{{ issue.periods.join('；') }}，未插值）
+      <div class="section-body">
+        <TrendChart :chart="history.chart" />
       </div>
-    </div>
+      <div class="section-body flat">
+        <div class="table-scroll">
+          <table class="sm-table">
+            <thead>
+              <tr>
+                <th>业务日期</th>
+                <th>数值</th>
+                <th>单位</th>
+                <th>数据来源</th>
+                <th>校验状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="point in history.points" :key="point.businessDate">
+                <td class="num">{{ point.businessDate }}</td>
+                <td class="num">{{ point.value }}</td>
+                <td>{{ point.unit ?? '—' }}</td>
+                <td>{{ point.actualSourceName ?? '—' }}</td>
+                <td><StatusBadge :status="point.validationStatus" /></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-for="(issue, i) in history.evidenceIssues" :key="i" class="muted warn-line">
+          {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
+          （期间：{{ issue.periods.join('；') }}，未插值）
+        </div>
+      </div>
+    </section>
 
-    <div v-if="grain !== 'daily' && metrics" class="panel">
-      <h2>聚合（{{ metrics.grain }}，{{ metrics.rows.length }} 行，{{ metrics.fromYear }}~{{ metrics.toYear }}）</h2>
-      <div class="table-scroll">
-        <table class="sm-table">
-          <thead>
-            <tr>
-              <th>期间起</th>
-              <th>期间止</th>
-              <th>值（原字符串）</th>
-              <th>单位</th>
-              <th>来源</th>
-              <th>状态</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(row, i) in metrics.rows" :key="i">
-              <td class="num">{{ row.periodStart }}</td>
-              <td class="num">{{ row.periodEnd }}</td>
-              <td class="num">{{ row.value }}</td>
-              <td>{{ row.unit ?? '—' }}</td>
-              <td>{{ row.actualSourceName ?? '—' }}</td>
-              <td><StatusBadge :status="row.validationStatus" /></td>
-            </tr>
-          </tbody>
-        </table>
+    <section v-if="grain !== 'daily' && metrics" class="section">
+      <div class="section-head">
+        <h2>{{ grainLabel(metrics.grain) }}</h2>
+        <span class="muted">{{ metrics.rows.length }} 行，{{ metrics.fromYear }}~{{ metrics.toYear }}</span>
       </div>
-      <div v-for="(issue, i) in metrics.evidenceIssues" :key="i" class="muted warn-line">
-        {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
-        （期间：{{ issue.periods.join('；') }}）
+      <div class="section-body flat">
+        <div class="table-scroll">
+          <table class="sm-table">
+            <thead>
+              <tr>
+                <th>期间起</th>
+                <th>期间止</th>
+                <th>数值</th>
+                <th>单位</th>
+                <th>数据来源</th>
+                <th>校验状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, i) in metrics.rows" :key="i">
+                <td class="num">{{ row.periodStart }}</td>
+                <td class="num">{{ row.periodEnd }}</td>
+                <td class="num">{{ row.value }}</td>
+                <td>{{ row.unit ?? '—' }}</td>
+                <td>{{ row.actualSourceName ?? '—' }}</td>
+                <td><StatusBadge :status="row.validationStatus" /></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-for="(issue, i) in metrics.evidenceIssues" :key="i" class="muted warn-line">
+          {{ issue.status === 'MISSING' ? '缺失' : '损坏' }}：{{ issue.reason }}
+          （期间：{{ issue.periods.join('；') }}）
+        </div>
       </div>
-    </div>
+    </section>
+
+    <div v-if="!history && !metrics && !error" class="empty-state">请选择监测项和日期范围</div>
   </div>
 </template>
 
 <style scoped>
 .controls {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   align-items: center;
 }
@@ -154,7 +176,7 @@ async function load(): Promise<void> {
   font-size: 13.5px;
   padding: 7px 9px;
   border: 1px solid var(--sm-border-strong);
-  border-radius: var(--sm-radius-sm);
+  border-radius: var(--sm-radius);
   background: var(--sm-surface);
   color: var(--sm-text);
 }
@@ -165,6 +187,7 @@ async function load(): Promise<void> {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--sm-focus) 22%, transparent);
 }
 .warn-line {
-  margin-top: 8px;
+  margin-top: 10px;
+  padding: 0 16px 12px;
 }
 </style>

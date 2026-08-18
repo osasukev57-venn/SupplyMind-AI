@@ -7,11 +7,11 @@ import {
 } from '../api/warning'
 import type { WarningView } from '../types/warning'
 import StatusBadge from '../components/StatusBadge.vue'
+import { grainLabel } from '../lib/labels'
 
 /**
- * D8-T02 warning page. Warning evidence is immutable backend JSON; acknowledgement writes a
- * DEC-061 sidecar. The page never computes thresholds/risk levels - everything is displayed as
- * the backend returned it.
+ * Warning page: view trigger results, evidence sources and handling status. All values are
+ * rendered exactly as the backend returned them - the page never computes thresholds or risk.
  */
 
 const itemId = ref('MAT.ADC12.SMM')
@@ -35,6 +35,7 @@ const grain = ref('month')
 const evalPeriodStart = ref('')
 const evalPeriodEnd = ref('')
 const evaluateResult = ref<WarningView | null>(null)
+const showEvaluate = ref(false)
 
 function defaultRange() {
   const now = new Date()
@@ -45,7 +46,7 @@ function defaultRange() {
 
 async function load() {
   if (!itemId.value || !from.value || !to.value) {
-    errorMessage.value = '必填：itemId、from、to'
+    errorMessage.value = '请填写监测项编号与查询日期范围'
     return
   }
   loading.value = true
@@ -53,7 +54,7 @@ async function load() {
   const response = await fetchWarnings(itemId.value, from.value, to.value)
   warnings.value = response?.warnings ?? []
   if (!response) {
-    errorMessage.value = '预警查询失败：后端不可用或参数被拒绝'
+    errorMessage.value = '预警查询暂时不可用，请稍后重试'
   }
   loading.value = false
 }
@@ -68,17 +69,17 @@ async function submitAck() {
     return
   }
   if (!ackNote.value.trim()) {
-    errorMessage.value = '处置备注不能为空'
+    errorMessage.value = '请填写处置备注'
     return
   }
   errorMessage.value = null
   notice.value = null
   const ack = await acknowledgeWarning(itemId.value, ackFor.value.warningId, ackNote.value.trim())
   if (!ack) {
-    errorMessage.value = '确认失败：后端不可用或备注被拒绝'
+    errorMessage.value = '确认失败：服务暂时不可用，或备注不符合要求'
     return
   }
-  notice.value = `已确认 ${ack.warningId}（${ack.status}）`
+  notice.value = `已确认 ${ack.warningId}`
   ackFor.value = null
   await load()
 }
@@ -87,7 +88,7 @@ async function submitEvaluate() {
   errorMessage.value = null
   notice.value = null
   if (!ruleId.value || !threshold.value || !evalPeriodStart.value || !evalPeriodEnd.value) {
-    errorMessage.value = '规则求值必填：ruleId、阈值、周期起止'
+    errorMessage.value = '请填写规则编号、阈值与周期起止'
     return
   }
   const result = await evaluateWarning({
@@ -101,15 +102,15 @@ async function submitEvaluate() {
     periodEnd: evalPeriodEnd.value
   })
   if (!result) {
-    errorMessage.value = '规则求值失败：后端不可用或参数被拒绝'
+    errorMessage.value = '试算暂时不可用，请稍后重试'
     return
   }
   evaluateResult.value = result.warning ?? null
   if (result.status === 'NOT_TRIGGERED') {
-    notice.value = result.message ?? '未触发'
+    notice.value = result.message ?? '未触发预警'
   }
   if (result.warning) {
-    notice.value = `触发预警 ${result.warning.warningId}（demoRule=${result.warning.demoRule}）`
+    notice.value = `触发预警 ${result.warning.warningId}`
     await load()
   }
 }
@@ -122,121 +123,177 @@ onMounted(() => {
 
 <template>
   <div>
-    <h1>预警</h1>
-    <p class="muted">
-      D8-T02：预警由 Java 确定性规则生成；EXT-07/EXT-08 阈值未确认，所有规则均明确标记
-      TEST/DEMO。确认只写 DEC-061 sidecar，原预警证据不可改写。
-    </p>
+    <header class="page-head">
+      <div class="page-eyebrow">运营分析</div>
+      <h1 class="page-title">预警</h1>
+      <p class="page-desc">查看预警触发结果、证据来源和处理状态。演示规则会明确标识，不用于正式业务判断。</p>
+      <div class="page-actions">
+        <button class="btn-secondary" @click="showEvaluate = !showEvaluate">
+          {{ showEvaluate ? '收起规则试算' : '规则试算' }}
+        </button>
+      </div>
+    </header>
 
     <div v-if="errorMessage" class="error-banner">{{ errorMessage }}</div>
     <div v-if="notice" class="demo-banner">{{ notice }}</div>
 
-    <section class="panel">
-      <h2>预警查询（真实 from/to 范围）</h2>
-      <div class="form-grid">
-        <label>itemId <input v-model="itemId" /></label>
-        <label>from <input v-model="from" type="date" /></label>
-        <label>to <input v-model="to" type="date" /></label>
+    <section class="section">
+      <div class="section-head">
+        <h2>预警查询</h2>
       </div>
-      <button @click="load">查询</button>
-
-      <table v-if="warnings.length > 0" class="sm-table" style="margin-top: 12px">
-        <thead>
-          <tr>
-            <th>warningId</th>
-            <th>规则</th>
-            <th>周期</th>
-            <th>当前值</th>
-            <th>阈值</th>
-            <th>级别</th>
-            <th>demo</th>
-            <th>确认</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="warning in warnings" :key="warning.warningId">
-            <td>{{ warning.warningId }}</td>
-            <td>{{ warning.ruleId }}@{{ warning.ruleVersion }}</td>
-            <td>{{ warning.periodStart }} ~ {{ warning.periodEnd }}</td>
-            <td>{{ warning.currentValue }}</td>
-            <td>{{ warning.threshold }}</td>
-            <td><StatusBadge :status="warning.riskLevel ?? 'UNKNOWN'" /></td>
-            <td><StatusBadge :status="warning.demoRule ? 'DEMO' : 'FORMAL'" /></td>
-            <td><StatusBadge :status="warning.acknowledged ? 'ACKNOWLEDGED' : 'OPEN'" /></td>
-            <td>
-              <button v-if="!warning.acknowledged" @click="openAck(warning)">确认</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-else-if="!loading" class="muted">所选范围内无预警</p>
+      <div class="section-body">
+        <div class="form-grid">
+          <label>监测项编号
+            <input v-model="itemId" />
+          </label>
+          <label>开始日期
+            <input v-model="from" type="date" />
+          </label>
+          <label>结束日期
+            <input v-model="to" type="date" />
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" @click="load">查询</button>
+        </div>
+      </div>
     </section>
 
-    <section v-if="ackFor" class="panel">
-      <h2>确认预警 {{ ackFor.warningId }}</h2>
-      <p class="muted">原预警证据不可改写；确认写入独立 sidecar。</p>
-      <label>处置备注（<=500 字符，禁止路径/分隔符）
-        <textarea v-model="ackNote" rows="3" style="width: 100%" maxlength="500" />
-      </label>
-      <button @click="submitAck">确认</button>
-      <button @click="ackFor = null">取消</button>
+    <section class="section">
+      <div class="section-head">
+        <h2>预警列表</h2>
+        <span class="muted">{{ warnings.length }} 条</span>
+      </div>
+      <div class="section-body flat">
+        <div class="table-scroll">
+          <table v-if="warnings.length > 0" class="sm-table">
+            <thead>
+              <tr>
+                <th>预警编号</th>
+                <th>规则</th>
+                <th>周期</th>
+                <th>当前值</th>
+                <th>阈值</th>
+                <th>风险等级</th>
+                <th>规则性质</th>
+                <th>处理状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="warning in warnings" :key="warning.warningId">
+                <td class="id-cell">{{ warning.warningId }}</td>
+                <td>{{ warning.ruleId }}@{{ warning.ruleVersion }}</td>
+                <td>{{ warning.periodStart }} ~ {{ warning.periodEnd }}</td>
+                <td class="num">{{ warning.currentValue }}</td>
+                <td class="num">{{ warning.threshold }}</td>
+                <td><StatusBadge :status="warning.riskLevel ?? 'UNKNOWN'" /></td>
+                <td><StatusBadge :status="warning.demoRule ? 'DEMO' : 'FORMAL'" /></td>
+                <td><StatusBadge :status="warning.acknowledged ? 'ACKNOWLEDGED' : 'PENDING'" /></td>
+                <td>
+                  <button v-if="!warning.acknowledged" class="btn-secondary" @click="openAck(warning)">
+                    确认处理
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else-if="!loading" class="empty-state">所选范围内暂无预警</div>
+        </div>
+      </div>
     </section>
 
-    <section class="panel">
-      <h2>规则求值（v1 demo 规则；EXT-07/EXT-08 保持开放）</h2>
-      <div class="form-grid">
-        <label>ruleId <input v-model="ruleId" /></label>
-        <label>ruleKind
-          <select v-model="ruleKind">
-            <option value="PRICE_CHANGE">PRICE_CHANGE</option>
-            <option value="RATE_CHANGE">RATE_CHANGE</option>
-            <option value="COST_IMPACT">COST_IMPACT</option>
-            <option value="DATA_QUALITY">DATA_QUALITY</option>
-          </select>
-        </label>
-        <label>grain
-          <select v-model="grain">
-            <option value="month">month</option>
-            <option value="quarter">quarter</option>
-            <option value="halfyear">halfyear</option>
-            <option value="year">year</option>
-          </select>
-        </label>
-        <label>阈值 <input v-model="threshold" placeholder="0.05" /></label>
-        <label>方向
-          <select v-model="direction">
-            <option value="ABOVE">ABOVE</option>
-            <option value="BELOW">BELOW</option>
-          </select>
-        </label>
-        <label>周期起 <input v-model="evalPeriodStart" type="date" /></label>
-        <label>周期止 <input v-model="evalPeriodEnd" type="date" /></label>
+    <section v-if="ackFor" class="section">
+      <div class="section-head">
+        <h2>确认处理 {{ ackFor.warningId }}</h2>
       </div>
-      <button @click="submitEvaluate">执行（demoRule=true）</button>
-      <div v-if="evaluateResult" class="demo-banner" style="margin-top: 12px">
-        触发：{{ evaluateResult.ruleId }} / {{ evaluateResult.warningId }} / demoRule={{ evaluateResult.demoRule }}
+      <div class="section-body">
+        <p class="muted">原预警记录保持不可改写，确认信息单独留存。</p>
+        <label class="note-field">处置备注（最多 500 字）
+          <textarea v-model="ackNote" rows="3" maxlength="500" />
+        </label>
+        <div class="form-actions">
+          <button class="btn-primary" @click="submitAck">确认</button>
+          <button class="btn-ghost" @click="ackFor = null">取消</button>
+        </div>
+      </div>
+    </section>
+
+    <section v-if="showEvaluate" class="section">
+      <div class="section-head">
+        <h2>规则试算</h2>
+        <span class="muted">演示规则，仅用于了解预警触发逻辑</span>
+      </div>
+      <div class="section-body">
+        <div class="form-grid">
+          <label>规则编号
+            <input v-model="ruleId" />
+          </label>
+          <label>规则类型
+            <select v-model="ruleKind">
+              <option value="PRICE_CHANGE">价格变化</option>
+              <option value="RATE_CHANGE">汇率变化</option>
+              <option value="COST_IMPACT">成本影响</option>
+              <option value="DATA_QUALITY">数据质量</option>
+            </select>
+          </label>
+          <label>粒度
+            <select v-model="grain">
+              <option value="month">按月</option>
+              <option value="quarter">按季</option>
+              <option value="halfyear">按半年</option>
+              <option value="year">按年</option>
+            </select>
+          </label>
+          <label>阈值
+            <input v-model="threshold" placeholder="0.05" />
+          </label>
+          <label>方向
+            <select v-model="direction">
+              <option value="ABOVE">高于阈值</option>
+              <option value="BELOW">低于阈值</option>
+            </select>
+          </label>
+          <label>周期起
+            <input v-model="evalPeriodStart" type="date" />
+          </label>
+          <label>周期止
+            <input v-model="evalPeriodEnd" type="date" />
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" @click="submitEvaluate">试算</button>
+        </div>
+        <div v-if="evaluateResult" class="demo-banner" style="margin-top: 12px">
+          触发预警：{{ evaluateResult.ruleId }}（演示规则）
+        </div>
       </div>
     </section>
   </div>
 </template>
 
 <style scoped>
-button {
-  margin-right: 6px;
-}
 textarea {
   font-family: inherit;
   font-size: 13.5px;
   padding: 7px 9px;
   border: 1px solid var(--sm-border-strong);
-  border-radius: var(--sm-radius-sm);
+  border-radius: var(--sm-radius);
   background: var(--sm-surface);
   color: var(--sm-text);
+  width: 100%;
 }
 textarea:focus {
   outline: none;
   border-color: var(--sm-focus);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--sm-focus) 22%, transparent);
+}
+.note-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--sm-muted);
+  max-width: 560px;
 }
 </style>
