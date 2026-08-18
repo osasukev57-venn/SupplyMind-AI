@@ -37,3 +37,7 @@ application-local.yaml
 application-local.properties
 
 .playwright-mcp/
+
+# D9 desktop build output (electron dist / node deps installed locally)
+desktop/node_modules/
+desktop/dist/

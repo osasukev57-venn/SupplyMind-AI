@@ -1,0 +1,13 @@
+{
+  "name": "supplymind-desktop",
+  "version": "0.9.0",
+  "private": true,
+  "description": "SupplyMind AI Windows desktop shell (D9-T01: Electron + Spring Boot child process)",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}
