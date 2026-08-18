@@ -59,7 +59,7 @@ if (!gotLock) {
 
       childProcess = spawn(
         dirs.jreBin,
-        backendArgs(port, dirs.data, dirs.jreBin, dirs.jar).args,
+        backendArgs(port, dirs.data, dirs.jreBin, dirs.jar, dirs.web).args,
         {
           cwd: dirs.root,
           env: process.env,

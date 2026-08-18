@@ -41,3 +41,9 @@ application-local.properties
 # D9 desktop build output (electron dist / node deps installed locally)
 desktop/node_modules/
 desktop/dist/
+
+# D9 portable package assembly (built by desktop/scripts, never committed)
+portable/
+
+# D9 smoke scratch data at repo root (desktop/scripts smoke runs)
+target/

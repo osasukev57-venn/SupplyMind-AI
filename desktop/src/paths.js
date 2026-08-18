@@ -44,6 +44,7 @@ function layout(base) {
     jreBin: path.join(root, 'runtime', 'jre', 'bin', 'java.exe'),
     jar: path.join(root, 'app', 'supplymind-backend.jar'),
     web: path.join(root, 'app', 'web'),
+    webIndex: path.join(root, 'app', 'web', 'index.html'),
     data: path.join(root, 'data'),
     logs: path.join(root, 'logs'),
     licenses: path.join(root, 'licenses')
@@ -60,12 +61,14 @@ function preflight(base) {
   if (!fs.existsSync(dirs.jar)) {
     errors.push(`backend JAR not found: ${dirs.jar}`);
   }
-  if (!fs.existsSync(dirs.web)) {
-    errors.push(`frontend assets not found: ${dirs.web}`);
+  if (!fs.existsSync(dirs.webIndex)) {
+    errors.push(`frontend assets not found: ${dirs.webIndex}`);
   }
   for (const dir of [dirs.data, dirs.logs]) {
     if (!fs.existsSync(dir)) {
       errors.push(`directory missing: ${dir}`);
+    } else if (!fs.statSync(dir).isDirectory()) {
+      errors.push(`path is not a directory: ${dir}`);
     } else if (!isWritable(dir)) {
       errors.push(`directory is not writable: ${dir}`);
     }

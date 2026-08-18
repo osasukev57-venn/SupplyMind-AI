@@ -6,7 +6,7 @@
  * and owns the child lifecycle. Pure argument construction is unit-testable.
  */
 
-function backendArgs(port, dataRoot, jreBin, jar) {
+function backendArgs(port, dataRoot, jreBin, jar, webDir) {
   const args = [
     '-jar',
     jar,
@@ -14,6 +14,9 @@ function backendArgs(port, dataRoot, jreBin, jar) {
     '--server.address=127.0.0.1',
     `--supplymind.data-root=${dataRoot}`
   ];
+  if (webDir) {
+    args.push(`--spring.web.resources.static-locations=file:${webDir}/`);
+  }
   return { executable: jreBin, args };
 }
 
