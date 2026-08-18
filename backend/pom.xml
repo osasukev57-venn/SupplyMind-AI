@@ -60,6 +60,12 @@
             <artifactId>spring-ai-client-chat</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <!-- Concrete OpenAI-compatible cloud provider. It is wired explicitly by
+                 CloudLlmConfiguration, so the application still starts without credentials. -->
+            <artifactId>spring-ai-openai</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>${commons-csv.version}</version>

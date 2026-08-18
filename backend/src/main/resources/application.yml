@@ -13,7 +13,10 @@ supplymind:
     operator-ref: ${SUPPLYMIND_MANUAL_OPERATOR_REF:local-operator}
   agent:
     llm:
+      enabled: ${SUPPLYMIND_LLM_ENABLED:false}
       provider: ${SUPPLYMIND_LLM_PROVIDER:openai-compatible}
       model: ${SUPPLYMIND_LLM_MODEL:}
       base-url: ${SUPPLYMIND_LLM_BASE_URL:}
       api-key: ${SUPPLYMIND_LLM_API_KEY:}
+      completions-path: ${SUPPLYMIND_LLM_COMPLETIONS_PATH:/v1/chat/completions}
+      timeout: ${SUPPLYMIND_LLM_TIMEOUT:30s}
