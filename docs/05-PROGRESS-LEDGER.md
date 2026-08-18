@@ -3,7 +3,7 @@
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
 > 当前阶段：Day 1～Day 7=`COMPLETE`（Day6 保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8）；D6-T00～D6-T05=`DONE`，Day6 Stage Review=`PASS`，最终完整技术回归=105 suites/535 tests/0 failures/0 errors/8 skipped（HISTORICAL）。AT-AI-000/002/003本地合同=`PASS`；AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`DONE`；**Final Implementation Candidate=`feaedd3`**；**CURRENT regression=110 suites/578 backend tests/0 failures/0 errors/8 skipped**，前端 `npm run test` **11/11 PASS** + `npm run build` PASS；历史候选（1b83410、d2b0965、a4006c4、3fd1d35、5f1491c、01d4270 等中间状态）一律 HISTORICAL（不删除）；Closure Evidence=`docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md`。Day1-Day6 代码零修改。
-> Day8实施中（技术负责人裁决：D8-T01→D8-T02→D8-T03→D8-T04→D8-T05 顺序批准；每个任务独立commit/测试/evidence，状态最多`REVIEW_PENDING`，Review PASS 后才 DONE）。D8-T05=`TaskExecutionStatus=NOT_STARTED`（P0功能冻结与Day8 Stage Closure，依赖D8-T04 DONE，见 docs/04）。
+> Day8=`COMPLETE`，Final Stage Review=`PASS`：D8-T01～D8-T05=`DONE`，Feature Freeze=`EFFECTIVE`；Final Implementation=`239d025`；CURRENT regression=117 suites/632 backend tests/0 failures/0 errors/8 skipped，frontend 33/33 + build PASS；可复现 JAR SHA-256=`95E2C6F63E18383F499BB239649EBFCA5B5D8966B8D9201FC1BD2C9D03D49426`。D9-T01=`NOT_STARTED`+`READY`，Day9尚未开始。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -57,21 +57,21 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 
 | 字段 | 当前值 |
 |---|---|
-| 当前开发日 | Day 1～Day 7 = `COMPLETE`；Day 8 Batch 实施完成（Stage Candidate 待 Review） |
-| 当前任务编号 | Day8 Batch Implementation（D8-T01→D8-T02→D8-T03→D8-T04→D8-T05 Stage Candidate Preparation）完成 |
-| 当前任务状态 | D7-T01～D7-T04=`DONE`；Day7 Stage Review=`PASS`；Day7=`COMPLETE`。**Day8ExecutionMode=`BATCH_IMPLEMENTATION_FINAL_STAGE_REVIEW_APPROVED_20260817`**。**D8-T01～D8-T05=`TaskExecutionStatus=REVIEW_PENDING`**（Batch 实施 + Final Stage 5 个 MAJOR Finding 修复完成，待技术负责人统一 Final Stage Review；禁止自行标 DONE/COMPLETE/EFFECTIVE）。实施 commit：D8-T01=`f70ff18`、D8-T02=`9c88a84`、D8-T03=`ec2f0b5`、D8-T04=`4745080`；**Final Stage Fix Commit=`4ed6060`**（M1 动态 PBOC 目标+自动链、M2 DEC-061 权威绑定、M3 EvidenceLink/计算口径/风险、M4 Web P0 证据归档）。**CURRENT regression=116 suites/625 backend tests/0 failures/0 errors/8 skipped**（与 Day5/Day6 基线 skipped 逐项相同；115/608 及更早为 HISTORICAL）；前端 `npm run test` **30/30 PASS** + `npm run build` PASS；evidence=`docs/evidence/Day8/`。Day8=`NOT_COMPLETE`；Feature Freeze=`PENDING_FINAL_STAGE_REVIEW`；未 merge main；未开始 Day9。 |
+| 当前开发日 | Day 1～Day 8 = `COMPLETE`；Day 9=`NOT_STARTED` |
+| 当前任务编号 | Day8 Final Stage Closure 已完成；下一可领取任务 D9-T01 |
+| 当前任务状态 | D8-T01～D8-T05=`DONE`；Day8 Final Stage Review=`PASS`；Day8=`COMPLETE`；Feature Freeze=`EFFECTIVE`。Final Implementation=`239d025`；CURRENT regression=117 suites/632 backend tests/0 failures/0 errors/8 skipped；frontend 33/33 + build PASS；两次 clean package JAR SHA一致。D9-T01=`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`；未开始Day9，未merge main。 |
 | 编码前基线对齐 | `v1.5 FROZEN`：DEC-060、C35～C36保持不变；Java17、Boot3.5.15、Spring AI1.1.8、SupplyMind LLMService门面、只读Tool Adapter与EvidencePack所有权边界均保持；DEC-061（warning ack sidecar）已登记。 |
-| 已完成任务 | Day1～Day7全部开发任务及Stage Gate；Day8 Batch 实施（D8-T01～D8-T05 Stage Candidate Preparation）。 |
-| 正在进行任务 | 无；等待 Day8 Final Stage Review。 |
-| 阻塞项 | 无 Day8 阻塞项；真实Cloud LLM验证=`PENDING_EXTERNAL`且不阻塞Java模板P0闭环。 |
-| 最近验收结果 | Day8 Final Stage Finding 修复后 Web P0：M1 替换自动链（当前采集+回填 AWAITING_MANUAL_INPUT 诚实）、重启恢复（configVersion/jobs 保持）、M3 Agent 工作台（风险/计算口径/EvidenceLink 渲染、无数据诚实无链接）、M2 ack 权威绑定（7 个篡改攻击 PASS）、预警 demo 求值 NOT_TRIGGERED 诚实。真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。 |
+| 已完成任务 | Day1～Day8全部开发任务及Stage Gate；D8-T01～D8-T05=`DONE`。 |
+| 正在进行任务 | 无；D9-T01仅READY，尚未领取。 |
+| 阻塞项 | 无 Day8 阻塞项；真实Cloud LLM验证=`PENDING_EXTERNAL`且不阻塞Java模板P0闭环；EXT-07/08保持OPEN_EXTERNAL。 |
+| 最近验收结果 | Day8 Final Stage Review=`PASS`：M1 单次CURRENT链、M2 DEC-061绑定、M3 FORMAL/demo风险隔离、M4逐case runner证据、M5可复现冻结全部关闭；AT-SRC-006按EXT-10诚实BLOCKED且Stage Blocking=NO；真实Cloud保持NOT_RUN。 |
 | 新增风险 | 无新的 Day8 P0 风险；Cloud 真实连接能力仍须在具备合法凭据时独立执行，不得回写当前本地合同结论。 |
-| 下一任务 | Day8 Final Stage Review（技术负责人）；Review PASS 后 D8-T01～D8-T05=`DONE`、Day8=`COMPLETE`、Feature Freeze=`EFFECTIVE`，再创建 integration/day9。 |
-| 最近一次可运行版本 | Day8 Stage Candidate（integration/day8）；116 suites/625 tests/0 failures/0 errors/8 skipped；Frontend 30/30 + build PASS；JAR SHA-256 见 D8-T05 evidence。 |
-| 最近一次Git提交 | Day8 Final Stage Fix Commit=`4ed6060`（见提交记录）。 |
+| 下一任务 | D9-T01（`NOT_STARTED`+`READY`）；需另行领取后才能开始。 |
+| 最近一次可运行版本 | Day8 Final Implementation=`239d025`；117 suites/632 tests/0 failures/0 errors/8 skipped；Frontend 33/33 + build PASS；JAR SHA-256=`95E2C6F6…D49426`。 |
+| 最近一次Git提交 | Day8 Final Implementation=`239d025`；本次为 Final Stage 状态/证据封板。 |
 | 是否偏离计划 | 否；DEC-060不变，工具仍为7个只读工具，Write Tool=NONE，未引入RAG/Vector/MCP/数据库，Day1～Day5合同无回归。 |
-| 最后更新人/窗口 | 技术负责人 / Day7 Final Status Micro-Fix |
-| 最后更新时间 | 2026-08-17（Asia/Shanghai） |
+| 最后更新人/窗口 | 技术负责人 / Day8 Final Stage Closure |
+| 最后更新时间 | 2026-08-18（Asia/Shanghai） |
 
 ### 3.1 Day 6 Architecture Change Approval（2026-08-13）
 
@@ -553,6 +553,27 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | Git提交 | 本轮创建 `docs: close D2-T03 EXT gate` commit；implementation commit=`607e859`。 |
 | 是否偏离计划 | 否；纯状态/决策收口，未实现 D2-T04、未修改 AT-SRC-002。 |
 | 下一建议任务 | 等待项目方确认后领取 D2-T04。 |
+
+### Day8 Final Stage Closure（技术负责人最终收口）
+
+| 字段 | 记录 |
+|---|---|
+| 开发日 | Day 8 |
+| 开始时间 | 2026-08-18（Asia/Shanghai） |
+| 结束时间 | 2026-08-18（Asia/Shanghai） |
+| 执行窗口/执行人 | 技术负责人窗口（接管修复、独立回归、最终Gate裁决） |
+| 开始状态 | D8-T01～D8-T05=`REVIEW_PENDING`；Day8=`NOT_COMPLETE`；Feature Freeze=`PENDING_FINAL_STAGE_REVIEW`；base=`438aad1`。 |
+| 结束状态 | D8-T01～D8-T05=`DONE`；Day8=`COMPLETE`；Feature Freeze=`EFFECTIVE`；D9-T01=`NOT_STARTED`+`READY`。 |
+| 已完成内容 | 修复 ADD/REPLACE 重复 CURRENT intake；收紧 Agent risk FORMAL/demo 与行级 evidenceRef 边界；补攻击测试；完成 UI 响应式/来源名称/证据错误产品化；以真实 Surefire XML 重建 P0 matrix 证据；完成两次可复现 JAR 构建。Final Implementation=`239d025`。 |
+| 实际测试命令或步骤 | `.\mvnw.cmd clean test`；定向 `CurrentIntakeAttackTest,AgentApiTest,WarningAckStoreTest`；Vitest JSON runner；`npm run build`；两次 `.\mvnw.cmd clean package -DskipTests`；Chrome headless 21张真实应用截图。 |
+| 测试结果 | Backend=117 suites/632 tests/0 failures/0 errors/8 skipped；targeted=23/23；Frontend=5 files/33 tests/0 failures；build PASS；JAR run1/run2 SHA=`95E2C6F6…D49426` MATCH。 |
+| 验收证据路径 | `docs/evidence/Day8/DAY8-FINAL-TECHNICAL-CLOSURE-20260818.md`、`docs/evidence/Day8/artifacts/`、`docs/visual-acceptance/`。 |
+| 失败与回退 | 无开放 BLOCKER/MAJOR；AT-SRC-006 依 EXT-10 诚实 BLOCKED 且 non-blocking；真实Cloud/Windows外部用例保持 NOT_RUN。 |
+| 阻塞项变化 | Day8 Gate 全部解除；D9-T01 仅放行为 READY，尚未领取或实施。 |
+| Git提交 | Final Implementation=`239d025`；最终状态/证据封板见本次提交。 |
+| 是否偏离计划 | 否；未新增业务功能、Provider、Agent工具、schema、数据库或Day9实现；DEC-008/051/060/061保持。 |
+| 下一建议任务 | 用户明确领取后开始 D9-T01；当前不得视为 Day9 已开始。 |
+
 ### 后续记录模板
 
 后续窗口复制以下模板并追加在最近一条记录之后，不得删除旧记录。
@@ -619,4 +640,3 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 受影响任务/文件 |  |
 | 回退方案 |  |
 | 最终状态 | 待批准/批准/拒绝/已回退 |
-

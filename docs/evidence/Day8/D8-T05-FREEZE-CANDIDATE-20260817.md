@@ -1,9 +1,9 @@
-# Day 8 T05 — P0 功能冻结与 Day8 Stage Closure（候选准备，2026-08-17）
+# Day 8 T05 — P0 功能冻结与 Day8 Stage Closure（FINAL，2026-08-18）
 
-> 性质：D8-T05 Stage Candidate Preparation（Batch 执行模式；**Review 前不写 DONE/COMPLETE/EFFECTIVE**）。
-> Base：`f79e309`（Day7 final closure）。候选 commit 见文末。
+> 性质：D8-T05 Final Stage Closure；Final Stage Review=`PASS`，D8-T01～D8-T05=`DONE`、Day8=`COMPLETE`、Feature Freeze=`EFFECTIVE`。
+> Base：`f79e309`（Day7 final closure）。最终实现 commit 见文末。
 
-## 1. Day8 功能冻结清单（候选）
+## 1. Day8 功能冻结清单（最终）
 
 **已冻结功能（D8-T01～D8-T04 实现）**：
 
@@ -26,28 +26,28 @@
 | D8-T02 commit | `9c88a84` |
 | D8-T03 commit | `ec2f0b5` |
 | D8-T04 commit | `4745080` |
-| Final Stage Fix Commit | `4ed6060`（M1-M4 findings fix） |
-| Final Stage Review Candidate | 见文末 commit |
+| Final Stage Fix Commit | `239d025`（M1 单次 intake、M3 FORMAL/demo/row-ref、UI最终收口） |
+| Final Stage Review Candidate | `239d025`（最终生产/测试/UI实现） |
 | 后端 JAR | `backend/target/supplymind-backend-0.1.0-SNAPSHOT.jar` |
-| JAR SHA-256（可复现） | `B0C3EB2A9576FF505EBA15C75C3D93A3EBFC889DEC93BA35559725F7B8F58341`（两次独立 clean package 一致，见 §4） |
+| JAR SHA-256（可复现） | `95E2C6F63E18383F499BB239649EBFCA5B5D8966B8D9201FC1BD2C9D03D49426`（两次独立 clean package 一致，见 §4） |
 | backend/pom.xml SHA-256 | `51E7F1DB6208A10B5EB514BB725AD42FED7A57D70A29E6EC62E0FA864F874031` |
 | frontend/package.json SHA-256 | `1EBEE57B122026BEAF24889F8EA9D2ECDE369FA181E58DA1A3BF1394B9C71625` |
 | frontend/package-lock.json SHA-256 | `5E9585124B59E62E707CE865DCFE9E25FB3D96198D27E8A867F15235BE01545C` |
-| docs/04 SHA-256 | `4392A0E56CD60EA992D1B7C0D503B0DAB38362A05D12C7BCBAC9132C29883591` |
-| docs/05 SHA-256 | `460AEA2ED42E3AFD6A83D29B4D56511C17B563EA772F998E920A92D6C7A3A2B2` |
+| docs/04 SHA-256 | `CD5F66A2AA8D67ADE2B137C674DADBD8F677DB8336C2C4DB85AA2A9E21851B79` |
+| docs/05 SHA-256 | `B0D66C19124BFB337130FF0EA3D7B3B8B24B208E3894F6219951A708574054EB` |
 | docs/06 SHA-256 | `24FB7D49B50A92E60423ACA67395BBE95C34D97672AF5150C79705A999D32E91` |
 | FILE-SCHEMA-V1 SHA-256 | `FA56B800F8153B94F5A728552E605B7F5AE79B2BC6B640E0B4D2E09851A4C59D` |
-| artifacts SHA-256 manifest | `docs/evidence/Day8/artifacts/SHA256-MANIFEST.txt`（全部 14 个工件各自 SHA） |
+| artifacts SHA-256 manifest | `docs/evidence/Day8/artifacts/SHA256-MANIFEST.txt`（最终工件逐文件 SHA-256） |
 
 ## 3. 统一回归（真实执行）
 
 ### 后端 `.\mvnw.cmd clean test`
-- suites：**116**
-- tests：**631**
+- suites：**117**
+- tests：**632**
 - failures：**0**
 - errors：**0**
 - skipped：**8**（与 Day5/Day6 基线逐项相同：AtSrc002 gated、Day5TimeContractHarness、Aggregate/DailyRealRawEvidence、PbocOfficialWebRealNetworkAttempt、PbocRawClosedLoopSmokeGate、PublishRealRawEvidence、PbocValidationRealRawEvidence——真实联网/raw 门禁 + D10 物理时间，未新增 skip）
-- 旧快照均 HISTORICAL：Day7=110/578；D8-T01=112/592；D8-T02=113/605；D8-T03=115/607；D8-T05 前=116/608；Final Candidate=116/631（含 CurrentIntakeAttackTest 5 项 + WarningAckStoreTest 14 项等）
+- 旧快照均 HISTORICAL：Day7=110/578；D8-T01=112/592；D8-T02=113/605；D8-T03=115/607；D8-T05 前=116/608；旧 Final Candidate=116/631；当前 Final=117/632（新增 FORMAL 不得投影 demo warning 的独立攻击用例）
 - 测试后 `backend/data` 无残留
 
 ### 前端 `npm run test` / `npm run build`
@@ -62,7 +62,7 @@
 - `mvnw.cmd clean test` 从干净工作副本完整重建并回归（见上）
 - `npm run test` + `npm run build` 从干净依赖重建前端产物
 - **可复现构建（M5）**：两次独立 `.\mvnw.cmd clean package -DskipTests`，JAR SHA-256 均为
-  `B0C3EB2A9576FF505EBA15C75C3D93A3EBFC889DEC93BA35559725F7B8F58341` → **MATCH**
+  `95E2C6F63E18383F499BB239649EBFCA5B5D8966B8D9201FC1BD2C9D03D49426` → **MATCH**
   （pom.xml 固定 `project.build.outputTimestamp=2026-08-17T00:00:00Z`，JAR 条目时间戳确定）
 - 浏览器形态预验收证据见 `D8-T04-WEB-P0-PREACCEPTANCE-20260817.md` 与 `DAY8-FINAL-STAGE-FINDINGS-FIX-20260817.md`；正式 Web P0 工件见 `artifacts/`（截图 + runner JSON + SHA manifest）
 
@@ -75,15 +75,15 @@
 | D8-T03 | `D8-T03-AGENT-WORKBENCH-20260817.md` |
 | D8-T04 | `D8-T04-WEB-P0-PREACCEPTANCE-20260817.md` |
 | D8-T05 | 本文件 |
-| Final Stage Fix | `DAY8-FINAL-STAGE-FINDINGS-FIX-20260817.md` |
-| Web P0 工件 | `artifacts/`（config-page/m1-replace-auto-chain/m3-agent-workbench/warning-page/live-*.png 截图、restart-recovery-api.txt、web-p0-runner-summary.json、web-p0-full-matrix.json、SHA256-MANIFEST.txt） |
+| Final Stage Fix | `DAY8-FINAL-TECHNICAL-CLOSURE-20260818.md`（当前）；`DAY8-FINAL-STAGE-FINDINGS-FIX-20260817.md`（HISTORICAL） |
+| Web P0 工件 | `artifacts/`（backend-surefire-summary.json、backend-surefire-xml.zip、frontend-vitest-result.json、frontend-build-output.txt、maven-dependency-tree.txt、web-p0-full-matrix.json、截图及SHA256-MANIFEST.txt） |
 | 视觉验收 | `docs/visual-acceptance/`（7 页 × light 1440 / dark 1440 / responsive 768 = 21 张 + README.md） |
 | 决策 | docs/06 DEC-061；docs/04 D8-T02/D8-T05；docs/05 Day8ExecutionMode |
 
-## 6. 状态（候选，待 Final Stage Review）
+## 6. 状态（Final Stage Review PASS）
 
-- D8-T01～D8-T05 = `TaskExecutionStatus=REVIEW_PENDING`
-- Day8 = `NOT_COMPLETE`
-- Feature Freeze = `PENDING_FINAL_STAGE_REVIEW`
-- 未 merge main；未开始 Day9
+- D8-T01～D8-T05 = `TaskExecutionStatus=DONE`
+- Day8 = `COMPLETE`
+- Feature Freeze = `EFFECTIVE`
+- D9-T01=`NOT_STARTED`+`READY`；未 merge main；未开始 Day9
 - 真实 Cloud LLM gated run = `NOT_RUN/PENDING_EXTERNAL`（未伪报）

@@ -1,4 +1,6 @@
-# Day 8 Final Stage Findings Fix（2026-08-17）
+# Day 8 Final Stage Findings Fix（2026-08-17，HISTORICAL / SUPERSEDED）
+
+> 本文件记录 `4ed6060` 时点，计数与结论不再是当前最终状态；已由 `239d025` 及 `DAY8-FINAL-TECHNICAL-CLOSURE-20260818.md` 取代。保留仅用于审计时间线。
 
 > 性质：Day8 Final Stage Review 5 个 MAJOR 修复证据（Batch 执行模式）。
 > Base：`80e58d7`（D8-T05 Stage Candidate Preparation）。

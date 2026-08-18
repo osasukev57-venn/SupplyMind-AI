@@ -1,0 +1,1187 @@
+{
+  "schemaVersion": "DAY8-RUNNER-EVIDENCE-V1",
+  "generatedAt": "2026-08-18T13:15:04.6057533+08:00",
+  "command": ".\\mvnw.cmd clean test",
+  "result": "PASS",
+  "totals": {
+    "suites": 117,
+    "tests": 632,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 8
+  },
+  "rawRunnerArchive": "docs/evidence/Day8/artifacts/backend-surefire-xml.zip",
+  "rawRunnerArchiveSha256": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041",
+  "suites": [
+    {
+      "name": "com.supplymind.acceptance.AtSrc002AcceptanceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "timeSeconds": "0.061",
+      "xmlFile": "TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml",
+      "xmlSha256": "6FE35578810F8E3CD1D8AA698EA9B72489A6F33DC2B39B08CA53571359C998DD"
+    },
+    {
+      "name": "com.supplymind.acceptance.MaterialDay3AcceptanceTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "3.705",
+      "xmlFile": "TEST-com.supplymind.acceptance.MaterialDay3AcceptanceTest.xml",
+      "xmlSha256": "A7161420380746E19E48188DCA059E6BB44798541AF60110AE6DC5C479EE6CF2"
+    },
+    {
+      "name": "com.supplymind.acceptance.MaterialRoutePlanProductionTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "2.593",
+      "xmlFile": "TEST-com.supplymind.acceptance.MaterialRoutePlanProductionTest.xml",
+      "xmlSha256": "B0A76E57765B8E4875210521101387D7B03FDC56F6D5E71DD821F5F3DBD2ED2C"
+    },
+    {
+      "name": "com.supplymind.agent.AgentApiMvcContractTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.971",
+      "xmlFile": "TEST-com.supplymind.agent.AgentApiMvcContractTest.xml",
+      "xmlSha256": "63DEA5A7FF02CEFD50FBC27926C8C26CDB1CBCA3E519654FC5933141CA3A7221"
+    },
+    {
+      "name": "com.supplymind.agent.AgentApiTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.427",
+      "xmlFile": "TEST-com.supplymind.agent.AgentApiTest.xml",
+      "xmlSha256": "7F1D4FCDD449ED3E8861102838CA8DD29348AC562867F44B2F7CE20F0D4D1655"
+    },
+    {
+      "name": "com.supplymind.agent.AgentAttackTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "2.065",
+      "xmlFile": "TEST-com.supplymind.agent.AgentAttackTest.xml",
+      "xmlSha256": "2D3A6B7DD144D6089C94118BC07B154084D805FB7A58F2C3AB800818C8215613"
+    },
+    {
+      "name": "com.supplymind.agent.AgentF2MissingReferenceGuardTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.27",
+      "xmlFile": "TEST-com.supplymind.agent.AgentF2MissingReferenceGuardTest.xml",
+      "xmlSha256": "28B794E2B5CCEDEA0E1695868DED037559B99D118216A947A124913C8262C6FE"
+    },
+    {
+      "name": "com.supplymind.agent.AgentF3LifecycleVerificationTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.394",
+      "xmlFile": "TEST-com.supplymind.agent.AgentF3LifecycleVerificationTest.xml",
+      "xmlSha256": "173C619D49627EC725DE67921B811A974C104DE9BE22CC176853264BA030712D"
+    },
+    {
+      "name": "com.supplymind.agent.AgentFinalStageMajorFixAttackTest",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "2.522",
+      "xmlFile": "TEST-com.supplymind.agent.AgentFinalStageMajorFixAttackTest.xml",
+      "xmlSha256": "A18536CD0AFAA6773B3D568AC226ECB4E16A0FA064EB06442B1200C8E5412AC1"
+    },
+    {
+      "name": "com.supplymind.agent.AgentPipelineIntegrationTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.948",
+      "xmlFile": "TEST-com.supplymind.agent.AgentPipelineIntegrationTest.xml",
+      "xmlSha256": "BBF99DC6A20CEAE0E7C13FA0F49C27633925BC22A97F2D76EDDCF46F18160648"
+    },
+    {
+      "name": "com.supplymind.agent.AgentR2StageFixAttackTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "2.11",
+      "xmlFile": "TEST-com.supplymind.agent.AgentR2StageFixAttackTest.xml",
+      "xmlSha256": "01DBC6A0EED2FF9A20DEE4C30777698163118A215E4872B28D5450739F3198E0"
+    },
+    {
+      "name": "com.supplymind.agent.AgentSpringAiToolCallingTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.354",
+      "xmlFile": "TEST-com.supplymind.agent.AgentSpringAiToolCallingTest.xml",
+      "xmlSha256": "FBFE9C15CA63158ABBFF6B67738FFB59F549A81EA1BEE719C4F42A72C6ACE833"
+    },
+    {
+      "name": "com.supplymind.agent.AgentToolBoundaryTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.207",
+      "xmlFile": "TEST-com.supplymind.agent.AgentToolBoundaryTest.xml",
+      "xmlSha256": "A2E5264B6ED64C800FDE164E785251FA035CE8B08FD1AE0FAAF5E15ADF4E4460"
+    },
+    {
+      "name": "com.supplymind.agent.Day6FinalStageAuthorityBindingAttackTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.749",
+      "xmlFile": "TEST-com.supplymind.agent.Day6FinalStageAuthorityBindingAttackTest.xml",
+      "xmlSha256": "E8299BED14AD98AC8D0AF30E190472DE31F72DAA72BD0FF1346C65FD2E910CD2"
+    },
+    {
+      "name": "com.supplymind.agent.Day6FinalStageClaimFieldGuardAttackTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.792",
+      "xmlFile": "TEST-com.supplymind.agent.Day6FinalStageClaimFieldGuardAttackTest.xml",
+      "xmlSha256": "8E963AE69DF4A46B0D84018667AFA4C15C7B020B64A96D8D97501C78FA8F4D1C"
+    },
+    {
+      "name": "com.supplymind.agent.Day6FinalStageFullBindingAttackTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.278",
+      "xmlFile": "TEST-com.supplymind.agent.Day6FinalStageFullBindingAttackTest.xml",
+      "xmlSha256": "56574959CBE09D00FCEB5B53787F8F93E4002159692DEDD41C3EA1C4BB42B521"
+    },
+    {
+      "name": "com.supplymind.agent.Day6FinalStageMultiRowLineageAttackTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.248",
+      "xmlFile": "TEST-com.supplymind.agent.Day6FinalStageMultiRowLineageAttackTest.xml",
+      "xmlSha256": "423885BB7158DD3055ADD700F3E68DF9AB9652F3EB2EA2FC5798A01DEF2EF716"
+    },
+    {
+      "name": "com.supplymind.agent.Day6FinalStageRowToRefConfigTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.255",
+      "xmlFile": "TEST-com.supplymind.agent.Day6FinalStageRowToRefConfigTest.xml",
+      "xmlSha256": "B5A3B42DDB12661EF5665806427A965DDAA0A4FE03C9AA0A4E6B9AF9232D0A8B"
+    },
+    {
+      "name": "com.supplymind.agent.Day6FinalStageStrictEnvelopeAttackTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "2.387",
+      "xmlFile": "TEST-com.supplymind.agent.Day6FinalStageStrictEnvelopeAttackTest.xml",
+      "xmlSha256": "A22584BFFC448DB1B45D65BBDC09397416F9F0FB5D423F674B4387228323CE6F"
+    },
+    {
+      "name": "com.supplymind.agent.Day6FinalStageStructuredClaimsAttackTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.522",
+      "xmlFile": "TEST-com.supplymind.agent.Day6FinalStageStructuredClaimsAttackTest.xml",
+      "xmlSha256": "ACECFEAE9BD013D9DF596DB5F8F3134A8FC0505AC5F9A8D579626EE56C805679"
+    },
+    {
+      "name": "com.supplymind.agent.Day6R2IndependentCostAttackTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.169",
+      "xmlFile": "TEST-com.supplymind.agent.Day6R2IndependentCostAttackTest.xml",
+      "xmlSha256": "589471C83AFCAE1274D1B6A898419D159A994005FBB1898B9B4E8C37A3AF5CAB"
+    },
+    {
+      "name": "com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.559",
+      "xmlFile": "TEST-com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest.xml",
+      "xmlSha256": "D4F57272E0ECA9CBE873AB9103ABE510C32C3FF71CEB5521B1BBDAEB56E99671"
+    },
+    {
+      "name": "com.supplymind.agent.Day6R2IndependentGoldenEvidenceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.324",
+      "xmlFile": "TEST-com.supplymind.agent.Day6R2IndependentGoldenEvidenceTest.xml",
+      "xmlSha256": "F2D7FD8F7AFF6C2A1DD3CACA83D02470348A9520985004872B0E820A66B31914"
+    },
+    {
+      "name": "com.supplymind.agent.Day6R2IndependentIsolationAttackTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.337",
+      "xmlFile": "TEST-com.supplymind.agent.Day6R2IndependentIsolationAttackTest.xml",
+      "xmlSha256": "8B1867F0B6FEF229DC160CDB6EB74746D4F0DD489B1C128C7AA7368AF9E3CA8D"
+    },
+    {
+      "name": "com.supplymind.agent.Day6R2IndependentResponseAttackTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.766",
+      "xmlFile": "TEST-com.supplymind.agent.Day6R2IndependentResponseAttackTest.xml",
+      "xmlSha256": "2395E383274DDC809A7596FEFC8E7E3B9B9CD69234CF7788C19F105F9D21EE7C"
+    },
+    {
+      "name": "com.supplymind.agent.Day6R2IndependentSpringAiAttackTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.986",
+      "xmlFile": "TEST-com.supplymind.agent.Day6R2IndependentSpringAiAttackTest.xml",
+      "xmlSha256": "D8B35923543D847909889FE392251AEF7D04A51B3C41795B979942130482E44D"
+    },
+    {
+      "name": "com.supplymind.backfill.BackfillHistoryRangeContractTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "3.638",
+      "xmlFile": "TEST-com.supplymind.backfill.BackfillHistoryRangeContractTest.xml",
+      "xmlSha256": "60161BDC4D98BED8D4F639A3010A26A7459348B22169E9793E2DE6FADC2BBB5B"
+    },
+    {
+      "name": "com.supplymind.backfill.BackfillOrchestratorTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "3.558",
+      "xmlFile": "TEST-com.supplymind.backfill.BackfillOrchestratorTest.xml",
+      "xmlSha256": "B561B0D9EABB3ED2B07956D83C564E75CEB6A6534265BF74EB4E43D7FE7AB032"
+    },
+    {
+      "name": "com.supplymind.backfill.BackfillRangeCompletionRuleTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "4.825",
+      "xmlFile": "TEST-com.supplymind.backfill.BackfillRangeCompletionRuleTest.xml",
+      "xmlSha256": "601599D37564068CE52A849D7EF38449DF00BF7D5302120F5740B15C2A7B419F"
+    },
+    {
+      "name": "com.supplymind.backfill.Day5SecondHistoryRangeAttackTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "2.985",
+      "xmlFile": "TEST-com.supplymind.backfill.Day5SecondHistoryRangeAttackTest.xml",
+      "xmlSha256": "1484117F3C654C2CB1AA16B27BC610CF204EBDD3ADA45FE789A47AF97B1ED6E9"
+    },
+    {
+      "name": "com.supplymind.config.ConfigApiMvcContractTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.684",
+      "xmlFile": "TEST-com.supplymind.config.ConfigApiMvcContractTest.xml",
+      "xmlSha256": "CE1E089603951A469A5C9CC577D8C1D4C60B257E104232FC151A6697D81B0FB3"
+    },
+    {
+      "name": "com.supplymind.config.ConfigManagementServiceTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.085",
+      "xmlFile": "TEST-com.supplymind.config.ConfigManagementServiceTest.xml",
+      "xmlSha256": "FB6BC68526924130A6C411EA7ADFBD5EEEB01501CB1A716AA0B35134CC2CF138"
+    },
+    {
+      "name": "com.supplymind.config.CurrentIntakeAttackTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "3.178",
+      "xmlFile": "TEST-com.supplymind.config.CurrentIntakeAttackTest.xml",
+      "xmlSha256": "C8A4F972C5E7CDE0B23D4D3916AEF30800A672658CFDCF4627E8CBE0CA800A19"
+    },
+    {
+      "name": "com.supplymind.config.DynamicConfigWorkflowServiceTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "4.06",
+      "xmlFile": "TEST-com.supplymind.config.DynamicConfigWorkflowServiceTest.xml",
+      "xmlSha256": "AD894015FADEE737FC5B4897942A7EED1B03138DF67C87FA803BA34CBF9023F1"
+    },
+    {
+      "name": "com.supplymind.dashboard.DashboardApiMockMvcTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "4.945",
+      "xmlFile": "TEST-com.supplymind.dashboard.DashboardApiMockMvcTest.xml",
+      "xmlSha256": "9960D56B6F4EF26050D1CA1CBD370D61BABA23711E2BC2E0FAAEDBE44CB8655E"
+    },
+    {
+      "name": "com.supplymind.dashboard.DashboardControllerTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.042",
+      "xmlFile": "TEST-com.supplymind.dashboard.DashboardControllerTest.xml",
+      "xmlSha256": "AC26CDCF2BB9978DF524692FC2FE88A552EF9C6B65A5E7286C9EF34591CF66D0"
+    },
+    {
+      "name": "com.supplymind.dashboard.DashboardDtoContractTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.011",
+      "xmlFile": "TEST-com.supplymind.dashboard.DashboardDtoContractTest.xml",
+      "xmlSha256": "22CB31919B706C8C688D121E48EAF14BCC0E71126C29130D3BF2DF7C720CCEC8"
+    },
+    {
+      "name": "com.supplymind.dashboard.DashboardMvcContractTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.493",
+      "xmlFile": "TEST-com.supplymind.dashboard.DashboardMvcContractTest.xml",
+      "xmlSha256": "EB84011420DD42509037B508FB0BAB668A56A7EBDA908B089CB11251406ED86B"
+    },
+    {
+      "name": "com.supplymind.dashboard.DashboardServiceTest",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "5.381",
+      "xmlFile": "TEST-com.supplymind.dashboard.DashboardServiceTest.xml",
+      "xmlSha256": "45663010745E60F4ACD07CC359EE11946A238AD5D8CE2BBD2065DC17111F38AF"
+    },
+    {
+      "name": "com.supplymind.day4.foundation.AtAggDay4ContractHarnessTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.005",
+      "xmlFile": "TEST-com.supplymind.day4.foundation.AtAggDay4ContractHarnessTest.xml",
+      "xmlSha256": "8C961A4201F4526D01332C3EC0E10A484DD2F0C10045E06A006D9BC572386098"
+    },
+    {
+      "name": "com.supplymind.day4.foundation.AtPrecDay4ContractHarnessTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.005",
+      "xmlFile": "TEST-com.supplymind.day4.foundation.AtPrecDay4ContractHarnessTest.xml",
+      "xmlSha256": "10C6E0154C95E7ABB3A480C93A740FDA12E562DF697BD97E25F6724F420D067E"
+    },
+    {
+      "name": "com.supplymind.day4.foundation.AtPubDay4ContractHarnessTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.004",
+      "xmlFile": "TEST-com.supplymind.day4.foundation.AtPubDay4ContractHarnessTest.xml",
+      "xmlSha256": "068781EB9B40DD918C979B6CA47987BE9EE6D2138CE9585C6E69A3FA1E791A53"
+    },
+    {
+      "name": "com.supplymind.day4.foundation.AtSrcDay4ReconciliationHarnessTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.002",
+      "xmlFile": "TEST-com.supplymind.day4.foundation.AtSrcDay4ReconciliationHarnessTest.xml",
+      "xmlSha256": "B0A5C73A3232F13D4F094BD6857D2217D36219963FF19821DE8F77AB024B3050"
+    },
+    {
+      "name": "com.supplymind.day4.foundation.Day4DailyAggregateSchemaContractTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.0",
+      "xmlFile": "TEST-com.supplymind.day4.foundation.Day4DailyAggregateSchemaContractTest.xml",
+      "xmlSha256": "35B1CF862DF0BB67BD2322D7DB175156E54426A47C7226CF389367B041BAF0E9"
+    },
+    {
+      "name": "com.supplymind.day4.foundation.Day4GoldenFixtureManifestTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.08",
+      "xmlFile": "TEST-com.supplymind.day4.foundation.Day4GoldenFixtureManifestTest.xml",
+      "xmlSha256": "C4BF4B74F9612D6A66CCC6006508F7DF40AC2F08622DD8A65206DC0B6EAAC23D"
+    },
+    {
+      "name": "com.supplymind.day4.foundation.FutureMaterialDay4ContractTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "2.534",
+      "xmlFile": "TEST-com.supplymind.day4.foundation.FutureMaterialDay4ContractTest.xml",
+      "xmlSha256": "2E52B7734B022DFC389C41816BFEB7FAF6BC3628B87601F24B68149AAA28DA93"
+    },
+    {
+      "name": "com.supplymind.day4.foundation.MaterialAggregateProcessingContractHarnessTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.002",
+      "xmlFile": "TEST-com.supplymind.day4.foundation.MaterialAggregateProcessingContractHarnessTest.xml",
+      "xmlSha256": "2B1144D6FAE9C14B4791A29B0AB9F987B4D49678DBC31F6FB48BD16FCCC4FF70"
+    },
+    {
+      "name": "com.supplymind.day4.foundation.MaterialBasicValidationV2ContractHarnessTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.004",
+      "xmlFile": "TEST-com.supplymind.day4.foundation.MaterialBasicValidationV2ContractHarnessTest.xml",
+      "xmlSha256": "EF10B8388A2A43939AED5C1F46994F5A060C8DFAECD6EC53EF4D62E405764385"
+    },
+    {
+      "name": "com.supplymind.day4.foundation.MaterialDailyProcessingContractHarnessTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.004",
+      "xmlFile": "TEST-com.supplymind.day4.foundation.MaterialDailyProcessingContractHarnessTest.xml",
+      "xmlSha256": "8A60FEF0A34503C4E1417A4C82D09EC32DE60143294BB942CD9A1DEBEA44FB79"
+    },
+    {
+      "name": "com.supplymind.day4.foundation.MaterialPublishNegativeMatrixHarnessTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.004",
+      "xmlFile": "TEST-com.supplymind.day4.foundation.MaterialPublishNegativeMatrixHarnessTest.xml",
+      "xmlSha256": "19C089443D6CBAB6BB00FA0F755F04DB80FE7628C9AC0DEE69F72ACB4F44E710"
+    },
+    {
+      "name": "com.supplymind.day5.Day5ImplementationIntegrationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.389",
+      "xmlFile": "TEST-com.supplymind.day5.Day5ImplementationIntegrationTest.xml",
+      "xmlSha256": "C184E6F93F16A49814D5946A942AA8CD439599429C68039404F201C69C2D4BBE"
+    },
+    {
+      "name": "com.supplymind.day5.foundation.Day5AlertContractHarnessTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.25",
+      "xmlFile": "TEST-com.supplymind.day5.foundation.Day5AlertContractHarnessTest.xml",
+      "xmlSha256": "5A9563AFFDFF177E359EE8CB950527FDC84A032F56A1FC7B8D2CF71B0E351E0F"
+    },
+    {
+      "name": "com.supplymind.day5.foundation.Day5BackfillStateContractHarnessTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.002",
+      "xmlFile": "TEST-com.supplymind.day5.foundation.Day5BackfillStateContractHarnessTest.xml",
+      "xmlSha256": "764B8AB2B9C6818AA432220FD866598BD12FCC52E0CC7B1A2A3230808AAC942C"
+    },
+    {
+      "name": "com.supplymind.day5.foundation.Day5ConfigurationActivationContractHarnessTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.003",
+      "xmlFile": "TEST-com.supplymind.day5.foundation.Day5ConfigurationActivationContractHarnessTest.xml",
+      "xmlSha256": "60DAB3D3803C04C40B70B0BF4C88AA57D6054E5E7963FD64F807ADBB034A0897"
+    },
+    {
+      "name": "com.supplymind.day5.foundation.Day5CrossYearHistoryContractHarnessTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.004",
+      "xmlFile": "TEST-com.supplymind.day5.foundation.Day5CrossYearHistoryContractHarnessTest.xml",
+      "xmlSha256": "2A5C2D5D56B2725D475650260CFAAFF78AF3EBFF7ADF7A1385E4B1BF8491B15D"
+    },
+    {
+      "name": "com.supplymind.day5.foundation.Day5FutureAcceptanceIntegrationHarnessTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.746",
+      "xmlFile": "TEST-com.supplymind.day5.foundation.Day5FutureAcceptanceIntegrationHarnessTest.xml",
+      "xmlSha256": "A761A3A4F8767F96347CA6226EE350F30FA5ABF4DA4821AD5A1A9222CEA70D6A"
+    },
+    {
+      "name": "com.supplymind.day5.foundation.Day5TimeContractHarnessTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "timeSeconds": "0.0",
+      "xmlFile": "TEST-com.supplymind.day5.foundation.Day5TimeContractHarnessTest.xml",
+      "xmlSha256": "AA93CC641C1E7AE291E1E35028EFDA6A3B4DD675BDC9519E8387DD1F4709B621"
+    },
+    {
+      "name": "com.supplymind.day5.r2.Day5FinalProviderCapabilityDeclarationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.022",
+      "xmlFile": "TEST-com.supplymind.day5.r2.Day5FinalProviderCapabilityDeclarationTest.xml",
+      "xmlSha256": "BA186239589194405B54332FFA69BE68967B018F37BBD1BF601555B4973AB901"
+    },
+    {
+      "name": "com.supplymind.day5.r2.Day5R2BackfillAttackTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "2.976",
+      "xmlFile": "TEST-com.supplymind.day5.r2.Day5R2BackfillAttackTest.xml",
+      "xmlSha256": "8977C61390E42BABA1AD96D48B76E3AAAD6A7286B3B3B7EF4280B6E293C48137"
+    },
+    {
+      "name": "com.supplymind.day5.r2.Day5R2RotationHistoryCapabilityAttackTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.872",
+      "xmlFile": "TEST-com.supplymind.day5.r2.Day5R2RotationHistoryCapabilityAttackTest.xml",
+      "xmlSha256": "310593874DB79931CC06E1EB451DD83CFA958367C6B184641FB3C42A540C960F"
+    },
+    {
+      "name": "com.supplymind.day5.r2.Day5R2WarningAttackTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.26",
+      "xmlFile": "TEST-com.supplymind.day5.r2.Day5R2WarningAttackTest.xml",
+      "xmlSha256": "CC921DBD88A40548637627E065A4E467DD7B823C02BEBAA87C6B1113244A5848"
+    },
+    {
+      "name": "com.supplymind.day5.r2.Day5SecondDefaultCapabilityAttackTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.198",
+      "xmlFile": "TEST-com.supplymind.day5.r2.Day5SecondDefaultCapabilityAttackTest.xml",
+      "xmlSha256": "5D5CB0B47A09F1AD1C37B17000480A64C3A01CF6107BE4C6CA092A14E93FD507"
+    },
+    {
+      "name": "com.supplymind.day5.r2.ProviderDefaultCapabilityFailClosedTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.468",
+      "xmlFile": "TEST-com.supplymind.day5.r2.ProviderDefaultCapabilityFailClosedTest.xml",
+      "xmlSha256": "76296F5A0689940CCF1F18C61027DEED8CA2AF1ADCCCAAA829660A460CF491B7"
+    },
+    {
+      "name": "com.supplymind.foundation.acceptance.AtFile000ConfigAndRawWindowAcceptanceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.332",
+      "xmlFile": "TEST-com.supplymind.foundation.acceptance.AtFile000ConfigAndRawWindowAcceptanceTest.xml",
+      "xmlSha256": "C6E09B772FCE13F0F3AD30BE99AA8E334D66F63DA0E45BAD318FBC42A7466548"
+    },
+    {
+      "name": "com.supplymind.foundation.acceptance.AtFile000DualArtifactImmutabilityAcceptanceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.253",
+      "xmlFile": "TEST-com.supplymind.foundation.acceptance.AtFile000DualArtifactImmutabilityAcceptanceTest.xml",
+      "xmlSha256": "9E4342BCB492FA40C9FE90B9DDB5F7DC0736AA68615392BA05A27257A0BB81A2"
+    },
+    {
+      "name": "com.supplymind.foundation.acceptance.AtFile000RecoveryManifestRootAcceptanceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.156",
+      "xmlFile": "TEST-com.supplymind.foundation.acceptance.AtFile000RecoveryManifestRootAcceptanceTest.xml",
+      "xmlSha256": "0C0B56EF86738B307E9FC305C8B740F11FA58919CEC1E52A1B88FA18D42BD3C6"
+    },
+    {
+      "name": "com.supplymind.foundation.acceptance.D1T03AtFile000SupplementalAcceptanceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.123",
+      "xmlFile": "TEST-com.supplymind.foundation.acceptance.D1T03AtFile000SupplementalAcceptanceTest.xml",
+      "xmlSha256": "44164BCD94789BBB6351DC4A445C40143B97BBA0D9C0CBB9D195DD0586EA6ACB"
+    },
+    {
+      "name": "com.supplymind.foundation.acceptance.DirtyMarkerAndProcessedCodecAcceptanceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.069",
+      "xmlFile": "TEST-com.supplymind.foundation.acceptance.DirtyMarkerAndProcessedCodecAcceptanceTest.xml",
+      "xmlSha256": "065ED2EE7EF8A7BB34A109AE1845480D2703F2FAD827AF2CF40FE55A7D539AF1"
+    },
+    {
+      "name": "com.supplymind.foundation.acceptance.DualCurrencyRawLifecycleAcceptanceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.537",
+      "xmlFile": "TEST-com.supplymind.foundation.acceptance.DualCurrencyRawLifecycleAcceptanceTest.xml",
+      "xmlSha256": "7541EEC245381408122885CBA22CC389F31B325E95215CEA2E19570F53E94622"
+    },
+    {
+      "name": "com.supplymind.foundation.acceptance.FoundationStartupAcceptanceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.592",
+      "xmlFile": "TEST-com.supplymind.foundation.acceptance.FoundationStartupAcceptanceTest.xml",
+      "xmlSha256": "9F6665DD7471C53CBEC2579409E530E965BCDAE1C069C8558F6D115F5A64BCDC"
+    },
+    {
+      "name": "com.supplymind.foundation.acceptance.GoldenFixtureContractAcceptanceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.194",
+      "xmlFile": "TEST-com.supplymind.foundation.acceptance.GoldenFixtureContractAcceptanceTest.xml",
+      "xmlSha256": "C8FEF72513D52BD6D7D5E5B4188495877BFF56CB5E810F70DBF04A648DB25A08"
+    },
+    {
+      "name": "com.supplymind.foundation.acceptance.IndependentFormatContractAcceptanceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.048",
+      "xmlFile": "TEST-com.supplymind.foundation.acceptance.IndependentFormatContractAcceptanceTest.xml",
+      "xmlSha256": "D85F8C5ED24866E92959CAF9D552562D584AFE4D02414FD9747F111B870FEED7"
+    },
+    {
+      "name": "com.supplymind.foundation.boot.SupplyMindDataPropertiesTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.008",
+      "xmlFile": "TEST-com.supplymind.foundation.boot.SupplyMindDataPropertiesTest.xml",
+      "xmlSha256": "A80F7BDD723262DC25F3908EA2710A813650643B2D7F1828208E43B8393A988B"
+    },
+    {
+      "name": "com.supplymind.foundation.codec.CsvV1CodecTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.004",
+      "xmlFile": "TEST-com.supplymind.foundation.codec.CsvV1CodecTest.xml",
+      "xmlSha256": "CC0FB7474645995E6B258EC32318A297ADD674625BEEBB81B38E3A3DC16847A9"
+    },
+    {
+      "name": "com.supplymind.foundation.codec.JsonV1CodecTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.008",
+      "xmlFile": "TEST-com.supplymind.foundation.codec.JsonV1CodecTest.xml",
+      "xmlSha256": "E5735E062E80814771928B73575F9D18F3A817E12836AED362C1D4E12A8F6779"
+    },
+    {
+      "name": "com.supplymind.foundation.model.ConfigAndManifestV1Test",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.003",
+      "xmlFile": "TEST-com.supplymind.foundation.model.ConfigAndManifestV1Test.xml",
+      "xmlSha256": "D6ACA1B1AAFD548D78B401AAE4D7F65CDC8B9C019D486562A36DC827A70C8C93"
+    },
+    {
+      "name": "com.supplymind.foundation.model.QuarantineAndPrecisionV1Test",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.013",
+      "xmlFile": "TEST-com.supplymind.foundation.model.QuarantineAndPrecisionV1Test.xml",
+      "xmlSha256": "E0A6C665A7C782971F7A1885D901C3821A0E60BEBC780E3ED27C0224290A17D6"
+    },
+    {
+      "name": "com.supplymind.foundation.model.RawReceiptAndTimelineV1Test",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.007",
+      "xmlFile": "TEST-com.supplymind.foundation.model.RawReceiptAndTimelineV1Test.xml",
+      "xmlSha256": "81ACCF2ECE257A59E562E870A418A7A6098199571DA41182251CAB47C1DFF7B5"
+    },
+    {
+      "name": "com.supplymind.foundation.storage.AtomicFileRecoveryTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.375",
+      "xmlFile": "TEST-com.supplymind.foundation.storage.AtomicFileRecoveryTest.xml",
+      "xmlSha256": "6E76C95C966C1D1CFFC98A394D779EF3C5D0072D218C4910C1FD3CA8052B6156"
+    },
+    {
+      "name": "com.supplymind.foundation.storage.AtomicFileStoreWriteInvariantTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.108",
+      "xmlFile": "TEST-com.supplymind.foundation.storage.AtomicFileStoreWriteInvariantTest.xml",
+      "xmlSha256": "451625F8EBC949011472AF6ABC8354CD79CF533B26845DA20C8B6CB6824D3D0E"
+    },
+    {
+      "name": "com.supplymind.foundation.storage.DataRootAndPathsTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.02",
+      "xmlFile": "TEST-com.supplymind.foundation.storage.DataRootAndPathsTest.xml",
+      "xmlSha256": "F0939476A0401584B74F811522A5FC5B15A5529105B5807224B0AAA93A70F8D2"
+    },
+    {
+      "name": "com.supplymind.foundation.storage.DirtyMarkerCodecTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.005",
+      "xmlFile": "TEST-com.supplymind.foundation.storage.DirtyMarkerCodecTest.xml",
+      "xmlSha256": "F9656F8284ECFFB1E28BC5A494075B7CB2EFB86A495980F384DD553DD68A1118"
+    },
+    {
+      "name": "com.supplymind.foundation.storage.DirtyMarkerRecoveryTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.106",
+      "xmlFile": "TEST-com.supplymind.foundation.storage.DirtyMarkerRecoveryTest.xml",
+      "xmlSha256": "3EE03D33786BCB52C2EB1D8E7DE7A67804A350D740A0C35975D648ACDBBC726B"
+    },
+    {
+      "name": "com.supplymind.foundation.storage.ManifestDerivedFieldsVerifierTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.225",
+      "xmlFile": "TEST-com.supplymind.foundation.storage.ManifestDerivedFieldsVerifierTest.xml",
+      "xmlSha256": "64823A36CEA950B2EDE7A04674820E5FC13CC0A82039D1A7C2EA16B09942E557"
+    },
+    {
+      "name": "com.supplymind.foundation.storage.RawAcquisitionLinkVerifierTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.862",
+      "xmlFile": "TEST-com.supplymind.foundation.storage.RawAcquisitionLinkVerifierTest.xml",
+      "xmlSha256": "508CBB95F3C35AB8384955325B387B62E4D3C7626906FC4F3BC31EEA8AE17B1A"
+    },
+    {
+      "name": "com.supplymind.foundation.storage.RawAndConfigStoreTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.243",
+      "xmlFile": "TEST-com.supplymind.foundation.storage.RawAndConfigStoreTest.xml",
+      "xmlSha256": "C53289C64AC5156ACC9CF8EFD2BD60EE7E380CA1C84C697EA3780B2528BB12B3"
+    },
+    {
+      "name": "com.supplymind.history.HistoryQueryServiceTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.83",
+      "xmlFile": "TEST-com.supplymind.history.HistoryQueryServiceTest.xml",
+      "xmlSha256": "94E1C5F44023F00480999D09A4D1A7A904A894A094AB15188998588D54568C9B"
+    },
+    {
+      "name": "com.supplymind.localimport.LocalImportIsolationTest",
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "5.398",
+      "xmlFile": "TEST-com.supplymind.localimport.LocalImportIsolationTest.xml",
+      "xmlSha256": "1CC8D3C8425C14E7796BC470C72ECA36A534B1FB1599E6CBC45E4CC14D2D6B19"
+    },
+    {
+      "name": "com.supplymind.localimport.SyntheticDemoIsolationTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.414",
+      "xmlFile": "TEST-com.supplymind.localimport.SyntheticDemoIsolationTest.xml",
+      "xmlSha256": "C1EDC242A51529969AE5CDBE58799E17619F0D559D7CF0BEC629BAE6E7810DC4"
+    },
+    {
+      "name": "com.supplymind.manual.ManualMaterialIntakeTest",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "3.013",
+      "xmlFile": "TEST-com.supplymind.manual.ManualMaterialIntakeTest.xml",
+      "xmlSha256": "B2AF778ABDBDB4B1DCF11175C96E7F295E9B8309E22C941560A8F46F6B4B8141"
+    },
+    {
+      "name": "com.supplymind.processing.AggregateCalculatorTest",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.01",
+      "xmlFile": "TEST-com.supplymind.processing.AggregateCalculatorTest.xml",
+      "xmlSha256": "EAD96BB7FEA88C3F7BA499EE9D33A1DC6D5834BD1675872175EBDEE43CDD9210"
+    },
+    {
+      "name": "com.supplymind.processing.AggregateProcessingServiceTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.65",
+      "xmlFile": "TEST-com.supplymind.processing.AggregateProcessingServiceTest.xml",
+      "xmlSha256": "F14DA0FFCF36C624996C9D1CA6A96119A57DD60DD8766F429DF0EE2F68B84383"
+    },
+    {
+      "name": "com.supplymind.processing.AggregateRealRawEvidenceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "timeSeconds": "0.001",
+      "xmlFile": "TEST-com.supplymind.processing.AggregateRealRawEvidenceTest.xml",
+      "xmlSha256": "D6EFD43EC4590B289ABE63C55560E949704BCB127C82002EB30B95FDA2714F6A"
+    },
+    {
+      "name": "com.supplymind.processing.DailyProcessingServiceTest",
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "10.549",
+      "xmlFile": "TEST-com.supplymind.processing.DailyProcessingServiceTest.xml",
+      "xmlSha256": "12C9A58F2DBF11234312D986BC7C8E38D1181E5B58324391CC35FB5C1D4B9C25"
+    },
+    {
+      "name": "com.supplymind.processing.DailyRealRawEvidenceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "timeSeconds": "0.0",
+      "xmlFile": "TEST-com.supplymind.processing.DailyRealRawEvidenceTest.xml",
+      "xmlSha256": "5C810774BD8A615D9476E1D240ABA62C2E646ED4CDEF6B59BEED0400E9CDC0FB"
+    },
+    {
+      "name": "com.supplymind.processing.MaterialDailyAggregateTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "4.536",
+      "xmlFile": "TEST-com.supplymind.processing.MaterialDailyAggregateTest.xml",
+      "xmlSha256": "2904585D854665F2295C7AEEF0A24040863634FC8D7301A737E1ACB0B7B30CA4"
+    },
+    {
+      "name": "com.supplymind.provider.DataProviderRegistryTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.008",
+      "xmlFile": "TEST-com.supplymind.provider.DataProviderRegistryTest.xml",
+      "xmlSha256": "19FC5B81033EC5A4161450F7E99D4B115C96CD393EDF8C6BF574A7152F890708"
+    },
+    {
+      "name": "com.supplymind.provider.pboc.PbocDynamicTargetAttackTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "2.095",
+      "xmlFile": "TEST-com.supplymind.provider.pboc.PbocDynamicTargetAttackTest.xml",
+      "xmlSha256": "7B415F0B7D2A947C8D39FFE528E5D603F3AB99B844BB6E354B6052C22B711337"
+    },
+    {
+      "name": "com.supplymind.provider.pboc.PbocOfficialWebDataProviderContractTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.35",
+      "xmlFile": "TEST-com.supplymind.provider.pboc.PbocOfficialWebDataProviderContractTest.xml",
+      "xmlSha256": "E8BBA0D4C727EFF83338C6BCD984A80873560AFA64B0F7DE7FE66B9408497D17"
+    },
+    {
+      "name": "com.supplymind.provider.pboc.PbocOfficialWebRealNetworkAttemptTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "timeSeconds": "0.0",
+      "xmlFile": "TEST-com.supplymind.provider.pboc.PbocOfficialWebRealNetworkAttemptTest.xml",
+      "xmlSha256": "E21E309EC55E91B05DD383759227244FE56F0DDC6803E712B82CA81117549246"
+    },
+    {
+      "name": "com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "timeSeconds": "0.138",
+      "xmlFile": "TEST-com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest.xml",
+      "xmlSha256": "E8F2416237FC869F8BFC09F93762BA8C64D7634166DB298344E1552E88D754C8"
+    },
+    {
+      "name": "com.supplymind.provider.pboc.PbocRawFirstContractTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.239",
+      "xmlFile": "TEST-com.supplymind.provider.pboc.PbocRawFirstContractTest.xml",
+      "xmlSha256": "A1EEF04934A06C8855177115E7ABF31A4C413603D2617EABB7E3A09F94349B82"
+    },
+    {
+      "name": "com.supplymind.publish.MaterialPublishGateTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "4.379",
+      "xmlFile": "TEST-com.supplymind.publish.MaterialPublishGateTest.xml",
+      "xmlSha256": "C2EF7B2964B44C6E3A30D5F3A84FAB4EC3CFA6341BA6F5246A43DF673D12B8CC"
+    },
+    {
+      "name": "com.supplymind.publish.PublishedQueryServiceTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "5.812",
+      "xmlFile": "TEST-com.supplymind.publish.PublishedQueryServiceTest.xml",
+      "xmlSha256": "4A60E9AA3784D11AE92611234F158E18A10F7B39A378917B444B5DF60E6667A6"
+    },
+    {
+      "name": "com.supplymind.publish.PublishGateTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "4.146",
+      "xmlFile": "TEST-com.supplymind.publish.PublishGateTest.xml",
+      "xmlSha256": "0A98CD338EE01D654C53AE44D05161D58C2B96DD6080B9CBAC5A956A8777E6C1"
+    },
+    {
+      "name": "com.supplymind.publish.PublishRealRawEvidenceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "timeSeconds": "0.0",
+      "xmlFile": "TEST-com.supplymind.publish.PublishRealRawEvidenceTest.xml",
+      "xmlSha256": "09ACC95AD19A162385FB9E899B1DB881772E447C9D739A72E8DA27BB38645C6D"
+    },
+    {
+      "name": "com.supplymind.rotation.TimeRotationServiceTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.414",
+      "xmlFile": "TEST-com.supplymind.rotation.TimeRotationServiceTest.xml",
+      "xmlSha256": "7E58930E8DFD5FC0A887A53C884C9177744039C552B2EFF5B9AEA8D412AB0526"
+    },
+    {
+      "name": "com.supplymind.routing.MaterialRoutingTest",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.012",
+      "xmlFile": "TEST-com.supplymind.routing.MaterialRoutingTest.xml",
+      "xmlSha256": "0C3B7498D8C8722734F74BD645FD6E5570BC37FB011416C717640B8DA8A3B725"
+    },
+    {
+      "name": "com.supplymind.scheduling.ScheduledEntryPostFixAttackTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "3.208",
+      "xmlFile": "TEST-com.supplymind.scheduling.ScheduledEntryPostFixAttackTest.xml",
+      "xmlSha256": "0CA2C24E046E466877254B24211EB4A6FA859C3EB64748A46256DAB1A97CF97A"
+    },
+    {
+      "name": "com.supplymind.scheduling.ScheduledGuardProductionPathTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.495",
+      "xmlFile": "TEST-com.supplymind.scheduling.ScheduledGuardProductionPathTest.xml",
+      "xmlSha256": "A0416CB84C1B0FBFE8A82362DBF1CA69E88B5F442225A9103E6E248329C56D4B"
+    },
+    {
+      "name": "com.supplymind.survey.FreePublicSourceSurveyTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.008",
+      "xmlFile": "TEST-com.supplymind.survey.FreePublicSourceSurveyTest.xml",
+      "xmlSha256": "E749B1397B7E786A98CAFB37F05D0F5D2C6082B8B1FEF3865725433E1E95501C"
+    },
+    {
+      "name": "com.supplymind.validation.MaterialValidationPipelineTest",
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "10.956",
+      "xmlFile": "TEST-com.supplymind.validation.MaterialValidationPipelineTest.xml",
+      "xmlSha256": "476A57CBBBEBC73D7698E6BD6E02ADC0D57DCD76A365AA478BD36B0AEA038DE2"
+    },
+    {
+      "name": "com.supplymind.validation.PbocValidationPipelineTest",
+      "tests": 25,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "11.684",
+      "xmlFile": "TEST-com.supplymind.validation.PbocValidationPipelineTest.xml",
+      "xmlSha256": "1A19AC1A9CF8497D65ACA53A730CC629296B919A733344B2483B2D121069BF84"
+    },
+    {
+      "name": "com.supplymind.validation.PbocValidationRealRawEvidenceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "timeSeconds": "0.001",
+      "xmlFile": "TEST-com.supplymind.validation.PbocValidationRealRawEvidenceTest.xml",
+      "xmlSha256": "9444DE05B7E9AE36F8C0C9FED9024B6003400E343AA7731BF7B3EF841838A422"
+    },
+    {
+      "name": "com.supplymind.warning.WarningAckStoreTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "1.103",
+      "xmlFile": "TEST-com.supplymind.warning.WarningAckStoreTest.xml",
+      "xmlSha256": "8D0A0BFAA861270EC5E2D3A7F32C46D5E60794E5352401E3524E5F0A4B888ACE"
+    },
+    {
+      "name": "com.supplymind.warning.WarningApiMvcContractTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.609",
+      "xmlFile": "TEST-com.supplymind.warning.WarningApiMvcContractTest.xml",
+      "xmlSha256": "641715AD05FC830AAB53C34D00056482C1CA75BA0A1BDD562165DE214C00BB51"
+    },
+    {
+      "name": "com.supplymind.warning.WarningServiceTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": "0.823",
+      "xmlFile": "TEST-com.supplymind.warning.WarningServiceTest.xml",
+      "xmlSha256": "B928ED0585311F5CFF9630A22C0018191E290422EA0123AFBC9FC3C7E7ADC175"
+    }
+  ]
+}

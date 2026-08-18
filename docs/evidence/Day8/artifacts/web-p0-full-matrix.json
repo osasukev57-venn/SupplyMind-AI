@@ -1,7 +1,7 @@
 {
   "suite": "Day8 Final Findings Closure - Full Non-Windows P0 Matrix",
   "date": "2026-08-17",
-  "generatedBy": "Day8 final findings closure executor",
+  "generatedBy": "capture-day8-final-runner-evidence.ps1 from immutable Surefire XML + tracked browser artifacts",
   "matrix": [
     {
       "caseId": "AT-SRC-001",
@@ -17,11 +17,17 @@
         "no silent source switch"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.MaterialDay3AcceptanceTest",
+        "com.supplymind.routing.MaterialRoutingTest"
+      ]
     },
     {
       "caseId": "AT-SRC-002",
@@ -35,11 +41,16 @@
         "raw/lifecycle/daily/aggregate/restart verified"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/AT-SRC-002/TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml",
+        "docs/evidence/AT-SRC-002/at-src-002-summary.json"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/AT-SRC-002/TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml": "6E9D7C50A88CC9A8FCE740DF6D1E0BD17E9BA60BDD457DE033BFEE8227E2B1D8",
+        "docs/evidence/AT-SRC-002/at-src-002-summary.json": "D4330F415488BF1E41F95D7796B92549A0AAB9A45D25A3FBEBB68B007FE6DA62"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.AtSrc002AcceptanceTest"
+      ]
     },
     {
       "caseId": "AT-SRC-003",
@@ -54,11 +65,17 @@
         "manual fallback legal"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.MaterialRoutePlanProductionTest",
+        "com.supplymind.day5.r2.Day5FinalProviderCapabilityDeclarationTest"
+      ]
     },
     {
       "caseId": "AT-SRC-004",
@@ -73,11 +90,17 @@
         "manual fallback legal"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.MaterialRoutePlanProductionTest",
+        "com.supplymind.day5.r2.Day5FinalProviderCapabilityDeclarationTest"
+      ]
     },
     {
       "caseId": "AT-SRC-005-D4",
@@ -91,11 +114,17 @@
         "four P0 sequences each have a legal non-synthetic route"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.day4.foundation.AtSrcDay4ReconciliationHarnessTest",
+        "com.supplymind.day4.foundation.FutureMaterialDay4ContractTest"
+      ]
     },
     {
       "caseId": "AT-SRC-006",
@@ -128,11 +157,17 @@
         "operator audit"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.MaterialDay3AcceptanceTest",
+        "com.supplymind.manual.ManualMaterialIntakeTest"
+      ]
     },
     {
       "caseId": "AT-SRC-008-D4",
@@ -147,11 +182,17 @@
         "no SMM/Asian Metal impersonation"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.acceptance.MaterialDay3AcceptanceTest",
+        "com.supplymind.localimport.SyntheticDemoIsolationTest"
+      ]
     },
     {
       "caseId": "AT-PUB-001",
@@ -165,11 +206,17 @@
         "only PUBLISHED+VERIFIED-class visible"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.publish.PublishGateTest",
+        "com.supplymind.day4.foundation.AtPubDay4ContractHarnessTest"
+      ]
     },
     {
       "caseId": "AT-PUB-002",
@@ -204,11 +251,17 @@
         "never overwrite"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.storage.RawAndConfigStoreTest",
+        "com.supplymind.foundation.storage.RawAcquisitionLinkVerifierTest"
+      ]
     },
     {
       "caseId": "AT-PREC-001",
@@ -222,11 +275,17 @@
         "exact decimal strings survive"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.day4.foundation.AtPrecDay4ContractHarnessTest",
+        "com.supplymind.foundation.model.QuarantineAndPrecisionV1Test"
+      ]
     },
     {
       "caseId": "AT-PREC-002",
@@ -241,11 +300,17 @@
         "no scientific notation"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.codec.CsvV1CodecTest",
+        "com.supplymind.foundation.codec.JsonV1CodecTest"
+      ]
     },
     {
       "caseId": "AT-PREC-003",
@@ -259,11 +324,17 @@
         "no float/double computation"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.day4.foundation.AtPrecDay4ContractHarnessTest",
+        "com.supplymind.processing.AggregateCalculatorTest"
+      ]
     },
     {
       "caseId": "AT-AGG-001",
@@ -277,11 +348,17 @@
         "month/quarter/halfyear/year persisted"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.day4.foundation.AtAggDay4ContractHarnessTest",
+        "com.supplymind.processing.MaterialDailyAggregateTest"
+      ]
     },
     {
       "caseId": "AT-AGG-002",
@@ -296,11 +373,17 @@
         "natural periods"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.day4.foundation.Day4DailyAggregateSchemaContractTest",
+        "com.supplymind.processing.AggregateProcessingServiceTest"
+      ]
     },
     {
       "caseId": "AT-AGG-003",
@@ -315,11 +398,17 @@
         "valid counts correct"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.processing.DailyProcessingServiceTest",
+        "com.supplymind.processing.AggregateCalculatorTest"
+      ]
     },
     {
       "caseId": "AT-FILE-000",
@@ -335,11 +424,17 @@
         "recovery"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.acceptance.IndependentFormatContractAcceptanceTest",
+        "com.supplymind.foundation.acceptance.AtFile000RecoveryManifestRootAcceptanceTest"
+      ]
     },
     {
       "caseId": "AT-FILE-001",
@@ -354,11 +449,17 @@
         "files visible"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.storage.DataRootAndPathsTest",
+        "com.supplymind.foundation.acceptance.GoldenFixtureContractAcceptanceTest"
+      ]
     },
     {
       "caseId": "AT-FILE-002",
@@ -373,11 +474,17 @@
         "manifest verified"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.processing.AggregateProcessingServiceTest",
+        "com.supplymind.foundation.storage.ManifestDerivedFieldsVerifierTest"
+      ]
     },
     {
       "caseId": "AT-TIME-001",
@@ -392,11 +499,17 @@
         "idempotent"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.rotation.TimeRotationServiceTest",
+        "com.supplymind.day5.foundation.Day5TimeContractHarnessTest"
+      ]
     },
     {
       "caseId": "AT-TIME-002",
@@ -411,11 +524,17 @@
         "state recoverable"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.rotation.TimeRotationServiceTest",
+        "com.supplymind.day5.r2.Day5R2RotationHistoryCapabilityAttackTest"
+      ]
     },
     {
       "caseId": "AT-TIME-003",
@@ -461,11 +580,17 @@
         "merge/dedupe/sort stable"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.history.HistoryQueryServiceTest",
+        "com.supplymind.day5.foundation.Day5CrossYearHistoryContractHarnessTest"
+      ]
     },
     {
       "caseId": "AT-XR-002",
@@ -481,11 +606,17 @@
         "no silent gap"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.history.HistoryQueryServiceTest",
+        "com.supplymind.day5.foundation.Day5CrossYearHistoryContractHarnessTest"
+      ]
     },
     {
       "caseId": "AT-CFG-001",
@@ -521,11 +652,17 @@
         "no fake completion"
       ],
       "evidenceFiles": [
-        "backend/src/test/java/com/supplymind/config/CurrentIntakeAttackTest.java"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "backend/src/test/java/com/supplymind/config/CurrentIntakeAttackTest.java": "9407CA33028DB0BBA59CB14F35EB797A8335BD9866DAE01BB20C266D8655333F"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.config.CurrentIntakeAttackTest",
+        "com.supplymind.config.DynamicConfigWorkflowServiceTest"
+      ]
     },
     {
       "caseId": "AT-CFG-003",
@@ -541,11 +678,17 @@
         "honest capability states"
       ],
       "evidenceFiles": [
-        "backend/src/test/java/com/supplymind/config/CurrentIntakeAttackTest.java"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "backend/src/test/java/com/supplymind/config/CurrentIntakeAttackTest.java": "9407CA33028DB0BBA59CB14F35EB797A8335BD9866DAE01BB20C266D8655333F"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.backfill.BackfillOrchestratorTest",
+        "com.supplymind.config.CurrentIntakeAttackTest"
+      ]
     },
     {
       "caseId": "AT-CFG-004",
@@ -600,11 +743,17 @@
         "no file deletion"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.dashboard.DashboardServiceTest",
+        "com.supplymind.config.ConfigManagementServiceTest"
+      ]
     },
     {
       "caseId": "AT-ALT-001",
@@ -619,11 +768,17 @@
         "no unverified trigger"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.warning.WarningServiceTest",
+        "com.supplymind.day5.foundation.Day5AlertContractHarnessTest"
+      ]
     },
     {
       "caseId": "AT-ALT-002",
@@ -639,11 +794,17 @@
         "restart restore"
       ],
       "evidenceFiles": [
-        "backend/src/test/java/com/supplymind/warning/WarningAckStoreTest.java"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "backend/src/test/java/com/supplymind/warning/WarningAckStoreTest.java": "27643D42B0672D8C2FCBF51DCA8E86CFBEF712828F4DD877D3C4880634475BF0"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.warning.WarningAckStoreTest",
+        "com.supplymind.warning.WarningApiMvcContractTest"
+      ]
     },
     {
       "caseId": "AT-NET-001",
@@ -658,11 +819,17 @@
         "failure honest"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.history.HistoryQueryServiceTest",
+        "com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest"
+      ]
     },
     {
       "caseId": "AT-AI-000",
@@ -676,11 +843,19 @@
         "Java17/Boot3.5.15/AI1.1.8"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip",
+        "docs/evidence/Day8/artifacts/maven-dependency-tree.txt"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041",
+        "docs/evidence/Day8/artifacts/maven-dependency-tree.txt": "B22E671CA49F26C5A0D000B9BB91FEF2494C3FE17641FE02F5D3B4AED2826596"
+      },
+      "runnerSuites": [
+        "com.supplymind.agent.AgentSpringAiToolCallingTest",
+        "com.supplymind.foundation.acceptance.FoundationStartupAcceptanceTest"
+      ]
     },
     {
       "caseId": "AT-AI-001",
@@ -731,11 +906,17 @@
         "no write/fs/http/db"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.agent.AgentToolBoundaryTest",
+        "com.supplymind.agent.Day6R2IndependentSpringAiAttackTest"
+      ]
     },
     {
       "caseId": "AT-AI-003",
@@ -750,11 +931,17 @@
         "report persisted"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest",
+        "com.supplymind.agent.Day6FinalStageFullBindingAttackTest"
+      ]
     },
     {
       "caseId": "AT-WIN-001",
@@ -800,11 +987,19 @@
         "no JDBC/JPA/db drivers/docker"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip",
+        "docs/evidence/Day8/artifacts/maven-dependency-tree.txt"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041",
+        "docs/evidence/Day8/artifacts/maven-dependency-tree.txt": "B22E671CA49F26C5A0D000B9BB91FEF2494C3FE17641FE02F5D3B4AED2826596"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.storage.DataRootAndPathsTest",
+        "com.supplymind.foundation.acceptance.FoundationStartupAcceptanceTest"
+      ]
     },
     {
       "caseId": "AT-OPS-002",
@@ -819,11 +1014,17 @@
         "move works"
       ],
       "evidenceFiles": [
-        "docs/03-ACCEPTANCE-TEST-PLAN.md"
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip"
       ],
-      "evidenceSha": {
-        "docs/03-ACCEPTANCE-TEST-PLAN.md": "4C073523C274C7FD68605013E40F3D15E97DCAB8DF0512BADA1F8E734C7A9204"
-      }
+      "evidenceSha256": {
+        "docs/evidence/Day8/artifacts/backend-surefire-summary.json": "2C9A4A747CA4E1E371B0C7613E8B120B3C671059B9F1B8B62F78DB1E3B7D946F",
+        "docs/evidence/Day8/artifacts/backend-surefire-xml.zip": "D6D463F2D688B772E8C2BE2E3B35C4BEC94FF9A731BF7C7387142B6793716041"
+      },
+      "runnerSuites": [
+        "com.supplymind.foundation.storage.DataRootAndPathsTest",
+        "com.supplymind.foundation.storage.AtomicFileRecoveryTest"
+      ]
     }
   ],
   "summary": {

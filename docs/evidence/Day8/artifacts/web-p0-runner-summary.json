@@ -1,5 +1,8 @@
 {
   "suite": "Day8 Final Stage Review Web P0 Evidence Runner",
+  "evidenceStatus": "HISTORICAL_SUPERSEDED",
+  "currentAuthority": false,
+  "supersededBy": "backend-surefire-summary.json + backend-surefire-xml.zip + web-p0-full-matrix.json",
   "mode": "BATCH_IMPLEMENTATION_FINAL_STAGE_REVIEW_APPROVED_20260817",
   "date": "2026-08-17",
   "backend": {
@@ -82,5 +85,5 @@
     ],
     "warnings": []
   },
-  "note": "Browser artifacts are supplementary; the authoritative contract/attack coverage is in the backend test suites (see D8 evidence docs). Real Cloud LLM remains NOT_RUN/PENDING_EXTERNAL."
+  "note": "HISTORICAL runner snapshot retained for audit. Its CURRENT-as-backfill wording was rejected by Final Review and is not current semantics. Current authority is the 2026-08-18 runner archive/matrix; CURRENT is a distinct intake and creates zero backfill jobs unless an explicit history range is supplied. Real Cloud LLM remains NOT_RUN/PENDING_EXTERNAL."
 }
