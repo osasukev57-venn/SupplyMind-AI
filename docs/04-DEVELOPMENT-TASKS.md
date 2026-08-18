@@ -3,7 +3,7 @@
 > 文档性质：跨窗口可独立执行的任务清单  
 > 规范版本：v1.5（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
-> 当前进度锚点：Day 1～Day 7均已完成并通过各自Stage Gate（保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8；最终完整技术回归105 suites/535 tests/0 failures/0 errors/8 skipped）；D6-T00～D6-T05=`TaskExecutionStatus=DONE`，Day6=`COMPLETE`。AT-AI-000/002/003本地合同=`PASS`，AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`且不被伪报为PASS。
+> 当前进度锚点：Day 1～Day 8均已完成并通过各自Stage Gate。Day6原最终技术候选=`bc6f61a`；Post-Day8 Cloud Closure=`182baec`（Spring AI1.1.8 OpenAI-compatible Provider、无凭据降级与安全环境变量配置）。AT-AI-000/002/003本地合同=`PASS`，AT-AI-001本地合同与故障降级矩阵=`PASS`；真实Cloud gated run=`PASS`（Alibaba Bailian 北京区，`qwen-plus`，2026-08-18，1/1、0 failures/errors/skipped；密钥未进入源码/日志/evidence）。D9-T01仍为`NOT_STARTED`+`READY`。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`TaskExecutionStatus=DONE`（实施 + Attack Validation + Final Stage Review 全部 PASS，MAJOR Finding 全部关闭）；最终实施候选=`feaedd3`；CURRENT 全量回归=110 suites/578 backend tests/0 failures/0 errors/8 skipped，前端 11/11 PASS + build PASS；历史候选（1b83410、d2b0965、5f1491c、01d4270 等中间状态）一律 HISTORICAL，详见 docs/05-PROGRESS-LEDGER 与 docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md。Day1-Day6 代码零修改。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
@@ -489,7 +489,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D6-T03 LLMService + Spring AI ChatClient Adapter
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`（FAST-R0 实施完成，`statusReason=D6T03_LLM_SERVICE_SPRINGAI_20260813`）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`（FAST-R0 实施完成；Post-Day8 Cloud Closure=`182baec`，`statusReason=D6T03_REAL_CLOUD_PROVIDER_AND_GATED_RUN_PASS_20260818`）。
 - **风险/Review routing：** 外部模型、秘密和tool lifecycle高风险，`CORE_R2`。
 - **任务目标：** 保留SupplyMind `LLMService` application port，以Spring AI1.1.8 `ChatClient`/`ChatModel` infrastructure adapter实现云端调用；`LocalLLMService`仅保留同端口未来扩展点。
 - **对应需求：** C12、C20、C22、C35、C36、AT-AI-001。
@@ -519,7 +519,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D6-T05 Java模板降级与Day 6退出门禁
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`（`statusReason=DAY6_STAGE_REVIEW_PASS_BC6F61A_20260816`；Java模板降级、EvidencePack/Report绑定、七工具边界、模型输出验证及最终攻击回归均通过；真实Cloud gated run保持`NOT_RUN/PENDING_EXTERNAL`）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`（`statusReason=DAY6_STAGE_REVIEW_PASS_AND_REAL_CLOUD_GATE_PASS_20260818`；Java模板降级、EvidencePack/Report绑定、七工具边界、模型输出验证及最终攻击回归均通过；Post-Day8 真实Cloud gated run=`PASS`，证据见`docs/evidence/CloudLLM/`）。
 - **风险/Review routing：** P0可用性Gate，`CORE_R2`。
 - **任务目标：** 对缺Key、断网、timeout、429、5xx、畸形/空响应和非法工具请求，使用同一EvidencePack生成Java模板报告并完成Day6端到端验收。
 - **对应需求：** C13、C20、C22、C36、AT-AI-001～003。

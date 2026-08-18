@@ -1,7 +1,7 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 1～Day 7=`COMPLETE`（Day6 保持）。Day6最终技术候选=`bc6f61a`（Java17目标字节码、Spring Boot3.5.15、Spring AI1.1.8）；D6-T00～D6-T05=`DONE`，Day6 Stage Review=`PASS`，最终完整技术回归=105 suites/535 tests/0 failures/0 errors/8 skipped（HISTORICAL）。AT-AI-000/002/003本地合同=`PASS`；AT-AI-001本地合同与故障降级矩阵=`PASS`，真实Cloud gated run=`NOT_RUN/PENDING_EXTERNAL`。
+> 当前阶段：Day 1～Day 8=`COMPLETE`。Day6最终技术候选=`bc6f61a`及其本地回归均为HISTORICAL；Post-Day8 Cloud Closure=`182baec`。AT-AI-000/002/003本地合同与AT-AI-001故障降级矩阵=`PASS`；真实Cloud gated run=`PASS`（Alibaba Bailian北京区、`qwen-plus`、1/1、0 failures/errors/skipped，2026-08-18）。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`DONE`；**Final Implementation Candidate=`feaedd3`**；**CURRENT regression=110 suites/578 backend tests/0 failures/0 errors/8 skipped**，前端 `npm run test` **11/11 PASS** + `npm run build` PASS；历史候选（1b83410、d2b0965、a4006c4、3fd1d35、5f1491c、01d4270 等中间状态）一律 HISTORICAL（不删除）；Closure Evidence=`docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md`。Day1-Day6 代码零修改。
 > Day8=`COMPLETE`，Final Stage Review=`PASS`：D8-T01～D8-T05=`DONE`，Feature Freeze=`EFFECTIVE`；Final Implementation=`239d025`；CURRENT regression=117 suites/632 backend tests/0 failures/0 errors/8 skipped，frontend 33/33 + build PASS；可复现 JAR SHA-256=`95E2C6F63E18383F499BB239649EBFCA5B5D8966B8D9201FC1BD2C9D03D49426`。D9-T01=`NOT_STARTED`+`READY`，Day9尚未开始。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
@@ -59,13 +59,13 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 |---|---|
 | 当前开发日 | Day 1～Day 8 = `COMPLETE`；Day 9=`NOT_STARTED` |
 | 当前任务编号 | Day8 Final Stage Closure 已完成；下一可领取任务 D9-T01 |
-| 当前任务状态 | D8-T01～D8-T05=`DONE`；Day8 Final Stage Review=`PASS`；Day8=`COMPLETE`；Feature Freeze=`EFFECTIVE`。Final Implementation=`239d025`；CURRENT regression=117 suites/632 backend tests/0 failures/0 errors/8 skipped；frontend 33/33 + build PASS；两次 clean package JAR SHA一致。D9-T01=`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`；未开始Day9，未merge main。 |
+| 当前任务状态 | D8-T01～D8-T05=`DONE`；Day8=`COMPLETE`；Feature Freeze=`EFFECTIVE`。Day7/Day8已合并main（merge=`6a2965a`）；Post-Day8 Cloud Closure=`182baec`。无凭据完整回归=119 suites/639 tests/0 failures/0 errors/9 skipped（新增skip仅真实Cloud gate）；真实Cloud gated=1/1 PASS、0 skipped。D9-T01=`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`，尚未开始。 |
 | 编码前基线对齐 | `v1.5 FROZEN`：DEC-060、C35～C36保持不变；Java17、Boot3.5.15、Spring AI1.1.8、SupplyMind LLMService门面、只读Tool Adapter与EvidencePack所有权边界均保持；DEC-061（warning ack sidecar）已登记。 |
 | 已完成任务 | Day1～Day8全部开发任务及Stage Gate；D8-T01～D8-T05=`DONE`。 |
 | 正在进行任务 | 无；D9-T01仅READY，尚未领取。 |
-| 阻塞项 | 无 Day8 阻塞项；真实Cloud LLM验证=`PENDING_EXTERNAL`且不阻塞Java模板P0闭环；EXT-07/08保持OPEN_EXTERNAL。 |
-| 最近验收结果 | Day8 Final Stage Review=`PASS`：M1 单次CURRENT链、M2 DEC-061绑定、M3 FORMAL/demo风险隔离、M4逐case runner证据、M5可复现冻结全部关闭；AT-SRC-006按EXT-10诚实BLOCKED且Stage Blocking=NO；真实Cloud保持NOT_RUN。 |
-| 新增风险 | 无新的 Day8 P0 风险；Cloud 真实连接能力仍须在具备合法凭据时独立执行，不得回写当前本地合同结论。 |
+| 阻塞项 | 无 Cloud LLM 阻塞项；Alibaba Bailian真实网络/API Gate已通过。EXT-07/08保持OPEN_EXTERNAL且不因本次Cloud Closure改变。 |
+| 最近验收结果 | Post-Day8 Cloud Closure：OpenAI-compatible Provider配置、无Key启动、HTTPS/secret边界与639项回归均PASS；Alibaba Bailian北京区`qwen-plus`真实 gated run=1/1 PASS。 |
+| 新增风险 | 云端调用会产生供应商费用并受账号额度/网络影响；故障时继续按既有合同降级为`JAVA_TEMPLATE`，不得影响核心采集、校验、聚合、查询和预警。 |
 | 下一任务 | D9-T01（`NOT_STARTED`+`READY`）；需另行领取后才能开始。 |
 | 最近一次可运行版本 | Day8 Final Implementation=`239d025`；117 suites/632 tests/0 failures/0 errors/8 skipped；Frontend 33/33 + build PASS；JAR SHA-256=`95E2C6F6…D49426`。 |
 | 最近一次Git提交 | Day8 Final Implementation=`239d025`；本次为 Final Stage 状态/证据封板。 |
@@ -573,6 +573,21 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | Git提交 | Final Implementation=`239d025`；最终状态/证据封板见本次提交。 |
 | 是否偏离计划 | 否；未新增业务功能、Provider、Agent工具、schema、数据库或Day9实现；DEC-008/051/060/061保持。 |
 | 下一建议任务 | 用户明确领取后开始 D9-T01；当前不得视为 Day9 已开始。 |
+
+### Post-Day8 Cloud LLM Closure（2026-08-18）
+
+| 字段 | 记录 |
+|---|---|
+| 任务性质 | P0 Cloud LLM 外部能力收口；不引入本地模型，不开始Day9 |
+| 实现提交 | `182baec`（分支`codex/cloud-llm`） |
+| 供应商 | Alibaba Bailian（北京区），OpenAI-compatible Chat Completions |
+| 非敏感配置 | base URL=`https://dashscope.aliyuncs.com/compatible-mode/v1`；path=`/chat/completions`；model=`qwen-plus`；timeout=`30s` |
+| 密钥处理 | 用户环境变量；输入值首尾误含尖括号导致首轮401，去除占位符尖括号后通过；Key值未输出、未进入Git/日志/evidence |
+| 无凭据回归 | `mvnw.cmd clean test`=119 suites/639 tests/0 failures/0 errors/9 skipped；新增skip仅真实Cloud gate |
+| 真实Cloud Gate | `CloudLlmRealApiAcceptanceTest`=1 test/0 failures/0 errors/0 skipped，`PASS` |
+| 证据 | `docs/evidence/CloudLLM/CLOUD-LLM-PROVIDER-INTEGRATION-20260818.md`及对应Surefire XML |
+| 架构边界 | SupplyMind `LLMService`保持唯一application port；Spring AI/OpenAI Provider仅在infrastructure；Tool Count=7、Write Tool=NONE；无RAG/Vector/MCP/数据库/本地模型 |
+| 下一状态 | D9-T01保持`NOT_STARTED`+`READY`，需另行领取 |
 
 ### 后续记录模板
 

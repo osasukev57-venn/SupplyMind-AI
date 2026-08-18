@@ -43,6 +43,10 @@ try {
     if ([string]::IsNullOrWhiteSpace($apiKey)) {
         throw 'API key must not be empty.'
     }
+    $apiKey = $apiKey.Trim()
+    if ($apiKey.StartsWith('<') -or $apiKey.EndsWith('>')) {
+        throw 'Do not include documentation placeholder brackets (< or >) around the API key.'
+    }
 
     $values = [ordered]@{
         SUPPLYMIND_LLM_ENABLED = 'true'

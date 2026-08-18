@@ -106,7 +106,11 @@ public class CloudLlmConfiguration {
         if (value == null || value.isBlank() || value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0) {
             throw new IllegalStateException("Cloud LLM API key is missing or invalid");
         }
-        return value;
+        String secret = value.trim();
+        if (secret.startsWith("<") || secret.endsWith(">")) {
+            throw new IllegalStateException("Cloud LLM API key must not include placeholder brackets");
+        }
+        return secret;
     }
 
     static Duration requireTimeout(String text) {

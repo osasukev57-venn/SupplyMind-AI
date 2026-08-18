@@ -70,4 +70,11 @@ class CloudLlmConfigurationTest {
                 () -> CloudLlmConfiguration.requireCompletionsPath("/v1/../admin")))
                 .hasMessage("Cloud LLM completions-path is invalid");
     }
+
+    @Test
+    void rejectsDocumentationPlaceholderBracketsAroundTheKey() {
+        assertThat(org.assertj.core.api.Assertions.catchThrowable(
+                () -> CloudLlmConfiguration.requireSecret("<sk-test-not-real>")))
+                .hasMessage("Cloud LLM API key must not include placeholder brackets");
+    }
 }
