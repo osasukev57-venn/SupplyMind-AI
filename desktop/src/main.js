@@ -57,6 +57,11 @@ if (!gotLock) {
       const port = await pickFreePort(http);
       backendUrl = `http://127.0.0.1:${port}`;
 
+      // D9-T03: record the actual dynamic backend URL for diagnostics (loopback only).
+      fs.mkdirSync(dirs.logs, { recursive: true });
+      const backendUrlLog = path.join(dirs.logs, 'backend-url.txt');
+      fs.writeFileSync(backendUrlLog, `${backendUrl}\n`, { flag: 'w' });
+
       childProcess = spawn(
         dirs.jreBin,
         backendArgs(port, dirs.data, dirs.jreBin, dirs.jar, dirs.web).args,
@@ -67,10 +72,20 @@ if (!gotLock) {
           windowsHide: true
         }
       );
-      fs.mkdirSync(dirs.logs, { recursive: true });
       const logStream = fs.createWriteStream(path.join(dirs.logs, 'backend.log'), { flags: 'a' });
       childProcess.stdout.pipe(logStream);
       childProcess.stderr.pipe(logStream);
+
+      // D9-T03: spawn failures (missing JRE, permission errors) must fail fast with a
+      // diagnostic - never a silent hang or a leaked child.
+      childProcess.on('error', async (err) => {
+        await stopBackend();
+        dialog.showErrorBox(
+          'SupplyMind AI 启动失败',
+          `无法启动后端进程：${err.code || err.message}\n日志：${path.join(dirs.logs, 'backend.log')}`
+        );
+        app.exit(1);
+      });
 
       childProcess.on('exit', (code) => {
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -103,6 +118,10 @@ if (!gotLock) {
 }
 
 function createWindow() {
+  // D9-T03: hand the renderer only the loopback backend URL. Set AFTER the Java child
+  // was spawned so the child's environment snapshot is never affected; the renderer
+  // never sees API keys, Java process details or the host environment.
+  process.env.SUPPLYMIND_BACKEND_URL = backendUrl;
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,

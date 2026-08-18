@@ -18,6 +18,27 @@ const State = Object.freeze({
 });
 
 /**
+ * Loopback-only guard (D9-T03): the backend URL must be an http://127.0.0.1:<port>
+ * origin. Any other host - localhost, 0.0.0.0, LAN IPs, non-http schemes - is
+ * rejected. This keeps the desktop app bound to the local machine.
+ *
+ * @param {string} baseUrl
+ * @returns {string} the baseUrl when valid
+ * @throws {Error} when the URL is not a loopback http origin
+ */
+function assertLoopbackUrl(baseUrl) {
+  const match = /^http:\/\/127\.0\.0\.1:(\d{1,5})\/?$/.exec(baseUrl);
+  if (!match) {
+    throw new Error(`backend URL must be http://127.0.0.1:<port>, got: ${baseUrl}`);
+  }
+  const port = Number(match[1]);
+  if (port <= 0 || port > 65535) {
+    throw new Error(`backend URL port out of range: ${port}`);
+  }
+  return baseUrl;
+}
+
+/**
  * Poll http.get on the given loopback URL until it returns 200 with {"status":"UP"}.
  *
  * @param {string} baseUrl e.g. http://127.0.0.1:45678
@@ -25,6 +46,7 @@ const State = Object.freeze({
  * @returns {Promise<{state: string, message: string}>}
  */
 function waitForBackend(baseUrl, opts = {}) {
+  assertLoopbackUrl(baseUrl);
   const httpImpl = opts.httpImpl || require('http');
   const timeoutMs = opts.timeoutMs || DEFAULT_TIMEOUT_MS;
   const intervalMs = opts.intervalMs || DEFAULT_INTERVAL_MS;
@@ -32,18 +54,37 @@ function waitForBackend(baseUrl, opts = {}) {
 
   return new Promise((resolve) => {
     const deadline = Date.now() + timeoutMs;
+    let settled = false;
+    const hardTimer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        clearInterval(timer);
+        resolve({ state: State.TIMEOUT, message: 'backend did not become healthy in time' });
+      }
+    }, timeoutMs);
     const timer = setInterval(() => {
+      if (settled) {
+        return;
+      }
       const request = httpImpl.get(baseUrl + HEALTH_PATH, (response) => {
+        if (settled) {
+          return;
+        }
         let body = '';
         response.on('data', (chunk) => {
           body += chunk;
         });
         response.on('end', () => {
+          if (settled) {
+            return;
+          }
           if (response.statusCode === 200) {
             try {
               const parsed = JSON.parse(body);
               if (parsed && parsed.status === 'UP') {
+                settled = true;
                 clearInterval(timer);
+                clearTimeout(hardTimer);
                 resolve({ state: State.READY, message: 'backend ready' });
                 return;
               }
@@ -52,18 +93,10 @@ function waitForBackend(baseUrl, opts = {}) {
             }
           }
           onTick(response.statusCode || 0);
-          if (Date.now() >= deadline) {
-            clearInterval(timer);
-            resolve({ state: State.TIMEOUT, message: 'backend did not become healthy in time' });
-          }
         });
       });
       request.on('error', (err) => {
         onTick(err.code || String(err));
-        if (Date.now() >= deadline) {
-          clearInterval(timer);
-          resolve({ state: State.TIMEOUT, message: `backend did not become healthy in time: ${err.code || ''}` });
-        }
       });
       request.setTimeout(Math.max(1000, intervalMs * 2), () => {
         request.destroy(new Error('request timed out'));
@@ -72,4 +105,4 @@ function waitForBackend(baseUrl, opts = {}) {
   });
 }
 
-module.exports = { waitForBackend, State, HEALTH_PATH };
+module.exports = { waitForBackend, assertLoopbackUrl, State, HEALTH_PATH };

@@ -38,11 +38,12 @@ function Invoke-PortableBoot([string]$RootDir, [string]$DataDir, [string]$Label)
         while ((Get-Date) -lt $deadline) {
             if ($proc.HasExited) { throw "[$Label] backend exited early code $($proc.ExitCode) - see $log" }
             try {
-                $resp = Invoke-RestMethod -Uri "http://127.0.0.1:$port/api/health" -TimeoutSec 2
-                if ($resp.status -eq 'UP') { $healthy = $true; break }
+        $resp = Invoke-RestMethod -Uri "http://127.0.0.1:$port/api/health" -TimeoutSec 2
+        if ($resp.status -eq 'UP') { $healthy = $true; break }
             } catch { Start-Sleep -Milliseconds 500 }
         }
         if (-not $healthy) { throw "[$Label] health check timed out" }
+        if ($port -eq 8080) { throw "[$Label] FAIL: backend bound the fixed 8080 default (D9-T03 forbids it)" }
 
         # Vue assets must be served from app/web on the SAME origin (frozen JAR, no rebuild)
         $page = Invoke-WebRequest -Uri "http://127.0.0.1:$port/" -TimeoutSec 5 -UseBasicParsing
