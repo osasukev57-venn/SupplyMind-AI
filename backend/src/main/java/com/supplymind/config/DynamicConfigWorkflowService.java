@@ -64,15 +64,19 @@ public final class DynamicConfigWorkflowService {
 
     /**
      * ADD: activate the new target (capability gate in ConfigManagementService), then ALWAYS
-     * trigger the current-value acquisition attempt and, when a full backfill range was
-     * provided, auto-create and run the history backfill through the real orchestrator.
+     * trigger the CURRENT-value acquisition (distinct semantic entry - real
+     * ProviderCollectRequest.current, supportsCurrentData) and, when a full backfill range was
+     * provided, auto-create and run the HISTORY backfill through the real orchestrator.
      * Manual targets honestly reach AWAITING_MANUAL_INPUT - never a fake SUCCEEDED.
      */
     public ConfigV1.WorkflowResult addItem(ConfigV1.AddItemRequest request) {
         Objects.requireNonNull(request, "request");
         MonitorSeriesItemV1 item = toItem(request, null);
         MonitorSeriesConfigV1 activated = configs.addItem(item);
-        return new ConfigV1.WorkflowResult(toConfigView(activated), runIntakeChain(request));
+        return new ConfigV1.WorkflowResult(
+                toConfigView(activated),
+                runIntakeChain(request).currentIntake(),
+                runIntakeChain(request).backfillJobs());
     }
 
     /** ENABLE/DISABLE: pure activation; no jobs are created for a mere toggle. */
@@ -83,36 +87,50 @@ public final class DynamicConfigWorkflowService {
 
     /**
      * REPLACE: disable the old target (history preserved) + activate replacement, then the
-     * same automatic intake chain as ADD (current acquisition always attempted; full backfill
-     * range auto-created and run; Manual honestly reaches AWAITING_MANUAL_INPUT).
+     * same automatic intake chain as ADD (CURRENT always attempted; full backfill range
+     * auto-created and run; Manual honestly reaches AWAITING_MANUAL_INPUT).
      */
     public ConfigV1.WorkflowResult replaceItem(ConfigV1.ReplaceItemRequest request) {
         Objects.requireNonNull(request, "request");
         MonitorSeriesItemV1 replacement = toItem(request.newItem(), request.oldItemId());
         MonitorSeriesConfigV1 activated = configs.replaceItem(request.oldItemId(), replacement);
-        return new ConfigV1.WorkflowResult(toConfigView(activated), runIntakeChain(request.newItem()));
+        return new ConfigV1.WorkflowResult(
+                toConfigView(activated),
+                runIntakeChain(request.newItem()).currentIntake(),
+                runIntakeChain(request.newItem()).backfillJobs());
     }
 
     /**
      * M1: the automatic intake chain after an ADD/REPLACE activation.
-     * 1. CURRENT acquisition is ALWAYS attempted (today's single-day job through the real
-     *    orchestrator) - it never depends on whether a backfill range was filled in.
-     * 2. A FULL backfill range auto-creates and RUNS the history job.
+     * 1. CURRENT acquisition is ALWAYS attempted through the real orchestrator's distinct
+     *    collectCurrent entry (ProviderCollectRequest.current + supportsCurrentData) - it
+     *    never depends on a backfill range and is NEVER disguised as a one-day backfill job.
+     * 2. A FULL backfill range auto-creates and RUNS the HISTORY job (supportsHistoryData
+     *    governs it, exactly as the orchestrator contract requires).
      * 3. One-sided ranges are rejected by the DTO (both-or-neither).
-     * 4. Manual targets honestly reach AWAITING_MANUAL_INPUT / PARTIAL_SUCCESS / FAILED.
+     * 4. Manual targets honestly reach AWAITING_MANUAL_INPUT / FAILED - never a fake success.
      */
-    private List<ConfigV1.BackfillJobView> runIntakeChain(ConfigV1.AddItemRequest request) {
-        LocalDate today = OffsetDateTime.now(clock).atZoneSameInstant(DataPaths.SHANGHAI).toLocalDate();
+    private ConfigV1.WorkflowResult.IntakeChain runIntakeChain(ConfigV1.AddItemRequest request) {
+        ConfigV1.CurrentIntakeView current = toCurrentView(
+                backfill.collectCurrent(request.itemId()));
         List<ConfigV1.BackfillJobView> jobs = new ArrayList<>();
-        BackfillJobStateV1 current = backfill.createOrResume(request.itemId(), today, today);
-        jobs.add(toJobView(backfill.run(current.jobId())));
         if (request.backfillFrom() != null && request.backfillTo() != null) {
             BackfillJobStateV1 history = backfill.createOrResume(
                     request.itemId(), LocalDate.parse(request.backfillFrom()),
                     LocalDate.parse(request.backfillTo()));
             jobs.add(toJobView(backfill.run(history.jobId())));
         }
-        return List.copyOf(jobs);
+        return new ConfigV1.WorkflowResult.IntakeChain(current, List.copyOf(jobs));
+    }
+
+    private static ConfigV1.CurrentIntakeView toCurrentView(
+            com.supplymind.backfill.BackfillOrchestrator.CurrentIntakeOutcome outcome
+    ) {
+        return new ConfigV1.CurrentIntakeView(
+                outcome.itemId(),
+                outcome.status() == null ? null : outcome.status().name(),
+                outcome.rawCount(),
+                outcome.failureReasons());
     }
 
     /**

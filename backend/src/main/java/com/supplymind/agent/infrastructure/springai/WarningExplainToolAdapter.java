@@ -62,6 +62,7 @@ public final class WarningExplainToolAdapter {
             for (WarningRecordV1 warning : warnings) {
                 Map<String, Object> entry = new LinkedHashMap<>();
                 entry.put("warningId", warning.warningId());
+                entry.put("itemId", warning.itemId());
                 entry.put("ruleId", warning.ruleId());
                 entry.put("ruleDescription", warning.ruleDescription());
                 entry.put("grain", warning.grain());
@@ -71,6 +72,7 @@ public final class WarningExplainToolAdapter {
                 entry.put("baselineValue", warning.baselineValue());
                 entry.put("threshold", warning.threshold());
                 entry.put("riskLevel", warning.riskLevel().name());
+                entry.put("dataStatus", warning.dataStatus());
                 entry.put("demoRule", warning.demoRule());
                 rows.add(entry);
                 evidenceRefs.add(DataPaths.warningRef(

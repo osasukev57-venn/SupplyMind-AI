@@ -6,7 +6,9 @@ import com.supplymind.agent.application.ModelDraftV1;
 import com.supplymind.agent.evidence.EvidencePackV1;
 import com.supplymind.agent.evidence.EvidenceRefVerifier;
 import com.supplymind.agent.evidence.EvidenceStatus;
+import com.supplymind.agent.evidence.RiskProjectionV1;
 import com.supplymind.agent.fallback.TemplateFallbackService;
+import com.supplymind.agent.infrastructure.springai.WarningExplainToolAdapter;
 import com.supplymind.agent.llm.LLMService;
 import com.supplymind.agent.report.AgentReportV1;
 import com.supplymind.agent.report.ReportStore;
@@ -199,7 +201,78 @@ public final class AgentOrchestrator {
                 degraded, degradeReason,
                 factSummaries, claims, List.of(), List.copyOf(limitations), OffsetDateTime.now());
         String reportRef = reportStore.store(report);
-        return new AgentResult(evidencePack, phaseAResponse, reportRef, report, degraded, degradeReason);
+        RiskProjectionV1 riskProjection = buildRiskProjection(evidenceSource, evidencePack);
+        return new AgentResult(evidencePack, phaseAResponse, reportRef, report, degraded, degradeReason,
+                riskProjection);
+    }
+
+    /**
+     * M3: projects the risk view ONLY from the real warning.explain ToolResult structured row
+     * contract (warningId/currentValue/baselineValue/threshold/riskLevel/dataStatus/period).
+     * The projection is allowed only when the row's evidenceRef is VERIFIED and lineage-
+     * complete in the final EvidencePack; MISSING/INVALID/UNAVAILABLE evidence never produces a
+     * risk view. Tool identity is the structured toolName equality - never string contains.
+     */
+    private static RiskProjectionV1 buildRiskProjection(
+            List<ToolResult> toolResults, EvidencePackV1 evidencePack
+    ) {
+        Set<String> verifiedRefs = evidencePack.evidenceRefs().stream()
+                .filter(entry -> entry.status() == EvidenceStatus.VERIFIED
+                        && lineageCompleteFor(entry))
+                .map(EvidencePackV1.EvidenceRefEntry::ref)
+                .collect(java.util.stream.Collectors.toSet());
+        for (ToolResult result : toolResults) {
+            if (result.status() != ToolStatus.SUCCESS) {
+                continue;
+            }
+            if (!WarningExplainToolAdapter.TOOL_NAME.equals(result.toolName())) {
+                continue; // structured tool identity - never a contains() guess
+            }
+            Object rows = result.result().get("rows");
+            List<?> list;
+            if (rows instanceof List<?> rowsList) {
+                list = rowsList;
+            } else {
+                // M3: warning.explain rows live under the structured "warnings" key.
+                Object warningRows = result.result().get("warnings");
+                if (!(warningRows instanceof List<?> warningList)) {
+                    continue;
+                }
+                list = warningList;
+            }
+            for (Object entry : list) {
+                if (!(entry instanceof Map<?, ?> row)) {
+                    continue;
+                }
+                Object riskLevel = row.get("riskLevel");
+                Object currentValue = row.get("currentValue");
+                Object warningId = row.get("warningId");
+                if (riskLevel == null || currentValue == null || warningId == null) {
+                    continue; // incomplete structured row: no projection
+                }
+                List<String> rowRefs = rowRefsOfRow(result, verifiedRefs);
+                if (rowRefs.isEmpty()) {
+                    continue; // no VERIFIED lineage-complete evidence: no risk view
+                }
+                return new RiskProjectionV1(
+                        String.valueOf(warningId),
+                        String.valueOf(row.get("itemId")),
+                        row.get("grain") == null ? null : String.valueOf(row.get("grain")),
+                        row.get("periodStart") == null ? null : String.valueOf(row.get("periodStart")),
+                        row.get("periodEnd") == null ? null : String.valueOf(row.get("periodEnd")),
+                        String.valueOf(riskLevel),
+                        String.valueOf(currentValue),
+                        row.get("baselineValue") == null ? null : String.valueOf(row.get("baselineValue")),
+                        row.get("threshold") == null ? null : String.valueOf(row.get("threshold")),
+                        row.get("dataStatus") == null ? null : String.valueOf(row.get("dataStatus")),
+                        rowRefs);
+            }
+        }
+        return null;
+    }
+
+    private static List<String> rowRefsOfRow(ToolResult result, Set<String> verifiedRefs) {
+        return result.evidenceRefs().stream().filter(verifiedRefs::contains).toList();
     }
 
     private static EvidenceBuild buildEvidencePack(
@@ -454,7 +527,16 @@ public final class AgentOrchestrator {
                                 ? String.valueOf(result.result().get("itemId")) : String.valueOf(itemIdValue);
                         String value = row.get("value") == null ? null : String.valueOf(row.get("value"));
                         if (value == null || value.isBlank() || "null".equals(value)) {
-                            continue; // missing != zero: no value => no fact
+                            // M3: warning.explain rows use the structured currentValue field.
+                            if (WarningExplainToolAdapter.TOOL_NAME.equals(result.toolName())) {
+                                Object currentValue = row.get("currentValue");
+                                if (currentValue != null && !String.valueOf(currentValue).isBlank()) {
+                                    value = String.valueOf(currentValue);
+                                }
+                            }
+                            if (value == null || value.isBlank() || "null".equals(value)) {
+                                continue; // missing != zero: no value => no fact
+                            }
                         }
                         String businessDate = row.get("businessDate") == null
                                 ? periodOrNull(row) : String.valueOf(row.get("businessDate"));
@@ -625,7 +707,20 @@ public final class AgentOrchestrator {
             String reportRef,
             AgentReportV1 report,
             boolean degraded,
-            String degradeReason
+            String degradeReason,
+            // M3: structured risk projection from the real warning.explain ToolResult rows.
+            RiskProjectionV1 riskProjection
     ) {
+        /** Backward-compatible constructor without the risk projection. */
+        public AgentResult(
+                EvidencePackV1 evidencePack,
+                LLMService.LLMResponse llmResponse,
+                String reportRef,
+                AgentReportV1 report,
+                boolean degraded,
+                String degradeReason
+        ) {
+            this(evidencePack, llmResponse, reportRef, report, degraded, degradeReason, null);
+        }
     }
 }

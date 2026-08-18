@@ -128,6 +128,60 @@ class AgentApiTest {
                 "no stack trace may leak through the API");
     }
 
+    @Test
+    void warningExplainProducesTheRealStructuredRiskViewThroughTheProductionChain() throws Exception {
+        Harness harness = harness();
+        // M3: persist a REAL warning evidence file so warning.explain has something to read.
+        writeWarningFixture(harness.root(), harness.files());
+        AgentOrchestrator orchestrator = orchestrator(harness);
+        com.supplymind.agent.api.AgentQueryController controller =
+                new com.supplymind.agent.api.AgentQueryController(orchestrator);
+
+        var response = controller.query(Map.of(
+                "question", "该序列是否有预警风险",
+                "itemId", FX_ITEM,
+                "month", "2026-08"));
+
+        assertEquals(200, response.getStatusCode().value());
+        com.supplymind.agent.api.AgentQueryResponse body =
+                (com.supplymind.agent.api.AgentQueryResponse) response.getBody();
+        assertNotNull(body);
+        assertTrue(body.toolTrace().stream().anyMatch(trace -> trace.toolName().equals("warning.explain")),
+                "the fallback path must invoke warning.explain for a month-scoped question");
+        String warningOutput = body.toolTrace().stream()
+                .filter(trace -> trace.toolName().equals("warning.explain"))
+                .map(com.supplymind.agent.api.AgentQueryResponse.ToolExecutionView::output)
+                .findFirst().orElse("");
+        assertTrue(warningOutput.contains("w-m3"), "warning.explain must surface the persisted warning: " + warningOutput);
+        assertNotNull(body.risk(), "the real warning.explain ToolResult must produce a RiskView");
+        assertEquals("HIGH", body.risk().riskLevel());
+        assertEquals("0.087", body.risk().currentValue());
+        assertEquals("0.052", body.risk().baselineValue());
+        assertEquals("0.05", body.risk().threshold());
+        assertEquals("PUBLISHED_VERIFIED", body.risk().dataStatus());
+        // M3: the risk view is projected from the structured warning row backed by the
+        // VERIFIED warning evidence ref (independent of the FORMAL demo/synthetic usable-ref
+        // gate which governs LLM facts, not the backend-owned risk projection).
+    }
+
+    private static void writeWarningFixture(DataRoot root, AtomicFileStore files) throws Exception {
+        java.time.YearMonth month = java.time.YearMonth.of(2026, 8);
+        String warningId = "w-m3-00000000000000000000000000000001";
+        String ref = DataPaths.warningRef(month, warningId);
+        com.supplymind.warning.WarningRecordV1 warning = new com.supplymind.warning.WarningRecordV1(
+                "1.0", warningId, "demo-price-change-x", "demo-v1", FX_ITEM, "month",
+                "2026-08-01", "2026-08-31", null, "0.05", "0.087", "0.052",
+                com.supplymind.warning.WarningRecordV1.RiskLevel.HIGH,
+                List.of("processed/aggregate/FX.USD.CNY.PBOC_MID/month/2026.csv"),
+                "PUBLISHED_VERIFIED", AT, "a".repeat(64), true,
+                "TEST/DEMO threshold - not a final business threshold (EXT-07 open)");
+        byte[] data = com.supplymind.foundation.codec.JsonV1Codec.encodeFile(warning);
+        ManifestV1 manifest = ManifestFactory.json(ref, data, List.of(), AT);
+        files.commit("warning-fixture", DirtyTransactionType.SINGLE_FILE, AT,
+                List.of(new FileTransactionTarget(DirtyTargetRole.BUSINESS_FILE, ref, data,
+                        com.supplymind.foundation.codec.JsonV1Codec.encodeFile(manifest), true)));
+    }
+
     private AgentOrchestrator orchestrator(Harness harness) {
         ChatModel chatModel = new ChatModel() {
             @Override

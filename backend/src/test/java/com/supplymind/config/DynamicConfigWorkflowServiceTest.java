@@ -114,18 +114,14 @@ class DynamicConfigWorkflowServiceTest {
                         .anyMatch(item -> item.itemId().equals(GBP_ITEM) && item.enabled()),
                 "GBP appears enabled in the panel configuration");
         assertNotNull(result.backfillJobs());
-        assertFalse(result.backfillJobs().isEmpty(), "the ADD auto-creates jobs");
-        // M1: jobs[0] is the ALWAYS-attempted current-value acquisition; jobs[1] is the backfill.
-        assertTrue(result.backfillJobs().size() >= 2,
-                "current acquisition + backfill range both create jobs");
-        ConfigV1.BackfillJobView currentJob = result.backfillJobs().get(0);
-        assertEquals(GBP_ITEM, currentJob.itemId());
-        assertTrue(currentJob.status().equals("SUCCEEDED")
-                        || currentJob.status().equals("PARTIAL_SUCCESS")
-                        || currentJob.status().equals("AWAITING_MANUAL_INPUT")
-                        || currentJob.status().equals("FAILED"),
-                "the current acquisition is AUTO-RUN, never left WAITING: " + currentJob.status());
-        ConfigV1.BackfillJobView historyJob = result.backfillJobs().get(1);
+        // M1: CURRENT is a DISTINCT entry (currentIntake); backfillJobs contains only HISTORY.
+        assertNotNull(result.currentIntake(), "the workflow exposes the CURRENT intake outcome");
+        assertEquals("SUCCEEDED", result.currentIntake().status(),
+                "the automatic target's CURRENT acquisition really succeeds through the chain");
+        assertEquals(GBP_ITEM, result.currentIntake().itemId());
+        assertEquals(1, result.backfillJobs().size(),
+                "with a full range exactly one HISTORY backfill job is created");
+        ConfigV1.BackfillJobView historyJob = result.backfillJobs().get(0);
         assertEquals(GBP_ITEM, historyJob.itemId());
         assertEquals("2026-08-10", historyJob.fromDate());
         assertEquals("2026-08-11", historyJob.toDate());
@@ -203,7 +199,11 @@ class DynamicConfigWorkflowServiceTest {
 
         ConfigV1.WorkflowResult result = harness.workflow().addItem(manual);
 
-        assertFalse(result.backfillJobs().isEmpty());
+        // M1: CURRENT (distinct entry) + HISTORY both stay honest for a Manual target.
+        assertNotNull(result.currentIntake());
+        assertEquals("AWAITING_MANUAL_INPUT", result.currentIntake().status(),
+                "the CURRENT intake for a Manual target honestly awaits input");
+        assertEquals(1, result.backfillJobs().size());
         for (ConfigV1.BackfillJobView job : result.backfillJobs()) {
             assertTrue(job.status().equals("AWAITING_MANUAL_INPUT")
                             || job.status().equals("PARTIAL_SUCCESS")
@@ -224,13 +224,13 @@ class DynamicConfigWorkflowServiceTest {
 
         ConfigV1.WorkflowResult result = harness.workflow().addItem(manual);
 
-        assertFalse(result.backfillJobs().isEmpty(),
-                "a range-less ADD still auto-creates and runs the current acquisition - never 0 jobs");
-        assertEquals(1, result.backfillJobs().size());
-        ConfigV1.BackfillJobView current = result.backfillJobs().get(0);
-        assertEquals("MAT.MANUAL.CURRENT.001", current.itemId());
-        assertEquals("AWAITING_MANUAL_INPUT", current.status(),
+        assertNotNull(result.currentIntake(),
+                "a range-less ADD still exposes the CURRENT intake outcome - never absent");
+        assertEquals("MAT.MANUAL.CURRENT.001", result.currentIntake().itemId());
+        assertEquals("AWAITING_MANUAL_INPUT", result.currentIntake().status(),
                 "the current acquisition for a Manual target honestly awaits real input");
+        assertEquals(0, result.backfillJobs().size(),
+                "no backfill range means no HISTORY job (CURRENT is a distinct entry)");
     }
 
     @Test
@@ -244,13 +244,12 @@ class DynamicConfigWorkflowServiceTest {
 
         ConfigV1.WorkflowResult result = harness.workflow().replaceItem(smm);
 
-        assertFalse(result.backfillJobs().isEmpty(),
-                "a replacement must auto-create and run the current acquisition");
-        assertEquals(1, result.backfillJobs().size());
-        ConfigV1.BackfillJobView current = result.backfillJobs().get(0);
-        assertEquals("MAT.REPL-01.SMM", current.itemId());
-        assertEquals("AWAITING_MANUAL_INPUT", current.status(),
+        assertNotNull(result.currentIntake(),
+                "a replacement must expose the CURRENT intake outcome");
+        assertEquals("MAT.REPL-01.SMM", result.currentIntake().itemId());
+        assertEquals("AWAITING_MANUAL_INPUT", result.currentIntake().status(),
                 "a Manual replacement honestly reaches AWAITING_MANUAL_INPUT - never fake auto-complete");
+        assertEquals(0, result.backfillJobs().size());
     }
 
     @Test
@@ -342,10 +341,13 @@ class DynamicConfigWorkflowServiceTest {
         ConfigV1.AddItemRequest manual = manualRequest(
                 "MAT.MANUAL.LIST.001", "列表手工标的", "SMM", "ADC12", "2026-08-01", "2026-08-31");
         ConfigV1.WorkflowResult result = harness.workflow().addItem(manual);
-        assertEquals(2, result.backfillJobs().size(),
-                "current acquisition + backfill range both auto-created");
-        assertEquals(2, harness.workflow().backfillJobs().size(),
-                "the real jobs are listed alongside the excluded time-state file");
+        // M1: CURRENT is a distinct entry (not a job); only the HISTORY backfill is a job.
+        assertNotNull(result.currentIntake());
+        assertEquals("AWAITING_MANUAL_INPUT", result.currentIntake().status());
+        assertEquals(1, result.backfillJobs().size(),
+                "only the HISTORY backfill range creates a job");
+        assertEquals(1, harness.workflow().backfillJobs().size(),
+                "the real job is listed alongside the excluded time-state file");
     }
 
     // ---- request builders ----

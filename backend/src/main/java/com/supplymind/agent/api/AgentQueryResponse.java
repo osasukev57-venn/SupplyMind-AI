@@ -2,6 +2,7 @@ package com.supplymind.agent.api;
 
 import com.supplymind.agent.evidence.EvidencePackV1;
 import com.supplymind.agent.evidence.EvidenceStatus;
+import com.supplymind.agent.evidence.RiskProjectionV1;
 import com.supplymind.agent.orchestration.AgentOrchestrator;
 import com.supplymind.agent.report.AgentReportV1;
 
@@ -237,23 +238,18 @@ public record AgentQueryResponse(
                 break;
             }
         }
-        // M3: risk/quality view from Warning facts only - the frontend never derives it.
+        // M3: risk view comes ONLY from the structured RiskProjectionV1 built by the
+        // orchestrator from the real warning.explain ToolResult rows (VERIFIED + lineage-
+        // complete). No string-contains guessing, no manual construction here.
         RiskView risk = null;
-        for (EvidencePackV1.Fact fact : pack.facts()) {
-            if (fact.factType() != null && fact.factType().contains("WARNING")) {
-                risk = new RiskView(fact.value(), null, null, null,
-                        fact.validationStatus());
-                break;
-            }
-        }
-        if (risk == null) {
-            for (EvidencePackV1.Fact fact : pack.facts()) {
-                if (fact.factType() != null && fact.factType().contains("RISK")) {
-                    risk = new RiskView(fact.value(), fact.value(), null, null,
-                            fact.validationStatus());
-                    break;
-                }
-            }
+        if (result.riskProjection() != null) {
+            RiskProjectionV1 projection = result.riskProjection();
+            risk = new RiskView(
+                    projection.riskLevel(),
+                    projection.currentValue(),
+                    projection.baselineValue(),
+                    projection.threshold(),
+                    projection.dataStatus());
         }
         return new AgentQueryResponse(
                 pack.requestId(),

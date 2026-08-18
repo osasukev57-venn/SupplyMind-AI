@@ -308,6 +308,85 @@ public final class BackfillOrchestrator {
         publish.process(raw.runId());
     }
 
+    /**
+     * M1: CURRENT-value acquisition as a DISTINCT semantic entry from history backfill. It
+     * issues {@code ProviderCollectRequest.current(itemId)} (never a fake one-day backfill job)
+     * and only consults {@code supportsCurrentData} - history capability is irrelevant here.
+     * The real chain runs provider.collect(CURRENT) -> immutable raw/timeline -> validation ->
+     * publish gate -> daily -> aggregate. Manual targets honestly report AWAITING_MANUAL_INPUT;
+     * a provider without current capability fails closed (NO_CURRENT_CAPABILITY). This reuses
+     * the exact persistence pipeline below; no business algorithm is duplicated.
+     */
+    public CurrentIntakeOutcome collectCurrent(String itemId) {
+        Objects.requireNonNull(itemId, "itemId");
+        MonitorSeriesConfigV1 config = configStore.readActiveConfig();
+        MonitorSeriesItemV1 item = config.requireItem(itemId);
+        if (isManual(item)) {
+            return new CurrentIntakeOutcome(CurrentIntakeStatus.AWAITING_MANUAL_INPUT,
+                    itemId, 0, List.of("AWAITING_MANUAL_INPUT"));
+        }
+        DataProvider provider = registry.all().stream()
+                .filter(candidate -> candidate.profile().providerType() == item.providerType()
+                        && candidate.supports(item))
+                .findFirst().orElse(null);
+        if (provider == null) {
+            return new CurrentIntakeOutcome(CurrentIntakeStatus.FAILED,
+                    itemId, 0, List.of("NO_AUTO_PROVIDER_CAPABILITY"));
+        }
+        if (!provider.profile().supportsCurrentData()) {
+            return new CurrentIntakeOutcome(CurrentIntakeStatus.FAILED,
+                    itemId, 0, List.of("NO_CURRENT_CAPABILITY"));
+        }
+        ProviderCollectOutcome outcome = provider.collect(
+                ProviderCollectRequest.current(List.of(itemId)));
+        int persisted = 0;
+        List<String> reasons = new ArrayList<>();
+        for (RawReceiptV1 raw : outcome.raws()) {
+            if (!raw.itemId().equals(itemId)) {
+                continue;
+            }
+            persistRawChain(itemId, raw);
+            persisted++;
+        }
+        outcome.rejectedItemIds().forEach((rejectedItem, reason) ->
+                reasons.add(rejectedItem + ":" + reason));
+        if (persisted == 0) {
+            reasons.add("NO_DATA_FOR_CURRENT");
+            return new CurrentIntakeOutcome(CurrentIntakeStatus.FAILED, itemId, 0, reasons);
+        }
+        // Rebuild the affected month(s) through the frozen chain.
+        java.util.Set<YearMonth> months = new java.util.TreeSet<>();
+        for (RawReceiptV1 raw : outcome.raws()) {
+            if (raw.itemId().equals(itemId) && raw.sourceBusinessDate() != null) {
+                months.add(YearMonth.from(LocalDate.parse(raw.sourceBusinessDate())));
+            }
+        }
+        for (YearMonth month : months) {
+            daily.processMonth(itemId, month);
+            aggregate.processYear(itemId, month.getYear());
+        }
+        return new CurrentIntakeOutcome(CurrentIntakeStatus.SUCCEEDED, itemId, persisted, reasons);
+    }
+
+    /** M1: honest outcome of a CURRENT-value acquisition (distinct from backfill jobs). */
+    public enum CurrentIntakeStatus {
+        SUCCEEDED,
+        AWAITING_MANUAL_INPUT,
+        FAILED
+    }
+
+    /** M1: structured CURRENT intake outcome; never faked, never a WAITING job. */
+    public record CurrentIntakeOutcome(
+            CurrentIntakeStatus status,
+            String itemId,
+            int rawCount,
+            List<String> failureReasons
+    ) {
+        public CurrentIntakeOutcome {
+            failureReasons = failureReasons == null ? List.of() : List.copyOf(failureReasons);
+        }
+    }
+
     private static RawAcquisitionV1 acquisitionFor(RawReceiptV1 raw) {
         return new RawAcquisitionV1(
                 "1.0", DataPaths.acquisitionRef(raw.acquisitionId()), raw.acquisitionId(),

@@ -21,6 +21,9 @@
         <java.version>17</java.version>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- M5: reproducible builds - a fixed SOURCE_DATE_EPOCH makes JAR entry timestamps
+             deterministic, so two clean packages produce byte-identical artifacts. -->
+        <project.build.outputTimestamp>2026-08-17T00:00:00Z</project.build.outputTimestamp>
         <spring-ai.version>1.1.8</spring-ai.version>
         <commons-csv.version>1.11.0</commons-csv.version>
         <poi.version>5.2.5</poi.version>

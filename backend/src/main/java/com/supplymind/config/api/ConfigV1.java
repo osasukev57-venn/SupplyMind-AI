@@ -188,13 +188,45 @@ public final class ConfigV1 {
         }
     }
 
-    /** Workflow result: the new active config plus any backfill job created for the target. */
+    /** Workflow result: the new active config, the CURRENT intake outcome and any backfill job. */
     public record WorkflowResult(
             ConfigView config,
+            CurrentIntakeView currentIntake,
             List<BackfillJobView> backfillJobs
     ) {
         public WorkflowResult {
             backfillJobs = backfillJobs == null ? List.of() : List.copyOf(backfillJobs);
+        }
+
+        /** Backward-compatible constructor without the current-intake view. */
+        public WorkflowResult(ConfigView config, List<BackfillJobView> backfillJobs) {
+            this(config, null, backfillJobs);
+        }
+
+        /** M1: the combined intake chain used internally by the workflow. */
+        public record IntakeChain(
+                CurrentIntakeView currentIntake,
+                List<BackfillJobView> backfillJobs
+        ) {
+            public IntakeChain {
+                backfillJobs = backfillJobs == null ? List.of() : List.copyOf(backfillJobs);
+            }
+        }
+    }
+
+    /**
+     * M1: honest CURRENT-value intake outcome. status is SUCCEEDED / AWAITING_MANUAL_INPUT /
+     * FAILED; rawCount and failureReasons carry the real persisted result. Never faked, never a
+     * WAITING job - the current acquisition is a distinct semantic entry from history backfill.
+     */
+    public record CurrentIntakeView(
+            String itemId,
+            String status,
+            int rawCount,
+            List<String> failureReasons
+    ) {
+        public CurrentIntakeView {
+            failureReasons = failureReasons == null ? List.of() : List.copyOf(failureReasons);
         }
     }
 
