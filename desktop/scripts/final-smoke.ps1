@@ -1,4 +1,4 @@
-# D9-T05 final desktop smoke: extract the ZIP to a fresh writable location, launch the real
+﻿# D9-T05 final desktop smoke: extract the ZIP to a fresh writable location, launch the real
 # EXE (Electron shell), wait for the backend health, verify the Vue shell loads, exercise
 # the business pages over HTTP, restart to prove data persistence, then exit cleanly and
 # assert no residual java/electron process.
@@ -103,9 +103,9 @@ Stop-Process -Id $exeProc.Id -ErrorAction SilentlyContinue
 $exeProc.WaitForExit(15000) | Out-Null
 Start-Sleep -Seconds 8
 
-# 4. no residual processes (Electron or Java)
+# 4. no residual processes (scoped to THIS extract root: executable path must live under $root)
 $residual = Get-Process -Name 'SupplyMindAI', 'electron', 'java' -ErrorAction SilentlyContinue | Where-Object {
-    $_.Path -like "*SupplyMindAI*" -or $_.ProcessName -eq 'java'
+    try { $_.Path -like "$root*" } catch { $false }
 }
 if ($residual) {
     $residual | ForEach-Object { Write-Host "residual: $($_.ProcessName) pid=$($_.Id)" }
@@ -144,7 +144,7 @@ Stop-Process -Id $exeProc2.Id -ErrorAction SilentlyContinue
 $exeProc2.WaitForExit(15000) | Out-Null
 Start-Sleep -Seconds 8
 $residual2 = Get-Process -Name 'SupplyMindAI', 'electron', 'java' -ErrorAction SilentlyContinue | Where-Object {
-    $_.Path -like "*SupplyMindAI*" -or $_.ProcessName -eq 'java'
+    try { $_.Path -like "$root*" } catch { $false }
 }
 if ($residual2) { throw '[final-smoke] FAIL: residual processes after restart' }
 Write-Host '[final-smoke] second exit clean, no residual'
