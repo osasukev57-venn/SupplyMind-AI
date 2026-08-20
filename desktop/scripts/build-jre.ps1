@@ -38,7 +38,8 @@ $modules = @(
     'java.security.jgss',
     'java.desktop',
     'java.instrument',
-    'jdk.unsupported'
+    'jdk.unsupported',
+    'jdk.crypto.ec'
 )
 
 & $jlink --module-path (Join-Path $JdkHome 'jmods') `

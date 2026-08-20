@@ -6,8 +6,9 @@ $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopba
 $listener.Start(); $port = ([System.Net.IPEndPoint]$listener.LocalEndpoint).Port
 $listener.Stop()
 
+$healthJs = Join-Path $PSScriptRoot '..\src\health.js'
 $script = @"
-const { waitForBackend } = require('D:/Dev/Projects/SupplyMind AI/desktop/src/health.js');
+const { waitForBackend } = require('$($healthJs.Replace('\','/'))');
 const start = Date.now();
 waitForBackend('http://127.0.0.1:$port', { timeoutMs: 1500, intervalMs: 200 })
   .then((result) => {
