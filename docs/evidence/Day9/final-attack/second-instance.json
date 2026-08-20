@@ -1,0 +1,18 @@
+﻿{
+    "phase":  "second-instance-attack",
+    "candidateCommit":  "5b313a5",
+    "builtAt":  "2026-08-20T16:21:03+08:00",
+    "root":  "D:\\Dev\\Temp\\supplymind-f3\\SupplyMindAI",
+    "firstWindowHandle":  2230526,
+    "firstWindowExists":  true,
+    "foregroundHandle":  2230526,
+    "instance2Exited":  true,
+    "secondBackendCreated":  false,
+    "backendPidUnchanged":  true,
+    "portUnchanged":  true,
+    "windowFocused":  true,
+    "residualProcesses":  [
+
+                          ],
+    "result":  "PASS"
+}

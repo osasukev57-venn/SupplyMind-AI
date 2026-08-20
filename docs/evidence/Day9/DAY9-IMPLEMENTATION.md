@@ -1,9 +1,11 @@
 # Day 9 — Electron 便携封装与 Windows 运行闭环（D9-T01～D9-T05）
 
-> 性质：Day9 实施证据（D9-T01～D9-T05 实施完成，待技术负责人 Code Review）。
+> 性质：Day9 实施证据（D9-T01～D9-T05 实施完成，当前 `REVIEW_PENDING`；Final Attack Findings=FIX_IMPLEMENTED_PENDING_REVIEW）。
 > Base：`6a2965a`（Day8 COMPLETE merge）+ Cloud LLM Closure `b6e3334`；实施 commit：
-> `d377a12`（D9-T01）、`4269ab8`（D9-T02）、`bf55e54`（D9-T03）、`d61135b`（D9-T04）、`<D9-T05 pending>`（D9-T05）。
+> `d377a12`（D9-T01）、`4269ab8`（D9-T02）、`bf55e54`（D9-T03）、`d61135b`（D9-T04）、`f0bd4de`（D9-T05）
+> + 本轮 Final Attack Findings 修复（clean deterministic package / lifecycle / cloud-TLS / docs）。
 > 冻结边界：Day1-Day8 业务包零修改（仅新增 `com.supplymind.desktop.*`）；Cloud LLM 链 / Agent Tool Boundary / EvidencePack / ReportStore / DEC 规则未触碰；API Key 只经环境变量进入 Java 子进程，不进入制品、日志、renderer。
+> 状态纠正：`5b313a5` 提前标记 Day9 COMPLETE（HISTORICAL_PREMATURE_STATUS_CLOSURE）；实时状态以 docs/05 为准：Day9=`NOT_COMPLETE`、D9-T01～T05=`REVIEW_PENDING`、Release Gate=`PENDING_FINAL_REVIEW`、merge main=`NOT_ALLOWED`。
 
 ## 架构（冻结）
 
@@ -68,5 +70,41 @@ SupplyMindAI/
 
 ## 状态
 
-- D9-T01～D9-T05 = 实施完成；`TaskExecutionStatus=REVIEW_PENDING`（待 Code Review）。
+- D9-T01～D9-T05 = 实施完成；`TaskExecutionStatus=REVIEW_PENDING`（待 Final Attack Delta Review）。
+- Day9=`NOT_COMPLETE`；Release Gate=`PENDING_FINAL_REVIEW`；merge main=`NOT_ALLOWED`。
+- `5b313a5` 提前标记 Day9 COMPLETE 已纠正为 HISTORICAL_PREMATURE_STATUS_CLOSURE（历史保留）。
 - 未 merge main；未 tag；Day1-8/Cloud LLM 结论未改变。
+
+## Final Attack Findings 修复（2026-08-20，本窗口）
+
+技术负责人对 `f0bd4de` 的 Final Attack Review findings（F1-F9）修复结果：
+
+| Finding | 级别 | 修复 | 结果 |
+|---|---|---|---|
+| F1 干净确定性制品 | BLOCKER | `package-clean.ps1`（全新 GUID staging + resolved-path 校验）、`lib-zip.ps1`（deterministic ZIP：排序条目+固定时间戳）、`verify-package.ps1`（entry 白/黑名单 + data/logs 初始为空 + secret scan Boolean-only）；data/logs 不再携带 runtime 状态/锁/旧业务数据 | PASS（两次独立 clean package SHA 一致：`CCB4FBF6…`） |
+| F2 随包 JRE Cloud TLS | MAJOR | build-jre 加入 `jdk.crypto.ec`；verify-jre 断言 Java17 + java.net.http + jdk.crypto.ec + 非计费 TLS handshake 到 Bailian origin（STATUS=404）；keyed portable Cloud gate=README_FOR_USER_AUTHORIZATION（未获授权不执行计费请求） | PASS（TLS STATUS=404 = 已完成握手） |
+| F3 真实双 EXE | MAJOR | `second-instance-attack.ps1`：真实两次启动同一 EXE，证明第二实例自退、无第二后端、PID/端口/url 不变、首窗口聚焦（GetForegroundWindow 证据） | PASS |
+| F4 生命周期/orphan/port/lock | MAJOR | `lifecycle-attack.ps1`：真实 EXE 正常退出/强杀 Electron（watchdog 终止 Java）/杀 Java（Electron 报错退出）/lock 恢复；按 PID+路径+command-line 精确识别（不误判系统 Java） | PASS |
+| F5 真实数据持久化 | MAJOR | `persistence-attack.ps1`：干净 ZIP → 真实 manual HTTP API 写入（HTTP 200 PENDING + raw+manifest+SHA）→ 重启 → 移动目录 → hash/文件数不变 | PASS |
+| F6 真实便携边界 | MAJOR | `portable-boundary.ps1`：plain/spaces/中文路径 + 清 JAVA_HOME/PATH + 验证运行 java 为 `<root>/runtime/jre/bin/java.exe` + 只读/非目录 data 拒绝 | PASS |
+| F7 网络/renderer/secret | MAJOR | 127.0.0.1-only 绑定、renderer bridge 仅 backendUrl/isDesktop、contextIsolation/sandbox、真实 key 的 exact scan（Boolean only）覆盖 ZIP/日志/evidence | PASS（均 secret=false） |
+| F8 真实证据 | MAJOR | 全部 runner 输出 machine-readable JSON（含 commit/时间/SHA）存入 `docs/evidence/Day9/final-attack/` + `index.json` + 汇总 | PASS |
+| F9 docs/README 一致性 | MAJOR | docs/04、docs/05 纠正为 REALVIEW_PENDING / NOT_COMPLETE；README 自包含（无 ZIP 外文档/脚本引用）；health-timeout-smoke 移除硬编码路径 | PASS |
+
+### 最终制品与校验
+
+- ZIP：`release/SupplyMindAI-0.9.0-win32-x64.zip` SHA-256=`CCB4FBF62B14896107FE9784894B78AE3352038736BD286E4DFA268F6DEA2D42`（两次独立 clean run 一致）
+- EXE SHA-256=`1925F358E7F0E9675A5AC4198FB076613F0DB318DA56D388799A97BE74A5B19C`
+- bundled java.exe SHA-256=`CF2C808F596C4DB2EC4135637E9F5B677553816D71FFF87FEB4E3203B171E403`
+- backend JAR SHA-256=`B4A239E9248993EC9CDC0C4FDFFF02EC501EDA486D1FA0D3C8377E9C561BC848`
+- web index SHA-256=`E4B11BCF7C462C01E4068C765EF1AC1D2D179E5FD9A7D932608B18087C0D50DA`
+- 完整 manifest：`release/SupplyMindAI-0.9.0-win32-x64.zip.manifest.json`
+- 证据索引：`docs/evidence/Day9/final-attack/index.json`
+
+### 回归（最终）
+
+- backend `mvnw.cmd clean test`：647 tests / 0 failures / 0 errors / 9 skipped
+- desktop `node --test`：31 / 0 / 0 / 0
+- frontend `npm run test`：33 / 0 / 0 / 0；`npm run build` PASS
+- 无修改 Day1-8 测试断言；未 merge main；未 tag；未标记 Day9 COMPLETE
+- 待技术负责人 Final Attack Delta Review

@@ -1,0 +1,6 @@
+﻿{
+    "candidateCommit":  "5b313a5",
+    "result":  "READY_FOR_USER_AUTHORIZATION",
+    "reason":  "explicit user authorization required for a potentially-billing cloud request",
+    "builtAt":  "2026-08-20T14:58:02+08:00"
+}

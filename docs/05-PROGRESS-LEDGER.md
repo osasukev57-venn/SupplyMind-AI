@@ -1,9 +1,9 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 1～Day 9=`COMPLETE`。Day6最终技术候选=`bc6f61a`及其本地回归均为HISTORICAL；Post-Day8 Cloud Closure=`182baec`。AT-AI-000/002/003本地合同与AT-AI-001故障降级矩阵=`PASS`；真实Cloud gated run=`PASS`（Alibaba Bailian北京区、`qwen-plus`、1/1、0 failures/errors/skipped，2026-08-18）。
+> 当前阶段：Day 1～Day 8=`COMPLETE`；Day 9=`NOT_COMPLETE`（Final Attack Findings=`FIX_IMPLEMENTED_PENDING_REVIEW`）。`5b313a5` 的 Day9 COMPLETE 关闭为 HISTORICAL_PREMATURE_STATUS_CLOSURE（见下）。Day6最终技术候选=`bc6f61a`及其本地回归均为HISTORICAL；Post-Day8 Cloud Closure=`182baec`。AT-AI-000/002/003本地合同与AT-AI-001故障降级矩阵=`PASS`；真实Cloud gated run=`PASS`（Alibaba Bailian北京区、`qwen-plus`、1/1、0 failures/errors/skipped，2026-08-18）。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`DONE`；**Final Implementation Candidate=`feaedd3`**；**CURRENT regression=110 suites/578 backend tests/0 failures/0 errors/8 skipped**，前端 `npm run test` **11/11 PASS** + `npm run build` PASS；历史候选（1b83410、d2b0965、a4006c4、3fd1d35、5f1491c、01d4270 等中间状态）一律 HISTORICAL（不删除）；Closure Evidence=`docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md`。Day1-Day6 代码零修改。
-> Day9=`COMPLETE`（2026-08-20）：D9-T01～D9-T05=`DONE`（`d377a12`/`4269ab8`/`bf55e54`/`d61135b`/`f0bd4de`，Base=`b6e3334`）；Feature Freeze=`EFFECTIVE`；最终便携制品 `SupplyMindAI-0.9.0-win32-x64.zip`（SHA-256 `27779EF9…`）；backend regression=647 tests/0 failures/0 errors/9 skipped，Electron 39/39 + 全量 smoke PASS；下一任务=`NONE / RELEASE`（等待 Final Review 后 merge main / tag，未 merge main）。
+> Day9=实施完成但 NOT_COMPLETE：D9-T01～D9-T05=`REVIEW_PENDING`（`d377a12`/`4269ab8`/`bf55e54`/`d61135b`/`f0bd4de`，Base=`b6e3334`）；Final Attack Findings=已修复待 Review；Feature Freeze=`EFFECTIVE`；Release Gate=`PENDING_FINAL_REVIEW`；merge main=`NOT_ALLOWED`。最终便携制品 `SupplyMindAI-0.9.0-win32-x64.zip`（SHA-256 `000E7406…`）；backend regression=647 tests/0 failures/0 errors/9 skipped，Electron 31/31 + frontend 33/33 + 全部攻击 smoke PASS。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -57,21 +57,29 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 
 | 字段 | 当前值 |
 |---|---|
-| 当前开发日 | Day 1～Day 9 = `COMPLETE`；Day 10=`NOT_STARTED` |
-| 当前任务编号 | Day9 Stage 完成；D9-T01～D9-T05=`DONE`；下一阶段=RELEASE 等待（Day 10 / merge main 前） |
-| 当前任务状态 | D9-T01～D9-T05=`DONE`（实施 commit：`d377a12`/`4269ab8`/`bf55e54`/`d61135b`/`f0bd4de`，基于 `b6e3334`）；Feature Freeze=`EFFECTIVE`；最终便携制品 ZIP=SHA-256 `27779EF9…`、EXE+内置JRE+动态端口+单实例+watchdog 实测 PASS；未 merge main。 |
+| 当前开发日 | Day 1～Day 8=`COMPLETE`；Day 9=`NOT_COMPLETE`（Final Attack Findings=`FIX_IMPLEMENTED_PENDING_REVIEW`） |
+| 当前任务编号 | D9-T01～D9-T05 实施完成；等待独立 Final Attack Delta Review 后由技术负责人改 DONE |
+| 当前任务状态 | D9-T01～D9-T05=`TaskExecutionStatus=REVIEW_PENDING`（实施 commit：`d377a12`/`4269ab8`/`bf55e54`/`d61135b`/`f0bd4de`，基于 `b6e3334`）；Feature Freeze=`EFFECTIVE`；Release Gate=`PENDING_FINAL_REVIEW`；merge main=`NOT_ALLOWED`；最终便携制品 ZIP=SHA-256 `000E7406…`、EXE+内置JRE+动态端口+单实例+watchdog 实测 PASS；`5b313a5` 的提前 COMPLETE 标记为 HISTORICAL_PREMATURE_STATUS_CLOSURE。 |
 | 编码前基线对齐 | `v1.5 FROZEN`：DEC-060、C35～C36保持不变；Java17、Boot3.5.15、Spring AI1.1.8、SupplyMind LLMService门面、只读Tool Adapter与EvidencePack所有权边界均保持；DEC-061（warning ack sidecar）已登记。 |
-| 已完成任务 | Day1～Day9全部开发任务及Stage Gate；D8-T01～D8-T05=`DONE`；D9-T01～D9-T05=`DONE`；Day9=`COMPLETE`。 |
-| 正在进行任务 | 无；Day9 全部完成，无进行中任务。 |
+| 已完成任务 | Day1～Day8全部开发任务及Stage Gate；D8-T01～D8-T05=`DONE`；D9-T01～D9-T05=实施完成（`REVIEW_PENDING`，未经最终 Review 不得视为 DONE） |
+| 正在进行任务 | 无新增开发；等待 Final Attack Delta Review。 |
 | 阻塞项 | 无阻塞项；EXT-07/08保持OPEN_EXTERNAL。 |
-| 最近验收结果 | Day9 实施+冒烟全 PASS（647 backend tests/0/0/9；Electron 39/39；portable/lifecycle/health-timeout/final smoke 全 PASS）；Cloud LLM 真实 gated run=1/1 PASS（HISTORICAL，保持）。 |
-| 新增风险 | 云端调用费用/网络依赖（故障按 JAVA_TEMPLATE 降级，不影响核心链路）；无新的 Day9 P0 风险。 |
-| 下一任务 | `NONE / RELEASE`：等待 Final Review 与 merge main / tag（Day 10 前不得新增业务功能，Feature Freeze 保持）。 |
-| 最近一次可运行版本 | Day9 最终便携制品 `SupplyMindAI-0.9.0-win32-x64.zip`（SHA-256 `27779EF9…`）；JAR 仍为 Day8 冻结 `239d025` 语义。 |
-| 最近一次Git提交 | Day9 最终实施=`f0bd4de`；本次为 Day9 状态台账封板。 |
+| 最近验收结果 | Day9 实施+全部攻击 smoke（clean deterministic ZIP 双run SHA 一致 / 真实双 EXE 单实例 / lifecycle/orphan/port/lock / 真实持久化+移动 / 便携多路径 / 无Key JAVA_TEMPLATE / bundled-JRE TLS）全 PASS；真实 Cloud gated run 保持 HISTORICAL PASS（2026-08-18，1/1）。 |
+| 新增风险 | 云端调用费用/网络依赖（故障按 JAVA_TEMPLATE 降级，不影响核心链路）；keyed portable Cloud gate=`READY_FOR_USER_AUTHORIZATION`（未获授权不运行可能计费请求，不伪报 PASS）；无新的 P0 风险。 |
+| 下一任务 | `PENDING_FINAL_REVIEW`：等待 Final Attack Delta Review（通过后由技术负责人确认 D9-T01～T05=DONE、Day9=COMPLETE、release gate 放行；在此之前不得 merge main / tag / 提前关闭）。 |
+| 最近一次可运行版本 | Day9 最终便携制品 `SupplyMindAI-0.9.0-win32-x64.zip`（SHA-256 `000E7406…`）；JAR 仍为 Day8 冻结 `239d025` 语义 + Cloud LLM adapter。 |
+| 最近一次Git提交 | Day9 Final Attack Findings 修复实施（本轮 4 commits，见 evidence）；`5b313a5`=HISTORICAL_PREMATURE_STATUS_CLOSURE（提前 COMPLETE 已纠正并保留历史）。 |
 | 是否偏离计划 | 否；DEC-060不变，工具仍为7个只读工具，Write Tool=NONE，未引入RAG/Vector/MCP/数据库；Day9 仅新增 `com.supplymind.desktop.*` 与 desktop/ 壳，未触碰 Day1-8 合同。 |
-| 最后更新人/窗口 | 技术负责人 / Day9 Final Status |
+| 最后更新人/窗口 | 技术负责人 / Day9 Final Attack Findings Closure |
 | 最后更新时间 | 2026-08-20（Asia/Shanghai） |
+
+### 3.2 Day 9 HISTORICAL PREMATURE STATUS CLOSURE（2026-08-20）
+
+- 状态事实纠正：`5b313a5` 在 Final Attack Review 前把 Day9 标记为 COMPLETE / D9-T01～T05=DONE / 下一任务 NONE/RELEASE，属提前关闭。
+- 本次窗口已将实时状态纠正为：D9-T01～D9-T05=`REVIEW_PENDING`、Day9=`NOT_COMPLETE`、Release Gate=`PENDING_FINAL_REVIEW`、merge main=`NOT_ALLOWED`。
+- `5b313a5` 及其上的 DONE/COMPLETE 表述作为历史记录保留，标记为 **HISTORICAL_PREMATURE_STATUS_CLOSURE**（不删除、不重写）。
+- Final Attack Findings（F1-F9）修复已实施并产出独立 commit 与 machine-readable 证据：`docs/evidence/Day9/final-attack/`。
+- 下一动作：等待技术负责人 Final Attack Delta Review；通过后方可确认 D9-T01～T05=DONE、Day9=COMPLETE。
 
 ### 3.1 Day 6 Architecture Change Approval（2026-08-13）
 
