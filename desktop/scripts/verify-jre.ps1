@@ -39,7 +39,7 @@ $report = [ordered]@{}
 $report.phase = 'verify-jre'
 $report.candidateCommit = (git -C (Join-Path $PSScriptRoot '..\..') rev-parse --short HEAD 2>$null)
 $report.builtAt = (Get-Date -Format 'yyyy-MM-ddTHH:mm:sszzz')
-$report.bundledJavaExe = $javaExe
+$report.bundledJavaExe = 'runtime/jre/bin/java.exe'
 
 # 1. Java = 17
 $verLine = (& cmd /c "`"$javaExe`" -version 2>&1") | Select-Object -First 1

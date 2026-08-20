@@ -35,7 +35,7 @@ function Test-PortableBoot([string]$RootPath,[string]$Label){
     Stop-Process -Id $exeProc.Id -Force -ErrorAction SilentlyContinue;$exeProc.WaitForExit(15000)|Out-Null
     Stop-AllAppProcs $RootPath
     $residual=@(Get-AppJavaProcs $RootPath)
-    [pscustomobject]@{label=$Label;healthy=$healthy;javaProcessCount=$javaProcs.Count;javaPath=$actualJava;expectedJavaPath=$expectedJava;bundledJavaIdentity=$identityPass;residualCount=$residual.Count;pass=($identityPass -and $residual.Count -eq 0)}
+    [pscustomobject]@{label=$Label;healthy=$healthy;javaProcessCount=$javaProcs.Count;javaPath='runtime/jre/bin/java.exe';bundledJavaIdentity=$identityPass;residualCount=$residual.Count;pass=($identityPass -and $residual.Count -eq 0)}
 }
 function Invoke-PathCase([string]$Base,[string]$Label){
     New-Item -ItemType Directory -Force -Path $Base|Out-Null;Expand-Archive -LiteralPath $Zip -DestinationPath $Base -Force
