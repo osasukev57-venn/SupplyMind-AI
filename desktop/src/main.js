@@ -27,6 +27,7 @@ const KILL_GRACE_MS = 5_000;
 let childProcess = null;
 let mainWindow = null;
 let backendUrl = '';
+let shutdownRequested = false;
 
 if (!acquireSingleInstance(app, () => mainWindow, recordInstanceActivation)) {
   app.quit();
@@ -85,14 +86,29 @@ if (!acquireSingleInstance(app, () => mainWindow, recordInstanceActivation)) {
       });
 
       childProcess.on('exit', (code) => {
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          dialog.showErrorBox(
-            'SupplyMind AI 后端已停止',
-            `后端进程已退出（exit code: ${code}）。\n日志：${path.join(dirs.logs, 'backend.log')}`
-          );
-        }
+        const expectedShutdown = shutdownRequested;
         childProcess = null;
-        app.exit(0);
+        if (expectedShutdown) {
+          return;
+        }
+        const message = `后端进程意外退出（exit code: ${code}）。\n日志：${path.join(dirs.logs, 'backend.log')}`;
+        try {
+          fs.appendFileSync(
+            path.join(dirs.logs, 'desktop-events.jsonl'),
+            JSON.stringify({ event: 'BACKEND_EXITED', exitCode: code, recordedAt: new Date().toISOString() }) + '\n',
+            { encoding: 'utf8' }
+          );
+        } catch (_) {
+          // Lifecycle safety must not depend on diagnostic logging.
+        }
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          dialog.showMessageBox(mainWindow, {
+            type: 'error',
+            title: 'SupplyMind AI 后端已停止',
+            message
+          }).catch(() => {});
+        }
+        setTimeout(() => app.exit(1), 1000);
       });
 
       const result = await waitForBackend(backendUrl, { timeoutMs: HEALTH_TIMEOUT_MS });
@@ -155,6 +171,7 @@ function createWindow() {
  * taskkill /T /F fallback). No orphan Java process can survive a normal quit.
  */
 async function stopBackend() {
+  shutdownRequested = true;
   if (!childProcess) {
     return;
   }

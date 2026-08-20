@@ -116,6 +116,7 @@ $deadline = (Get-Date).AddSeconds(30)
 $app3.ExeProc.WaitForExit(30000) | Out-Null
 Start-Sleep -Seconds 5
 $javaKillPass = $app3.ExeProc.HasExited
+if (-not $javaKillPass) { Stop-Process -Id $app3.ExeProc.Id -Force -ErrorAction SilentlyContinue; $app3.ExeProc.WaitForExit(10000) | Out-Null }
 $report.javaKilledRecovery = if ($javaKillPass) { 'PASS' } else { 'FAIL' }
 Write-Host "[f4] java-kill: electronExited=$($app3.ExeProc.HasExited) -> $($report.javaKilledRecovery)"
 
@@ -126,6 +127,7 @@ $javaPid4 = if ($javaPid4.Count -gt 0) { $javaPid4[0].Id } else { $null }
 $lockFile = Join-Path $Root 'data\runtime\dirty\.supplymind-writer.lock'
 Stop-Process -Id $javaPid4 -Force -ErrorAction SilentlyContinue
 $app4.ExeProc.WaitForExit(20000) | Out-Null
+if (-not $app4.ExeProc.HasExited) { Stop-Process -Id $app4.ExeProc.Id -Force -ErrorAction SilentlyContinue; $app4.ExeProc.WaitForExit(10000) | Out-Null }
 Start-Sleep -Seconds 3
 $lockStale = Test-Path -LiteralPath $lockFile
 $app5 = Start-App
