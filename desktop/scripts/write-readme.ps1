@@ -44,8 +44,19 @@ Version: $Version
 5. LLM 配置方式（可选）
 -----------------------
 - 未配置时，Agent 工作台使用内置 Java 模板生成可追溯报告（核心功能不受影响）。
-- 配置方式：在桌面快捷方式/命令行设置上述环境变量后启动 SupplyMindAI.exe，
-  或参考 docs/CLOUD-LLM-SETUP.md 使用 scripts/configure-cloud-llm.ps1。
+- 配置方式（只需在本次启动前设置环境变量）：
+  在资源管理器中找到 SupplyMindAI.exe，按住 Shift 在空白处右键选择
+  “在此处打开 PowerShell 窗口”（或按 Win+R 输入 cmd），然后依次执行：
+      set SUPPLYMIND_LLM_ENABLED=true
+      set SUPPLYMIND_LLM_PROVIDER=openai-compatible
+      set SUPPLYMIND_LLM_MODEL=qwen-plus
+      set SUPPLYMIND_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+      set SUPPLYMIND_LLM_COMPLETIONS_PATH=/chat/completions
+      set SUPPLYMIND_LLM_TIMEOUT=30s
+      set SUPPLYMIND_LLM_API_KEY=你的密钥
+      SupplyMindAI.exe
+  - 注意：密钥只通过环境变量传给后端 Java 进程，不会被写入日志或界面。
+    不要把它们写进任何配置文件。
 - 云模型不可用（断网/超时/缺密钥）时自动降级到 Java 模板，不会返回无依据回答。
 
 6. 故障排查
