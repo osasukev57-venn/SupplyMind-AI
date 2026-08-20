@@ -33,7 +33,6 @@ $report = [ordered]@{
     phase = 'lifecycle-attack'
     candidateCommit = (git -C (Join-Path $PSScriptRoot '..\..') rev-parse --short HEAD 2>$null)
     builtAt = (Get-Date -Format 'yyyy-MM-ddTHH:mm:sszzz')
-    root = $Root
 }
 
 function Start-App {
@@ -66,18 +65,28 @@ $javaPid1 = if ($firstJava.Count -gt 0) { $firstJava[0].Id } else { $null }
 Write-Host "[f4] normal-exit: app UP (electron=$($app1.ExeProc.Id) java=$javaPid1 port=$($app1.Port))"
 if (-not $javaPid1) { Stop-Process -Id $app1.ExeProc.Id -Force -ErrorAction SilentlyContinue; throw 'no java backend found' }
 
-# graceful close: ask Electron to quit (close main window via WM_CLOSE does run will-quit)
-$mainHwnd = $app1.ExeProc.MainWindowHandle
-if ($mainHwnd -ne 0) {
-    Add-Type @"
+# Graceful close: wait for the real main window, then ask Electron to quit.
+# Backend health can become UP before BrowserWindow has a Win32 handle.
+$windowDeadline = (Get-Date).AddSeconds(30)
+$mainHwnd = [IntPtr]::Zero
+while ((Get-Date) -lt $windowDeadline) {
+    $app1.ExeProc.Refresh()
+    $mainHwnd = $app1.ExeProc.MainWindowHandle
+    if ($mainHwnd -ne [IntPtr]::Zero) { break }
+    Start-Sleep -Milliseconds 250
+}
+if ($mainHwnd -eq [IntPtr]::Zero) {
+    Stop-Process -Id $app1.ExeProc.Id -Force -ErrorAction SilentlyContinue
+    throw 'main window handle never appeared'
+}
+Add-Type @"
 using System;
 using System.Runtime.InteropServices;
 public static class Win32Close {
     [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 }
 "@
-    [Win32Close]::SendMessage([IntPtr]$mainHwnd, 0x0010, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
-}
+[Win32Close]::SendMessage([IntPtr]$mainHwnd, 0x0010, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
 $app1.ExeProc.WaitForExit(20000) | Out-Null
 Start-Sleep -Seconds 10
 $residualNorm = @(Get-AppJavaProcs $Root)
@@ -150,7 +159,7 @@ $report.result = if ($allPass) { 'PASS' } else { 'FAIL' }
 if ($EvidenceOut) {
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $EvidenceOut) | Out-Null
     $json = $report | ConvertTo-Json -Depth 4
-    Set-Content -LiteralPath $EvidenceOut -Value $json -Encoding UTF8
+    [IO.File]::WriteAllText($EvidenceOut, $json + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
     Write-Host "[f4] evidence: $EvidenceOut"
 }
 $report | ConvertTo-Json -Depth 4 | Out-Host
