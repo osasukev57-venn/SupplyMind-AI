@@ -1,9 +1,9 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 1～Day 9=`COMPLETE`；Day9 Final Technical Candidate=`9c59cce`，Final Attack Review=`PASS`，D9-T01～D9-T05=`DONE`。`5b313a5` 的提前关闭保留为 HISTORICAL_PREMATURE_STATUS_CLOSURE。Post-Day8 Cloud Closure=`182baec`；真实 Cloud gated run=`PASS`（2026-08-18，Alibaba Bailian 北京区、`qwen-plus`、1/1）。本次 keyed portable Cloud gate 未获新的可能计费请求授权，保持 `READY_FOR_USER_AUTHORIZATION`，未伪报 PASS。
+> 当前阶段：Day 1～Day 10=`COMPLETE`；D10-T01～D10-T05=`DONE`；Day10 Final Implementation Candidate=`09c871f`；最终验收=`PASS / SAFE_EQUIVALENT_PASS`（按 DEC-062 区分方法），项目=`FINAL_RELEASE_READY`。真实 Cloud 历史 Gate=`PASS`；Day10 未重复执行可能计费请求。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`DONE`；**Final Implementation Candidate=`feaedd3`**；**CURRENT regression=110 suites/578 backend tests/0 failures/0 errors/8 skipped**，前端 `npm run test` **11/11 PASS** + `npm run build` PASS；历史候选（1b83410、d2b0965、a4006c4、3fd1d35、5f1491c、01d4270 等中间状态）一律 HISTORICAL（不删除）；Closure Evidence=`docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md`。Day1-Day6 代码零修改。
-> Day9=`COMPLETE`：D9-T01～D9-T05=`DONE`；Final Attack Findings 全部关闭；最终 ZIP SHA-256=`2561FB77FB16720ADFCAFE39B3E7ECA7AF80B6D91C7E2D893BA5815D86BEC82A`；Backend=`122 suites/648 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`33/33 + build PASS`；D10-T01=`NOT_STARTED + READY`，Day10 尚未开始。
+> Day10=`COMPLETE`：最终 ZIP SHA-256=`022685093835379162FEBBAF25EA70BA2898AFDE26DD317A33FB6522522151F9`；Backend=`124 suites/652 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`34/34 + build PASS`；最终 EXE 启动后可见真实 PBOC USD/EUR，Manual 材料模拟数据明确标注且经统一门禁发布。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -57,22 +57,31 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 
 | 字段 | 当前值 |
 |---|---|
-| 当前开发日 | Day 1～Day 9=`COMPLETE`；Day 10=`NOT_STARTED` |
-| 当前任务编号 | 无进行中任务；下一可领取任务 D10-T01（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`） |
-| 当前任务状态 | D9-T01～D9-T05=`DONE`；Day9 Final Attack Review=`PASS`；Day9=`COMPLETE`；D10-T01=`NOT_STARTED+READY`；D10-T02～T05=`NOT_STARTED+NOT_READY`；Day9 分支允许 merge main，但本次未执行 merge/tag |
-| 编码前基线对齐 | `v1.5 FROZEN`：DEC-060、C35～C36保持不变；Java17、Boot3.5.15、Spring AI1.1.8、SupplyMind LLMService门面、只读Tool Adapter与EvidencePack所有权边界均保持；DEC-061（warning ack sidecar）已登记。 |
-| 已完成任务 | Day1～Day9全部开发任务及 Stage Gate；D9-T01～D9-T05=`DONE` |
-| 正在进行任务 | 无；D10-T01 已放行但尚未领取 |
-| 阻塞项 | 无 Day9 阻塞项；EXT-07/08保持 OPEN_EXTERNAL；Day10 后续任务按各自依赖 Gate 顺序放行 |
-| 最近验收结果 | Day9 Final Attack=`PASS`：ZIP 白名单/真实 Key 扫描、bundled JRE/TLS、真实双 EXE、生命周期、持久化与目录移动、普通/空格/中文/只读路径、无 Key JAVA_TEMPLATE、双 clean-build 确定性均 PASS；回归=`122/648/0/0/9 + Desktop 31/31 + Frontend 33/33/build PASS` |
-| 新增风险 | 云端调用费用/网络依赖继续由 JAVA_TEMPLATE 降级；keyed portable Cloud gate=`READY_FOR_USER_AUTHORIZATION`，本次未发送新计费请求；它不属于 D9 冻结 DoD，真实 Cloud 历史 Gate 仍为 PASS |
-| 下一任务 | D10-T01（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`）；Day10 正式验收未开始，最终发布尚未签署 |
-| 最近一次可运行版本 | Final Technical Candidate=`9c59cce`；`SupplyMindAI-0.9.0-win32-x64.zip` SHA-256=`2561FB77FB16720ADFCAFE39B3E7ECA7AF80B6D91C7E2D893BA5815D86BEC82A`；manifest SHA-256=`A1170AB0D6C86192EAD2E0FF3E7536606900629DDB9D98E179ED2EE721445BEE` |
-| 最近一次Git提交 | `9c59cce`（最终技术候选：生命周期攻击竞态关闭）；Final Attack evidence/docs 收口位于当前提交；`5b313a5` 仅为历史提前关闭 |
-| 是否偏离计划 | 否；DEC-060不变，工具仍为7个只读工具，Write Tool=NONE，未引入RAG/Vector/MCP/数据库；Day9 仅新增 `com.supplymind.desktop.*` 与 desktop/ 壳，未触碰 Day1-8 合同。 |
-| 最后更新人/窗口 | 技术负责人 / Day9 Final Review + Direct Fix Closure |
-| 最后更新时间 | 2026-08-20（Asia/Shanghai） |
+| 当前开发日 | Day 1～Day 10=`COMPLETE` |
+| 当前任务编号 | 无进行中 P0 任务；D10-T01～D10-T05=`DONE` |
+| 当前任务状态 | D10-T01～D10-T05=`DONE`；Day10=`COMPLETE`；项目=`FINAL_RELEASE_READY`；本分支未执行 merge/tag/push |
+| 编码前基线对齐 | `v1.5 FROZEN` 保持；DEC-060/061不变；新增 DEC-062 仅批准安全等价验收方法，不改变 H01-H09 业务预期。 |
+| 已完成任务 | Day1～Day10全部 P0 开发任务及最终验收；D10-T01～D10-T05=`DONE` |
+| 正在进行任务 | 无 |
+| 阻塞项 | 无 P0 BLOCKER/MAJOR；EXT-07/08保持 OPEN_EXTERNAL；物理改时/干净VM/主动断网方法按DEC-062保持NOT_RUN，不阻塞已通过的业务结果 |
+| 最近验收结果 | Day10 Final Acceptance：真实 PBOC USD=`6.7808`、EUR=`7.8815` 在最终 EXE 可见；Manual 模拟材料=`18888.50 元/吨`且来源不冒充；本地 JSON/CSV、无数据库、精度、轮转、跨年、动态配置均通过；回归=`124/652/0/0/9 + Desktop 31/31 + Frontend 34/34/build PASS` |
+| 新增风险 | 材料商业源自动能力仍为N/A_APPROVED_FALLBACK并由Manual承接；PBOC网络失败时页面显示真实失败并可重试；云端调用失败继续由JAVA_TEMPLATE降级 |
+| 下一任务 | 无 P0 开发任务；进入最终发布/merge/tag决策 |
+| 最近一次可运行版本 | Day10 Final Implementation Candidate=`09c871f`；`SupplyMindAI-0.9.0-win32-x64.zip` SHA-256=`022685093835379162FEBBAF25EA70BA2898AFDE26DD317A33FB6522522151F9`；manifest SHA-256=`48AB0DFD6021AD1D3999E142744825939D818C6131F7817D48EA3B21780AD41A` |
+| 最近一次Git提交 | `09c871f`（Day10 实现、测试、手册与最终验收证据） |
+| 是否偏离计划 | 否；真实 PBOC 优先、Manual 降级、文件存储、无数据库与只读 Agent 边界保持；DEC-062 只替代高风险验收手段 |
+| 最后更新人/窗口 | 技术负责人 / Day10 Final Acceptance Closure |
+| 最后更新时间 | 2026-08-21（Asia/Shanghai） |
 
+### 3.4 Day 10 Final Acceptance Closure（2026-08-21）
+
+- Final Implementation Candidate：`09c871f`；D10-T01～D10-T05=`DONE`；Day10=`COMPLETE`；项目=`FINAL_RELEASE_READY`。
+- 用户补充闭环：最终 EXE 启动后自动采集并显示 PBOC USD/CNY 与 EUR/CNY；材料商业源不可合法自动获取时保留 Manual，模拟值显式标记“非外部市场信源”并经 validation/publish/daily/aggregate 正式链。
+- 原始业务验收：daily 与月/季/半年/年度精度、本地 JSON/CSV、无数据库、轮转、跨年、动态配置与面板重构均满足；H05 以生产同一 Clock 边界获得 `SAFE_EQUIVALENT_PASS`。
+- 安全方法边界：AT-TIME-003/004 物理改时、干净 VM 原方法、主动断网均保持 `NOT_RUN`；没有修改宿主机网络、Hyper-V、系统时间或系统服务。
+- 最终回归：Backend=`124/652/0/0/9`；Desktop=`31/31`；Frontend=`34/34` + build PASS。
+- 最终制品：ZIP SHA-256=`022685093835379162FEBBAF25EA70BA2898AFDE26DD317A33FB6522522151F9`；manifest SHA-256=`48AB0DFD6021AD1D3999E142744825939D818C6131F7817D48EA3B21780AD41A`。
+- 权威证据：`docs/evidence/Day10/D10-FINAL-ACCEPTANCE.md` 与同目录 `index.json`。
 ### 3.2 Day 9 HISTORICAL PREMATURE STATUS CLOSURE（2026-08-20）
 
 - 状态事实纠正：`5b313a5` 在 Final Attack Review 前把 Day9 标记为 COMPLETE / D9-T01～T05=DONE / 下一任务 NONE/RELEASE，属提前关闭。

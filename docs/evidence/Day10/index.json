@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0",
+  "candidateCommit": "09c871f",
+  "generatedAt": "2026-08-21T02:42:27.7593549+08:00",
+  "files": [
+    {
+      "path": "at-src-002-current/at-src-002-runtime-facts.json",
+      "size": 4670,
+      "sha256": "C68FC886D4F08566A21180C8D164339B3329EA7E4E17BBFA6D794661FFDF27FC"
+    },
+    {
+      "path": "backend-regression-summary.json",
+      "size": 3399,
+      "sha256": "CA6CF7180C27D6BB292C84FF6EC4110FABFFD768BE10AB383BE11A355EB06061"
+    },
+    {
+      "path": "D10-FINAL-ACCEPTANCE.md",
+      "size": 4032,
+      "sha256": "18D890C62B0907F4A966C28672E72DAE44C9DD9023BE586D21FA46E63AEEC3B5"
+    },
+    {
+      "path": "desktop-node-test.tap",
+      "size": 5722,
+      "sha256": "A8ECC5A6DF7206A80CEE492DB597D8B55588D0E0F7CDED4A31337D0CFF7E38AA"
+    },
+    {
+      "path": "final-portable-exe-data-visibility.json",
+      "size": 2826,
+      "sha256": "31B85AB74B45954E8F31E9430DC474B5B503214B498A7992D33C591B4C954B26"
+    },
+    {
+      "path": "frontend-vitest.json",
+      "size": 11384,
+      "sha256": "3118046FEE62CC398A71AF95DEDC3C3FE7F7FF08F0873E74622328A414559D10"
+    },
+    {
+      "path": "package-verification.json",
+      "size": 216,
+      "sha256": "EF0CB582631C2C644819887A5107A405B15C7D3EF5D8D98F6D9CECC050BE8DF5"
+    }
+  ],
+  "hostConfigurationChanged": false
+}
