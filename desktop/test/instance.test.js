@@ -30,15 +30,22 @@ test('second-instance event restores and focuses the existing window', () => {
   const app = fakeApp(true);
   let restored = 0;
   let focused = 0;
+  let activation;
   const window = {
     isMinimized: () => true,
     restore: () => { restored += 1; },
     focus: () => { focused += 1; }
   };
-  acquireSingleInstance(app, () => window);
+  acquireSingleInstance(app, () => window, (event) => { activation = event; });
   app.emit('second-instance');
   assert.strictEqual(restored, 1);
   assert.strictEqual(focused, 1);
+  assert.deepStrictEqual(activation, {
+    event: 'SECOND_INSTANCE_ACTIVATED',
+    windowExists: true,
+    restored: true,
+    focusCalled: true
+  });
 });
 
 test('second-instance event focuses without restore when the window is not minimized', () => {
@@ -58,6 +65,13 @@ test('second-instance event focuses without restore when the window is not minim
 
 test('second-instance event is a no-op when no window exists yet', () => {
   const app = fakeApp(true);
-  acquireSingleInstance(app, () => null);
+  let activation;
+  acquireSingleInstance(app, () => null, (event) => { activation = event; });
   assert.doesNotThrow(() => app.emit('second-instance'));
+  assert.deepStrictEqual(activation, {
+    event: 'SECOND_INSTANCE_ACTIVATED',
+    windowExists: false,
+    restored: false,
+    focusCalled: false
+  });
 });

@@ -129,8 +129,7 @@ try {
 if ($tlsStatus -match '^STATUS=') {
     Write-Host "[jre-verify] PASS: bundled JRE completed HTTPS/TLS handshake with the Bailian origin ($tlsStatus)"
 } else {
-    Write-Host "[jre-verify] WARN: no HTTP status from Bailian origin ($tlsStatus) - TLS connectivity not proven"
-    $tlsStatus = "WARN_$tlsStatus"
+    throw "bundled JRE did not complete the Bailian TLS handshake: $tlsStatus"
 }
 $report.bailianTls = $tlsStatus
 

@@ -28,7 +28,7 @@ let childProcess = null;
 let mainWindow = null;
 let backendUrl = '';
 
-if (!acquireSingleInstance(app, () => mainWindow)) {
+if (!acquireSingleInstance(app, () => mainWindow, recordInstanceActivation)) {
   app.quit();
 } else {
   app.whenReady().then(async () => {
@@ -112,6 +112,20 @@ if (!acquireSingleInstance(app, () => mainWindow)) {
       app.exit(1);
     }
   });
+}
+
+function recordInstanceActivation(event) {
+  try {
+    const dirs = paths.layout();
+    fs.mkdirSync(dirs.logs, { recursive: true });
+    fs.appendFileSync(
+      path.join(dirs.logs, 'instance-events.jsonl'),
+      JSON.stringify({ ...event, recordedAt: new Date().toISOString() }) + '\n',
+      { encoding: 'utf8' }
+    );
+  } catch (_) {
+    // Activation must still focus the existing window if diagnostic logging is unavailable.
+  }
 }
 
 function createWindow() {

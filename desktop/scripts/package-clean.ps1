@@ -8,10 +8,10 @@
 #   - backend JAR + frontend dist are rebuilt THIS run (no stale artifacts).
 #   - Bundled JRE is rebuilt THIS run via build-jre.ps1.
 #   - ZIP is produced by the deterministic writer (fixed timestamps, sorted entries).
-#   - data/ and logs/ start EMPTY (no smoke data, no runtime state, no locks).
+#   - data/ contains only canonical config v1 + manifests; logs/ starts empty.
 # Usage:
 #   .\scripts\package-clean.ps1 -Version 0.9.0
-#   .\scripts\package-clean.ps1 -Version 0.9.0 -SkipBackendBuild -SkipFrontendBuild -SkipJreBuild
+
 param(
     [string]$Version = '0.9.0',
     [string]$RepoRoot = (Join-Path $PSScriptRoot '..\..'),
@@ -110,7 +110,13 @@ Get-ChildItem -LiteralPath $dist -Force | ForEach-Object {
     Copy-Item -LiteralPath $_.FullName -Destination $webDir -Recurse -Force
 }
 
-# data/ + logs/ stay EMPTY for the release artifact (created writable for first boot).
+# Generate the canonical initial config through the production storage code with a fixed
+# packaging timestamp. The resulting four files are deterministic and are the only data/
+# entries permitted in the release ZIP.
+$seedInstant = '2026-08-20T00:00:00+08:00'
+$seedMain = 'com.supplymind.desktop.PortableInitialConfigExporter'
+& $javaExe "-Dloader.main=$seedMain" -cp (Join-Path $appDir 'supplymind-backend.jar') org.springframework.boot.loader.launch.PropertiesLauncher $dataDir $seedInstant
+if ($LASTEXITCODE -ne 0) { throw 'canonical initial config export failed' }
 
 # ---------------------------------------------------------------- licenses
 Set-Content -LiteralPath (Join-Path $licDir 'THIRD-PARTY-NOTICES.txt') -Encoding UTF8 -Value @(
@@ -127,7 +133,6 @@ Set-Content -LiteralPath (Join-Path $licDir 'THIRD-PARTY-NOTICES.txt') -Encoding
     'Backend (app/supplymind-backend.jar):',
     '  Spring Boot 3.5.15 / Spring AI 1.1.8 (Apache License 2.0)',
     '  Apache POI 5.2.5 / Apache Commons CSV 1.11.0 (Apache License 2.0)',
-    '  Full dependency list: docs/evidence/Day8/artifacts/maven-dependency-tree.txt',
     '',
     'Frontend (app/web):',
     '  Vue 3 / Vue Router / Axios / Vite / Vitest / TypeScript (MIT)',
@@ -195,23 +200,22 @@ $assetHashes = $assets | ForEach-Object {
 $manifest = [ordered]@{
     schemaVersion = '1.0'
     candidateCommit = (git -C $RepoRoot rev-parse --short HEAD 2>$null)
-    builtAt = (Get-Date -Format 'yyyy-MM-ddTHH:mm:sszzz')
+    builtAt = $seedInstant
     windowsVersion = [System.Environment]::OSVersion.VersionString
     version = $Version
-    stagingRoot = $stage
     inputs = [ordered]@{
-        backendJar = $jar
+        backendJar = 'backend/target/supplymind-backend-0.1.0-SNAPSHOT.jar'
         backendJarSha256 = $jarHash
         frontendDistIndexSha256 = $distHash
-        electronExe = $electronExe
-        bundledJavaExe = $javaExe
+        electronExe = 'desktop/node_modules/electron/dist/electron.exe'
+        bundledJavaExe = 'runtime/jre/bin/java.exe'
         bundledJavaExeSha256 = $javaHash
     }
     artifacts = [ordered]@{
-        zip = $zipPath
+        zip = $zipName
         zipSha256 = $zipHash
         zipSizeBytes = (Get-Item $zipPath).Length
-        exe = $exePath
+        exe = 'SupplyMindAI/SupplyMindAI.exe'
         exeSha256 = $exeHash
         backendJarSha256 = $jarHash
         bundledJava = [ordered]@{ path = 'runtime/jre/bin/java.exe'; sha256 = $javaHash }
@@ -220,7 +224,7 @@ $manifest = [ordered]@{
     }
     free = [ordered]@{
         featureFreeze = 'EFFECTIVE'
-        dataRoot = 'EMPTY_AT_PACKAGE'
+        dataRoot = 'INITIAL_CONFIG_V1_ONLY'
         logs = 'EMPTY_AT_PACKAGE'
     }
 }
