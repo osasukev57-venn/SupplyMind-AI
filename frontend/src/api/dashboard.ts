@@ -1,9 +1,11 @@
 import { getJson } from './client'
 import { http } from './client'
 import type {
+  CurrentAcquisitionStatus,
   HistoryResponse,
   ImportResponse,
   ManualPendingResponse,
+  ManualProcessResponse,
   MetricsResponse,
   OverviewResponse,
   QualityResponse,
@@ -70,6 +72,16 @@ export async function submitManual(fields: {
   }
 }
 
+
+export async function processManual(runId: string): Promise<ManualProcessResponse | null> {
+  try {
+    const response = await http.post<ManualProcessResponse>(`/manual/${encodeURIComponent(runId)}/process`)
+    return response.data
+  } catch {
+    return null
+  }
+}
+
 /** File import -> backend intake boundary (CSV/XLSX really parsed and persisted). */
 export async function submitImport(file: File): Promise<ImportResponse | null> {
   const form = new FormData()
@@ -86,6 +98,19 @@ export async function submitImport(file: File): Promise<ImportResponse | null> {
 export async function submitSyntheticDemo(): Promise<SyntheticDemoResponse | null> {
   try {
     const response = await http.post<SyntheticDemoResponse>('/dashboard/synthetic-demo')
+    return response.data
+  } catch {
+    return null
+  }
+}
+
+export function fetchCurrentAcquisition(): Promise<CurrentAcquisitionStatus | null> {
+  return getJson<CurrentAcquisitionStatus>('/acquisition/current')
+}
+
+export async function refreshCurrentAcquisition(): Promise<CurrentAcquisitionStatus | null> {
+  try {
+    const response = await http.post<CurrentAcquisitionStatus>('/acquisition/current/refresh')
     return response.data
   } catch {
     return null

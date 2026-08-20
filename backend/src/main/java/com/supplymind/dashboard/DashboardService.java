@@ -111,7 +111,7 @@ public final class DashboardService {
         DashboardV1.SourceView source = new DashboardV1.SourceView(
                 item.providerType() == null ? null : item.providerType().wireValue(),
                 item.accessMethod() == null ? null : item.accessMethod().wireValue(),
-                item.actualSourceName(),
+                latest == null ? item.actualSourceName() : latest.actualSourceName(),
                 item.routeDecision() == null ? null : item.routeDecision().name(),
                 item.fallbackReason());
         return new DashboardV1.ItemCard(

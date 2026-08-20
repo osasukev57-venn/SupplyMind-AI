@@ -25,7 +25,9 @@ function backendArgs(port, dataRoot, jreBin, jar, webDir) {
     jar,
     `--server.port=${port}`,
     '--server.address=127.0.0.1',
-    `--supplymind.data-root=${dataRoot}`
+    `--supplymind.data-root=${dataRoot}`,
+    '--supplymind.current-acquisition.on-startup-enabled=true',
+    '--supplymind.scheduler.guarded-enabled=true'
   ];
   if (webDir) {
     args.push(`--spring.web.resources.static-locations=file:${webDir}/`);

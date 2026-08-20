@@ -1,0 +1,196 @@
+TAP version 13
+# Subtest: assertLoopbackUrl accepts only http://127.0.0.1:<port>
+ok 1 - assertLoopbackUrl accepts only http://127.0.0.1:<port>
+  ---
+  duration_ms: 1.1731
+  type: 'test'
+  ...
+# Subtest: assertLoopbackUrl rejects non-loopback hosts
+ok 2 - assertLoopbackUrl rejects non-loopback hosts
+  ---
+  duration_ms: 0.7669
+  type: 'test'
+  ...
+# Subtest: assertLoopbackUrl rejects out-of-range ports
+ok 3 - assertLoopbackUrl rejects out-of-range ports
+  ---
+  duration_ms: 0.2689
+  type: 'test'
+  ...
+# Subtest: waitForBackend fails fast on a non-loopback URL before any request
+ok 4 - waitForBackend fails fast on a non-loopback URL before any request
+  ---
+  duration_ms: 0.3575
+  type: 'test'
+  ...
+# Subtest: waitForBackend resolves TIMEOUT and never hangs
+ok 5 - waitForBackend resolves TIMEOUT and never hangs
+  ---
+  duration_ms: 109.8904
+  type: 'test'
+  ...
+# Subtest: waitForBackend resolves READY when the backend answers UP
+ok 6 - waitForBackend resolves READY when the backend answers UP
+  ---
+  duration_ms: 12.21
+  type: 'test'
+  ...
+# Subtest: waitForBackend resolves TIMEOUT when the backend never becomes healthy
+ok 7 - waitForBackend resolves TIMEOUT when the backend never becomes healthy
+  ---
+  duration_ms: 213.474
+  type: 'test'
+  ...
+# Subtest: waitForBackend keeps polling while the backend returns non-UP bodies
+ok 8 - waitForBackend keeps polling while the backend returns non-UP bodies
+  ---
+  duration_ms: 50.1442
+  type: 'test'
+  ...
+# Subtest: first instance owns the lock and registers second-instance handling
+ok 9 - first instance owns the lock and registers second-instance handling
+  ---
+  duration_ms: 1.2548
+  type: 'test'
+  ...
+# Subtest: second instance does not own the lock
+ok 10 - second instance does not own the lock
+  ---
+  duration_ms: 0.1919
+  type: 'test'
+  ...
+# Subtest: second-instance event restores and focuses the existing window
+ok 11 - second-instance event restores and focuses the existing window
+  ---
+  duration_ms: 1.164
+  type: 'test'
+  ...
+# Subtest: second-instance event focuses without restore when the window is not minimized
+ok 12 - second-instance event focuses without restore when the window is not minimized
+  ---
+  duration_ms: 0.2716
+  type: 'test'
+  ...
+# Subtest: second-instance event is a no-op when no window exists yet
+ok 13 - second-instance event is a no-op when no window exists yet
+  ---
+  duration_ms: 0.3869
+  type: 'test'
+  ...
+# Subtest: waitForExit resolves immediately for an already-exited child
+ok 14 - waitForExit resolves immediately for an already-exited child
+  ---
+  duration_ms: 0.8839
+  type: 'test'
+  ...
+# Subtest: waitForExit resolves false on timeout and true on exit
+ok 15 - waitForExit resolves false on timeout and true on exit
+  ---
+  duration_ms: 52.1878
+  type: 'test'
+  ...
+# Subtest: forceKillTree runs taskkill with /T /F and resolves
+ok 16 - forceKillTree runs taskkill with /T /F and resolves
+  ---
+  duration_ms: 91.0472
+  type: 'test'
+  ...
+# Subtest: portableRoot resolves explicit override
+ok 17 - portableRoot resolves explicit override
+  ---
+  duration_ms: 0.9274
+  type: 'test'
+  ...
+# Subtest: layout builds the frozen portable directory shape
+ok 18 - layout builds the frozen portable directory shape
+  ---
+  duration_ms: 0.3525
+  type: 'test'
+  ...
+# Subtest: backendArgs pins dynamic loopback port, data root and loopback address
+ok 19 - backendArgs pins dynamic loopback port, data root and loopback address
+  ---
+  duration_ms: 0.753
+  type: 'test'
+  ...
+# Subtest: backendArgs omits static-locations when no web dir is provided
+ok 20 - backendArgs omits static-locations when no web dir is provided
+  ---
+  duration_ms: 0.8357
+  type: 'test'
+  ...
+# Subtest: preflight reports every missing or unwritable path
+ok 21 - preflight reports every missing or unwritable path
+  ---
+  duration_ms: 3.859
+  type: 'test'
+  ...
+# Subtest: preflight fails when the JRE or JAR is missing
+ok 22 - preflight fails when the JRE or JAR is missing
+  ---
+  duration_ms: 0.9827
+  type: 'test'
+  ...
+# Subtest: preflight fails when index.html is missing from the web dir
+ok 23 - preflight fails when index.html is missing from the web dir
+  ---
+  duration_ms: 3.6032
+  type: 'test'
+  ...
+# Subtest: preflight fails when data is a file instead of a directory
+ok 24 - preflight fails when data is a file instead of a directory
+  ---
+  duration_ms: 4.8176
+  type: 'test'
+  ...
+# Subtest: layout exposes licenses and webIndex paths
+ok 25 - layout exposes licenses and webIndex paths
+  ---
+  duration_ms: 0.4694
+  type: 'test'
+  ...
+# Subtest: pickFreePort returns a valid free port on the loopback interface
+ok 26 - pickFreePort returns a valid free port on the loopback interface
+  ---
+  duration_ms: 17.6133
+  type: 'test'
+  ...
+# Subtest: pickFreePort never returns the fixed dev default 8080
+ok 27 - pickFreePort never returns the fixed dev default 8080
+  ---
+  duration_ms: 11.1058
+  type: 'test'
+  ...
+# Subtest: pickFreePort port can actually be bound on 127.0.0.1
+ok 28 - pickFreePort port can actually be bound on 127.0.0.1
+  ---
+  duration_ms: 1.9801
+  type: 'test'
+  ...
+# Subtest: backendArgs rejects fixed/default ports (never 8080)
+ok 29 - backendArgs rejects fixed/default ports (never 8080)
+  ---
+  duration_ms: 0.5172
+  type: 'test'
+  ...
+# Subtest: backendArgs always pins the loopback address
+ok 30 - backendArgs always pins the loopback address
+  ---
+  duration_ms: 0.1887
+  type: 'test'
+  ...
+# Subtest: backendArgs never contains localhost, LAN or wildcard bindings
+ok 31 - backendArgs never contains localhost, LAN or wildcard bindings
+  ---
+  duration_ms: 0.1277
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 394.376

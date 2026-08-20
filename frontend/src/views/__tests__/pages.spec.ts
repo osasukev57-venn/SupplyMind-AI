@@ -3,11 +3,14 @@ import { mount, flushPromises } from '@vue/test-utils'
 
 vi.mock('../../api/dashboard', () => ({
   fetchOverview: vi.fn(),
+  fetchCurrentAcquisition: vi.fn(),
+  refreshCurrentAcquisition: vi.fn(),
   fetchHistory: vi.fn(),
   fetchMetrics: vi.fn(),
   fetchQuality: vi.fn(),
   fetchSources: vi.fn(),
   submitManual: vi.fn(),
+  processManual: vi.fn(),
   submitImport: vi.fn(),
   submitSyntheticDemo: vi.fn()
 }))
@@ -22,12 +25,15 @@ import QualityView from '../QualityView.vue'
 import SourcesView from '../SourcesView.vue'
 import {
   fetchOverview,
+  fetchCurrentAcquisition,
+  refreshCurrentAcquisition,
   fetchHistory,
   fetchMetrics,
   fetchQuality,
   fetchSources,
   submitImport,
   submitManual,
+  processManual,
   submitSyntheticDemo
 } from '../../api/dashboard'
 import { fetchConfigItems } from '../../api/config'
@@ -169,6 +175,13 @@ describe('dashboard pages', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(fetchOverview).mockResolvedValue(overview)
+    vi.mocked(fetchCurrentAcquisition).mockResolvedValue({
+      state: 'SUCCEEDED', businessDate: '2026-08-10',
+      message: 'available', updatedAt: '2026-08-10T09:25:38+08:00'
+    })
+    vi.mocked(refreshCurrentAcquisition).mockResolvedValue({
+      state: 'RUNNING', businessDate: null, message: 'fetching', updatedAt: '2026-08-10T09:25:38+08:00'
+    })
     vi.mocked(fetchHistory).mockResolvedValue(history)
     vi.mocked(fetchQuality).mockResolvedValue(quality)
     vi.mocked(fetchSources).mockResolvedValue(sources)
@@ -177,27 +190,35 @@ describe('dashboard pages', () => {
 
   it('dashboard renders the exact backend value string', async () => {
     const wrapper = mount(DashboardView)
-    await wrapper.vm.$nextTick()
-    await wrapper.vm.$nextTick()
+    await flushPromises()
     expect(wrapper.text()).toContain('6.7904')
     expect(wrapper.text()).toContain('中国人民银行官网')
     expect(wrapper.text()).toContain('pboc-basic-validation-v1')
     expect(wrapper.find('.demo-banner').exists()).toBe(false)
   })
 
+  it('dashboard exposes honest official-rate acquisition state and retry control', async () => {
+    vi.mocked(fetchCurrentAcquisition).mockResolvedValue({
+      state: 'FAILED', businessDate: null, message: 'unavailable', updatedAt: '2026-08-10T09:25:38+08:00'
+    })
+    const wrapper = mount(DashboardView)
+    await flushPromises()
+    expect(wrapper.text()).toContain('暂时无法获取中国人民银行公开汇率')
+    await wrapper.get('button.action-btn').trigger('click')
+    expect(refreshCurrentAcquisition).toHaveBeenCalledTimes(1)
+  })
+
   it('dashboard shows a DEMO watermark in demo mode', async () => {
     vi.mocked(fetchOverview).mockResolvedValue({ ...overview, mode: 'DEMO' })
     const wrapper = mount(DashboardView)
-    await wrapper.vm.$nextTick()
-    await wrapper.vm.$nextTick()
+    await flushPromises()
     expect(wrapper.find('.demo-banner').exists()).toBe(true)
   })
 
   it('dashboard shows an error banner instead of a white screen when the API fails', async () => {
     vi.mocked(fetchOverview).mockResolvedValue(null)
     const wrapper = mount(DashboardView)
-    await wrapper.vm.$nextTick()
-    await wrapper.vm.$nextTick()
+    await flushPromises()
     expect(wrapper.find('.error-banner').exists()).toBe(true)
     expect(wrapper.text()).toContain('不可用')
   })
@@ -305,6 +326,13 @@ describe('dashboard pages', () => {
       timelineRef: 'staging/manual-MAT.MANUAL.TEST.001-20260810-abc.json',
       message: 'manual intake accepted - raw and lifecycle timeline persisted as PENDING'
     })
+    vi.mocked(processManual).mockResolvedValue({
+      status: 'PUBLISHED', runId: 'manual-MAT.MANUAL.TEST.001-20260810-abc',
+      itemId: 'MAT.MANUAL.TEST.001', businessDate: '2026-08-10',
+      validationStatus: 'VERIFIED', validationVersion: 'material-basic-validation-v2',
+      publishRef: 'staging/manual.json#recordVersion=4', dailyRef: 'processed/daily/material.csv',
+      aggregateRefs: ['processed/aggregate/material.csv'], message: 'published'
+    })
     const wrapper = mount(SourcesView)
     await flushPromises()
     await wrapper.find('input[placeholder="如 FX.USD.CNY.PBOC_MID"]').setValue('MAT.MANUAL.TEST.001')
@@ -317,6 +345,12 @@ describe('dashboard pages', () => {
     expect(submitManual).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('待处理')
     expect(wrapper.text()).toContain('manual intake accepted')
+    const processButton = wrapper.findAll('button').find((button) => button.text().includes('校验并发布'))
+    expect(processButton).toBeTruthy()
+    await processButton!.trigger('click')
+    await flushPromises()
+    expect(processManual).toHaveBeenCalledWith('manual-MAT.MANUAL.TEST.001-20260810-abc')
+    expect(wrapper.text()).toContain('已通过校验并发布')
     // The intake detail is behind the "收起受理详情" disclosure - open it to assert refs.
     expect(wrapper.text()).toContain('受理详情')
   })

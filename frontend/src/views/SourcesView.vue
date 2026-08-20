@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { fetchSources, submitImport, submitManual, submitSyntheticDemo } from '../api/dashboard'
+import { fetchSources, processManual, submitImport, submitManual, submitSyntheticDemo } from '../api/dashboard'
 import type { SourcesResponse } from '../types/dashboard'
 import StatusBadge from '../components/StatusBadge.vue'
 import { accessLabel, fallbackReasonLabel, modeLabel, providerLabel, routeLabel, sourceDisplayName, stageLabel, validationLabel } from '../lib/labels'
@@ -19,6 +19,7 @@ const manualStatus = ref<string | null>(null)
 const manualMessage = ref<string | null>(null)
 const manualEvidence = ref<{ runId: string; rawRef: string; timelineRef: string } | null>(null)
 const showManualDetail = ref(false)
+const manualProcessing = ref(false)
 
 // File import: the file is uploaded to the backend, which really parses it; accepted rows are
 // intake evidence with real references, invalid rows are reported per row.
@@ -58,6 +59,22 @@ async function submitManualForm(): Promise<void> {
     timelineRef: response.timelineRef
   }
   showManualDetail.value = true
+}
+
+async function processAcceptedManual(): Promise<void> {
+  if (!manualEvidence.value) return
+  manualProcessing.value = true
+  const response = await processManual(manualEvidence.value.runId)
+  manualProcessing.value = false
+  if (response === null) {
+    manualStatus.value = 'REJECTED'
+    manualMessage.value = '处理失败：请检查材料数值、日期和配置后重试'
+    return
+  }
+  manualStatus.value = response.status
+  manualMessage.value = response.status === 'PUBLISHED'
+    ? '材料数据已通过校验并发布，可在总览和历史趋势中查看'
+    : response.message
 }
 
 async function onImportFile(event: Event): Promise<void> {
@@ -183,6 +200,11 @@ onMounted(async () => {
           <button class="btn-primary" type="submit" @click="submitManualForm">提交录入</button>
         </div>
         <div v-if="manualMessage" class="entry-note">{{ manualMessage }}</div>
+        <div v-if="manualEvidence && manualStatus === 'PENDING'" class="form-actions">
+          <button class="btn-primary" :disabled="manualProcessing" @click="processAcceptedManual">
+            {{ manualProcessing ? '正在校验…' : '校验并发布到面板' }}
+          </button>
+        </div>
         <div v-if="manualEvidence && showManualDetail" class="entry-note">
           <button class="btn-ghost" @click="showManualDetail = !showManualDetail">
             {{ showManualDetail ? '收起受理详情' : '查看受理详情' }}

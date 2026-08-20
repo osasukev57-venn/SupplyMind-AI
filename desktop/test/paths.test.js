@@ -32,6 +32,8 @@ test('backendArgs pins dynamic loopback port, data root and loopback address', (
     '--server.port=45678',
     '--server.address=127.0.0.1',
     '--supplymind.data-root=D:/root/data',
+    '--supplymind.current-acquisition.on-startup-enabled=true',
+    '--supplymind.scheduler.guarded-enabled=true',
     '--spring.web.resources.static-locations=file:D:/root/app/web/'
   ]);
 });
@@ -43,7 +45,9 @@ test('backendArgs omits static-locations when no web dir is provided', () => {
     'D:/root/app/supplymind-backend.jar',
     '--server.port=45678',
     '--server.address=127.0.0.1',
-    '--supplymind.data-root=D:/root/data'
+    '--supplymind.data-root=D:/root/data',
+    '--supplymind.current-acquisition.on-startup-enabled=true',
+    '--supplymind.scheduler.guarded-enabled=true'
   ]);
 });
 

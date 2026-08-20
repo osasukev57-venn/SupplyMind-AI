@@ -9,6 +9,10 @@ import com.supplymind.foundation.storage.ConfigActivationStore;
 import com.supplymind.foundation.storage.DataRoot;
 import com.supplymind.foundation.storage.RawReceiptStore;
 import com.supplymind.foundation.storage.TimelineStore;
+import com.supplymind.processing.AggregateProcessingService;
+import com.supplymind.processing.DailyProcessingService;
+import com.supplymind.publish.LifecyclePublishService;
+import com.supplymind.validation.LifecycleValidationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,6 +51,19 @@ public class ManualIntakeConfiguration {
     ) {
         return new ManualMaterialIntakeService(
                 dataRoot, rawReceiptStore, timelineStore, normalizer, operatorContext, foundationClock);
+    }
+
+    @Bean
+    ManualMaterialProcessingService manualMaterialProcessingService(
+            DataRoot dataRoot,
+            TimelineStore timelineStore,
+            LifecycleValidationService validation,
+            LifecyclePublishService publish,
+            DailyProcessingService daily,
+            AggregateProcessingService aggregate
+    ) {
+        return new ManualMaterialProcessingService(
+                dataRoot, timelineStore, validation, publish, daily, aggregate);
     }
 
     @Bean

@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0",
+  "case": "D10_FINAL_PORTABLE_EXE_DATA_VISIBILITY",
+  "executedAt": "2026-08-21T02:22:36.6521230+08:00",
+  "zipSha256": "022685093835379162FEBBAF25EA70BA2898AFDE26DD317A33FB6522522151F9",
+  "firstRun": {
+    "health": "UP",
+    "loopbackOnly": true,
+    "acquisitionState": "SUCCEEDED",
+    "statesObserved": [
+      "RUNNING",
+      "SUCCEEDED"
+    ],
+    "businessDate": "2026-08-20",
+    "usd": {
+      "value": "6.7808",
+      "unit": "CNY/1 USD",
+      "businessDate": "2026-08-20",
+      "source": "中国人民银行官网（授权中国外汇交易中心公布）",
+      "status": "VERIFIED"
+    },
+    "eur": {
+      "value": "7.8815",
+      "unit": "CNY/1 EUR",
+      "businessDate": "2026-08-20",
+      "source": "中国人民银行官网（授权中国外汇交易中心公布）",
+      "status": "VERIFIED"
+    },
+    "material": {
+      "intakeStatus": "PENDING",
+      "processStatus": "PUBLISHED",
+      "runId": "manual-MAT.ADC12.SMM-20260820-958e91a155e172ff66f3d9414cff35f927e86d82c4a90482d45e3a75482b62dc",
+      "value": "18888.50",
+      "unit": "元/吨",
+      "businessDate": "2026-08-20",
+      "source": "D10手工模拟验收（非外部市场信源）",
+      "status": "VERIFIED",
+      "aggregateRefs": [
+        "processed/aggregate/MAT.ADC12.SMM/month/2026.csv",
+        "processed/aggregate/MAT.ADC12.SMM/quarter/2026.csv",
+        "processed/aggregate/MAT.ADC12.SMM/halfyear/2026.csv",
+        "processed/aggregate/MAT.ADC12.SMM/year/2026.csv"
+      ]
+    },
+    "files": {
+      "json": 35,
+      "csv": 15,
+      "raw": 8,
+      "daily": 6,
+      "aggregate": 24
+    },
+    "packagedProcesses": [
+      {
+        "name": "java",
+        "path": "D:\\Dev\\Projects\\SupplyMind AI\\target\\d10-release-verification\\SupplyMindAI\\runtime\\jre\\bin\\java.exe"
+      },
+      {
+        "name": "SupplyMindAI",
+        "path": "D:\\Dev\\Projects\\SupplyMind AI\\target\\d10-release-verification\\SupplyMindAI\\SupplyMindAI.exe"
+      },
+      {
+        "name": "SupplyMindAI",
+        "path": "D:\\Dev\\Projects\\SupplyMind AI\\target\\d10-release-verification\\SupplyMindAI\\SupplyMindAI.exe"
+      },
+      {
+        "name": "SupplyMindAI",
+        "path": "D:\\Dev\\Projects\\SupplyMind AI\\target\\d10-release-verification\\SupplyMindAI\\SupplyMindAI.exe"
+      },
+      {
+        "name": "SupplyMindAI",
+        "path": "D:\\Dev\\Projects\\SupplyMind AI\\target\\d10-release-verification\\SupplyMindAI\\SupplyMindAI.exe"
+      }
+    ]
+  },
+  "restart": {
+    "health": "UP",
+    "loopbackOnly": true,
+    "usdValue": "6.7808",
+    "eurValue": "7.8815",
+    "materialValue": "18888.50",
+    "materialSource": "D10手工模拟验收（非外部市场信源）"
+  },
+  "noExternalRuntimeRequired": true,
+  "hostConfigurationChanged": false,
+  "result": "PASS"
+}

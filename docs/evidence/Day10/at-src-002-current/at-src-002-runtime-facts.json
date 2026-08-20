@@ -1,0 +1,86 @@
+{
+  "acceptanceTest" : "AT-SRC-002 Day1-Day2 PBOC dual-currency real acquisition and file closed loop",
+  "executedAt" : "2026-08-21T01:01:01+08:00",
+  "javaRuntime" : "21.0.11",
+  "springBootVersion" : "3.5.15",
+  "dataRoot" : "D:\\Dev\\Projects\\SupplyMind AI\\backend\\target\\d10-real-pboc",
+  "realSource" : "中国人民银行官网（授权中国外汇交易中心公布）",
+  "businessDate" : "2026-08-20",
+  "acquisitionId" : "pboc-acq-2026082009023032867-7212700f84a068de073bcb6e22187dcfbe34ff79311128d63a0be3c6b3919309",
+  "payloadSha256" : "7212700f84a068de073bcb6e22187dcfbe34ff79311128d63a0be3c6b3919309",
+  "usd" : {
+    "dailySum" : "6.7808",
+    "dailyAvg" : "6.78080000",
+    "dailyUpdatedAt" : "2026-08-21T01:00:59.601307100+08:00",
+    "aggregateCalculatedAt" : "2026-08-21T01:00:59.601307100+08:00",
+    "itemId" : "FX.USD.CNY.PBOC_MID",
+    "rawFileSha256" : "0469aff81c5513527b8e7386a134b3c0872cc9d71ea58cc12adca2f83ebe77f1",
+    "dailyRef" : "processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv",
+    "aggregateRefs" : [ "processed/aggregate/FX.USD.CNY.PBOC_MID/month/2026.csv", "processed/aggregate/FX.USD.CNY.PBOC_MID/quarter/2026.csv", "processed/aggregate/FX.USD.CNY.PBOC_MID/halfyear/2026.csv", "processed/aggregate/FX.USD.CNY.PBOC_MID/year/2026.csv" ],
+    "runId" : "pboc-usd-20260820-7212700f84a068de073bcb6e22187dcfbe34ff79311128d63a0be3c6b3919309",
+    "rawValue" : "6.7808",
+    "rawRef" : "raw/formal/official_web/FX.USD.CNY.PBOC_MID/2026/08/pboc-usd-20260820-7212700f84a068de073bcb6e22187dcfbe34ff79311128d63a0be3c6b3919309.json"
+  },
+  "eur" : {
+    "dailySum" : "7.8815",
+    "dailyAvg" : "7.88150000",
+    "dailyUpdatedAt" : "2026-08-21T01:00:59.859440100+08:00",
+    "aggregateCalculatedAt" : "2026-08-21T01:00:59.859440100+08:00",
+    "itemId" : "FX.EUR.CNY.PBOC_MID",
+    "rawFileSha256" : "bb2bbc340f97b6407a85da241b7076175f1e0b88c987194b126b37bfe72b900b",
+    "dailyRef" : "processed/daily/FX.EUR.CNY.PBOC_MID/2026-08.csv",
+    "aggregateRefs" : [ "processed/aggregate/FX.EUR.CNY.PBOC_MID/month/2026.csv", "processed/aggregate/FX.EUR.CNY.PBOC_MID/quarter/2026.csv", "processed/aggregate/FX.EUR.CNY.PBOC_MID/halfyear/2026.csv", "processed/aggregate/FX.EUR.CNY.PBOC_MID/year/2026.csv" ],
+    "runId" : "pboc-eur-20260820-7212700f84a068de073bcb6e22187dcfbe34ff79311128d63a0be3c6b3919309",
+    "rawValue" : "7.8815",
+    "rawRef" : "raw/formal/official_web/FX.EUR.CNY.PBOC_MID/2026/08/pboc-eur-20260820-7212700f84a068de073bcb6e22187dcfbe34ff79311128d63a0be3c6b3919309.json"
+  },
+  "publishGate" : {
+    "eurPublishedAt" : "2026-08-21T01:00:59.859440100+08:00",
+    "eurPublishRef" : "staging/pboc-eur-20260820-7212700f84a068de073bcb6e22187dcfbe34ff79311128d63a0be3c6b3919309.json#recordVersion=4",
+    "usdPublishedAt" : "2026-08-21T01:00:59.601307100+08:00",
+    "usdPublishRef" : "staging/pboc-usd-20260820-7212700f84a068de073bcb6e22187dcfbe34ff79311128d63a0be3c6b3919309.json#recordVersion=4"
+  },
+  "repeatTrigger" : {
+    "sameBusinessKey" : true,
+    "noDuplicateRaw" : true,
+    "aggregateBytesUnchanged" : true,
+    "receivedAtChanged" : true,
+    "noRawReceiptConflict" : true,
+    "dailyBytesUnchanged" : true,
+    "outcome" : "IDEMPOTENT_REPLAY",
+    "noDoublePublish" : true,
+    "samePayloadSha256" : true,
+    "noConflictEvidence" : true
+  },
+  "restart" : {
+    "secondSpringContext" : true,
+    "filesUnchanged" : true,
+    "noProcessYearOrRebuild" : true,
+    "dailyDecodedIdentical" : true,
+    "publishedRecordsReadable" : true,
+    "aggregateDecodedIdentical" : true,
+    "aggregateReader" : "AggregateReadService",
+    "offlineReadOnly" : true,
+    "outcome" : "PASS"
+  },
+  "independentRecompute" : {
+    "precision" : "BigDecimal from String, HALF_UP at scale 8, no float/double",
+    "usdExpectedDailyAvg" : "6.78080000",
+    "eurActualDailyAvg" : "7.88150000",
+    "usdActualDailyAvg" : "6.78080000",
+    "eurExpectedDailyAvg" : "7.88150000"
+  },
+  "rawFirst" : {
+    "decodeHtmlFailureKeepsSourceRaw" : true,
+    "sourceAcquisitionRef" : "raw/source/pboc-acq-2026082009023032867-7212700f84a068de073bcb6e22187dcfbe34ff79311128d63a0be3c6b3919309.json",
+    "parseFailureKeepsSourceRaw" : true,
+    "itemRawAcquisitionRefTraceable" : true,
+    "acquisitionManifest" : "COMMITTED",
+    "acquisitionLinkEnforced" : "RawAcquisitionLinkVerifier invoked by RawReceiptStore.store"
+  },
+  "realGateProperty" : "at-src-002.real",
+  "realGateValue" : "true",
+  "runnerEvidenceRef" : "TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml",
+  "summaryGenerationMethod" : "AUTO_SCRIPT_XML_PARSE (capture-at-src-002-evidence.ps1)",
+  "runtimeFactsGeneratedBy" : "AtSrc002AcceptanceTest (no runner counts hardcoded)"
+}

@@ -5,11 +5,14 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 // All API modules mocked so views render their full templates deterministically.
 vi.mock('../../api/dashboard', () => ({
   fetchOverview: vi.fn(),
+  fetchCurrentAcquisition: vi.fn(),
+  refreshCurrentAcquisition: vi.fn(),
   fetchHistory: vi.fn(),
   fetchMetrics: vi.fn(),
   fetchQuality: vi.fn(),
   fetchSources: vi.fn(),
   submitManual: vi.fn(),
+  processManual: vi.fn(),
   submitImport: vi.fn(),
   submitSyntheticDemo: vi.fn()
 }))

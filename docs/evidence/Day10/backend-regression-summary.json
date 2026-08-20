@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "1.0",
+  "case": "D10_FINAL_BACKEND_REGRESSION_AND_STORAGE_BOUNDARY",
+  "executedAt": "2026-08-21T02:27:15.0131286+08:00",
+  "full": {
+    "suites": 124,
+    "tests": 652,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 9,
+    "result": "PASS"
+  },
+  "originalAcceptanceFocus": [
+    {
+      "class": "com.supplymind.processing.DailyProcessingServiceTest",
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "481CBA45D151E7E144A29B1B745493DCC745DF3E12F0F7DFDB05F80A9A6671F6"
+    },
+    {
+      "class": "com.supplymind.processing.AggregateCalculatorTest",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "AD4BF295DBB2E7AC786D1482E48DE94E8125B3611138B980D200371777E7E41B"
+    },
+    {
+      "class": "com.supplymind.processing.AggregateProcessingServiceTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "FED55EA1DC5379D32343436BD0907C28CE406C0FACF4EE7254B09F2F219144C4"
+    },
+    {
+      "class": "com.supplymind.processing.MaterialDailyAggregateTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "F59CFF66AFAAA4D658EDB09403746528595DDA3F731405BC98EB683C653305FE"
+    },
+    {
+      "class": "com.supplymind.rotation.TimeRotationServiceTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "90D27EF4C68320E815C7BF430F5D23A75AE85276D58AF07336EF6D97AF0D6D98"
+    },
+    {
+      "class": "com.supplymind.history.HistoryQueryServiceTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "36D5558607E0314EED09824E465828880068F68BA566A4A63CE80FA8F8CD9F78"
+    },
+    {
+      "class": "com.supplymind.config.DynamicConfigWorkflowServiceTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "E80B6990FCF56500B902E161096652FC9F2F7B07223C2D392EBC27513F5C6E81"
+    },
+    {
+      "class": "com.supplymind.config.CurrentIntakeAttackTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "5CEE7876FE73F5430BC32C181B4D1FD351CAF9C53CF85E88AFA1919D771E5C0D"
+    },
+    {
+      "class": "com.supplymind.provider.pboc.PbocDynamicTargetAttackTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "1DA57268A37E1E84F7C4F9AC2495CE63E921D518FA39161CFFCC7CA6479F0D62"
+    },
+    {
+      "class": "com.supplymind.manual.ManualMaterialProcessingServiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "0ECFB6F5D67E872ACC0D97AB4FD7942D182E984E3ACAA3EA6C60E24E6A6F5A47"
+    },
+    {
+      "class": "com.supplymind.scheduling.CurrentAcquisitionServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "5D31CD054D210BE95CC9792D398C4FC1FE4AD2BBF17056D64DE85494A197E6BE"
+    }
+  ],
+  "runtimeDependencyTree": {
+    "lines": 79,
+    "sha256": "262D374EFFFB6BDBAAE2B3DE7F395A7DEAA56188B5BFD2080C7F7D50080F8A3F",
+    "forbiddenPatterns": "jdbc|r2dbc|h2|mysql|mariadb|postgres|sqlite|redis|flyway|liquibase|mybatis|hibernate",
+    "forbiddenHits": 0,
+    "result": "PASS"
+  },
+  "hostConfigurationChanged": false
+}

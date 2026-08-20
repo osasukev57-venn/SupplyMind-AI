@@ -8,6 +8,13 @@ export interface OverviewResponse {
   items: ItemCard[]
   warnings: string[]
 }
+export interface CurrentAcquisitionStatus {
+  state: 'IDLE' | 'RUNNING' | 'SUCCEEDED' | 'FAILED'
+  businessDate: string | null
+  message: string
+  updatedAt: string | null
+}
+
 
 export interface ItemCard {
   itemId: string
@@ -181,6 +188,18 @@ export interface ManualPendingResponse {
 }
 
 /** Backend import response: real LocalImport boundary - accepted rows are RECEIVED+PENDING evidence. */
+export interface ManualProcessResponse {
+  status: string
+  runId: string
+  itemId: string
+  businessDate: string
+  validationStatus: string | null
+  validationVersion: string | null
+  publishRef: string | null
+  dailyRef: string | null
+  aggregateRefs: string[]
+  message: string
+}
 export interface ImportResponse {
   status: string
   message: string
