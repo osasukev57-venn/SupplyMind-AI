@@ -57,11 +57,11 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 
 | 字段 | 当前值 |
 |---|---|
-| 当前开发日 | Day 1～Day 8 = `COMPLETE`；Day 9=`NOT_STARTED` |
-| 当前任务编号 | Day8 Final Stage Closure 已完成；下一可领取任务 D9-T01 |
-| 当前任务状态 | D8-T01～D8-T05=`DONE`；Day8=`COMPLETE`；Feature Freeze=`EFFECTIVE`。Day7/Day8已合并main（merge=`6a2965a`）；Post-Day8 Cloud Closure=`182baec`。无凭据完整回归=119 suites/639 tests/0 failures/0 errors/9 skipped（新增skip仅真实Cloud gate）；真实Cloud gated=1/1 PASS、0 skipped。D9-T01=`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`，尚未开始。 |
+| 当前开发日 | Day 1～Day 9 实施 = `COMPLETE`（Day9 待 Code Review）；Day 9=`REVIEW_PENDING` |
+| 当前任务编号 | D9-T01～D9-T05 实施完成；等待技术负责人 Code Review |
+| 当前任务状态 | D9-T01～D9-T05=`TaskExecutionStatus=REVIEW_PENDING`（实施完成，含独立 commit：`d377a12`/`4269ab8`/`bf55e54`/`d61135b`/`<D9-T05 pending>`）；Electron 便携包 EXE+内置JRE+动态端口+单实例+watchdog 已实测；最终 ZIP=SHA-256 `27779EF9…`；未 merge main。 |
 | 编码前基线对齐 | `v1.5 FROZEN`：DEC-060、C35～C36保持不变；Java17、Boot3.5.15、Spring AI1.1.8、SupplyMind LLMService门面、只读Tool Adapter与EvidencePack所有权边界均保持；DEC-061（warning ack sidecar）已登记。 |
-| 已完成任务 | Day1～Day8全部开发任务及Stage Gate；D8-T01～D8-T05=`DONE`。 |
+| 已完成任务 | Day1～Day8全部开发任务及Stage Gate；D8-T01～D8-T05=`DONE`；D9-T01～D9-T05实施完成（REVIEW_PENDING）。 |
 | 正在进行任务 | 无；D9-T01仅READY，尚未领取。 |
 | 阻塞项 | 无 Cloud LLM 阻塞项；Alibaba Bailian真实网络/API Gate已通过。EXT-07/08保持OPEN_EXTERNAL且不因本次Cloud Closure改变。 |
 | 最近验收结果 | Post-Day8 Cloud Closure：OpenAI-compatible Provider配置、无Key启动、HTTPS/secret边界与639项回归均PASS；Alibaba Bailian北京区`qwen-plus`真实 gated run=1/1 PASS。 |

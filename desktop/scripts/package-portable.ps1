@@ -53,26 +53,24 @@ Get-ChildItem -LiteralPath $dist -Force | ForEach-Object {
 }
 
 # licenses: JRE license + supplymind dependency notice (frozen: no extra runtime deps)
-$licenses = @(
-    'https://adoptium.net/temurin/legal/',
-    'Temurin (Eclipse Adoptium) JRE - GPLv2 with Classpath Exception'
-)
 Set-Content -LiteralPath (Join-Path $licDir 'THIRD-PARTY-NOTICES.txt') -Encoding UTF8 -Value @(
     'SupplyMind AI - Third-party notices',
     '=============================',
     '',
-    'Bundled runtime:',
+    'Bundled runtime (runtime/jre):',
     '  Eclipse Temurin Java 17 runtime (GPLv2 with the Classpath Exception).',
-    "  License: $($licenses[0])",
-    "  Distributor: $($licenses[1])",
+    '  License: https://adoptium.net/temurin/legal/',
     '',
-    'Backend (supplymind-backend.jar):',
-    '  Spring Boot 3.5.15 / Spring AI 1.1.8 / Apache POI / Apache Commons CSV',
-    '  (Apache License 2.0 unless noted; full POM dependency list in',
-    '  docs/evidence/Day8/artifacts/maven-dependency-tree.txt)',
+    'Desktop shell (SupplyMindAI.exe):',
+    '  Electron 33 (MIT) - https://github.com/electron/electron/blob/main/LICENSE',
+    '',
+    'Backend (app/supplymind-backend.jar):',
+    '  Spring Boot 3.5.15 / Spring AI 1.1.8 (Apache License 2.0)',
+    '  Apache POI 5.2.5 / Apache Commons CSV 1.11.0 (Apache License 2.0)',
+    '  Full dependency list: docs/evidence/Day8/artifacts/maven-dependency-tree.txt',
     '',
     'Frontend (app/web):',
-    '  Vue 3 / Vue Router / Axios / Vite (MIT)',
+    '  Vue 3 / Vue Router / Axios / Vite / Vitest / TypeScript (MIT)',
     ''
 )
 
@@ -81,3 +79,4 @@ Get-ChildItem -LiteralPath $Root -Recurse -Depth 2 -Directory | ForEach-Object {
     Write-Host "  $($_.FullName.Replace($Root, $Root))"
 }
 Write-Host "[package-portable] root: $Root"
+exit 0

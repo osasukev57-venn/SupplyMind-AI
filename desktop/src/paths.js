@@ -20,9 +20,10 @@ const fs = require('fs');
  */
 
 /**
- * Resolve the portable root from an explicit override (tests/dev) or from the
- * packaged layout (app is inside `app/` when using asar, otherwise the dirs sit
- * next to the EXE). Prefers an explicit base for deterministic tests.
+ * Resolve the portable root. With an explicit override (tests/dev) use it directly;
+ * otherwise walk up from the shell directory (app/shell) looking for the frozen layout
+ * marker (runtime/jre + app/supplymind-backend.jar). This works both for the packaged
+ * portable directory and for direct `electron .` dev runs from desktop/.
  *
  * @param {string} [explicitRoot] override for tests
  * @returns {string} absolute portable root path
@@ -33,6 +34,20 @@ function portableRoot(explicitRoot) {
   }
   if (process.resourcesPath && fs.existsSync(path.join(process.resourcesPath, 'app'))) {
     return path.resolve(process.resourcesPath, '..');
+  }
+  let dir = __dirname;
+  for (let depth = 0; depth < 4; depth += 1) {
+    const candidate = path.resolve(dir);
+    const hasJre = fs.existsSync(path.join(candidate, 'runtime', 'jre', 'bin', 'java.exe'));
+    const hasJar = fs.existsSync(path.join(candidate, 'app', 'supplymind-backend.jar'));
+    if (hasJre && hasJar) {
+      return candidate;
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) {
+      break;
+    }
+    dir = parent;
   }
   return path.resolve(__dirname, '..');
 }

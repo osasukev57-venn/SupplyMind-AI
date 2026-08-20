@@ -45,5 +45,8 @@ desktop/dist/
 # D9 portable package assembly (built by desktop/scripts, never committed)
 portable/
 
+# D9 final release artifacts (ZIP + checksum, built by package-final.ps1)
+release/
+
 # D9 smoke scratch data at repo root (desktop/scripts smoke runs)
 target/
