@@ -3,7 +3,7 @@
 > 文档性质：跨窗口可独立执行的任务清单  
 > 规范版本：v1.5（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
-> 当前进度锚点：Day 1～Day 8均已完成并通过各自Stage Gate。Day6原最终技术候选=`bc6f61a`；Post-Day8 Cloud Closure=`182baec`（Spring AI1.1.8 OpenAI-compatible Provider、无凭据降级与安全环境变量配置）。AT-AI-000/002/003本地合同=`PASS`，AT-AI-001本地合同与故障降级矩阵=`PASS`；真实Cloud gated run=`PASS`（Alibaba Bailian 北京区，`qwen-plus`，2026-08-18，1/1、0 failures/errors/skipped；密钥未进入源码/日志/evidence）。D9-T01仍为`NOT_STARTED`+`READY`。
+> 当前进度锚点：Day 1～Day 9均已完成并通过各自Stage Gate。Day6原最终技术候选=`bc6f61a`；Post-Day8 Cloud Closure=`182baec`（Spring AI1.1.8 OpenAI-compatible Provider、无凭据降级与安全环境变量配置）。AT-AI-000/002/003本地合同=`PASS`，AT-AI-001本地合同与故障降级矩阵=`PASS`；真实Cloud gated run=`PASS`（Alibaba Bailian 北京区，`qwen-plus`，2026-08-18，1/1、0 failures/errors/skipped；密钥未进入源码/日志/evidence）。Day9=`COMPLETE`（2026-08-20）：D9-T01～D9-T05=`DONE`，Feature Freeze=`EFFECTIVE`，最终便携制品 `SupplyMindAI-0.9.0-win32-x64.zip`；下一任务=`NONE / RELEASE`（等待 Final Review 后 merge main / tag）。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`TaskExecutionStatus=DONE`（实施 + Attack Validation + Final Stage Review 全部 PASS，MAJOR Finding 全部关闭）；最终实施候选=`feaedd3`；CURRENT 全量回归=110 suites/578 backend tests/0 failures/0 errors/8 skipped，前端 11/11 PASS + build PASS；历史候选（1b83410、d2b0965、5f1491c、01d4270 等中间状态）一律 HISTORICAL，详见 docs/05-PROGRESS-LEDGER 与 docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md。Day1-Day6 代码零修改。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
@@ -669,7 +669,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D9-T01 Electron壳与后端进程托管
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`（Day8已完成，仅表示允许领取；尚未开始Day9）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY9_COMPLETE_20260820`（实施 commit=`d377a12`；Electron 壳 + Spring Boot 子进程托管实测：双击 EXE 启动、健康 UP 后开窗、退出无残留）。
 - **任务目标：** 用Electron封装冻结的Vue静态资源，启动并托管Spring Boot子进程，形成可双击运行的桌面应用。
 - **对应需求：** H03、H04、F01及Windows最终交付约束。
 - **输入：** D8-T05候选版本、前后端构建产物、Electron主进程设计。
@@ -683,7 +683,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D9-T02 捆绑JRE与资源路径发现
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY9_COMPLETE_20260820`（实施 commit=`4269ab8`；jlink Temurin17 生成 runtime/jre、便携布局与预检 fail-fast 实测：无JAVA_HOME/中文空格路径/移动目录均 PASS）。
 - **任务目标：** 随应用捆绑Java 17运行时并可靠发现JAR、前端资源、配置、data和logs路径。
 - **对应需求：** H03、H04及普通Windows电脑免安装Java约束。
 - **输入：** 合法可再分发JRE、便携目录决策、冻结配置。
@@ -697,7 +697,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D9-T03 动态端口、健康检查与本地通信安全
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY9_COMPLETE_20260820`（实施 commit=`bf55e54`；动态端口硬拒8080、loopback-only 校验、健康轮询硬deadline 实测：随机端口/无LAN暴露/TIMEOUT@1.5s 无挂起）。
 - **任务目标：** 安全选择本地端口，等待健康检查后开窗，并限制前后端仅在本机通信。
 - **对应需求：** F01、H04及Windows稳定运行约束。
 - **输入：** Spring Boot健康端点、Electron进程管理、端口策略。
@@ -711,7 +711,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D9-T04 单实例、生命周期与异常恢复
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY9_COMPLETE_20260820`（实施 commit=`d61135b`；单实例聚焦、graceful 退出无残留+端口释放、Electron被强杀后端自退出（ChildProcessWatchdog）、stale锁重启成功 实测 PASS）。
 - **任务目标：** 保证单实例运行、前后端生命周期一致，并对异常退出提供可诊断恢复。
 - **对应需求：** F01、H05及Windows可运行性约束。
 - **输入：** Electron壳、健康检查、日志与文件恢复机制。
@@ -725,7 +725,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D9-T05 便携目录、ZIP制品与桌面冒烟验收
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY9_COMPLETE_20260820`（实施 commit=`f0bd4de`；最终制品 `SupplyMindAI-0.9.0-win32-x64.zip` SHA-256 `27779EF9…`；解压后 EXE 启动/dashboard/history/config/warning 200/Agent JAVA_TEMPLATE 降级/重启数据保持/无残留 实测 PASS）。
 - **任务目标：** 产出可解压即用的Windows便携目录和ZIP，并完成桌面形态核心链路冒烟测试。
 - **对应需求：** H01-H09、F01-F14及最终交付约束。
 - **输入：** D9-T01至D9-T04、冻结候选版本、许可证和启动说明。
@@ -913,6 +913,6 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ## 推荐启动顺序
 
-- Day 1～Day 8均为`COMPLETE`；Day8 Final Implementation=`239d025`，Final Stage Review=`PASS`，D8-T01～D8-T05=`DONE`，Feature Freeze=`EFFECTIVE`；Day6/Day7冻结合同保持不变。
-- 当前唯一可领取P0任务为D9-T01（`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`）；READY仅表示允许领取，不代表`IN_PROGRESS`或Day9已经开始。
+- Day 1～Day 9均为`COMPLETE`；Day8 Final Implementation=`239d025`，Final Stage Review=`PASS`，D8-T01～D8-T05=`DONE`，Feature Freeze=`EFFECTIVE`；Day9 Final=`f0bd4de`，D9-T01～D9-T05=`DONE`；Day6/Day7/Cloud LLM 冻结合同保持不变。
+- 当前无待领取P0任务；下一任务=`NONE / RELEASE`（等待 Final Review 后 merge main / tag）。P0验收全绿、Feature Freeze 保持有效。
 - P1/P2仅在P0验收全绿、Day 8功能冻结未被破坏且仍有时间时启动。
