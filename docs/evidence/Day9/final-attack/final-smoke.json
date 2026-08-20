@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "candidateCommit": "9c59cce",
+  "executedAt": "2026-08-20T17:39:04+08:00",
+  "phase": "final-smoke",
+  "dynamicLoopbackPort": true,
+  "health": "UP",
+  "vueSameOrigin": "PASS",
+  "dashboard": 200,
+  "history": 200,
+  "config": 200,
+  "warning": 200,
+  "agentGeneratedBy": "JAVA_TEMPLATE",
+  "agentDegraded": true,
+  "restartDataFileCount": 9,
+  "residualAfterFirstExit": 0,
+  "residualAfterSecondExit": 0,
+  "result": "PASS"
+}

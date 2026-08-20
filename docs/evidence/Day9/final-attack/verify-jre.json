@@ -1,0 +1,12 @@
+{
+  "phase": "verify-jre",
+  "candidateCommit": "9c59cce",
+  "builtAt": "2026-08-20T17:29:37+08:00",
+  "bundledJavaExe": "runtime/jre/bin/java.exe",
+  "javaVersion": "openjdk version \"17.0.19\" 2026-04-21 LTS",
+  "javaNetHttp": "true",
+  "jdkCryptoEc": "true",
+  "bailianTls": "STATUS=404",
+  "backendBoot": "PASS",
+  "result": "PASS"
+}

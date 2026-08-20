@@ -1,33 +1,44 @@
 {
-  "phase": "day9-final-attack-closure-evidence",
-  "candidateCommit": "5b313a5",
-  "builtAt": "2026-08-20T16:25:30+08:00",
-  "windowsVersion": "Microsoft Windows NT 10.0.19045.0",
-  "bundledJavaExe": "runtime/jre/bin/java.exe",
-  "deterministicZip": {
-    "run1Sha256": "CCB4FBF62B14896107FE9784894B78AE3352038736BD286E4DFA268F6DEA2D42",
-    "run2Sha256": "CCB4FBF62B14896107FE9784894B78AE3352038736BD286E4DFA268F6DEA2D42",
-    "match": true
+  "schemaVersion": "1.0",
+  "candidateCommit": "9c59cce",
+  "reviewedAt": "2026-08-20T17:40:18+08:00",
+  "artifact": {
+    "zip": "SupplyMindAI-0.9.0-win32-x64.zip",
+    "sha256": "2561FB77FB16720ADFCAFE39B3E7ECA7AF80B6D91C7E2D893BA5815D86BEC82A",
+    "entryCount": 321,
+    "initialData": "CONFIG_V1_ONLY",
+    "runtimeStateInZip": false,
+    "logsInZip": false,
+    "secretInZip": false,
+    "deterministicBuild": "PASS"
   },
-  "artifactManifest": "release/SupplyMindAI-0.9.0-win32-x64.zip.manifest.json",
-  "zipSha256": "CCB4FBF62B14896107FE9784894B78AE3352038736BD286E4DFA268F6DEA2D42",
-  "evidenceResults": {
-    "verify-package": "PASS (entryCount=315, whitelistViolations=0, secretInZip=false)",
-    "verify-package-keyed": "PASS (exact real-key scan, secretInZip=false)",
-    "jre-verify": "PASS (java 17.0.19, java.net.http=true, jdk.crypto.ec=true, bailianTls=STATUS=404, backendBoot=PASS)",
-    "second-instance": "PASS (secondBackendCreated=false, backendPidUnchanged=true, portUnchanged=true, windowFocused=true, residual=0)",
-    "lifecycle-attack": "PASS (normalExit, forcedElectronExit, javaKilledRecovery, writerLockRecovery all PASS, residual=0)",
-    "persistence-attack": "PASS (initialConfigVersion=1, write HTTP 200 PENDING + raw+manifest persisted, restart+move hash unchanged, residual=0)",
-    "portable-boundary": "PASS (plain/spaces/chinese paths boot on bundled JRE, readonly-data rejected)",
-    "keyed-cloud-gate": "READY_FOR_USER_AUTHORIZATION (no billing request executed)"
+  "boundaries": {
+    "bundledJava17": "PASS",
+    "bailianNonBillingTls": "PASS_STATUS_404",
+    "secondInstance": "PASS",
+    "normalExit": "PASS",
+    "forcedElectronExit": "PASS",
+    "javaCrashRecovery": "PASS",
+    "writerLockRecovery": "PASS",
+    "loopbackDynamicPort": "PASS",
+    "rendererSecretBoundary": "PASS",
+    "restartAndMovePersistence": "PASS",
+    "plainSpaceChinesePaths": "PASS",
+    "readOnlyDataAcl": "FAIL_CLOSED_PASS",
+    "noKeyFallback": "JAVA_TEMPLATE_PASS"
   },
-  "secrets": {
-    "apiKeyInZip": false,
-    "apiKeyInLogs": false,
-    "apiKeyInEvidence": false
+  "cloud": {
+    "historicalRealCloudGate": "PASS_2026-08-18_QWEN_PLUS",
+    "portableKeyedGate": "READY_FOR_USER_AUTHORIZATION",
+    "paidRequestSentThisReview": false
   },
-  "backlightRegression": "647 tests / 0 failures / 0 errors / 9 skipped",
-  "desktopTests": "31 tests / 0 failures / 0 errors / 0 skipped",
-  "frontendTests": "33 tests / 0 failures / 0 errors / 0 skipped",
-  "frontendBuild": "PASS"
+  "regression": {
+    "backend": "122/648/0/0/9",
+    "desktop": "31/31",
+    "frontend": "5 files/33 tests",
+    "frontendBuild": "PASS"
+  },
+  "blocker": [],
+  "major": [],
+  "result": "PASS"
 }

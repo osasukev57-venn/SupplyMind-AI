@@ -1,52 +1,67 @@
-﻿{
-    "schemaVersion":  "1.0",
-    "candidateCommit":  "5b313a5",
-    "builtAt":  "2026-08-20T16:25:53+08:00",
-    "evidenceFiles":  [
-                          {
-                              "file":  "evidence-summary.json",
-                              "sizeBytes":  1869,
-                              "sha256":  "650F2471F6E14639620DC6C8A5886A986EF4ECC0670688213F5D7E0393E44634"
-                          },
-                          {
-                              "file":  "jre-verify.json",
-                              "sizeBytes":  485,
-                              "sha256":  "EE9D8352F2A52E5B814CAA81E6FE98724D9C208C0F20AAA3D78D297E08B5C641"
-                          },
-                          {
-                              "file":  "keyed-cloud-gate.json",
-                              "sizeBytes":  234,
-                              "sha256":  "E13310324C486B549191C072E073F06C1C4F44CD45863CA7D0865933EA9991B4"
-                          },
-                          {
-                              "file":  "lifecycle-attack.json",
-                              "sizeBytes":  404,
-                              "sha256":  "EEB169030E1A20E263AC33DEE60CE855DBF43044AA1B479F3488DC4D68C62553"
-                          },
-                          {
-                              "file":  "persistence-attack.json",
-                              "sizeBytes":  2546,
-                              "sha256":  "4B91687BEEB9579606820CA0997BE5D3E300EC06309BB3DAAC785D9BC9FF2DA7"
-                          },
-                          {
-                              "file":  "portable-boundary.json",
-                              "sizeBytes":  1758,
-                              "sha256":  "9D28F708AC056D460CA3CD146EECD6C5C542F6C91DBB4922648DF9D873EE315C"
-                          },
-                          {
-                              "file":  "second-instance.json",
-                              "sizeBytes":  541,
-                              "sha256":  "8B64849CA28C90E3CA8B403E7C0D92123D4E5C098CBC42F3287476AADE91859A"
-                          },
-                          {
-                              "file":  "verify-package.json",
-                              "sizeBytes":  324,
-                              "sha256":  "E7D09318831DA1C1E2554671672D89376EAF29274D149706FE76C2BF76A24CD7"
-                          },
-                          {
-                              "file":  "verify-package-keyed.json",
-                              "sizeBytes":  324,
-                              "sha256":  "6696F74BDE21AAF97AA62F85F61DB412086232374D3FAA15CF2910AB40923F8D"
-                          }
-                      ]
+{
+  "schemaVersion": "1.0",
+  "candidateCommit": "9c59cce",
+  "builtAt": "2026-08-20T17:45:23+08:00",
+  "evidenceFiles": [
+    {
+      "file": "deterministic-build.json",
+      "sizeBytes": 809,
+      "sha256": "9BE2D2937AD5AFDE7D35D07E8CF087721DAA62DA8DF858B790CBB7058D9D82F9"
+    },
+    {
+      "file": "evidence-summary.json",
+      "sizeBytes": 1293,
+      "sha256": "71D0E1B6DB4DBC9C63038DD84264470AFA5655FBC663D296E0BCD41E17A94BBB"
+    },
+    {
+      "file": "final-smoke.json",
+      "sizeBytes": 457,
+      "sha256": "F6407DD115AE93269B860EFE36B889269B07FB1E14F2FAD840D30F816518ECA6"
+    },
+    {
+      "file": "keyed-cloud-gate.json",
+      "sizeBytes": 213,
+      "sha256": "6451F7CC5F3247A01CD00D0698453689AE9DB50B5103D47F758F06F0183FF938"
+    },
+    {
+      "file": "lifecycle-attack.json",
+      "sizeBytes": 274,
+      "sha256": "5007BBD7308C3F8C74B9FDAFA7464651E0A7CA6BE44C57FE51D7D590D6048B60"
+    },
+    {
+      "file": "persistence-attack.json",
+      "sizeBytes": 5024,
+      "sha256": "DAB882C320C1F272037D5155B5C2013B1E24CBC7AC9E19A283D2587C8516116F"
+    },
+    {
+      "file": "portable-boundary.json",
+      "sizeBytes": 975,
+      "sha256": "72ABD3CA4D69E97A28CFD0A90928871C822AE590AD3C9A57824B231429034E8C"
+    },
+    {
+      "file": "regression.json",
+      "sizeBytes": 1771,
+      "sha256": "C6C1D2357887D8D44DEE92FFC673824A2D0DB8D22CD2E7BD3621E6B20DA129A6"
+    },
+    {
+      "file": "second-instance.json",
+      "sizeBytes": 443,
+      "sha256": "92727521F8809F73CD14A314AB475105428F7865C3D8593DF738C54193FCAAC8"
+    },
+    {
+      "file": "verify-jre.json",
+      "sizeBytes": 338,
+      "sha256": "0292ED54C1EF36D822F76B81C6F13522DF1E3F5EFB54A3963084A9FEFE3CCAE2"
+    },
+    {
+      "file": "verify-package-keyed.json",
+      "sizeBytes": 216,
+      "sha256": "E811D4AD6DB5520FC8FB47F187FAED66FC1F863E7C80E3DA2D7D8172DCE24A16"
+    },
+    {
+      "file": "verify-package.json",
+      "sizeBytes": 216,
+      "sha256": "E811D4AD6DB5520FC8FB47F187FAED66FC1F863E7C80E3DA2D7D8172DCE24A16"
+    }
+  ]
 }

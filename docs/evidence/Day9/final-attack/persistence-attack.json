@@ -1,41 +1,113 @@
-﻿{
-    "phase":  "persistence-attack",
-    "candidateCommit":  "5b313a5",
-    "builtAt":  "2026-08-20T16:22:52+08:00",
-    "root":  "D:\\Dev\\Temp\\supplymind-f5\\run-49cc71ed\\SupplyMindAI",
-    "initialConfigVersion":  1,
-    "initialConfigHash":  "7F71CE4B206891C6D2415283E0537A4A18E020D018352F7BB533E11A237C774D",
-    "writeHttpStatus":  200,
-    "writeResponse":  {
-                          "status":  "PENDING",
-                          "itemId":  "MAT.ADC12.AM",
-                          "source":  "Manual",
-                          "unit":  "å\u0085/å¨",
-                          "businessDate":  "2026-08-19",
-                          "value":  "19500.50",
-                          "runId":  "manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce",
-                          "rawRef":  "raw/formal/manual/MAT.ADC12.AM/2026/08/manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json",
-                          "timelineRef":  "staging/manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json",
-                          "message":  "manual intake accepted - raw and lifecycle timeline persisted as PENDING (formal verification/publish remain downstream gates)"
-                      },
-    "writeFiles":  [
-                       {
-                           "Path":  "data\\raw\\formal\\manual\\MAT.ADC12.AM\\2026\\08\\manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json",
-                           "Sha256":  "D695C763DBB876655FACDFECF28CBA8252D83C868832E60DA833311BBE2F582B"
-                       },
-                       {
-                           "Path":  "data\\raw\\formal\\manual\\MAT.ADC12.AM\\2026\\08\\manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json.manifest.json",
-                           "Sha256":  "15A31026C08377D2AFED5773CCB053EADB4FEAD4EA3C19B843D88F40755AEC33"
-                       }
-                   ],
-    "restartConfigHash":  "7F71CE4B206891C6D2415283E0537A4A18E020D018352F7BB533E11A237C774D",
-    "restartConfigHashUnchanged":  true,
-    "restartRawCountUnchanged":  true,
-    "movedConfigHash":  "7F71CE4B206891C6D2415283E0537A4A18E020D018352F7BB533E11A237C774D",
-    "movedConfigHashUnchanged":  true,
-    "movedRawCountUnchanged":  true,
-    "residualAfterAll":  [
-
-                         ],
-    "result":  "PASS"
+{
+  "phase": "persistence-attack",
+  "candidateCommit": "9c59cce",
+  "builtAt": "2026-08-20T17:31:48+08:00",
+  "initialConfigVersion": 1,
+  "writeHttpStatus": 200,
+  "writeResponse": {
+    "status": "PENDING",
+    "itemId": "MAT.ADC12.AM",
+    "unit": "元/吨",
+    "businessDate": "2026-08-19",
+    "value": "19500.50",
+    "runId": "manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce",
+    "rawRef": "raw/formal/manual/MAT.ADC12.AM/2026/08/manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json",
+    "timelineRef": "staging/manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json"
+  },
+  "initialSnapshot": [
+    {
+      "ref": "raw/formal/manual/MAT.ADC12.AM/2026/08/manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json",
+      "dataSha256": "9CBC39103422769C74FEA8E244ABAE722846C162D0CEE1DBF70C6596FE8604EB",
+      "dataLength": 1421,
+      "manifestSha256": "1916A9C2F9747CB6B3ACDFD6F094017CA5241672ADE29C2FC4F4BE487BD29091",
+      "manifestValid": true
+    },
+    {
+      "ref": "staging/manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json",
+      "dataSha256": "13A2745DAA678C0B5D8949A9161A6971AE561F78A6D679AC35762AAC99D564F9",
+      "dataLength": 1144,
+      "manifestSha256": "5D0F97B2F2FE3E12E92FDBC8DAD2F57737BA81C4415062BA5189FEC4C94BC0EA",
+      "manifestValid": true
+    },
+    {
+      "ref": "config/monitor-series.json",
+      "dataSha256": "601FEE14AE3A39A868141337405EC8BD3A2783F53E7A67A920F453F060C0C629",
+      "dataLength": 4702,
+      "manifestSha256": "88DF6D3E3470DAFEA347237DA6C52B8AB544B16E5AB656D0865157F402406500",
+      "manifestValid": true
+    },
+    {
+      "ref": "config/history/1.json",
+      "dataSha256": "601FEE14AE3A39A868141337405EC8BD3A2783F53E7A67A920F453F060C0C629",
+      "dataLength": 4702,
+      "manifestSha256": "BF2F2EF39E9B0364FC3B8BB6FC6B7BBB527CCE3E72268C4260BA97FC458F302A",
+      "manifestValid": true
+    }
+  ],
+  "restartApiConfigVersion": 1,
+  "restartSnapshot": [
+    {
+      "ref": "raw/formal/manual/MAT.ADC12.AM/2026/08/manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json",
+      "dataSha256": "9CBC39103422769C74FEA8E244ABAE722846C162D0CEE1DBF70C6596FE8604EB",
+      "dataLength": 1421,
+      "manifestSha256": "1916A9C2F9747CB6B3ACDFD6F094017CA5241672ADE29C2FC4F4BE487BD29091",
+      "manifestValid": true
+    },
+    {
+      "ref": "staging/manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json",
+      "dataSha256": "13A2745DAA678C0B5D8949A9161A6971AE561F78A6D679AC35762AAC99D564F9",
+      "dataLength": 1144,
+      "manifestSha256": "5D0F97B2F2FE3E12E92FDBC8DAD2F57737BA81C4415062BA5189FEC4C94BC0EA",
+      "manifestValid": true
+    },
+    {
+      "ref": "config/monitor-series.json",
+      "dataSha256": "601FEE14AE3A39A868141337405EC8BD3A2783F53E7A67A920F453F060C0C629",
+      "dataLength": 4702,
+      "manifestSha256": "88DF6D3E3470DAFEA347237DA6C52B8AB544B16E5AB656D0865157F402406500",
+      "manifestValid": true
+    },
+    {
+      "ref": "config/history/1.json",
+      "dataSha256": "601FEE14AE3A39A868141337405EC8BD3A2783F53E7A67A920F453F060C0C629",
+      "dataLength": 4702,
+      "manifestSha256": "BF2F2EF39E9B0364FC3B8BB6FC6B7BBB527CCE3E72268C4260BA97FC458F302A",
+      "manifestValid": true
+    }
+  ],
+  "restartExactBytesAndManifest": true,
+  "movedApiConfigVersion": 1,
+  "movedSnapshot": [
+    {
+      "ref": "raw/formal/manual/MAT.ADC12.AM/2026/08/manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json",
+      "dataSha256": "9CBC39103422769C74FEA8E244ABAE722846C162D0CEE1DBF70C6596FE8604EB",
+      "dataLength": 1421,
+      "manifestSha256": "1916A9C2F9747CB6B3ACDFD6F094017CA5241672ADE29C2FC4F4BE487BD29091",
+      "manifestValid": true
+    },
+    {
+      "ref": "staging/manual-MAT.ADC12.AM-20260819-3670f3a7485c72a33295b48867cb48bf134d7264d5d96d882403966296f13fce.json",
+      "dataSha256": "13A2745DAA678C0B5D8949A9161A6971AE561F78A6D679AC35762AAC99D564F9",
+      "dataLength": 1144,
+      "manifestSha256": "5D0F97B2F2FE3E12E92FDBC8DAD2F57737BA81C4415062BA5189FEC4C94BC0EA",
+      "manifestValid": true
+    },
+    {
+      "ref": "config/monitor-series.json",
+      "dataSha256": "601FEE14AE3A39A868141337405EC8BD3A2783F53E7A67A920F453F060C0C629",
+      "dataLength": 4702,
+      "manifestSha256": "88DF6D3E3470DAFEA347237DA6C52B8AB544B16E5AB656D0865157F402406500",
+      "manifestValid": true
+    },
+    {
+      "ref": "config/history/1.json",
+      "dataSha256": "601FEE14AE3A39A868141337405EC8BD3A2783F53E7A67A920F453F060C0C629",
+      "dataLength": 4702,
+      "manifestSha256": "BF2F2EF39E9B0364FC3B8BB6FC6B7BBB527CCE3E72268C4260BA97FC458F302A",
+      "manifestValid": true
+    }
+  ],
+  "movedExactBytesAndManifest": true,
+  "residualAfterAll": [],
+  "result": "PASS"
 }

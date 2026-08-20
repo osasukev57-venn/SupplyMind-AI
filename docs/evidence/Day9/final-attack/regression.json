@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "candidateCommit": "9c59cce",
+  "executedAt": "2026-08-20T17:39:04+08:00",
+  "backend": {
+    "command": ".\\mvnw.cmd clean test",
+    "suites": 122,
+    "tests": 648,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 9,
+    "skippedCases": [
+      "com.supplymind.acceptance.AtSrc002AcceptanceTest#dualCurrencyRealChainIdempotencyAndOfflineRestart",
+      "com.supplymind.agent.infrastructure.springai.CloudLlmRealApiAcceptanceTest#callsConfiguredCloudApiWithoutPersistingTheCredential",
+      "com.supplymind.day5.foundation.Day5TimeContractHarnessTest#physicalWindowsClockForwardAndRollbackRemainPendingImplementation",
+      "com.supplymind.processing.AggregateRealRawEvidenceTest#computesRealFourGrainAggregatesFromTheRealD1T05PbocRaw",
+      "com.supplymind.processing.DailyRealRawEvidenceTest#computesDailyCsvFromTheRealD1T05PbocRaw",
+      "com.supplymind.provider.pboc.PbocOfficialWebRealNetworkAttemptTest#performsOneRealJavaHttpsAttemptOrRecordsAnExternalAccessBlock",
+      "com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest#realCollectionRepeatTriggerAndRestartReadSmokeGate",
+      "com.supplymind.publish.PublishRealRawEvidenceTest#publishesTheRealD1T05PbocRawAndExposesItThroughTheBusinessEntry",
+      "com.supplymind.validation.PbocValidationRealRawEvidenceTest#standardizesAndValidatesTheRealD1T05PbocRawIntoVerifiedCandidates"
+    ],
+    "result": "PASS"
+  },
+  "desktop": {
+    "command": "node --test test/*.test.js",
+    "tests": 31,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "result": "PASS"
+  },
+  "frontend": {
+    "testCommand": "npm test -- --run",
+    "files": 5,
+    "tests": 33,
+    "failures": 0,
+    "buildCommand": "npm run build",
+    "build": "PASS",
+    "result": "PASS"
+  }
+}

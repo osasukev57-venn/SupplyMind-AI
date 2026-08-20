@@ -1,36 +1,43 @@
-﻿{
-    "phase":  "portable-boundary",
-    "candidateCommit":  "5b313a5",
-    "builtAt":  "2026-08-20T16:24:58+08:00",
-    "results":  [
-                    {
-                        "Label":  "plain",
-                        "Healthy":  true,
-                        "JavaPath":  "D:\\Dev\\Temp\\supplymind-f6-f0218b23\\SupplyMindAI\\runtime\\jre\\bin\\java.exe",
-                        "Expected":  "D:\\Dev\\Temp\\supplymind-f6-f0218b23\\SupplyMindAI\\runtime\\jre\\bin\\java.exe",
-                        "Pass":  true
-                    },
-                    {
-                        "Label":  "spaces",
-                        "Healthy":  true,
-                        "JavaPath":  "D:\\Dev\\Temp\\supply mind f6 dir 541e6e2e\\SupplyMindAI\\runtime\\jre\\bin\\java.exe",
-                        "Expected":  "D:\\Dev\\Temp\\supply mind f6 dir 541e6e2e\\SupplyMindAI\\runtime\\jre\\bin\\java.exe",
-                        "Pass":  true
-                    },
-                    {
-                        "Label":  "chinese",
-                        "Healthy":  true,
-                        "JavaPath":  "D:\\Dev\\Temp\\供应链智脑 AI 便携测试 651886e1\\SupplyMindAI\\runtime\\jre\\bin\\java.exe",
-                        "Expected":  "D:\\Dev\\Temp\\供应链智脑 AI 便携测试 651886e1\\SupplyMindAI\\runtime\\jre\\bin\\java.exe",
-                        "Pass":  true
-                    },
-                    {
-                        "Label":  "readonly-data",
-                        "Healthy":  false,
-                        "JavaPath":  null,
-                        "Expected":  null,
-                        "Pass":  true
-                    }
-                ],
-    "result":  "PASS"
+{
+  "phase": "portable-boundary",
+  "candidateCommit": "9c59cce",
+  "builtAt": "2026-08-20T17:32:36+08:00",
+  "results": [
+    {
+      "label": "plain",
+      "healthy": true,
+      "javaProcessCount": 1,
+      "javaPath": "runtime/jre/bin/java.exe",
+      "bundledJavaIdentity": true,
+      "residualCount": 0,
+      "pass": true
+    },
+    {
+      "label": "spaces",
+      "healthy": true,
+      "javaProcessCount": 1,
+      "javaPath": "runtime/jre/bin/java.exe",
+      "bundledJavaIdentity": true,
+      "residualCount": 0,
+      "pass": true
+    },
+    {
+      "label": "chinese",
+      "healthy": true,
+      "javaProcessCount": 1,
+      "javaPath": "runtime/jre/bin/java.exe",
+      "bundledJavaIdentity": true,
+      "residualCount": 0,
+      "pass": true
+    },
+    {
+      "label": "readonly-data-acl",
+      "aclApplied": true,
+      "writeDenied": true,
+      "exeRejected": true,
+      "backendCreated": false,
+      "pass": true
+    }
+  ],
+  "result": "PASS"
 }

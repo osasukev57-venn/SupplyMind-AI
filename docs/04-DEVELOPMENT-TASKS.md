@@ -3,7 +3,7 @@
 > 文档性质：跨窗口可独立执行的任务清单  
 > 规范版本：v1.5（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
-> 当前进度锚点：Day 1～Day 8均已完成并通过各自Stage Gate；Day 9=`NOT_COMPLETE`（Final Attack Findings=`FIX_IMPLEMENTED_PENDING_REVIEW`）。Day6原最终技术候选=`bc6f61a`；Post-Day8 Cloud Closure=`182baec`（Spring AI1.1.8 OpenAI-compatible Provider、无凭据降级与安全环境变量配置）。AT-AI-000/002/003本地合同=`PASS`，AT-AI-001本地合同与故障降级矩阵=`PASS`；真实Cloud gated run=`PASS`（Alibaba Bailian 北京区，`qwen-plus`，2026-08-18，1/1、0 failures/errors/skipped；密钥未进入源码/日志/evidence）。D9-T01～D9-T05=实施完成（`REVIEW_PENDING`，未经 Final Review 不得视为 DONE）；`5b313a5` 的提前 COMPLETE 标记为 HISTORICAL_PREMATURE_STATUS_CLOSURE。
+> 当前进度锚点：Day 1～Day 9均已完成并通过各自 Stage Gate；Day 9 Final Technical Candidate=`9c59cce`，Final Attack Review=`PASS`，D9-T01～D9-T05=`DONE`，最终 ZIP SHA-256=`2561FB77FB16720ADFCAFE39B3E7ECA7AF80B6D91C7E2D893BA5815D86BEC82A`。Post-Day8 Cloud Closure=`182baec`；真实 Cloud gated run=`PASS`（2026-08-18），本次 keyed portable Cloud gate 因未获新的可能计费请求授权保持 `READY_FOR_USER_AUTHORIZATION`，不伪报为本次 PASS，且不属于 D9 冻结 DoD。`5b313a5` 仍为 HISTORICAL_PREMATURE_STATUS_CLOSURE。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`TaskExecutionStatus=DONE`（实施 + Attack Validation + Final Stage Review 全部 PASS，MAJOR Finding 全部关闭）；最终实施候选=`feaedd3`；CURRENT 全量回归=110 suites/578 backend tests/0 failures/0 errors/8 skipped，前端 11/11 PASS + build PASS；历史候选（1b83410、d2b0965、5f1491c、01d4270 等中间状态）一律 HISTORICAL，详见 docs/05-PROGRESS-LEDGER 与 docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md。Day1-Day6 代码零修改。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
@@ -669,7 +669,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D9-T01 Electron壳与后端进程托管
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=DAY9_FINAL_ATTACK_FIX_IMPLEMENTED_20260820`（实施 commit=`d377a12`；Electron 壳 + Spring Boot 子进程托管实测：双击 EXE 启动、健康 UP 后开窗、退出无残留）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY9_FINAL_ATTACK_REVIEW_PASS_20260820`（原实施=`d377a12`；最终技术候选=`9c59cce`；真实 EXE 启动、健康后开窗、正常/异常退出无残留均 PASS）。
 - **任务目标：** 用Electron封装冻结的Vue静态资源，启动并托管Spring Boot子进程，形成可双击运行的桌面应用。
 - **对应需求：** H03、H04、F01及Windows最终交付约束。
 - **输入：** D8-T05候选版本、前后端构建产物、Electron主进程设计。
@@ -683,7 +683,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D9-T02 捆绑JRE与资源路径发现
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=DAY9_FINAL_ATTACK_FIX_IMPLEMENTED_20260820`（实施 commit=`4269ab8`；jlink Temurin17 生成 runtime/jre、便携布局与预检 fail-fast 实测：无JAVA_HOME/中文空格路径/移动目录均 PASS）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY9_FINAL_ATTACK_REVIEW_PASS_20260820`（原实施=`4269ab8`；最终技术候选=`9c59cce`；bundled Temurin17、无 JAVA_HOME、普通/空格/中文/移动路径与只读 ACL fail-closed 均 PASS）。
 - **任务目标：** 随应用捆绑Java 17运行时并可靠发现JAR、前端资源、配置、data和logs路径。
 - **对应需求：** H03、H04及普通Windows电脑免安装Java约束。
 - **输入：** 合法可再分发JRE、便携目录决策、冻结配置。
@@ -697,7 +697,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D9-T03 动态端口、健康检查与本地通信安全
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=DAY9_FINAL_ATTACK_FIX_IMPLEMENTED_20260820`（实施 commit=`bf55e54`；动态端口硬拒8080、loopback-only 校验、健康轮询硬deadline 实测：随机端口/无LAN暴露/TIMEOUT 无挂起）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY9_FINAL_ATTACK_REVIEW_PASS_20260820`（原实施=`bf55e54`；最终技术候选=`9c59cce`；动态端口、loopback-only、健康 deadline、renderer secret boundary 均 PASS）。
 - **任务目标：** 安全选择本地端口，等待健康检查后开窗，并限制前后端仅在本机通信。
 - **对应需求：** F01、H04及Windows稳定运行约束。
 - **输入：** Spring Boot健康端点、Electron进程管理、端口策略。
@@ -711,7 +711,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D9-T04 单实例、生命周期与异常恢复
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=DAY9_FINAL_ATTACK_FIX_IMPLEMENTED_20260820`（实施 commit=`d61135b`；单实例聚焦、graceful 退出无残留+端口释放、Electron被强杀后端自退出（ChildProcessWatchdog）、stale锁重启成功 实测 PASS）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY9_FINAL_ATTACK_REVIEW_PASS_20260820`（原实施=`d61135b`；最终技术候选=`9c59cce`；真实双 EXE、正常退出、强杀 Electron/Java、端口释放与 writer lock 恢复均 PASS，生命周期竞态修复后连续三轮 PASS）。
 - **任务目标：** 保证单实例运行、前后端生命周期一致，并对异常退出提供可诊断恢复。
 - **对应需求：** F01、H05及Windows可运行性约束。
 - **输入：** Electron壳、健康检查、日志与文件恢复机制。
@@ -725,7 +725,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D9-T05 便携目录、ZIP制品与桌面冒烟验收
 
-- **优先级/状态：** P0 / `TaskExecutionStatus=REVIEW_PENDING`；`statusReason=DAY9_FINAL_ATTACK_FIX_IMPLEMENTED_20260820`（实施 commit=`f0bd4de`；+ 本轮 clean deterministic package 修复：全新 staging、data/logs 初始为空、deterministic ZIP 双 run SHA 一致；最终制品 `SupplyMindAI-0.9.0-win32-x64.zip` SHA-256 `000E7406…`；解压后 EXE 启动/dashboard/history/config/warning 200/Agent JAVA_TEMPLATE 降级/重启数据保持/无残留 实测 PASS）。
+- **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=DAY9_FINAL_ATTACK_REVIEW_PASS_20260820`（原实施=`f0bd4de`；最终技术候选=`9c59cce`；clean deterministic ZIP 双 run SHA 一致=`2561FB77FB16720ADFCAFE39B3E7ECA7AF80B6D91C7E2D893BA5815D86BEC82A`；初始 config v1、空 logs、真实持久化/目录移动/无 Key JAVA_TEMPLATE/无残留均 PASS）。
 - **任务目标：** 产出可解压即用的Windows便携目录和ZIP，并完成桌面形态核心链路冒烟测试。
 - **对应需求：** H01-H09、F01-F14及最终交付约束。
 - **输入：** D9-T01至D9-T04、冻结候选版本、许可证和启动说明。
@@ -741,7 +741,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D10-T01 干净Windows环境与无数据库验收
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=READY`；`statusReason=DAY9_COMPLETE_D10T01_RELEASED_20260820`。
 - **任务目标：** 在未安装Java/Node/Docker/MySQL/Redis的普通Windows环境验证最终ZIP可直接运行且数据文件可见。
 - **对应需求：** H03、H04及Windows最终交付约束。
 - **输入：** D9-T05 ZIP、干净机/虚拟机、验收进程检查清单。
@@ -755,7 +755,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D10-T02 系统时间跨期、轮转与跨年精度验收
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=NOT_READY`；`statusReason=BLOCKED_BY_PREVIOUS_D10_GATE`。
 - **任务目标：** 通过受控修改Windows系统时间验证跨日/月/季/半年/年轮转及跨文件计算。
 - **对应需求：** H01、H02、H05、H06。
 - **输入：** 固定精度夹具、可恢复系统时间环境、验收用例和期望结果。
@@ -769,7 +769,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D10-T03 离线、LLM故障与文件恢复验收
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=NOT_READY`；`statusReason=BLOCKED_BY_PREVIOUS_D10_GATE`。
 - **任务目标：** 验证网络、云模型和文件异常下核心监测与模板报告可用且数据不会静默损坏。
 - **对应需求：** F02、F05、F13、F14、H02-H04。
 - **输入：** 最终ZIP、故障注入方案、备份/临时文件和Java模板报告。
@@ -783,7 +783,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D10-T04 动态EUR/GBP/MAT-REPL-01场景验收
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=NOT_READY`；`statusReason=BLOCKED_BY_PREVIOUS_D10_GATE`。
 - **任务目标：** 用真实验收操作验证停止旧对象、新增英镑/替换材料、历史回填和页面重构。
 - **对应需求：** H07、H08、H09、F07、F08。
 - **输入：** 最终ZIP、PBOC真实数据、选定的合法自动/FreePublic/Manual路线和动态配置验收脚本。
@@ -797,7 +797,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ### D10-T05 文档、证据、发布包与最终签署
 
-- **优先级/状态：** P0 / `NOT_STARTED`。
+- **优先级/状态：** P0 / `TaskExecutionStatus=NOT_STARTED`；`readyState=NOT_READY`；`statusReason=BLOCKED_BY_PREVIOUS_D10_GATE`。
 - **任务目标：** 汇总全部验收证据和交付材料，形成可追溯、可复现、可演示的最终发布包。
 - **对应需求：** H01-H09、F01-F14及交付文档要求。
 - **输入：** 所有AT结果、最终ZIP、官方需求基线、追踪矩阵、风险和外部确认状态。
@@ -913,6 +913,6 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ## 推荐启动顺序
 
-- Day 1～Day 8均为`COMPLETE`；Day8 Final Implementation=`239d025`，Final Stage Review=`PASS`，D8-T01～D8-T05=`DONE`，Feature Freeze=`EFFECTIVE`；Day9 实施完成（D9-T01～D9-T05=`REVIEW_PENDING`，Final Attack Findings 已修复待 Review，`5b313a5` 提前 COMPLETE 标记为 HISTORICAL_PREMATURE_STATUS_CLOSURE）；Day6/Day7/Cloud LLM 冻结合同保持不变。
-- 当前无新开发任务；Release Gate=`PENDING_FINAL_REVIEW`，等待 Final Attack Delta Review 通过后由技术负责人确认 D9-T01～T05=DONE、Day9=COMPLETE（在此之前不得 merge main / tag）。
+- Day 1～Day 9均为`COMPLETE`；Day9 Final Technical Candidate=`9c59cce`，Final Attack Review=`PASS`，D9-T01～D9-T05=`DONE`，最终便携 ZIP SHA-256=`2561FB77FB16720ADFCAFE39B3E7ECA7AF80B6D91C7E2D893BA5815D86BEC82A`；`5b313a5` 保持 HISTORICAL_PREMATURE_STATUS_CLOSURE；Day1～Day8/Cloud LLM 冻结合同不变。
+- 当前下一可领取 P0 任务为 D10-T01：`TaskExecutionStatus=NOT_STARTED`、`readyState=READY`；Day10 尚未开始。Day9 分支允许合并 main，但本次未执行 merge/tag；最终发布仍须完成 Day10 正式验收。
 - P1/P2仅在P0验收全绿、Day 8功能冻结未被破坏且仍有时间时启动。

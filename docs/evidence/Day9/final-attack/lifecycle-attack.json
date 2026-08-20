@@ -1,14 +1,11 @@
-﻿{
-    "phase":  "lifecycle-attack",
-    "candidateCommit":  "5b313a5",
-    "builtAt":  "2026-08-20T16:21:36+08:00",
-    "root":  "D:\\Dev\\Temp\\supplymind-f3\\SupplyMindAI",
-    "normalExit":  "PASS",
-    "forcedElectronExit":  "PASS",
-    "javaKilledRecovery":  "PASS",
-    "writerLockRecovery":  "PASS",
-    "residualAfterAll":  [
-
-                         ],
-    "result":  "PASS"
+{
+  "phase": "lifecycle-attack",
+  "candidateCommit": "9c59cce",
+  "builtAt": "2026-08-20T17:30:32+08:00",
+  "normalExit": "PASS",
+  "forcedElectronExit": "PASS",
+  "javaKilledRecovery": "PASS",
+  "writerLockRecovery": "PASS",
+  "residualAfterAll": [],
+  "result": "PASS"
 }
