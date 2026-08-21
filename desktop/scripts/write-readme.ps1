@@ -1,4 +1,4 @@
-﻿# D9-T05 generate README.txt inside the portable root.
+# D9-T05 generate README.txt inside the portable root.
 param(
     [string]$Root = (Join-Path $PSScriptRoot '..\..\portable\SupplyMindAI'),
     [string]$Version = '0.9.0'
@@ -31,7 +31,16 @@ Version: $Version
 - logs/backend-url.txt   本次启动使用的本机地址（动态端口）
 - 故障排查时请提供这两个文件。
 
-4. 环境变量（可选）
+4. 数据来源与演示
+-------------------
+- USD/CNY、EUR/CNY：联网启动后读取中国人民银行公开公告，显示最近已公布业务日中间价。
+- ADC12：联网启动后读取上海期货交易所 ad_f 公开日行情，显示主力合约结算价；
+  这是明确标注的同类期货公开基准，不是 SMM/Asian Metal 或 ADC12 现货成交价。
+- AZ91D：当前保留来源与录入页的 Manual/LocalImport 流程；提交后必须经过校验与发布门禁。
+- “运行完整演示流程”：生成可审计的 DEMO raw、校验、多级演示均值和报告；
+  DEMO 不进入正式 PUBLISHED、processed、warning 或 Agent 业务证据。
+
+5. 环境变量（可选）
 -------------------
 以下变量均只通过环境传递给后端 Java 进程，不会被写入日志或界面：
 - SUPPLYMIND_LLM_ENABLED  设为 true 启用云 LLM（默认不启用，使用本地模板降级）
@@ -41,25 +50,25 @@ Version: $Version
 - SUPPLYMIND_LLM_API_KEY  LLM API 密钥（仅环境变量，禁止写入任何文件）
 - SUPPLYMIND_MANUAL_OPERATOR_REF 手工录入操作者标识（默认 local-operator）
 
-5. LLM 配置方式（可选）
+6. LLM 配置方式（可选）
 -----------------------
 - 未配置时，Agent 工作台使用内置 Java 模板生成可追溯报告（核心功能不受影响）。
 - 配置方式（只需在本次启动前设置环境变量）：
   在资源管理器中找到 SupplyMindAI.exe，按住 Shift 在空白处右键选择
-  “在此处打开 PowerShell 窗口”（或按 Win+R 输入 cmd），然后依次执行：
-      set SUPPLYMIND_LLM_ENABLED=true
-      set SUPPLYMIND_LLM_PROVIDER=openai-compatible
-      set SUPPLYMIND_LLM_MODEL=qwen-plus
-      set SUPPLYMIND_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-      set SUPPLYMIND_LLM_COMPLETIONS_PATH=/chat/completions
-      set SUPPLYMIND_LLM_TIMEOUT=30s
-      set SUPPLYMIND_LLM_API_KEY=你的密钥
-      SupplyMindAI.exe
+  “在此处打开 PowerShell 窗口”，然后依次执行：
+      $env:SUPPLYMIND_LLM_ENABLED='true'
+      $env:SUPPLYMIND_LLM_PROVIDER='openai-compatible'
+      $env:SUPPLYMIND_LLM_MODEL='qwen-plus'
+      $env:SUPPLYMIND_LLM_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+      $env:SUPPLYMIND_LLM_COMPLETIONS_PATH='/chat/completions'
+      $env:SUPPLYMIND_LLM_TIMEOUT='30s'
+      $env:SUPPLYMIND_LLM_API_KEY='<你的密钥>'
+      .\SupplyMindAI.exe
   - 注意：密钥只通过环境变量传给后端 Java 进程，不会被写入日志或界面。
     不要把它们写进任何配置文件。
 - 云模型不可用（断网/超时/缺密钥）时自动降级到 Java 模板，不会返回无依据回答。
 
-6. 故障排查
+7. 故障排查
 -----------
 - 启动即退出：检查 data/ 与 logs/ 是否可写；检查是否有其他实例正在运行。
 - 端口冲突：应用每次启动自动选择空闲本机端口，不依赖固定端口。
@@ -68,7 +77,7 @@ Version: $Version
 - 页面空白：查看 logs/backend.log；如后端健康检查超时，应用会提示日志路径。
 - 代理/防火墙：本应用只监听 127.0.0.1，不会对外部网络开放端口。
 
-7. 版本与校验
+8. 版本与校验
 ---------------
 - 后端：Spring Boot 3.5.15 / Spring AI 1.1.8（Java 17 目标字节码）
 - 内置 JRE：Eclipse Temurin 17（GPLv2 with Classpath Exception）
