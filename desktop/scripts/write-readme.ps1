@@ -5,10 +5,10 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
-$readme = @"
+$readme = @'
 SupplyMind AI - Windows Desktop (portable)
 ==========================================
-Version: $Version
+Version: __SUPPLYMIND_VERSION__
 
 1. 运行方式 (Windows)
 ----------------------
@@ -83,7 +83,8 @@ Version: $Version
 - 内置 JRE：Eclipse Temurin 17（GPLv2 with Classpath Exception）
 - 前端：Vue 3 / Vite（构建产物位于 app/web）
 - 校验：ZIP 同目录提供 .sha256 校验和文件。
-"@
+'@
+$readme = $readme.Replace('__SUPPLYMIND_VERSION__', $Version)
 
 Set-Content -LiteralPath (Join-Path $Root 'README.txt') -Value $readme -Encoding UTF8
 Write-Host "[write-readme] README.txt written: $(Join-Path $Root 'README.txt')"
