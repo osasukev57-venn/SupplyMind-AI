@@ -3,7 +3,7 @@
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
 > 当前阶段：Day 1～Day 10=`COMPLETE`；Post-Day10 数据可用性补充=`COMPLETE`；DEC-063=`EFFECTIVE`；项目=`FINAL_RELEASE_READY`。真实 Cloud 历史 Gate=`PASS`；本轮未执行新的计费请求。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`DONE`；**Final Implementation Candidate=`feaedd3`**；**CURRENT regression=110 suites/578 backend tests/0 failures/0 errors/8 skipped**，前端 `npm run test` **11/11 PASS** + `npm run build` PASS；历史候选（1b83410、d2b0965、a4006c4、3fd1d35、5f1491c、01d4270 等中间状态）一律 HISTORICAL（不删除）；Closure Evidence=`docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md`。Day1-Day6 代码零修改。
-> 当前最终发布补充：implementation=`ee48994`；Backend=`126 suites/654 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`34/34 + build PASS`；干净启动实证同时生成真实 PBOC USD/EUR 与 SHFE 两条 ADC12 raw→PUBLISHED→daily→四级 aggregate；一键 Synthetic DEMO 完整且仅写 DEMO 隔离区。
+> 当前最终发布补充：implementation=`ee48994`；Backend=`127 suites/656 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`37/37 + build PASS`；干净启动实证同时生成真实 PBOC USD/EUR 与 SHFE 两条 ADC12 raw→PUBLISHED→daily→四级 aggregate；一键 Synthetic DEMO 完整且仅写 DEMO 隔离区。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -64,7 +64,7 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 已完成任务 | Day1～Day10全部 P0 开发任务及最终验收；D10-T01～D10-T05=`DONE` |
 | 正在进行任务 | 无 |
 | 阻塞项 | 无 P0 BLOCKER/MAJOR；EXT-07/08保持 OPEN_EXTERNAL；物理改时/干净VM/主动断网方法按DEC-062保持NOT_RUN，不阻塞已通过的业务结果 |
-| 最近验收结果 | Post-Day10：真实启动同时完成 PBOC USD/EUR 与 SHFE ADC12 双 item 的 raw/发布/daily/四级 aggregate；DEMO 八阶段及审计报告通过；回归=`126/654/0/0/9 + Desktop 31/31 + Frontend 34/34/build PASS` |
+| 最近验收结果 | Post-Day10：真实启动同时完成 PBOC USD/EUR 与 SHFE ADC12 双 item 的 raw/发布/daily/四级 aggregate；DEMO 八阶段及审计报告通过；回归=`127/656/0/0/9 + Desktop 31/31 + Frontend 37/37/build PASS` |
 | 新增风险 | 指定 SMM/Asian 自动能力仍为 N/A_APPROVED_FALLBACK；SHFE 仅是 ADC12 同类期货公开基准，AZ91D 仍 Manual；官方网络失败时不造数，云端调用失败继续由 JAVA_TEMPLATE 降级 |
 | 下一任务 | 无 P0 开发任务；进入最终发布/merge/tag决策 |
 | 最近一次可运行版本 | Post-Day10 Implementation=`ee48994`；最终运行 ZIP/源码 ZIP 及其 SHA-256 sidecar 由 release clean build 生成，sidecar 为唯一权威值 |
@@ -80,7 +80,7 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 - AZ91D：继续 Manual/LocalImport；无数据保持诚实空状态。
 - Synthetic DEMO：八阶段完整执行并写 DEMO raw/manifest、VALIDATED timeline 与审计报告；不存在 PUBLISHED 或正式 processed/warning/report 污染。
 - 实际联网启动：PBOC USD/EUR 与 SHFE ADC12 两条来源意图在同一干净 dataRoot 串行采集并全部生成 daily + month/quarter/halfyear/year；临时实例退出后无进程/端口残留。
-- 最终回归：Backend=`126 suites/654 tests/0 failures/0 errors/9 skipped`；Desktop=`31/31`；Frontend=`34/34` + build PASS。
+- 最终回归：Backend=`127 suites/656 tests/0 failures/0 errors/9 skipped`；Desktop=`31/31`；Frontend=`37/37` + build PASS。
 - 开源交付：Apache-2.0 LICENSE；最终提供 Windows 便携运行 ZIP 和 GitHub-ready 源码 ZIP，SHA-256 以 release sidecar 为权威。
 ### 3.4 Day 10 Final Acceptance Closure（2026-08-21）
 

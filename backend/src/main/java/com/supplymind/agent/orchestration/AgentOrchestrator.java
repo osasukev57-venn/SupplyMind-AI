@@ -123,6 +123,7 @@ public final class AgentOrchestrator {
             degradeReason = phaseAResponse.failureKind();
             explanation = fallback.explain(new LLMService.LLMRequest(
                     requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
+
         } else {
             // Phase B: the LLM explains ONLY the verified EvidencePack facts (no further tools).
             LLMService.LLMResponse phaseB = llm.analyze(new LLMService.LLMRequest(
@@ -413,9 +414,10 @@ public final class AgentOrchestrator {
     private static List<LLMService.LlmFact> toLlmFacts(List<EvidencePackV1.Fact> facts) {
         return facts.stream()
                 .map(fact -> new LLMService.LlmFact(
-                        fact.factType(), fact.value(), fact.businessDate(),
+                        fact.factId(), fact.factType(), fact.itemId(), fact.value(), fact.unit(), fact.currency(),
+                        fact.businessDate(),
                         fact.periodStart() == null ? fact.businessDate() : fact.periodStart() + "~" + fact.periodEnd(),
-                        fact.validationStatus(),
+                        fact.validationStatus(), fact.actualSourceName(),
                         fact.evidenceRefs().isEmpty() ? null : fact.evidenceRefs().get(0)))
                 .toList();
     }

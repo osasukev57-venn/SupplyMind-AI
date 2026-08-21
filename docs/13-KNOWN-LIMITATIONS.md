@@ -18,7 +18,7 @@
 
 - **指定商业源自动采集**：SMM / Asian Metal 无会员授权，P0 不提供该指定源自动采集（DEC-015/037）；能力仍为 `N/A_APPROVED_FALLBACK`。DEC-063 只批准独立的 SHFE ADC12 同类公开期货基准，不等于指定商业源能力实现。AZ91D 继续 Manual/LocalImport。
 - **Manual 数据发布**：人工录入先受理为 PENDING，必须由操作员显式点击“校验并发布到面板”，再经过 `material-basic-validation-v2` 与正式 Publish Gate；成功才生成 daily/aggregate。实际来源逐记录保留，不把模拟数据或人工数据冒充商业源。历史回填在无真实输入时保持 `AWAITING_MANUAL_INPUT`。
-- **云 LLM**：可选能力；无密钥默认 Java 模板。密钥只经环境变量注入，不落盘、不入日志。
+- **云 LLM**：可选能力；无密钥默认 Java 模板。Agent 专用前端请求与云端 HTTP 客户端默认超时均为 90 秒；超时、无效结构化引用或模型响应不合规时安全降级。密钥只经环境变量注入，不落盘、不入日志。
 - **本地模型 / RAG / vLLM / LoRA**：P0 不包含（DEC-032）；Ollama/Qwen 连通性为 P1，正式本地模型为 P2。
 - **数据库 / Docker / Redis / MCP / Vector Store**：P0 一律不包含（DEC-004/005/025）。
 - **网络依赖**：PBOC、SHFE 采集与云 LLM 依赖公网；断网时本地历史可查、新采集明确失败或等待，不造数。SHFE 基准是期货结算价，不代表 ADC12 现货或采购成交价。

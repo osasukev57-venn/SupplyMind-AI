@@ -19,4 +19,4 @@ supplymind:
       base-url: ${SUPPLYMIND_LLM_BASE_URL:}
       api-key: ${SUPPLYMIND_LLM_API_KEY:}
       completions-path: ${SUPPLYMIND_LLM_COMPLETIONS_PATH:/v1/chat/completions}
-      timeout: ${SUPPLYMIND_LLM_TIMEOUT:30s}
+      timeout: ${SUPPLYMIND_LLM_TIMEOUT:90s}

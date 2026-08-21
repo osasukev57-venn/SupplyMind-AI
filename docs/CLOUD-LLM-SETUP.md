@@ -34,7 +34,7 @@ Chat Completions path. Some vendors use a base URL ending in `/v1` together with
 | `SUPPLYMIND_LLM_BASE_URL` | Credential-free HTTPS API root |
 | `SUPPLYMIND_LLM_MODEL` | Exact cloud model ID |
 | `SUPPLYMIND_LLM_COMPLETIONS_PATH` | Chat Completions endpoint path |
-| `SUPPLYMIND_LLM_TIMEOUT` | `1s` through `120s`; default `30s` |
+| `SUPPLYMIND_LLM_TIMEOUT` | `1s` through `120s`; default `90s` |
 | `SUPPLYMIND_LLM_API_KEY` | Secret; never log or commit |
 
 You may inspect non-secret values after opening a new terminal:

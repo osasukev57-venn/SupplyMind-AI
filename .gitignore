@@ -1,4 +1,4 @@
-﻿# ==============================
+# ==============================
 # SupplyMind AI - Git Ignore
 # ==============================
 
@@ -50,3 +50,6 @@ release/
 
 # D9 smoke scratch data at repo root (desktop/scripts smoke runs)
 target/
+/项目源码和本地化部署手册/
+/项目源码和本地化部署手册.zip
+/项目源码和本地化部署手册.zip.sha256

@@ -19,6 +19,7 @@ const errorMessage = ref<string | null>(null)
 const result = ref<AgentQueryResponse | null>(null)
 
 async function ask() {
+  if (loading.value) return
   if (!question.value.trim()) {
     errorMessage.value = '请输入问题'
     return
@@ -26,17 +27,24 @@ async function ask() {
   loading.value = true
   errorMessage.value = null
   result.value = null
-  const response = await queryAgent({
-    question: question.value.trim(),
-    itemId: itemId.value || undefined,
-    mode: mode.value
-  })
-  loading.value = false
-  if (!response) {
-    errorMessage.value = '服务暂时不可用，请稍后重试'
-    return
+  try {
+    const response = await queryAgent({
+      question: question.value.trim(),
+      itemId: itemId.value || undefined,
+      mode: mode.value
+    })
+    if (!response) {
+      errorMessage.value = '服务暂时不可用，请稍后重试'
+      return
+    }
+    result.value = response
+  } catch (error) {
+    errorMessage.value = error instanceof Error && error.message
+      ? error.message
+      : '服务暂时不可用，请稍后重试'
+  } finally {
+    loading.value = false
   }
-  result.value = response
 }
 
 function sourceLabel() {

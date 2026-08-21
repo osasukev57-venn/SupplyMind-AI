@@ -10,6 +10,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -46,6 +47,26 @@ class Day6FinalStageStructuredClaimsAttackTest {
                 "the persisted claim must be the structured claim text");
     }
 
+    @Test
+    void phaseBReceivesExactFactIdentityAndBusinessMetadataFromTheEvidencePack() {
+        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "structured-fact-contract");
+        AtomicReference<LLMService.LlmFact> captured = new AtomicReference<>();
+        AgentOrchestrator.AgentResult result = fixture.orchestrator(request -> {
+            if (!request.toolCallingEnabled() && !request.facts().isEmpty()) {
+                captured.set(request.facts().get(0));
+            }
+            return LLMService.LLMResponse.success(envelope(request, firstFactValue(request)));
+        }, new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
+
+        assertFalse(result.degraded());
+        LLMService.LlmFact fact = captured.get();
+        assertEquals("fact-0", fact.factId());
+        assertFalse(fact.itemId().isBlank());
+        assertFalse(fact.unit().isBlank());
+        assertFalse(fact.currency().isBlank());
+        assertFalse(fact.actualSourceName().isBlank());
+        assertFalse(fact.evidenceRef().isBlank());
+    }
     @Test
     void structuredClaimWithFabricatedNumberRejectsWholeDraft() {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "structured-fabricated");

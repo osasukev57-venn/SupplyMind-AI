@@ -61,7 +61,7 @@ Version: __SUPPLYMIND_VERSION__
       $env:SUPPLYMIND_LLM_MODEL='qwen-plus'
       $env:SUPPLYMIND_LLM_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
       $env:SUPPLYMIND_LLM_COMPLETIONS_PATH='/chat/completions'
-      $env:SUPPLYMIND_LLM_TIMEOUT='30s'
+      $env:SUPPLYMIND_LLM_TIMEOUT='90s'
       $env:SUPPLYMIND_LLM_API_KEY='<你的密钥>'
       .\SupplyMindAI.exe
   - 注意：密钥只通过环境变量传给后端 Java 进程，不会被写入日志或界面。

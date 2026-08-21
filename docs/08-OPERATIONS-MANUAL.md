@@ -60,7 +60,8 @@
 输入问题（可选 itemId、日期范围、周期），系统：
 1. 用 7 个受控只读 Java 工具从本地已发布数据收集证据（series.resolve / history.query / period.metrics / quality.inspect / cost.impact / warning.explain / provenance.trace）；
 2. 云模型可用时基于 EvidencePack 起草建议；不可用时用同一 EvidencePack 确定性生成 Java 模板报告；
-3. 后端核验全部证据引用后持久化报告。
+3. 后端核验全部结构化事实与证据引用后持久化报告；模型只能复制后端提供的 factId/evidenceRef，未知引用、伪造数值/日期/来源会被拒绝并降级；
+4. Agent 请求采用独立 90 秒等待上限（其他页面 API 仍为 15 秒）。分析中请等待按钮恢复，不要重复提交；超过 90 秒时页面会给出明确提示，后端仍保持安全降级边界。
 
 ### 2.8 一键完整 DEMO
 

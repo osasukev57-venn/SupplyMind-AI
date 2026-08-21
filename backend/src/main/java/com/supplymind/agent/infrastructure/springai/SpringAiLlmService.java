@@ -7,6 +7,8 @@ import com.supplymind.agent.tool.ToolStatus;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.ToolCallAdvisor;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.openai.api.ResponseFormat;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
@@ -127,7 +129,11 @@ public final class SpringAiLlmService implements LLMService.Port {
                 // attach the options with an EMPTY tool list - the model cannot select anything.
                 content = chatClient.prompt()
                         .user(prompt)
-                        .options(org.springframework.ai.model.tool.ToolCallingChatOptions.builder().build())
+                        .options(OpenAiChatOptions.builder()
+                                .responseFormat(ResponseFormat.builder()
+                                        .type(ResponseFormat.Type.JSON_OBJECT)
+                                        .build())
+                                .build())
                         .call()
                         .content();
             }
@@ -247,38 +253,39 @@ public final class SpringAiLlmService implements LLMService.Port {
         return model;
     }
 
-    private static String buildPrompt(LLMService.LLMRequest request) {
+    static String buildPrompt(LLMService.LLMRequest request) {
         StringBuilder prompt = new StringBuilder();
         prompt.append("You are a read-only analyst for SupplyMind. Answer using ONLY the provided facts and evidence refs.\n");
         prompt.append("Question: ").append(request.question()).append("\n");
         prompt.append("Mode: ").append(request.mode()).append("\n");
         if (!request.facts().isEmpty()) {
-            prompt.append("Deterministic facts (never alter these values):\n");
-            for (LLMService.LlmFact fact : request.facts()) {
-                prompt.append("- ").append(fact.statement())
-                        .append(" value=").append(fact.value())
-                        .append(" date=").append(fact.businessDate())
-                        .append(" period=").append(fact.period())
-                        .append(" validation=").append(fact.validationStatus())
-                        .append(" evidence=").append(fact.evidenceRef()).append("\n");
-            }
+            prompt.append("Verified facts as JSON. factId is an opaque identifier: copy it exactly and never renumber it.\n");
+            prompt.append(MAPPER.valueToTree(request.facts()).toString()).append("\n");
+            prompt.append("Allowed factIds: ")
+                    .append(MAPPER.valueToTree(request.facts().stream().map(LLMService.LlmFact::factId).toList()).toString())
+                    .append("\n");
         }
         if (!request.evidenceRefs().isEmpty()) {
-            prompt.append("Evidence refs: ").append(String.join(", ", request.evidenceRefs())).append("\n");
+            prompt.append("Allowed evidenceRefs: ")
+                    .append(MAPPER.valueToTree(request.evidenceRefs()).toString())
+                    .append("\n");
         }
-        prompt.append("Do not invent numbers, dates, sources or evidence refs. ");
-        prompt.append("If the facts are insufficient, say so explicitly.");
+        prompt.append("Do not invent numbers, dates, units, currencies, sources, factIds or evidenceRefs. ");
+        prompt.append("If the verified facts are insufficient, say so without creating a business claim.");
         if (!request.toolCallingEnabled()) {
-            // M3 STRICT: Phase B must answer with the JSON claims envelope ONLY.
-            prompt.append("\nPhase B response contract - return EXACTLY this JSON envelope, nothing else:\n")
-                    .append("{\"answer\":\"<one-line summary, no new business facts>\",")
-                    .append("\"claims\":[{\"claimId\":\"c1\",\"text\":\"<claim statement>\",")
-                    .append("\"factIds\":[\"<only facts that support this claim>\"],")
-                    .append("\"evidenceRefs\":[\"<only evidence refs that support this claim>\"],")
-                    .append("\"sourceNames\":[\"<actual source names from the referenced facts>\"],")
-                    .append("\"businessDates\":[\"<business dates covered by the referenced facts>\"]}]}\n")
-                    .append("Every number in a claim text must come from the facts that claim references. ")
-                    .append("Plain prose is REJECTED. Every claim must reference at least one factId or evidenceRef.");
+            // Phase B uses the provider's JSON_OBJECT response format and this strict envelope.
+            prompt.append("\nPhase B response contract - return exactly one JSON object and nothing else:\n")
+                    .append("{\"answer\":\"<short meta-summary without numbers, dates, sources or references>\",")
+                    .append("\"claims\":[{\"claimId\":\"c1\",\"text\":\"<statement supported by cited facts>\",")
+                    .append("\"factIds\":[\"<copy exact allowed factId>\"],")
+                    .append("\"evidenceRefs\":[\"<optional exact allowed evidenceRef>\"],")
+                    .append("\"sourceNames\":[\"<exact actualSourceName when the claim states a source>\"],")
+                    .append("\"businessDates\":[\"<exact businessDate when the claim states a date>\"]}]}\n")
+                    .append("Every claim must cite at least one allowed factId or evidenceRef. ")
+                    .append("Every number, date, unit, currency and source in claim.text must come from that claim's cited facts. ")
+                    .append("Put factIds/evidenceRefs only in their JSON arrays, never inside claim.text. ")
+                    .append("Use sourceNames/businessDates only when claim.text states them, and copy exact values. ")
+                    .append("Never output placeholder text or an ID not listed in the allowed arrays.");
         }
         return prompt.toString();
     }

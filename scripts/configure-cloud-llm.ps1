@@ -4,7 +4,7 @@ param(
     [string]$BaseUrl,
     [string]$Model,
     [string]$CompletionsPath = '/v1/chat/completions',
-    [string]$Timeout = '30s',
+    [string]$Timeout = '90s',
     [switch]$Clear,
     [switch]$Verify
 )

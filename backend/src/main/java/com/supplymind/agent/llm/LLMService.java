@@ -13,11 +13,16 @@ import java.util.List;
 public final class LLMService {
 
     public record LlmFact(
+            String factId,
             String statement,
+            String itemId,
             String value,
+            String unit,
+            String currency,
             String businessDate,
             String period,
             String validationStatus,
+            String actualSourceName,
             String evidenceRef
     ) {
     }

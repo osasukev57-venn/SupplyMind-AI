@@ -209,6 +209,20 @@ describe('AgentView (D8-T03)', () => {
     wrapper.unmount()
   })
 
+  it('shows the specific 90 second timeout message and restores the submit button', async () => {
+    vi.mocked(queryAgent).mockRejectedValue(
+      new Error('智能分析处理超过 90 秒，后端可能仍在生成报告，请勿重复提交'))
+    const wrapper = mountWithRouter()
+    await wrapper.find('textarea').setValue('分析 ADC12')
+    const submit = wrapper.findAll('button').find((button) => button.text().includes('提交分析'))
+    await submit?.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('智能分析处理超过 90 秒')
+    expect(wrapper.text()).toContain('请勿重复提交')
+    expect(wrapper.find('button.btn-primary').attributes('disabled')).toBeUndefined()
+    wrapper.unmount()
+  })
   it('empty question is rejected client-side without calling the backend', async () => {
     const wrapper = mountWithRouter()
     await wrapper.findAll('button').find((button) => button.text().includes('\u63d0\u4ea4\u5206\u6790'))?.trigger('click')

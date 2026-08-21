@@ -27,7 +27,7 @@ class CloudLlmRealApiAcceptanceTest {
                         "supplymind.agent.llm.base-url=${SUPPLYMIND_LLM_BASE_URL}",
                         "supplymind.agent.llm.api-key=${SUPPLYMIND_LLM_API_KEY}",
                         "supplymind.agent.llm.completions-path=${SUPPLYMIND_LLM_COMPLETIONS_PATH:/v1/chat/completions}",
-                        "supplymind.agent.llm.timeout=${SUPPLYMIND_LLM_TIMEOUT:30s}")
+                        "supplymind.agent.llm.timeout=${SUPPLYMIND_LLM_TIMEOUT:90s}")
                 .run(context -> {
                     assertThat(context).hasNotFailed();
                     ChatModel model = context.getBean(ChatModel.class);

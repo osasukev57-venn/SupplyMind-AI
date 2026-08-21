@@ -85,7 +85,7 @@ $env:SUPPLYMIND_LLM_MODEL='qwen-plus'
 $env:SUPPLYMIND_LLM_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
 $env:SUPPLYMIND_LLM_COMPLETIONS_PATH='/chat/completions'
 $env:SUPPLYMIND_LLM_API_KEY='<你的密钥>'
-$env:SUPPLYMIND_LLM_TIMEOUT='30s'
+$env:SUPPLYMIND_LLM_TIMEOUT='90s'
 .\SupplyMindAI.exe
 ```
 

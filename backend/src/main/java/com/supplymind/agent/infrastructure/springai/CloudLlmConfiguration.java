@@ -39,7 +39,7 @@ public class CloudLlmConfiguration {
             @Value("${supplymind.agent.llm.base-url:}") String baseUrl,
             @Value("${supplymind.agent.llm.api-key:}") String apiKey,
             @Value("${supplymind.agent.llm.completions-path:/v1/chat/completions}") String completionsPath,
-            @Value("${supplymind.agent.llm.timeout:30s}") String timeout
+            @Value("${supplymind.agent.llm.timeout:90s}") String timeout
     ) {
         requireProvider(provider);
         String safeModel = requireText(model, "model");
