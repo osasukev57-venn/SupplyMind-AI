@@ -119,6 +119,9 @@ $seedMain = 'com.supplymind.desktop.PortableInitialConfigExporter'
 if ($LASTEXITCODE -ne 0) { throw 'canonical initial config export failed' }
 
 # ---------------------------------------------------------------- licenses
+$projectLicense = Join-Path $RepoRoot 'LICENSE'
+if (-not (Test-Path -LiteralPath $projectLicense)) { throw "project LICENSE missing: $projectLicense" }
+Copy-Item -LiteralPath $projectLicense -Destination (Join-Path $licDir 'SUPPLYMIND-APACHE-2.0.txt') -Force
 Set-Content -LiteralPath (Join-Path $licDir 'THIRD-PARTY-NOTICES.txt') -Encoding UTF8 -Value @(
     'SupplyMind AI - Third-party notices',
     '=============================',

@@ -2,7 +2,7 @@
 
 > 文档编号：SMA-API-001
 > 适用版本：P0 便携发布
-> 最后更新：2026-08-20
+> 最后更新：2026-08-21
 
 ## 1. 通则
 
@@ -31,7 +31,7 @@
 | POST | `/api/manual/{runId}/process` | 显式操作员步骤：复用冻结校验/发布/daily/aggregate；成功返回 `status=PUBLISHED`，不自动信任 Manual |
 | POST | `/import`（multipart `file`） | CSV/XLSX 导入受理 → 逐行受理证据 + 逐行错误 |
 | GET | `/import/template` | 导入 CSV 模板下载 |
-| POST | `/synthetic-demo` | 确定性演示数据（不持久化、不进入正式判断） |
+| POST | `/synthetic-demo` | 运行完整确定性 DEMO 链；只持久化 DEMO raw/时间线/审计报告，不产生 PUBLISHED 或正式 processed/warning/report |
 
 ## 4. 当前官方汇率采集（`/api/acquisition/current`）
 
@@ -40,7 +40,7 @@
 | GET | `/api/acquisition/current` | 异步采集状态：IDLE/RUNNING/SUCCEEDED/FAILED、业务日期和非敏感提示 |
 | POST | `/api/acquisition/current/refresh` | 非阻塞触发一次真实人民银行公开网页采集；并发触发复用当前任务，不创建重复链 |
 
-桌面 EXE 启动时自动触发一次；失败不阻塞本地查询，不使用第三方数据冒充人民银行。
+桌面 EXE 启动时自动触发一次 PBOC 当前采集；SHFE FreePublic 当前采集也在启动后进入同一个单线程采集队列。失败不阻塞本地查询，不使用第三方数据冒充人民银行，也不使用 Synthetic 冒充外部材料数据。
 
 ## 5. 动态配置（`/api/config`）
 

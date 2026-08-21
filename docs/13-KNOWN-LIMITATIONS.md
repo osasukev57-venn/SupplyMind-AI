@@ -2,7 +2,7 @@
 
 > 文档编号：SMA-LIM-001
 > 适用版本：P0 便携发布（Day 10 Final Stage 状态）
-> 最后更新：2026-08-20
+> 最后更新：2026-08-21
 
 ## 1. 外部待确认项（OPEN_EXTERNAL，非缺陷）
 
@@ -12,16 +12,16 @@
 | EXT-07 | 价格/汇率/质量和成本影响预警阈值 | 业务预警规则 | 仅使用显式 TEST/DEMO 规则（demoRule=true），不冒充业务阈值 |
 | EXT-08 | 动态调价公式、成本权重与自动执行边界 | 自动调价能力 | P0 不自动调价；Agent 建议为非约束性文本，数值由 Java 确定性计算 |
 | EXT-09 | 「跨卷」语义（多轮转文件 vs 物理磁盘卷） | 轮转/跨卷验收口径 | 默认同一 data 根目录下多轮转文件；跨文件拼接/去重/排序已实现 |
-| EXT-10 | 指定商业源（SMM/Asian Metal）会员授权 | 指定源自动采集 | 能力标记 `N/A_APPROVED_FALLBACK`；四条材料序列以 Manual 路线满足 P0 接入（SUP-08 批准降级） |
+| EXT-10 | 指定商业源会员授权及免费基准映射 | 自动材料采集 | `PARTIALLY_RESOLVED`：ADC12 使用获批准的 SHFE 铸造铝合金期货主力合约结算价公开基准；AZ91D 与指定 SMM/Asian 自动能力继续 Manual/LocalImport |
 
 ## 2. 能力边界（设计冻结）
 
-- **指定商业源自动采集**：SMM / Asian Metal 无会员授权，P0 不提供自动采集（DEC-015/037）；`AT-SRC-003/004` 相应能力为 `N/A_APPROVED_FALLBACK`，不阻塞整体 P0，但该能力**未实现**，报告不得声称其 PASS。
+- **指定商业源自动采集**：SMM / Asian Metal 无会员授权，P0 不提供该指定源自动采集（DEC-015/037）；能力仍为 `N/A_APPROVED_FALLBACK`。DEC-063 只批准独立的 SHFE ADC12 同类公开期货基准，不等于指定商业源能力实现。AZ91D 继续 Manual/LocalImport。
 - **Manual 数据发布**：人工录入先受理为 PENDING，必须由操作员显式点击“校验并发布到面板”，再经过 `material-basic-validation-v2` 与正式 Publish Gate；成功才生成 daily/aggregate。实际来源逐记录保留，不把模拟数据或人工数据冒充商业源。历史回填在无真实输入时保持 `AWAITING_MANUAL_INPUT`。
 - **云 LLM**：可选能力；无密钥默认 Java 模板。密钥只经环境变量注入，不落盘、不入日志。
 - **本地模型 / RAG / vLLM / LoRA**：P0 不包含（DEC-032）；Ollama/Qwen 连通性为 P1，正式本地模型为 P2。
 - **数据库 / Docker / Redis / MCP / Vector Store**：P0 一律不包含（DEC-004/005/025）。
-- **网络依赖**：PBOC 采集与云 LLM 依赖公网；断网时本地历史可查、新采集明确失败或等待，不造数。
+- **网络依赖**：PBOC、SHFE 采集与云 LLM 依赖公网；断网时本地历史可查、新采集明确失败或等待，不造数。SHFE 基准是期货结算价，不代表 ADC12 现货或采购成交价。
 
 ## 3. 运行限制
 

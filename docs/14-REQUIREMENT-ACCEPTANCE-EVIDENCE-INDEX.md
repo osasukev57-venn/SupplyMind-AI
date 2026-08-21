@@ -10,9 +10,10 @@
 - `PASS`：按冻结预期真实执行且证据有效。
 - `SAFE_EQUIVALENT_PASS`：业务预期通过生产同一边界与临时 dataRoot/受控 Clock/stub 完成；仅替代高风险操作手段。
 - `NOT_RUN`：指定物理方法未执行，不得解释为 PASS。
-- `N/A_APPROVED_FALLBACK`：指定商业材料源自动能力不可合法取得；获准走 Manual，自动能力本身不是 PASS。
+- `N/A_APPROVED_FALLBACK`：指定商业材料源自动能力不可合法取得；获准走 FreePublic/Manual，指定能力本身不是 PASS。
+- `APPROVED_FREE_PUBLIC`：免费公开源的身份、字段和映射已由决策冻结并通过实际链路验证；不等于指定商业源。
 
-最终机器证据根目录为 `docs/evidence/Day10/`，由该目录 `index.json` 绑定文件大小与 SHA-256。
+Day10 原始最终机器证据位于 `docs/evidence/Day10/`；Post-Day10 SHFE/DEMO/开源交付补充证据位于 `docs/evidence/FinalRelease/`。制品 SHA-256 以 `release/` 下同名 sidecar 为唯一权威值。
 
 ## 2. 官方验收项（H01-H09）
 
@@ -37,7 +38,9 @@
 | 启动后页面可见 | acquisition `RUNNING → SUCCEEDED`；面板显示双币；失败时显示真实错误且允许重试 | PASS |
 | 商业材料源 | 未绕过会员、登录、验证码或反爬；指定源自动能力保持条件化 | N/A_APPROVED_FALLBACK |
 | Manual 材料路线 | `PENDING → 显式校验/发布 → PUBLISHED+VERIFIED → daily + 四级 aggregate` | PASS |
-| D10 模拟材料 | `MAT.ADC12.SMM`，`18888.50 元/吨`，来源明确为“D10手工模拟验收（非外部市场信源）”，不得冒充实时市场价格 | PASS |
+| SHFE ADC12 同类公开基准 | 最近完整交易日 `ad_f` 主力合约结算价，完整 HTTP entity raw/SHA、独立双 item 链、daily 与四级 aggregate | APPROVED_FREE_PUBLIC / PASS |
+| 一键 Synthetic DEMO | DEMO raw→PARSED→VALIDATED→日/月/季/半年/年演示投影→预警求值→审计报告；无 PUBLISHED/正式 processed | PASS |
+| D10 模拟材料（历史） | `MAT.ADC12.SMM`，`18888.50 元/吨`，来源明确为“D10手工模拟验收（非外部市场信源）”，不得冒充实时市场价格 | PASS（历史 Manual 验收） |
 
 ## 4. P0/Windows/故障边界
 
@@ -55,10 +58,11 @@
 ## 5. 最终发布制品与回归
 
 - ZIP：`release/SupplyMindAI-0.9.0-win32-x64.zip`
-- ZIP SHA-256：`022685093835379162FEBBAF25EA70BA2898AFDE26DD317A33FB6522522151F9`
-- Release manifest SHA-256：`48AB0DFD6021AD1D3999E142744825939D818C6131F7817D48EA3B21780AD41A`
-- 制品条目：321；白名单违规：0；API Key 命中：0。
-- Backend：124 suites / 652 tests / 0 failures / 0 errors / 9 skipped。
+- 源码包：elease/SupplyMindAI-0.9.0-source.zip（README、LICENSE、源码与 docs；SHA 见 sidecar）
+- ZIP SHA-256：以同目录 `.sha256` sidecar 为唯一权威值（每次最终 clean build 重新生成）
+- Release manifest：`release/SupplyMindAI-0.9.0-win32-x64.zip.manifest.json`（绑定构建输入与制品哈希）
+- 制品条目数与白名单结果以当前 release manifest / verify report 为准；最终制品 API Key 命中必须为 0。
+- Backend：最终回归 654 tests / 0 failures / 0 errors / 9 skipped。
 - Desktop：31 / 31 PASS。
 - Frontend：34 / 34 PASS；production build PASS。
 - 最终执行报告：`docs/evidence/Day10/D10-FINAL-ACCEPTANCE.md`。
@@ -69,4 +73,4 @@
 - 干净 Windows VM 逐项安装态证明：`NOT_RUN`；便携制品边界按 DEC-062 为 `SAFE_EQUIVALENT_PASS`。
 - 主动断开宿主机网络：`NOT_RUN`；故障行为按 stub 为 `SAFE_EQUIVALENT_PASS`。
 - EXT-07/08：`OPEN_EXTERNAL`；不影响 Java 模板预警/Agent P0。
-- 指定商业材料源自动采集：`N/A_APPROVED_FALLBACK`；Manual 合法路线为 `PASS`。
+- 指定 SMM/Asian 商业源自动采集：`N/A_APPROVED_FALLBACK`；SHFE ADC12 同类公开基准与 Manual 合法路线为 `PASS`；AZ91D 仍走 Manual/LocalImport。

@@ -2,12 +2,12 @@
 
 > 文档编号：SMA-DATA-001
 > 适用版本：P0 便携发布（FILE-SCHEMA-V1）
-> 最后更新：2026-08-20
+> 最后更新：2026-08-21
 
 ## 1. 存储总则
 
 - 唯一业务持久化介质：程序根目录 `data/` 下的 UTF-8 文本文件。**不存在数据库、数据库索引或隐藏存储**（Electron 缓存不承载业务真值）。
-- JSON 文件：配置、raw、生命周期、隔离、预警、报告、任务/时间状态、manifest。
+- JSON 文件：配置、raw、生命周期、隔离、预警、报告、DEMO 隔离报告、任务/时间状态、manifest。
 - CSV 文件：`processed/daily`（每日加工）与 `processed/aggregate`（月/季/半年/年聚合）；RFC 4180、UTF-8 无 BOM、`\r\n` 行尾、固定表头、行规范排序。
 - 每个业务 JSON/CSV 文件都伴随 `<文件>.manifest.json`（SHA-256、时间、内容引用），读取前强制校验；manifest 自身不再生成 manifest。
 - 写入一律原子提交（临时文件 + dirty marker + 备份恢复），无半文件。
@@ -31,6 +31,7 @@ data/
     aggregate/<itemId>/<grain>/<YYYY>.csv      # grain ∈ month|quarter|halfyear|year
   warning/<YYYY-MM>/<warningId>.json  # 预警记录（+ .ack.json 确认 sidecar）
   report/<YYYY-MM>/<reportId>.json    # Agent 报告（AGENT-EVIDENCE-SCHEMA-V1）
+  demo/showcase/<scenarioId>.json      # DEMO 隔离审计报告，不属于正式业务真值
   runtime/
     jobs/active/<jobId>.json          # 回填任务 + time-state.json
     jobs/history/<YYYY-MM>/<jobId>.json
@@ -107,3 +108,9 @@ sourceFingerprint, inputRefs, calculatedAt, canonicalSpecCode
 ## 12. Agent 报告（`report/<YYYY-MM>/<reportId>.json`，AGENT-EVIDENCE-SCHEMA-V1）
 
 `reportId`、`question`、`mode`、`generatedBy`（CLOUD_LLM|JAVA_TEMPLATE）、`degraded`、`summary`、`conclusion`、`limitations`、`toolResults`（工具名、输入、输出）、`evidenceRefs`、`createdAt`。报告正文引用必须可回指证据文件；引用失效 fail-closed。
+
+## 13. FreePublic SHFE 与 DEMO 隔离
+
+- SHFE item raw：`providerType=FREE_PUBLIC`、`accessMethod=FREE_PUBLIC_WEB`、`actualSourceName=上海期货交易所铸造铝合金期货主力合约结算价（公开基准）`；`payloadBase64` 保存完整日行情 JSON response entity bytes，`payloadSha256` 对这些原始字节计算。`rawValue` 为所选 `ad_f` 主力合约结算价，单位 `元/吨`，`sourceFieldKey=SETTLEMENTPRICE`。
+- 两条 ADC12 来源意图可以共享同一 acquisition/payload，但各自 runId/rawRef/timeline 独立；禁止把 SHFE 基准写成 SMM/Asian 现货。
+- DEMO raw 位于 `raw/demo/synthetic_demo/...`，生命周期最多到 `VALIDATED`，不会出现 `PUBLISHED`。DEMO 审计报告固定在 `demo/showcase/supplymind-demo-showcase-v1.json`，包含 stages、items、日/月/季/半年/年演示值和 warningOutcome；其相邻 manifest 必须验证。

@@ -2,7 +2,7 @@
 
 > 文档编号：SMA-LIC-001
 > 适用版本：P0 便携发布
-> 最后更新：2026-08-20
+> 最后更新：2026-08-21
 > 随包副本：`SupplyMindAI/licenses/THIRD-PARTY-NOTICES.txt`
 
 ## 1. 内置运行时
@@ -39,10 +39,10 @@
 
 - 中国人民银行汇率：公开官方公告页（公开访问、授权发布渠道），按 DEC-015/037 合规获取，不绕过任何访问控制。
 - SMM / Asian Metal：P0 未获得会员授权，**不执行任何自动采集**；对应能力标记为 `N/A_APPROVED_FALLBACK`，经项目方批准以 Manual 路线满足 P0 接入（SUP-08）。
-- 免费公开信源（如启用）：必须记录并展示真实网站名称、URL/引用，不冒充指定商业源。
+- 上海期货交易所公开日行情：使用官网公开 `ad_f` 铸造铝合金期货行情作为 ADC12 同类公开基准，记录真实 URL、完整响应实体与 SHA-256；不表述为 SMM/Asian Metal 或 ADC12 现货成交价，不绕过访问限制。外部数据权利与使用条款归发布机构，本项目不对其再许可。
 
 ## 5. 说明
 
 - 以上为运行时随包组件；开发期工具（Maven、Node、构建插件）不属于最终交付。
 - 完整 license 文本随包分发于 `licenses/`；Electron/Chromium 条款见包内 `LICENSES.chromium.html`。
-- 本项目源码许可以仓库 LICENSE 声明为准（当前 P0 为内部交付）。
+- 本项目源码按仓库根目录 `LICENSE` 以 Apache License 2.0 开源；该许可不覆盖或再许可 PBOC/SHFE 等第三方数据。

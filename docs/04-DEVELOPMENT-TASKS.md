@@ -3,7 +3,7 @@
 > 文档性质：跨窗口可独立执行的任务清单  
 > 规范版本：v1.5（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
-> 当前进度锚点：Day 1～Day 10均已完成；Day10 Final Implementation Candidate=`09c871f`，D10-T01～D10-T05=`DONE`，Day10=`COMPLETE`。最终 ZIP SHA-256=`022685093835379162FEBBAF25EA70BA2898AFDE26DD317A33FB6522522151F9`；Backend=`124/652/0/0/9`，Desktop=`31/31`，Frontend=`34/34 + build PASS`。真实 PBOC 双币与 Manual 材料路线均可在最终 EXE 中显示；DEC-062 安全等价验收生效，AT-TIME-003/004 物理改时保持 `NOT_RUN`。
+> 当前进度锚点：Day 1～Day 10均已完成；Post-Day10 数据可用性补充实现=`ee48994`，DEC-063=`EFFECTIVE`。真实 PBOC 双币、SHFE ADC12 同类公开基准、AZ91D Manual 与一键完整隔离 DEMO 均已实现；Backend=`654 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`34/34 + build PASS`。最终运行/源码 ZIP 的 SHA-256 以 release 同名 `.sha256` sidecar 为唯一权威值；DEC-062 安全边界继续生效。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`TaskExecutionStatus=DONE`（实施 + Attack Validation + Final Stage Review 全部 PASS，MAJOR Finding 全部关闭）；最终实施候选=`feaedd3`；CURRENT 全量回归=110 suites/578 backend tests/0 failures/0 errors/8 skipped，前端 11/11 PASS + build PASS；历史候选（1b83410、d2b0965、5f1491c、01d4270 等中间状态）一律 HISTORICAL，详见 docs/05-PROGRESS-LEDGER 与 docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md。Day1-Day6 代码零修改。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
@@ -247,6 +247,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 - **失败回退：** 停用该免费源并保留失败证据，使用D3-T04，不抓取受限内容。
 - **是否阻塞后续：** D3-T03的调查产物是D3-T06硬依赖；FreePublic能力缺失本身不阻塞。若已用`NO_APPROVED_SOURCE`、URL/条款调查证据及转Manual路由满足本任务DoD，D3-T03可标`DONE`并允许D3-T06继续。
 
+> **Post-Day10 current-state note（DEC-063）：** D3-T03 的 `NO_APPROVED_SOURCE` 是当时调查结论，保留历史审计；当前已批准并实现 SHFE `ad_f` 铸造铝合金期货主力合约结算价作为 ADC12 同类公开基准。它不等于 SMM/Asian 指定源，也不适用于 AZ91D。
 ### D3-T04 ManualDataProvider与数据治理门禁
 
 - **优先级/状态：** P0 / `TaskExecutionStatus=DONE`；`statusReason=R1_REVIEW_PASS_20260810`。implementation=`9611c66`；Review Level=R1+；第二方 R1+ Review=`PASS`（BLOCKER=无、MAJOR=无、BUSINESS_DECISION_REQUIRED=无、R2_REQUIRED=NO）；technical DoD=`PASS`；支持状态收口=`YES`；DEC-057=`EFFECTIVE`。边界保留：最大生命周期=`PARSED+PENDING`，MUST NOT 产生 VERIFIED/VERIFIED_WITH_NOTICE/PUBLISHED；normalizationVersion=`manual-material-normalization-v1`；material validationVersion=`DEFERRED_TO_D4_T01`；AT-SRC-007-D3=`PASS`（DEC-058 阶段子用例，Stage=Day3：受理→PARSED+PENDING 等 Day3 范围完整满足；父用例 AT-SRC-007=`NOT_RUN`，Day4 部分由 AT-SRC-007-D4 承接、未执行）；Publish Gate=UNCHANGED，PENDING 正式下游不可见。任务级 PASS，不代表 Day 3 阶段 Gate 已通过。
@@ -913,6 +914,6 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 
 ## 推荐启动顺序
 
-- Day 1～Day 10均为`COMPLETE`；Day10 Final Implementation Candidate=`09c871f`；D10-T01～D10-T05=`DONE`；最终便携 ZIP SHA-256=`022685093835379162FEBBAF25EA70BA2898AFDE26DD317A33FB6522522151F9`。
-- 当前无下一 P0 开发任务；项目进入 `FINAL_RELEASE_READY`。本分支未执行 merge/tag/push，发布限制与未执行物理方法见 docs/13、docs/14 及 Day10 Final Acceptance。
+- Day 1～Day 10均为`COMPLETE`；Post-Day10 Final Release Supplement=`ee48994`，DEC-063=`EFFECTIVE`；D10-T01～D10-T05仍为`DONE`。最终便携 ZIP 与源码 ZIP 的 SHA-256 由 release sidecar 给出。
+- 当前无下一 P0 开发任务；项目进入 `FINAL_RELEASE_READY`。ADC12 FreePublic 与 DEMO 的当前口径见 DEC-063；未执行物理方法见 docs/13、docs/14。
 - P1/P2仅在P0验收全绿、Day 8功能冻结未被破坏且仍有时间时启动。

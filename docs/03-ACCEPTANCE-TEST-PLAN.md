@@ -364,6 +364,7 @@ GD-07用于AT-SRC-005至AT-SRC-008；每个文件生成SHA-256并固定期望状
   3. 未校验数据不可见；raw/lifecycle以JSON、已验证daily/aggregate以CSV持久化。
   4. 解析失败明确告警，不自动切到未知网站。
 - 证据：条款/URL、raw、字段映射、校验报告、daily/aggregate、页面与Agent截图；存入AT-SRC-006。
+- **Post-Day10 执行（DEC-063）：** ADC12/SHFE 子范围=PASS：官方公开 HTTPS、完整 response entity raw/SHA、字段漂移 fail-closed、双 item 独立 timeline、material-basic-validation-v2、PUBLISHED、daily 与 month/quarter/halfyear/year 均通过；actualSourceName 明确为 SHFE 公开基准，不等于 SMM/Asian。AZ91D 仍由 AT-SRC-007 Manual 路线覆盖。证据：`docs/evidence/FinalRelease/FREEPUBLIC-DEMO-CLOSURE-20260821.md`。
 
 ### AT-SRC-007 ManualDataProvider治理与门禁
 

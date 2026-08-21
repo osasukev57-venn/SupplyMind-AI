@@ -578,7 +578,7 @@ P1/P2 只有在 P0 验收通过且有剩余资源时启动。
 | EXT-07 | 预警阈值和严重度 | 使用演示阈值并明确标记非正式 | 无法声称业务预警阈值正式有效 | Day 5前 | 完成规则框架与演示规则 | 部分 |
 | EXT-08 | 动态调价公式、成本权重、汇率换算 | P0只输出参考成本影响，不自动执行调价 | 成本建议缺少业务依据 | Day 5前 | 可配置演示成本篮子 | 是，影响正式建议 |
 | EXT-09 | “跨卷”是否仅指多个轮转文件，或包含多个物理磁盘卷 | 默认指按月/年轮转文件 | 物理跨盘场景可能漏验 | Day 5前 | 完成跨文件/跨年；不自动跨物理盘 | 是，影响H06边界 |
-| EXT-10 | 项目方认可的免费公开材料信源、许可条款、更新频率和字段映射 | 选择无需绕限制、可留原始证据且规格可比的来源 | 免费源不稳定或不可比 | Day 3 | 未确认时使用ManualDataProvider保底 | 否，不阻塞PBOC或整体P0 |
+| EXT-10 | 项目方认可的免费公开材料信源、许可条款、更新频率和字段映射 | `PARTIALLY_RESOLVED` via DEC-063：ADC12 接受 SHFE 铸造铝合金期货主力合约结算价公开基准；AZ91D 未确认 | 公开基准不得冒充指定源或现货价 | Post-Day10 | ADC12 自动 FreePublic；AZ91D 使用 Manual/LocalImport 保底 | 否，不阻塞PBOC或整体P0 |
 | EXT-11 | 手工录入是否要求操作人实名、复核人及附件证据 | P0至少记录operatorRef、实际来源、输入/更新时间和版本审计 | 审计责任深度不足 | Day 3 | 先实现可配置operatorRef和来源说明 | 否，不阻塞基础Manual链路 |
 
 任何 EXT 项未确认都不得被写成“已解决”，但只按表中影响范围局部阻塞。EXT-04、EXT-10、EXT-11 不得阻塞 PBOC 或整个 P0；指定商业源不可合法自动获取时，必须执行项目方认可的免费公开信源或 Manual 降级。
@@ -656,3 +656,11 @@ JAR 可以存在于发布包内部，但不得作为面向最终用户的唯一�
 D1-T01 已完成；D1-T02 字段事实有效，本轮 Code Review 曾因逐币种连通性重放证据不完整而重开。实时任务状态与下一可领取任务只看`docs/05-PROGRESS-LEDGER.md`，并同步展示于`docs/04-DEVELOPMENT-TASKS.md`；本冻结总计划不再复制瞬时状态。第8.3至9节已经冻结 D1-T03 的唯一编码契约；无论D1-T02当前处于READY、IN_PROGRESS或REVIEW_PENDING，D1-T03都只能在D1-T02=`DONE`且Review通过后由技术负责人正式改为`READY`。只有 Day1 真实双币 raw 和 Day2 的 AT-SRC-002=`PASS` 才能通过 PBOC 验收或放行原材料 Provider 实现。
 
 v1.4起，`docs/01`、`docs/02`、`docs/03`、`docs/06`及`docs/04`中的需求、契约、依赖、测试和DoD属于编码前冻结规范；`docs/04`的任务状态副本、`docs/05`进度台账和`docs/evidence`执行证据仍按执行协议更新。规范变更必须先新增正式决策和影响分析，再同步修改全部受影响基线，禁止Terra在编码时自行补设计。
+
+## 13. Post-Day10 最终发布补充（DEC-063）
+
+1. 默认配置中 `MAT.ADC12.SMM` 与 `MAT.ADC12.AM` 路由至 SHFE FreePublic；来源意图仍用于序列身份，但 actualSourceName 必须如实显示 SHFE 公开基准，禁止冒充 SMM/Asian。
+2. SHFE `ad_f` 日行情按“最近完整交易日→最高成交量→同量较早交割月→结算价”确定；完整 HTTP entity raw、manifest、独立 timeline、validation/publish/daily/aggregate 全链必须成立。
+3. `MAT.AZ91D.SMM` 与 `MAT.AZ91D.AM` 继续 Manual/LocalImport；无数据时保持诚实空状态。
+4. Synthetic DEMO 走真实处理阶段并持久化独立审计证据，但只属于 DEMO 投影；不得伪造 PUBLISHED 或正式 daily/aggregate。
+5. 发布必须同时提供便携运行 ZIP 与完整源码 ZIP；源码根必须含 README、Apache-2.0 LICENSE、本地部署手册和全部正式 docs。

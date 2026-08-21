@@ -1,9 +1,9 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 1～Day 10=`COMPLETE`；D10-T01～D10-T05=`DONE`；Day10 Final Implementation Candidate=`09c871f`；最终验收=`PASS / SAFE_EQUIVALENT_PASS`（按 DEC-062 区分方法），项目=`FINAL_RELEASE_READY`。真实 Cloud 历史 Gate=`PASS`；Day10 未重复执行可能计费请求。
+> 当前阶段：Day 1～Day 10=`COMPLETE`；Post-Day10 数据可用性补充=`COMPLETE`；DEC-063=`EFFECTIVE`；项目=`FINAL_RELEASE_READY`。真实 Cloud 历史 Gate=`PASS`；本轮未执行新的计费请求。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`DONE`；**Final Implementation Candidate=`feaedd3`**；**CURRENT regression=110 suites/578 backend tests/0 failures/0 errors/8 skipped**，前端 `npm run test` **11/11 PASS** + `npm run build` PASS；历史候选（1b83410、d2b0965、a4006c4、3fd1d35、5f1491c、01d4270 等中间状态）一律 HISTORICAL（不删除）；Closure Evidence=`docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md`。Day1-Day6 代码零修改。
-> Day10=`COMPLETE`：最终 ZIP SHA-256=`022685093835379162FEBBAF25EA70BA2898AFDE26DD317A33FB6522522151F9`；Backend=`124 suites/652 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`34/34 + build PASS`；最终 EXE 启动后可见真实 PBOC USD/EUR，Manual 材料模拟数据明确标注且经统一门禁发布。
+> 当前最终发布补充：implementation=`ee48994`；Backend=`126 suites/654 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`34/34 + build PASS`；干净启动实证同时生成真实 PBOC USD/EUR 与 SHFE 两条 ADC12 raw→PUBLISHED→daily→四级 aggregate；一键 Synthetic DEMO 完整且仅写 DEMO 隔离区。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -60,19 +60,28 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 当前开发日 | Day 1～Day 10=`COMPLETE` |
 | 当前任务编号 | 无进行中 P0 任务；D10-T01～D10-T05=`DONE` |
 | 当前任务状态 | D10-T01～D10-T05=`DONE`；Day10=`COMPLETE`；项目=`FINAL_RELEASE_READY`；本分支未执行 merge/tag/push |
-| 编码前基线对齐 | `v1.5 FROZEN` 保持；DEC-060/061不变；新增 DEC-062 仅批准安全等价验收方法，不改变 H01-H09 业务预期。 |
+| 编码前基线对齐 | `v1.5 FROZEN` 保持；DEC-060/061/062不变；新增 DEC-063 仅冻结 ADC12 SHFE FreePublic 与 DEMO 隔离口径，不降低 H01-H09。 |
 | 已完成任务 | Day1～Day10全部 P0 开发任务及最终验收；D10-T01～D10-T05=`DONE` |
 | 正在进行任务 | 无 |
 | 阻塞项 | 无 P0 BLOCKER/MAJOR；EXT-07/08保持 OPEN_EXTERNAL；物理改时/干净VM/主动断网方法按DEC-062保持NOT_RUN，不阻塞已通过的业务结果 |
-| 最近验收结果 | Day10 Final Acceptance：真实 PBOC USD=`6.7808`、EUR=`7.8815` 在最终 EXE 可见；Manual 模拟材料=`18888.50 元/吨`且来源不冒充；本地 JSON/CSV、无数据库、精度、轮转、跨年、动态配置均通过；回归=`124/652/0/0/9 + Desktop 31/31 + Frontend 34/34/build PASS` |
-| 新增风险 | 材料商业源自动能力仍为N/A_APPROVED_FALLBACK并由Manual承接；PBOC网络失败时页面显示真实失败并可重试；云端调用失败继续由JAVA_TEMPLATE降级 |
+| 最近验收结果 | Post-Day10：真实启动同时完成 PBOC USD/EUR 与 SHFE ADC12 双 item 的 raw/发布/daily/四级 aggregate；DEMO 八阶段及审计报告通过；回归=`126/654/0/0/9 + Desktop 31/31 + Frontend 34/34/build PASS` |
+| 新增风险 | 指定 SMM/Asian 自动能力仍为 N/A_APPROVED_FALLBACK；SHFE 仅是 ADC12 同类期货公开基准，AZ91D 仍 Manual；官方网络失败时不造数，云端调用失败继续由 JAVA_TEMPLATE 降级 |
 | 下一任务 | 无 P0 开发任务；进入最终发布/merge/tag决策 |
-| 最近一次可运行版本 | Day10 Final Implementation Candidate=`09c871f`；`SupplyMindAI-0.9.0-win32-x64.zip` SHA-256=`022685093835379162FEBBAF25EA70BA2898AFDE26DD317A33FB6522522151F9`；manifest SHA-256=`48AB0DFD6021AD1D3999E142744825939D818C6131F7817D48EA3B21780AD41A` |
-| 最近一次Git提交 | `09c871f`（Day10 实现、测试、手册与最终验收证据） |
-| 是否偏离计划 | 否；真实 PBOC 优先、Manual 降级、文件存储、无数据库与只读 Agent 边界保持；DEC-062 只替代高风险验收手段 |
-| 最后更新人/窗口 | 技术负责人 / Day10 Final Acceptance Closure |
+| 最近一次可运行版本 | Post-Day10 Implementation=`ee48994`；最终运行 ZIP/源码 ZIP 及其 SHA-256 sidecar 由 release clean build 生成，sidecar 为唯一权威值 |
+| 最近一次Git提交 | `ee48994`（SHFE FreePublic、完整隔离 DEMO、前端展示、测试与 Apache-2.0 LICENSE） |
+| 是否偏离计划 | 否；按原三层路线补齐 FreePublic，同时保持 Manual、文件存储、无数据库、只读 Agent、DEC-062 安全边界与 Synthetic 隔离 |
+| 最后更新人/窗口 | 技术负责人 / Post-Day10 Final Release Closure |
 | 最后更新时间 | 2026-08-21（Asia/Shanghai） |
 
+### 3.5 Post-Day10 FreePublic / DEMO / Open-source Closure（2026-08-21）
+
+- Implementation：`ee48994`；DEC-063=`EFFECTIVE`。
+- ADC12 默认 FreePublic：SHFE `ad_f` 最近完整交易日主力合约结算价，真实来源名称、URL、完整 response entity bytes、SHA-256、双 item 独立 raw/timeline、统一 validation/publish/daily/aggregate 均通过；不冒充 SMM/Asian 现货。
+- AZ91D：继续 Manual/LocalImport；无数据保持诚实空状态。
+- Synthetic DEMO：八阶段完整执行并写 DEMO raw/manifest、VALIDATED timeline 与审计报告；不存在 PUBLISHED 或正式 processed/warning/report 污染。
+- 实际联网启动：PBOC USD/EUR 与 SHFE ADC12 两条来源意图在同一干净 dataRoot 串行采集并全部生成 daily + month/quarter/halfyear/year；临时实例退出后无进程/端口残留。
+- 最终回归：Backend=`126 suites/654 tests/0 failures/0 errors/9 skipped`；Desktop=`31/31`；Frontend=`34/34` + build PASS。
+- 开源交付：Apache-2.0 LICENSE；最终提供 Windows 便携运行 ZIP 和 GitHub-ready 源码 ZIP，SHA-256 以 release sidecar 为权威。
 ### 3.4 Day 10 Final Acceptance Closure（2026-08-21）
 
 - Final Implementation Candidate：`09c871f`；D10-T01～D10-T05=`DONE`；Day10=`COMPLETE`；项目=`FINAL_RELEASE_READY`。
@@ -136,7 +145,7 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | EXT-07 | 预警阈值 | 待确认 | 预警验收 | 使用显式测试规则，不冒充最终业务阈值 |
 | EXT-08 | 动态调价公式 | 待确认 | 成本影响、建议 | P0仅规则预警和非约束建议，不自动调价 |
 | EXT-09 | “跨卷”含义 | 待确认 | H06 | 临时解释为同一data根下多个轮转文件 |
-| EXT-10 | 免费材料信源及映射 | `OPEN_EXTERNAL_NON_BLOCKING` | FreePublic能力 | 保存URL/许可/频率/字段映射；未认可时Manual保底 |
+| EXT-10 | 免费材料信源及映射 | `PARTIALLY_RESOLVED_NON_BLOCKING`（DEC-063） | FreePublic能力 | ADC12=SHFE 铸造铝合金期货公开基准；AZ91D与指定商业源仍Manual/LocalImport |
 | EXT-11 | Manual操作与复核责任 | `OPEN_EXTERNAL_NON_BLOCKING` | 审计深度 | P0记录operatorRef、实际来源、时间、版本；复核深度配置化 |
 
 ## 5. 任务执行记录
