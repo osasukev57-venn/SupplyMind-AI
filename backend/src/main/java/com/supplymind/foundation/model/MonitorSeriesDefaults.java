@@ -52,9 +52,9 @@ public final class MonitorSeriesDefaults {
                 List.of(
                         item(USD_CNY_ITEM_ID, "美元/人民币中间价", "USD", "1美元对人民币", "USD", "CNY/1 USD", updatedAt),
                         item(EUR_CNY_ITEM_ID, "欧元/人民币中间价", "EUR", "1欧元对人民币", "EUR", "CNY/1 EUR", updatedAt),
-                        materialItem(ADC12_SMM_ITEM_ID, "ADC12铝合金锭（SMM意图）", "SMM", "ADC12", updatedAt),
+                        freePublicAdc12Item(ADC12_SMM_ITEM_ID, "ADC12公开基准（SMM来源意图）", "SMM", updatedAt),
                         materialItem(AZ91D_SMM_ITEM_ID, "AZ91D镁合金锭（SMM意图）", "SMM", "AZ91D", updatedAt),
-                        materialItem(ADC12_AM_ITEM_ID, "ADC12铝合金锭（Asian Metal意图）", "Asian Metal", "ADC12", updatedAt),
+                        freePublicAdc12Item(ADC12_AM_ITEM_ID, "ADC12公开基准（Asian Metal来源意图）", "Asian Metal", updatedAt),
                         materialItem(AZ91D_AM_ITEM_ID, "AZ91D镁合金锭（Asian Metal意图）", "Asian Metal", "AZ91D", updatedAt)
                 )
         );
@@ -128,5 +128,20 @@ public final class MonitorSeriesDefaults {
                 "元/吨",
                 new MaterialValidationConfigV1("0", null, 7, externalCode, List.of())
         );
+    }
+    /** ADC12 fallback to the explicitly labelled SHFE futures settlement public benchmark. */
+    private static MonitorSeriesItemV1 freePublicAdc12Item(
+            String itemId, String displayName, String sourceIntent, OffsetDateTime updatedAt
+    ) {
+        return new MonitorSeriesItemV1(
+                itemId, displayName, true, sourceIntent,
+                ProviderType.FREE_PUBLIC, AccessMethod.FREE_PUBLIC_WEB,
+                com.supplymind.provider.shfe.ShfeAdFreePublicDataProvider.SOURCE_NAME,
+                RouteDecision.FALLBACK_FREE_PUBLIC,
+                com.supplymind.provider.shfe.ShfeAdFreePublicDataProvider.FALLBACK_REASON,
+                updatedAt, null, "ADC12", "SETTLEMENTPRICE", "material",
+                CALCULATION_VERSION, 2, 2, RoundingMode.HALF_UP, CALENDAR_VERSION,
+                "CNY", "CNY", "元/吨",
+                new MaterialValidationConfigV1("0", null, 7, "ADC12", List.of()));
     }
 }

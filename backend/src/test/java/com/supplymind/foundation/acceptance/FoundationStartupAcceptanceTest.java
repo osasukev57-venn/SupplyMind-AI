@@ -103,7 +103,7 @@ class FoundationStartupAcceptanceTest {
                 assertTrue(item.unit().startsWith("CNY/1 "));
             }
             List<MonitorSeriesItemV1> materialItems = configuration.items().stream()
-                    .filter(item -> item.providerType() == ProviderType.MANUAL).toList();
+                    .filter(item -> "material".equals(item.rateKind())).toList();
             assertEquals(List.of(
                             MonitorSeriesDefaults.ADC12_AM_ITEM_ID, MonitorSeriesDefaults.ADC12_SMM_ITEM_ID,
                             MonitorSeriesDefaults.AZ91D_AM_ITEM_ID, MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID),
@@ -111,11 +111,17 @@ class FoundationStartupAcceptanceTest {
             for (MonitorSeriesItemV1 item : materialItems) {
                 assertTrue(item.enabled());
                 assertTrue(item.sourceIntent().equals("SMM") || item.sourceIntent().equals("Asian Metal"));
-                assertEquals(ProviderType.MANUAL, item.providerType());
-                assertEquals(AccessMethod.MANUAL, item.accessMethod());
-                assertEquals(MonitorSeriesDefaults.MANUAL_INGRESS_SOURCE_NAME, item.actualSourceName());
-                assertEquals(RouteDecision.FALLBACK_MANUAL, item.routeDecision());
-                assertEquals(MonitorSeriesDefaults.MATERIAL_FALLBACK_REASON, item.fallbackReason());
+                if ("ADC12".equals(item.externalCode())) {
+                    assertEquals(ProviderType.FREE_PUBLIC, item.providerType());
+                    assertEquals(AccessMethod.FREE_PUBLIC_WEB, item.accessMethod());
+                    assertEquals(RouteDecision.FALLBACK_FREE_PUBLIC, item.routeDecision());
+                } else {
+                    assertEquals(ProviderType.MANUAL, item.providerType());
+                    assertEquals(AccessMethod.MANUAL, item.accessMethod());
+                    assertEquals(MonitorSeriesDefaults.MANUAL_INGRESS_SOURCE_NAME, item.actualSourceName());
+                    assertEquals(RouteDecision.FALLBACK_MANUAL, item.routeDecision());
+                    assertEquals(MonitorSeriesDefaults.MATERIAL_FALLBACK_REASON, item.fallbackReason());
+                }
                 assertEquals(configuration.updatedAt(), item.routeEffectiveAt());
                 assertEquals("material", item.rateKind());
                 assertEquals("CNY", item.currency());

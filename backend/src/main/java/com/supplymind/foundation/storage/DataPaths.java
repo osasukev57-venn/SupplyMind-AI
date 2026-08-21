@@ -259,6 +259,10 @@ public final class DataPaths {
                 && segments[4].matches("[0-9]{4}\\.csv")) {
             return true;
         }
+        if (segments.length == 3 && segments[0].equals("demo") && segments[1].equals("showcase")
+                && segments[2].matches("[A-Za-z0-9._-]+\\.json")) {
+            return true;
+        }
         if (segments.length == 3 && (segments[0].equals("warning") || segments[0].equals("report"))
                 && YEAR_MONTH.matcher(segments[1]).matches() && segments[2].matches("[A-Za-z0-9._-]+\\.json")) {
             return true;

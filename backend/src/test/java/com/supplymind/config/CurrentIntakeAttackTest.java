@@ -214,6 +214,7 @@ class CurrentIntakeAttackTest {
                 root, rawStore, acquisitionStore, fileStore, CLOCK,
                 transport, new PbocAnnouncementParser(), event -> { });
         registry.register(provider);
+        registry.register(com.supplymind.support.TestFreePublicProvider.create());
         registry.register(new com.supplymind.manual.ManualDataProvider(() -> Set.of(
                 MonitorSeriesDefaults.ADC12_SMM_ITEM_ID, MonitorSeriesDefaults.ADC12_AM_ITEM_ID,
                 MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID, MonitorSeriesDefaults.AZ91D_AM_ITEM_ID)));

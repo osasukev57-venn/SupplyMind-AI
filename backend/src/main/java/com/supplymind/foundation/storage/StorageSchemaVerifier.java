@@ -86,6 +86,12 @@ final class StorageSchemaVerifier {
             if (!dataRef.equals(DataPaths.warningRef(warning.warningMonth(), warning.warningId()))) {
                 throw new StorageException("WarningRecordV1 identity must match its atomic target: " + dataRef);
             }
+        } else if (dataRef.startsWith("demo/showcase/")) {
+            com.supplymind.demo.DemoShowcaseRunV1 demo = JsonV1Codec.decodeFile(
+                    bytes, com.supplymind.demo.DemoShowcaseRunV1.class);
+            if (!dataRef.equals(demo.demoRef())) {
+                throw new StorageException("DemoShowcaseRunV1.demoRef must match its atomic target: " + dataRef);
+            }
         } else if (dataRef.startsWith("report/")) {
             // D6-T04 Agent reports (AGENT-EVIDENCE-SCHEMA-V1): re-read the report JSON so a
             // structurally invalid report can never become visible as atomic business evidence.

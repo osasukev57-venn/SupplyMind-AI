@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { fetchSources, processManual, submitImport, submitManual, submitSyntheticDemo } from '../api/dashboard'
-import type { SourcesResponse } from '../types/dashboard'
+import type { DemoItemView, SourcesResponse } from '../types/dashboard'
 import StatusBadge from '../components/StatusBadge.vue'
 import { accessLabel, fallbackReasonLabel, modeLabel, providerLabel, routeLabel, sourceDisplayName, stageLabel, validationLabel } from '../lib/labels'
 
@@ -32,6 +32,9 @@ const showImportDetail = ref(false)
 // Synthetic demo entry: deterministic demo data for the demo scenario only.
 const demoStatus = ref<string | null>(null)
 const demoMessage = ref<string | null>(null)
+const demoStages = ref<string[]>([])
+const demoItems = ref<DemoItemView[]>([])
+const demoRef = ref<string | null>(null)
 
 async function submitManualForm(): Promise<void> {
   if (!manualItemId.value || !manualSource.value || !manualBusinessDate.value || !manualValue.value || !manualUnit.value) {
@@ -107,6 +110,9 @@ async function runSyntheticDemo(): Promise<void> {
   }
   demoStatus.value = response.status
   demoMessage.value = response.message
+  demoStages.value = response.stages
+  demoItems.value = response.items
+  demoRef.value = response.demoRef
 }
 
 onMounted(async () => {
@@ -279,8 +285,35 @@ onMounted(async () => {
           <StatusBadge :status="demoStatus" />
           <span class="entry-label">{{ demoStatus }}</span>
         </div>
-        <button class="btn-demo" @click="runSyntheticDemo">生成演示数据</button>
+        <button class="btn-demo" @click="runSyntheticDemo">运行完整演示流程</button>
         <div v-if="demoMessage" class="entry-note">{{ demoMessage }}</div>
+        <div v-if="demoStages.length" class="demo-flow" aria-label="演示处理链">
+          <span v-for="(stage, index) in demoStages" :key="stage" class="demo-stage">
+            <span class="demo-stage-index">{{ index + 1 }}</span>{{ stageLabel(stage) }}
+          </span>
+        </div>
+        <div v-if="demoItems.length" class="table-scroll demo-results">
+          <table class="sm-table responsive-data-table">
+            <thead><tr>
+              <th>演示标的</th><th>原始值</th><th>校验</th><th>每日均值</th>
+              <th>月度</th><th>季度</th><th>半年度</th><th>年度</th><th>预警结果</th>
+            </tr></thead>
+            <tbody>
+              <tr v-for="item in demoItems" :key="item.itemId">
+                <td><div>{{ item.itemId }}</div><div class="muted">{{ item.businessDate }} · {{ sourceDisplayName(item.sourceName) }}</div></td>
+                <td class="num">{{ item.value }} {{ item.unit }}</td>
+                <td><StatusBadge :status="item.validationStatus" /></td>
+                <td class="num">{{ item.dailyAverage }}</td>
+                <td class="num">{{ item.monthlyAverage }}</td>
+                <td class="num">{{ item.quarterlyAverage }}</td>
+                <td class="num">{{ item.halfyearAverage }}</td>
+                <td class="num">{{ item.yearlyAverage }}</td>
+                <td>{{ item.warningOutcome === 'NOT_TRIGGERED_NO_COMPARABLE_BASELINE' ? '未触发（缺少可比基线）' : item.warningOutcome }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-if="demoRef" class="entry-note">演示审计记录：{{ demoRef }}</div>
+        </div>
       </div>
     </section>
   </div>
@@ -332,4 +365,33 @@ onMounted(async () => {
 .template-link:hover {
   text-decoration: underline;
 }
+.demo-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.demo-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--sm-demo) 35%, var(--sm-border));
+  border-radius: 999px;
+  background: var(--sm-demo-bg);
+  color: var(--sm-demo);
+  font-size: 12px;
+  font-weight: 600;
+}
+.demo-stage-index {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--sm-demo);
+  color: white;
+  font-size: 10px;
+}
+.demo-results { margin-top: 16px; }
 </style>

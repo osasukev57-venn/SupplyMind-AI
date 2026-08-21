@@ -409,9 +409,20 @@ describe('dashboard pages', () => {
 
   it('synthetic demo entry calls the real provider endpoint', async () => {
     vi.mocked(submitSyntheticDemo).mockResolvedValue({
-      status: 'DEMO_GENERATED',
-      message: 'deterministic synthetic demo data generated - never persisted',
-      itemIds: ['DEMO.ADC12.001', 'DEMO.AZ91D.001']
+      status: 'DEMO_COMPLETE',
+      message: '完整演示流程已完成并保持隔离',
+      itemIds: ['DEMO.ADC12.001', 'DEMO.AZ91D.001'],
+      scenarioId: 'supplymind-demo-showcase-v1',
+      mode: 'DEMO',
+      demoRef: 'demo/showcase/supplymind-demo-showcase-v1.json',
+      stages: ['RAW_CAPTURED', 'PARSED', 'VALIDATED', 'DAILY_CALCULATED', 'COMPLETE'],
+      items: [{
+        itemId: 'DEMO.ADC12.001', businessDate: '2026-08-10', sourceName: '演示合成数据',
+        value: '18000.00', unit: '元/吨', validationStatus: 'VERIFIED',
+        dailyAverage: '18000.00', monthlyAverage: '18000.00', quarterlyAverage: '18000.00',
+        halfyearAverage: '18000.00', yearlyAverage: '18000.00',
+        warningOutcome: 'NOT_TRIGGERED_NO_COMPARABLE_BASELINE'
+      }]
     })
     const wrapper = mount(SourcesView)
     await flushPromises()
@@ -419,8 +430,10 @@ describe('dashboard pages', () => {
     await buttons[buttons.length - 1].trigger('click')
     await flushPromises()
     expect(submitSyntheticDemo).toHaveBeenCalledTimes(1)
-    expect(wrapper.text()).toContain('DEMO_GENERATED')
-    expect(wrapper.text()).toContain('deterministic synthetic demo data')
+    expect(wrapper.text()).toContain('DEMO_COMPLETE')
+    expect(wrapper.text()).toContain('完整演示流程已完成')
+    expect(wrapper.text()).toContain('18000.00')
+    expect(wrapper.text()).toContain('缺少可比基线')
   })
 
   it('aggregate years come from the user-selected range', async () => {

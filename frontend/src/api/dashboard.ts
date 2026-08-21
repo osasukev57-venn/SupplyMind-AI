@@ -94,7 +94,7 @@ export async function submitImport(file: File): Promise<ImportResponse | null> {
   }
 }
 
-/** D7 M1: synthetic demo entry -> real deterministic demo generation (never persisted). */
+/** D7 M1: synthetic demo entry -> real deterministic demo flow (persisted only in DEMO isolation). */
 export async function submitSyntheticDemo(): Promise<SyntheticDemoResponse | null> {
   try {
     const response = await http.post<SyntheticDemoResponse>('/dashboard/synthetic-demo')

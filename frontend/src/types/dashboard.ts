@@ -222,9 +222,29 @@ export interface ImportRowError {
   message: string
 }
 
-/** Synthetic demo entry - real deterministic demo generation (never persisted formally). */
+/** Complete deterministic showcase. It is persisted only in the isolated DEMO tree. */
 export interface SyntheticDemoResponse {
   status: string
   message: string
   itemIds: string[]
+  scenarioId: string | null
+  mode: string | null
+  demoRef: string | null
+  stages: string[]
+  items: DemoItemView[]
+}
+
+export interface DemoItemView {
+  itemId: string
+  businessDate: string
+  sourceName: string
+  value: string
+  unit: string
+  validationStatus: string
+  dailyAverage: string
+  monthlyAverage: string
+  quarterlyAverage: string
+  halfyearAverage: string
+  yearlyAverage: string
+  warningOutcome: string
 }

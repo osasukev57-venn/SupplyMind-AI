@@ -130,13 +130,13 @@ class ConfigManagementServiceTest {
         MonitorSeriesItemV1 bogus = new MonitorSeriesItemV1(
                 "MAT.BOGUS.FREEPUBLIC", "bogus", true, "SMM", ProviderType.FREE_PUBLIC,
                 AccessMethod.FREE_PUBLIC_WEB, "bogus", RouteDecision.FALLBACK_FREE_PUBLIC,
-                "FREE_PUBLIC_FALLBACK", NOW, null, "ADC12", "material-field-key", "material",
+                "FREE_PUBLIC_FALLBACK", NOW, null, "AZ91D", "material-field-key", "material",
                 "arithmetic-mean-v1", 2, 2, java.math.RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
                 "CNY", "CNY", "元/吨",
-                new MaterialValidationConfigV1("0", null, 7, "ADC12", List.of()));
+                new MaterialValidationConfigV1("0", null, 7, "AZ91D", List.of()));
         assertThrows(com.supplymind.foundation.storage.StorageException.class,
                 () -> harness.management().addItem(bogus),
-                "no registered FREE_PUBLIC provider must reject the activation");
+                "no approved FREE_PUBLIC provider for AZ91D must reject the activation");
         assertEquals(1, harness.management().active().configVersion(),
                 "a failed activation leaves the previous active config fully effective");
     }
@@ -172,6 +172,7 @@ class ConfigManagementServiceTest {
 
     private static DataProviderRegistry registry() {
         DataProviderRegistry registry = new DataProviderRegistry();
+        registry.register(com.supplymind.support.TestFreePublicProvider.create());
         registry.register(new ManualDataProvider(() -> Set.of(
                 MonitorSeriesDefaults.ADC12_SMM_ITEM_ID, MonitorSeriesDefaults.ADC12_AM_ITEM_ID,
                 MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID, MonitorSeriesDefaults.AZ91D_AM_ITEM_ID)));

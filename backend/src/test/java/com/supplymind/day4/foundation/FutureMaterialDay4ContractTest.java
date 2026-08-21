@@ -54,8 +54,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FutureMaterialDay4ContractTest {
 
     private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-08-10T02:00:00Z"), ZoneOffset.UTC);
-    private static final String ADC12_SMM = MonitorSeriesDefaults.ADC12_SMM_ITEM_ID;
-    private static final String AZ91D_SMM = MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID;
+    private static final String MANUAL_PRIMARY = MonitorSeriesDefaults.AZ91D_AM_ITEM_ID;
+    private static final String MANUAL_SECONDARY = MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID;
 
     @TempDir
     Path temporaryDirectory;
@@ -64,7 +64,7 @@ class FutureMaterialDay4ContractTest {
     void atSrc005D4RequiresNonSyntheticMaterialRawToVerifiedFileChain() throws IOException {
         Harness harness = harness();
         ManualIntakeOutcome intake = harness.manual().submit(ManualMaterialSubmission.of(
-                ADC12_SMM, "2026-08-10", "19850.50", "元/吨", "CNY",
+                MANUAL_PRIMARY, "2026-08-10", "19850.50", "元/吨", "CNY",
                 "华东某厂报价单（测试）", "报价单号A-20260810", null));
         assertEquals(MaterialCandidateValidatorV2.VALIDATION_VERSION, "material-basic-validation-v2");
         assertFalse(MaterialCandidateValidator.VALIDATION_VERSION.equals(
@@ -75,25 +75,25 @@ class FutureMaterialDay4ContractTest {
         assertEquals("material-basic-validation-v2", validated.validationVersion());
         var published = harness.publish().process(intake.runId());
         assertEquals(PublishOutcome.PublishAction.PUBLISHED, published.action(),
-                "AT-SRC-005-D4: a non-synthetic material raw must reach the verified PUBLISHED file chain");
+                "AT-SRC-005-D4: a non-synthetic Manual material raw must reach the verified PUBLISHED file chain");
     }
 
     @Test
     void atSrc007D4RequiresManualMaterialValidationPublicationDailyAndAggregate() throws IOException {
         Harness harness = harness();
-        String runId = publish(harness, ADC12_SMM, "2026-08-10", "19850.50", "华东某厂报价单（测试）");
-        publish(harness, ADC12_SMM, "2026-08-08", "20000.00", "华东某厂报价单（测试）");
-        publish(harness, AZ91D_SMM, "2026-08-10", "24500", "西南某厂报价单（测试）");
+        String runId = publish(harness, MANUAL_PRIMARY, "2026-08-10", "19850.50", "华东某厂报价单（测试）");
+        publish(harness, MANUAL_PRIMARY, "2026-08-08", "20000.00", "华东某厂报价单（测试）");
+        publish(harness, MANUAL_SECONDARY, "2026-08-10", "24500", "西南某厂报价单（测试）");
         assertNotNull(runId);
 
-        DailyResult daily = harness.daily().processMonth(ADC12_SMM, YearMonth.of(2026, 8));
+        DailyResult daily = harness.daily().processMonth(MANUAL_PRIMARY, YearMonth.of(2026, 8));
         assertEquals(2, daily.rows().size(),
                 "AT-SRC-007-D4: PUBLISHED+VERIFIED-class Manual material must feed daily rows");
         for (DailyRecordV1 row : daily.rows()) {
             assertEquals("material-basic-validation-v2", row.validationVersion());
             assertFalse(row.inputRefs().isEmpty());
         }
-        var aggregate = harness.aggregate().processYear(ADC12_SMM, 2026);
+        var aggregate = harness.aggregate().processYear(MANUAL_PRIMARY, 2026);
         assertEquals(4, aggregate.writtenRefs().size(),
                 "AT-SRC-007-D4: month/quarter/halfyear/year must be produced from legal daily inputs");
     }
@@ -101,18 +101,18 @@ class FutureMaterialDay4ContractTest {
     @Test
     void atSrc008D4RequiresMaterialDailyAndAggregateProvenanceReconciliation() throws IOException {
         Harness harness = harness();
-        publish(harness, ADC12_SMM, "2026-08-10", "19850.50", "华东某厂报价单（测试）");
-        publish(harness, ADC12_SMM, "2026-08-10", "19900.00", "华东另一厂报价单（测试）");
+        publish(harness, MANUAL_PRIMARY, "2026-08-10", "19850.50", "华东某厂报价单（测试）");
+        publish(harness, MANUAL_PRIMARY, "2026-08-10", "19900.00", "华东另一厂报价单（测试）");
 
-        DailyResult daily = harness.daily().processMonth(ADC12_SMM, YearMonth.of(2026, 8));
+        DailyResult daily = harness.daily().processMonth(MANUAL_PRIMARY, YearMonth.of(2026, 8));
         assertEquals(2, daily.rows().size(),
                 "AT-SRC-008-D4: different declared sources must stay in separate daily rows");
         assertTrue(daily.rows().stream().map(DailyRecordV1::actualSourceName).distinct().count() == 2,
                 "daily rows must carry the real per-row actualSourceName");
 
-        var aggregate = harness.aggregate().processYear(ADC12_SMM, 2026);
+        var aggregate = harness.aggregate().processYear(MANUAL_PRIMARY, 2026);
         List<String> monthRows = java.nio.file.Files.readAllLines(harness.root().resolveDataRef(
-                "processed/aggregate/" + ADC12_SMM + "/month/2026.csv"), java.nio.charset.StandardCharsets.UTF_8);
+                "processed/aggregate/" + MANUAL_PRIMARY + "/month/2026.csv"), java.nio.charset.StandardCharsets.UTF_8);
         assertEquals(3, monthRows.size(),
                 "header + two source-distinct aggregate rows; cross-source mixing is forbidden");
         assertFalse(monthRows.get(1).equals(monthRows.get(2)),

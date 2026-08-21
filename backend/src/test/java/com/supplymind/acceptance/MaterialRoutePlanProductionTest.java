@@ -61,9 +61,15 @@ class MaterialRoutePlanProductionTest {
                 MonitorSeriesItemV1 item = configuration.requireItem(itemId);
                 assertTrue(item.enabled());
                 assertTrue(item.sourceIntent().equals("SMM") || item.sourceIntent().equals("Asian Metal"));
-                assertEquals(ProviderType.MANUAL, item.providerType(),
-                        itemId + " must be delivered on the frozen Manual route");
-                assertEquals(RouteDecision.FALLBACK_MANUAL, item.routeDecision());
+                if ("ADC12".equals(item.externalCode())) {
+                    assertEquals(ProviderType.FREE_PUBLIC, item.providerType(),
+                            itemId + " must use the approved SHFE public benchmark fallback");
+                    assertEquals(RouteDecision.FALLBACK_FREE_PUBLIC, item.routeDecision());
+                } else {
+                    assertEquals(ProviderType.MANUAL, item.providerType(),
+                            itemId + " must keep the honest Manual fallback");
+                    assertEquals(RouteDecision.FALLBACK_MANUAL, item.routeDecision());
+                }
             }
 
             DataProviderRegistry registry = context.getBean(DataProviderRegistry.class);
@@ -71,21 +77,20 @@ class MaterialRoutePlanProductionTest {
             assertNotNull(registry.find(MaterialSourceConfiguration.AM_PROVIDER_ID).orElse(null));
             assertNotNull(registry.find("manual-material").orElse(null));
             assertNotNull(registry.find("synthetic-demo").orElse(null));
+            assertNotNull(registry.find("shfe-ad-free-public").orElse(null));
 
             MaterialRoutePlanService planService = context.getBean(MaterialRoutePlanService.class);
             for (String itemId : p0Ids) {
                 MaterialRouteDecision decision = planService.resolveFor(itemId, DataKind.CURRENT).orElseThrow();
-                assertEquals("manual-material", decision.activeProviderId(),
-                        itemId + " must resolve through the production path to the Manual fallback");
-                assertEquals(RouteDecision.FALLBACK_MANUAL, decision.routeDecision());
+                boolean adc12 = "ADC12".equals(configuration.requireItem(itemId).externalCode());
+                assertEquals(adc12 ? "shfe-ad-free-public" : "manual-material", decision.activeProviderId());
+                assertEquals(adc12 ? RouteDecision.FALLBACK_FREE_PUBLIC : RouteDecision.FALLBACK_MANUAL,
+                        decision.routeDecision());
                 assertNotNull(decision.fallbackReason());
-                assertTrue(decision.fallbackReason().contains("credentials_missing"),
-                        "the production fallback reason must explain the NOT_CONFIGURED primary: "
-                                + decision.fallbackReason());
-                assertEquals(0, decision.candidates().stream()
+                assertEquals(adc12 ? 1L : 0L, decision.candidates().stream()
                                 .filter(c -> c.tier() == com.supplymind.routing.RouteTier.FREE_PUBLIC)
                                 .count(),
-                        "FREE_PUBLIC stays empty per NO_APPROVED_SOURCE");
+                        "only the approved ADC12-equivalent SHFE benchmark may occupy FREE_PUBLIC");
                 assertTrue(decision.candidates().stream()
                                 .noneMatch(c -> c.providerId().equals("synthetic-demo")),
                         "synthetic must never appear in the formal production route plan");

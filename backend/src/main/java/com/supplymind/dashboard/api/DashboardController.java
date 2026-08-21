@@ -103,7 +103,7 @@ public class DashboardController {
                 .body(body);
     }
 
-    /** D7 M1: synthetic demo entry - real deterministic demo generation (never persisted). */
+    /** D7 M1: synthetic demo entry - real deterministic demo flow (persisted only in DEMO isolation). */
     @PostMapping("/synthetic-demo")
     public ResponseEntity<?> syntheticDemo() {
         return okOrRejected(dashboard::syntheticDemo);

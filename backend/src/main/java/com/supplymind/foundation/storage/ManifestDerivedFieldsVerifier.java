@@ -93,6 +93,7 @@ final class ManifestDerivedFieldsVerifier {
                 || dataRef.startsWith("runtime/conflicts/raw/")
                 || dataRef.startsWith("runtime/jobs/active/")
                 || dataRef.startsWith("warning/")
+                || dataRef.startsWith("demo/showcase/")
                 || dataRef.startsWith("report/");
     }
 
@@ -143,6 +144,12 @@ final class ManifestDerivedFieldsVerifier {
         if (dataRef.startsWith("warning/")) {
             JsonV1Codec.decodeFile(dataBytes, com.supplymind.warning.WarningRecordV1.class);
             return jsonFields(List.of());
+        }
+        if (dataRef.startsWith("demo/showcase/")) {
+            com.supplymind.demo.DemoShowcaseRunV1 demo = JsonV1Codec.decodeFile(
+                    dataBytes, com.supplymind.demo.DemoShowcaseRunV1.class);
+            return jsonFields(demo.items().stream()
+                    .map(com.supplymind.demo.DemoShowcaseRunV1.DemoItemResult::runId).toList());
         }
         if (dataRef.startsWith("report/")) {
             // D6-T04 Agent reports: manifest carries no source run ids (embedded EvidencePack is

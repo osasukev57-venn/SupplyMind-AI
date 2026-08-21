@@ -49,6 +49,7 @@ public final class DashboardService {
     private final com.supplymind.manual.ManualMaterialIntakeService manualIntake;
     private final com.supplymind.localimport.LocalImportService localImport;
     private final com.supplymind.provider.DataProviderRegistry registry;
+    private final com.supplymind.demo.DemoShowcaseService demoShowcase;
 
     public DashboardService(
             ConfigManagementService configs,
@@ -60,6 +61,20 @@ public final class DashboardService {
             com.supplymind.localimport.LocalImportService localImport,
             com.supplymind.provider.DataProviderRegistry registry
     ) {
+        this(configs, published, history, warnings, clock, manualIntake, localImport, registry, null);
+    }
+
+    public DashboardService(
+            ConfigManagementService configs,
+            PublishedQueryService published,
+            HistoryQueryService history,
+            WarningService warnings,
+            Clock clock,
+            com.supplymind.manual.ManualMaterialIntakeService manualIntake,
+            com.supplymind.localimport.LocalImportService localImport,
+            com.supplymind.provider.DataProviderRegistry registry,
+            com.supplymind.demo.DemoShowcaseService demoShowcase
+    ) {
         this.configs = Objects.requireNonNull(configs, "configs");
         this.published = Objects.requireNonNull(published, "published");
         this.history = Objects.requireNonNull(history, "history");
@@ -68,8 +83,8 @@ public final class DashboardService {
         this.manualIntake = Objects.requireNonNull(manualIntake, "manualIntake");
         this.localImport = Objects.requireNonNull(localImport, "localImport");
         this.registry = Objects.requireNonNull(registry, "registry");
+        this.demoShowcase = demoShowcase;
     }
-
     public DashboardV1.OverviewResponse overview() {
         MonitorSeriesConfigV1 config = configs.active();
         List<DashboardV1.ItemCard> cards = new ArrayList<>();
@@ -404,10 +419,25 @@ public final class DashboardService {
 
     /**
      * D7 M1: synthetic demo entry - runs the REAL deterministic SyntheticDemoDataProvider
-     * (fixed seed, explicit demo identity). Demo data never persists to formal stores and is
+     * (fixed seed, explicit demo identity). Demo data persists only in the DEMO isolation store and is
      * never a route candidate; the response states that honestly.
      */
     public DashboardV1.SyntheticDemoResponse syntheticDemo() {
+        if (demoShowcase != null) {
+            com.supplymind.demo.DemoShowcaseRunV1 run = demoShowcase.run();
+            List<DashboardV1.DemoItemView> items = run.items().stream()
+                    .map(item -> new DashboardV1.DemoItemView(
+                            item.itemId(), item.businessDate(), item.sourceName(), item.value(), item.unit(),
+                            item.validationStatus(), item.dailyAverage(), item.monthlyAverage(),
+                            item.quarterlyAverage(), item.halfyearAverage(), item.yearlyAverage(),
+                            item.warningOutcome()))
+                    .toList();
+            return new DashboardV1.SyntheticDemoResponse(
+                    "DEMO_COMPLETE",
+                    "演示数据已完成原始采集、标准化、校验、日均、月/季/半年/年聚合和预警求值；全部结果只保存在 DEMO 隔离区，不进入正式业务判断",
+                    items.stream().map(DashboardV1.DemoItemView::itemId).sorted().toList(),
+                    run.scenarioId(), run.mode(), run.demoRef(), run.stages(), items);
+        }
         var provider = registry.find(com.supplymind.localimport.SyntheticDemoDataProvider.PROVIDER_ID)
                 .orElseThrow(() -> new IllegalStateException("synthetic-demo provider is not registered"));
         com.supplymind.provider.ProviderCollectOutcome outcome = provider.collect(
@@ -418,11 +448,9 @@ public final class DashboardService {
                 .sorted().toList();
         return new DashboardV1.SyntheticDemoResponse(
                 "DEMO_GENERATED",
-                "deterministic synthetic demo data generated for the demo scenario - "
-                        + "never persisted to formal stores, never a route candidate",
+                "deterministic synthetic demo data generated for the demo scenario - persisted only in the DEMO isolation store, never a formal route candidate",
                 itemIds);
     }
-
     private String warningSummary(String itemId) {
         List<WarningRecordV1> recent = warnings.findRecent(itemId, WARNING_LOOKBACK_MONTHS);
         if (recent.isEmpty()) {

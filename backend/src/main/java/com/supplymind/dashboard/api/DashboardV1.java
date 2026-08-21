@@ -100,17 +100,43 @@ public final class DashboardV1 {
     ) {
     }
 
-    /** D7: synthetic demo entry - REAL deterministic demo generation (never persisted formally). */
+    /** D7: synthetic demo entry - REAL deterministic demo flow (persisted only in DEMO isolation). */
     public record SyntheticDemoResponse(
             String status,
             String message,
-            List<String> itemIds
+            List<String> itemIds,
+            String scenarioId,
+            String mode,
+            String demoRef,
+            List<String> stages,
+            List<DemoItemView> items
     ) {
         public SyntheticDemoResponse {
             itemIds = itemIds == null ? List.of() : List.copyOf(itemIds);
+            stages = stages == null ? List.of() : List.copyOf(stages);
+            items = items == null ? List.of() : List.copyOf(items);
+        }
+
+        public SyntheticDemoResponse(String status, String message, List<String> itemIds) {
+            this(status, message, itemIds, null, "DEMO", null, List.of(), List.of());
         }
     }
 
+    public record DemoItemView(
+            String itemId,
+            String businessDate,
+            String sourceName,
+            String value,
+            String unit,
+            String validationStatus,
+            String dailyAverage,
+            String monthlyAverage,
+            String quarterlyAverage,
+            String halfyearAverage,
+            String yearlyAverage,
+            String warningOutcome
+    ) {
+    }
     public record SourceView(
             String providerType,
             String accessMethod,

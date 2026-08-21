@@ -58,7 +58,7 @@ class ManualMaterialProcessingServiceTest {
                 root, timelines, validation, publish, daily, aggregate);
 
         ManualIntakeOutcome pending = intake.submit(ManualMaterialSubmission.of(
-                MonitorSeriesDefaults.ADC12_SMM_ITEM_ID,
+                MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID,
                 "2026-08-20", "18888.50", "\u5143/\u5428", "CNY",
                 "D10 manual simulation non-external", "d10-manual-simulation", null));
         assertEquals(ValidationStatus.PENDING, pending.validationStatus());
@@ -90,7 +90,7 @@ class ManualMaterialProcessingServiceTest {
                 configs, new com.supplymind.publish.PublishedQueryService(root, timelines, CLOCK),
                 history, warnings, CLOCK, intake, localImport, registry);
         var card = dashboard.overview().items().stream()
-                .filter(item -> item.itemId().equals(MonitorSeriesDefaults.ADC12_SMM_ITEM_ID))
+                .filter(item -> item.itemId().equals(MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID))
                 .findFirst().orElseThrow();
         assertEquals("D10 manual simulation non-external", card.source().actualSourceName(),
                 "overview must show the published row's real source, not only config-level Manual");

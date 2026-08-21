@@ -41,7 +41,13 @@ const STAGE_LABELS: Record<string, string> = {
   RECEIVED: '已受理',
   PARSED: '已解析',
   VALIDATED: '已校验',
-  PUBLISHED: '已发布'
+  PUBLISHED: '已发布',
+  RAW_CAPTURED: '原始证据已保存',
+  DEMO_PROJECTED: '演示投影已隔离',
+  DAILY_CALCULATED: '每日均值已计算',
+  MONTH_QUARTER_HALFYEAR_YEAR_CALCULATED: '多周期均值已计算',
+  WARNING_EVALUATED: '预警条件已求值',
+  COMPLETE: '流程完成'
 }
 
 const VALIDATION_LABELS: Record<string, string> = {

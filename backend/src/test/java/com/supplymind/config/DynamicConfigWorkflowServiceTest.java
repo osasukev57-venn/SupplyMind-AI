@@ -398,6 +398,7 @@ class DynamicConfigWorkflowServiceTest {
         DataRoot root = DataRoot.forTest(temporaryDirectory.resolve("d8 workflow root " + System.nanoTime()));
         AtomicMoveSupport.probeOrFail(root);
         DataProviderRegistry registry = new DataProviderRegistry();
+        registry.register(com.supplymind.support.TestFreePublicProvider.create());
         registry.register(new ManualDataProvider(() -> Set.of(
                 MonitorSeriesDefaults.ADC12_SMM_ITEM_ID, MonitorSeriesDefaults.ADC12_AM_ITEM_ID,
                 MonitorSeriesDefaults.AZ91D_SMM_ITEM_ID, MonitorSeriesDefaults.AZ91D_AM_ITEM_ID)));

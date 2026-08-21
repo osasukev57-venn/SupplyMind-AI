@@ -2,6 +2,7 @@ package com.supplymind.dashboard;
 
 import com.supplymind.config.ConfigManagementService;
 import com.supplymind.dashboard.api.DashboardController;
+import com.supplymind.demo.DemoShowcaseService;
 import com.supplymind.foundation.storage.AtomicFileStore;
 import com.supplymind.foundation.storage.DataRoot;
 import com.supplymind.history.HistoryQueryService;
@@ -45,11 +46,13 @@ public class DashboardConfiguration {
             Clock foundationClock,
             ManualMaterialIntakeService manualMaterialIntakeService,
             LocalImportService localImportService,
-            DataProviderRegistry dataProviderRegistry
+            DataProviderRegistry dataProviderRegistry,
+            DemoShowcaseService demoShowcaseService
     ) {
         return new DashboardService(configManagementService, publishedQueryService,
                 historyQueryService, dashboardWarningService, foundationClock,
-                manualMaterialIntakeService, localImportService, dataProviderRegistry);
+                manualMaterialIntakeService, localImportService, dataProviderRegistry,
+                demoShowcaseService);
     }
 
     @Bean
