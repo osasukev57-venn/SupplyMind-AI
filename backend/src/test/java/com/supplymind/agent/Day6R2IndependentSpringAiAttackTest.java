@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /** Independent M3/M4 attack: no ToolCallback is directly invoked by this test. */
 class Day6R2IndependentSpringAiAttackTest {
@@ -98,17 +99,20 @@ class Day6R2IndependentSpringAiAttackTest {
     }
 
     @Test
-    void invalidModelToolArgumentsReturnRejectedToolResultBeforeDeterministicFallback() {
+    void modelProposedToolArgumentsCannotExecuteInFactFirstCloudPhase() {
         Day6R2Fixture invalidFixture = Day6R2Fixture.create(temp, "invalid-tool-args");
         ToolSelectingModel invalidModel = new ToolSelectingModel("history.query",
                 "{\"itemId\":\"../escape\",\"startDate\":\"2026-99-99\",\"endDate\":\"2026-08-10\",\"requestId\":\"a7\"}");
         AgentOrchestrator.AgentResult invalid = invalidFixture.orchestrator(service(invalidFixture, invalidModel),
                 new AgentResponseVerifier(List.of())).answer(invalidFixture.formalHistoryQuery());
-        assertTrue(invalid.degraded(), "a rejected model-selected tool call must force deterministic fallback");
+        assertTrue(invalid.degraded(), "a model tool attempt in the explanation phase must fail closed");
         assertDeterministicFallback(invalid, "../escape");
         assertEquals("JAVA_TEMPLATE", invalid.report().generatedBy());
-        assertTrue(invalidModel.calls.get() >= 2, "Spring AI must have received the adapter's REJECTED ToolResult");
-        assertTrue(invalidModel.secondPrompt.get().toString().contains("REJECTED"));
+        assertEquals(1, invalidModel.calls.get(), "no tool callback or tool-result round trip is allowed");
+        assertNull(invalidModel.secondPrompt.get());
+        assertTrue(invalid.evidencePack().toolExecutions().stream()
+                .noneMatch(execution -> String.valueOf(execution.input()).contains("../escape")),
+                "untrusted model arguments must never enter the Java evidence chain");
     }
 
     private static SpringAiLlmService service(Day6R2Fixture fixture, ChatModel model) {

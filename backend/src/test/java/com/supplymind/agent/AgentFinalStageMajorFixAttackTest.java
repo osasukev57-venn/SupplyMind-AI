@@ -127,7 +127,7 @@ class AgentFinalStageMajorFixAttackTest {
     }
 
     @Test
-    void m1UnselectedToolsAreNeverFakedAsExecuted() {
+    void factFirstCloudPhaseCannotExecuteOrFakeTools() {
         Harness harness = harness("m1-unselected");
         ToolSelectingModel model = new ToolSelectingModel("history.query",
                 "{\"itemId\":\"" + FX_ITEM + "\",\"startDate\":\"2026-08-10\",\"endDate\":\"2026-08-10\",\"requestId\":\"m1b\"}");
@@ -137,9 +137,11 @@ class AgentFinalStageMajorFixAttackTest {
                 "test", "test-model", ledger);
         AgentOrchestrator.AgentResult result = harness.orchestratorWithLedger(llm, ledger)
                 .answer(harness.formalQuery());
-        assertEquals(List.of("history.query"),
-                ledger.all().stream().map(ToolExecutionLedger.Execution::toolName).toList(),
-                "only the model-selected tool may be recorded as executed");
+        assertTrue(ledger.all().isEmpty(),
+                "the sole cloud explanation phase must receive no executable tool callbacks");
+        assertTrue(result.evidencePack().toolExecutions().stream()
+                        .anyMatch(execution -> execution.toolName().equals("history.query")),
+                "Java deterministic history execution remains fully auditable");
         assertFalse(result.evidencePack().toolExecutions().stream()
                         .anyMatch(execution -> execution.toolName().equals("warning.explain")));
     }

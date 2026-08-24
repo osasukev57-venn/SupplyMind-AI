@@ -102,8 +102,9 @@ class Day6R2IndependentEvidenceReportAttackTest {
                                 && entry.status() == EvidenceStatus.INVALID),
                 "M2 four-state: INVALID raw must be present with its status in the EvidencePack");
         assertTrue(result.evidencePack().facts().isEmpty(), "invalid raw cannot create an LLM fact");
-        assertNotNull(requestSeen.get());
-        assertFalse(requestSeen.get().evidenceRefs().contains(fixture.rawRef()));
+        assertNull(requestSeen.get(), "invalid-only evidence must be blocked before cloud invocation");
+        assertTrue(result.degradeReason().startsWith("STANDARD_FACTS_NOT_READY:"));
+        assertFalse(result.evidencePack().facts().stream().flatMap(f -> f.evidenceRefs().stream()).anyMatch(fixture.rawRef()::equals));
         assertTrue(result.evidencePack().limitations().stream().anyMatch(text -> text.contains("INVALID")));
     }
 

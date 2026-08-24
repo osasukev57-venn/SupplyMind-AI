@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,7 +72,7 @@ class Day6R2IndependentResponseAttackTest {
                         "{\"answer\":\"summary\",\"claims\":[{\"claimId\":\"c1\","
                                 + "\"text\":\"I rely on fact-does-not-exist\",\"factIds\":[\"fact-does-not-exist\"],"
                                 + "\"evidenceRefs\":[]},{\"claimId\":\"c2\",\"text\":\"x\","
-                                + "\"factIds\":[],\"evidenceRefs\":[\"raw/unknown-evidence.json\"]}]}"),
+                                + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[\"raw/unknown-evidence.json\"]}]}"),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
 
         assertTrue(result.degraded(), "unknown fact/evidence references from a model response require fallback");
@@ -86,11 +87,17 @@ class Day6R2IndependentResponseAttackTest {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "invalid-arguments");
         AgentOrchestrator.AgentQueryInput traversal = new AgentOrchestrator.AgentQueryInput("test", "../escape",
                 "2026-08-10", "2026-08-10", null, null, null, null, null, "FORMAL");
-        AgentOrchestrator.AgentResult result = fixture.orchestrator(success("seemingly valid model answer"),
+        AtomicInteger cloudCalls = new AtomicInteger();
+        AgentOrchestrator.AgentResult result = fixture.orchestrator(request -> {
+                    cloudCalls.incrementAndGet();
+                    return LLMService.LLMResponse.success("seemingly valid model answer");
+                },
                 new AgentResponseVerifier(List.of())).answer(traversal);
 
         assertTrue(result.degraded());
-        assertTrue(result.degradeReason().contains("TOOL_EXECUTION_REJECTED"));
+        assertTrue(result.degradeReason().contains("STANDARD_FACTS_NOT_READY"),
+                "fact-first gate must reject traversal input before any cloud explanation: " + result.degradeReason());
+        assertTrue(cloudCalls.get() == 0, "invalid deterministic query must never reach the cloud model");
         assertTrue(result.report().generatedBy().equals("JAVA_TEMPLATE"));
     }
 

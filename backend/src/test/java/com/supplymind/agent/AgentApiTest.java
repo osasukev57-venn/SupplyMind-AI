@@ -109,8 +109,9 @@ class AgentApiTest {
                 "claims always carry traceable evidenceRefs");
         assertNotNull(body.dataThrough(), "dataThrough comes from the EvidencePack facts");
         assertNotNull(body.limitations(), "limitations are mapped from the report");
-        assertTrue(body.limitations().stream().anyMatch(limit -> limit.contains("fallback")),
-                "the fallback limitation is honestly mapped");
+        assertTrue(body.limitations().stream()
+                        .noneMatch(limit -> limit.contains("model did not select any tool")),
+                "fact-first production must not claim that deterministic Java collection is a fallback");
     }
 
     @Test

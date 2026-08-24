@@ -273,19 +273,24 @@ public final class SpringAiLlmService implements LLMService.Port {
         prompt.append("Do not invent numbers, dates, units, currencies, sources, factIds or evidenceRefs. ");
         prompt.append("If the verified facts are insufficient, say so without creating a business claim.");
         if (!request.toolCallingEnabled()) {
-            // Phase B uses the provider's JSON_OBJECT response format and this strict envelope.
-            prompt.append("\nPhase B response contract - return exactly one JSON object and nothing else:\n")
+            // The cloud receives a Java-owned standard fact catalog. It selects factIds and
+            // organises language; Java owns evidence binding and all calculations.
+            prompt.append("\nFact explanation contract - return exactly one JSON object and nothing else:\n")
                     .append("{\"answer\":\"<short meta-summary without numbers, dates, sources or references>\",")
                     .append("\"claims\":[{\"claimId\":\"c1\",\"text\":\"<statement supported by cited facts>\",")
                     .append("\"factIds\":[\"<copy exact allowed factId>\"],")
-                    .append("\"evidenceRefs\":[\"<optional exact allowed evidenceRef>\"],")
+                    .append("\"evidenceRefs\":[],")
                     .append("\"sourceNames\":[\"<exact actualSourceName when the claim states a source>\"],")
                     .append("\"businessDates\":[\"<exact businessDate when the claim states a date>\"]}]}\n")
-                    .append("Every claim must cite at least one allowed factId or evidenceRef. ")
-                    .append("Every number, date, unit, currency and source in claim.text must come from that claim's cited facts. ")
-                    .append("Put factIds/evidenceRefs only in their JSON arrays, never inside claim.text. ")
+                    .append("Every claim must cite one or more allowed factIds; Java resolves evidenceRefs automatically. ")
+                    .append("Keep evidenceRefs empty and never copy file paths into claim.text. ")
+                    .append("Use one small conclusion per claim and cite every fact needed by that conclusion. ")
+                    .append("Every numeric token in claim.text must exactly equal value from one cited fact. ")
+                    .append("Never calculate, convert, round, divide, combine or infer a new number. ")
+                    .append("Every date, unit, currency and source in claim.text must come from cited facts. ")
                     .append("Use sourceNames/businessDates only when claim.text states them, and copy exact values. ")
-                    .append("Never output placeholder text or an ID not listed in the allowed arrays.");
+                    .append("If a requested conclusion has no standard fact, omit that conclusion. ")
+                    .append("Never output placeholder text or an ID not listed in Allowed factIds.");
         }
         return prompt.toString();
     }

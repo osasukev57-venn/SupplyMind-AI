@@ -93,7 +93,8 @@ class AgentPipelineIntegrationTest {
 
         AgentOrchestrator.AgentResult result = orchestrator.answer(input);
 
-        assertEquals(LLMService.LLMStatus.SUCCESS, result.llmResponse().status());
+        assertEquals(LLMService.LLMStatus.SUCCESS, result.llmResponse().status(),
+                "degradeReason=" + result.degradeReason());
         assertFalse(result.report().degraded());
         assertEquals("LLM", result.report().generatedBy());
         assertEquals("AGENT-EVIDENCE-SCHEMA-V1", result.evidencePack().schemaVersion());

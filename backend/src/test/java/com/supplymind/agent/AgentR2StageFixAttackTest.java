@@ -114,10 +114,10 @@ class AgentR2StageFixAttackTest {
     }
 
     @Test
-    void a17ModelSecretInjectionIsRejectedAndFallsBack() throws Exception {
+    void a17NoFactsBlockCloudBeforeSecretBearingModelCanRespond() throws Exception {
         Harness harness = harness("a17");
-        // M3 strict contract: the secret is carried in the envelope answer field (the plain
-        // free-text variant is rejected earlier as MALFORMED_STRUCTURED_RESPONSE; both fail closed).
+        // This harness has no verified data files. The fact-first gate must stop before the
+        // secret-bearing cloud stub can contribute any persistable content.
         AgentOrchestrator orchestrator = orchestrator(harness, new FixedChatModel(
                 "{\"answer\":\"sk-super-secret-api-key\",\"claims\":[{\"claimId\":\"c1\",\"text\":\"ok\","
                         + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[]}]}"),
@@ -125,8 +125,9 @@ class AgentR2StageFixAttackTest {
         var result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
                 "请分析 2026-08-01 至 2026-08-10 的美元/人民币趋势", FX_ITEM,
                 "2026-08-01", "2026-08-10", null, null, null, null, null, "FORMAL"));
-        assertTrue(result.report().degraded(), "A17: secret injection must degrade to fallback");
-        assertTrue(result.report().degradeReason().contains("MODEL_RESPONSE_REJECTED:SECRET_INJECTION"));
+        assertTrue(result.report().degraded(), "A17: missing facts must degrade to fallback");
+        assertTrue(result.report().degradeReason().startsWith("STANDARD_FACTS_NOT_READY:"),
+                "cloud must be blocked before untrusted output; reason=" + result.report().degradeReason());
         String reportBytes = new String(Files.readAllBytes(
                 harness.root().resolveDataRef(result.reportRef())), StandardCharsets.UTF_8);
         assertFalse(reportBytes.contains("sk-super-secret"),

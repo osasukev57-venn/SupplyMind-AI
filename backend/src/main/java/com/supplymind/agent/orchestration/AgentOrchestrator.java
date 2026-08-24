@@ -27,13 +27,12 @@ import java.util.UUID;
 /**
  * D6-T02/D6-T04 controlled Agent pipeline (Final Stage Major fixes M1/M2/M4/M5).
  *
- * Two-phase flow:
- *  - Phase A: the model selects tools through the Spring AI ChatClient lifecycle; the adapter
- *    captures the FULL ToolResults of the actually executed tools (M1). The fixed ToolExecutor
- *    is only used as the deterministic FALLBACK query source when the model did not select any
- *    tool or the LLM interaction failed - it is never mixed with the model-selected chain.
- *  - Phase B: the formal EvidencePack is built from the model-selected ToolResults (or the
- *    fallback query), then the LLM is asked to explain ONLY those verified facts
+ * Fact-first flow:
+ *  - Java derives the bounded query, invokes the fixed read-only ToolExecutor and builds a formal
+ *    EvidencePack plus standardized facts before any cloud request. If requested facts are absent,
+ *    the cloud is not called.
+ *  - The LLM receives only the Java-owned fact catalog, selects factIds and organizes language.
+ *    Java resolves evidenceRefs from selected facts automatically
  *    (toolCallingEnabled=false), the draft is verified and the AgentReport is persisted.
  *
  * M2: EvidencePack keeps ALL verification statuses (VERIFIED/MISSING/INVALID/UNAVAILABLE) with
@@ -73,24 +72,11 @@ public final class AgentOrchestrator {
         // M5: secret-scan the user input before it reaches EvidencePack, the LLM or persistence.
         responseVerifier.requireNoSecret(secretScanText(input));
 
-        // Phase A: the model selects tools (real Spring AI lifecycle). No pre-seeded facts.
-        LLMService.LLMRequest phaseA = new LLMService.LLMRequest(
-                requestId, input.question(), mode, List.of(), List.of(), true);
-        LLMService.LLMResponse phaseAResponse = llm.analyze(phaseA);
+        // Java resolves explicit ISO dates and requested grain before any cloud interaction.
+        // The cloud model is never responsible for selecting authoritative data tools.
+        AgentQueryInput effectiveInput = deterministicInput(input);
+        List<ToolResult> evidenceSource = toolExecutor.execute(effectiveInput, requestId);
 
-        boolean modelSelectedTools = phaseAResponse.status() == LLMService.LLMStatus.SUCCESS
-                && !phaseAResponse.toolResults().isEmpty();
-        List<ToolResult> evidenceSource;
-        boolean fallbackQueryUsed;
-        if (modelSelectedTools) {
-            // M1: the formal EvidencePack is built from the ToolResults the model actually chose.
-            evidenceSource = phaseAResponse.toolResults();
-            fallbackQueryUsed = false;
-        } else {
-            // FALLBACK PATH only: deterministic safe query when no model tool was executed.
-            evidenceSource = toolExecutor.execute(input, requestId);
-            fallbackQueryUsed = true;
-        }
 
         boolean toolChainClean = evidenceSource.stream()
                 .allMatch(result -> result.status() == ToolStatus.SUCCESS
@@ -100,41 +86,40 @@ public final class AgentOrchestrator {
         }
 
         EvidenceBuild build = buildEvidencePack(
-                requestId, input, mode, evidenceSource, evidenceVerifier);
+                requestId, effectiveInput, mode, evidenceSource, evidenceVerifier);
         EvidencePackV1 evidencePack = build.evidencePack();
         List<EvidencePackV1.Fact> facts = build.facts();
         List<String> llmEvidenceRefs = build.llmEvidenceRefs();
         List<String> limitations = new ArrayList<>(build.limitations());
-        if (fallbackQueryUsed && !modelSelectedTools) {
-            limitations.add("fallback: model did not select any tool; deterministic Java query used");
+        FactReadiness readiness = factReadiness(input.question(), facts);
+        if (!toolChainClean) {
+            limitations.add("部分只读工具未成功；云端仅可使用已验证标准事实");
         }
 
         boolean degraded;
         String degradeReason;
         String explanation;
         List<ModelClaimV1> draftClaims = List.of();
-        if (!toolChainClean) {
+        LLMService.LLMResponse cloudResponse = LLMService.LLMResponse.failure(
+                LLMService.LLMStatus.REJECTED, "STANDARD_FACTS_NOT_READY");
+        if (!readiness.ready()) {
             degraded = true;
-            degradeReason = "TOOL_EXECUTION_REJECTED";
+            degradeReason = "STANDARD_FACTS_NOT_READY:" + readiness.reason();
+            limitations.add("云端分析未调用：" + readiness.reason());
             explanation = fallback.explain(new LLMService.LLMRequest(
                     requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
-        } else if (phaseAResponse.status() != LLMService.LLMStatus.SUCCESS) {
-            degraded = true;
-            degradeReason = phaseAResponse.failureKind();
-            explanation = fallback.explain(new LLMService.LLMRequest(
-                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
-
         } else {
-            // Phase B: the LLM explains ONLY the verified EvidencePack facts (no further tools).
+            // The sole cloud phase explains ONLY verified standard facts (no tool calling).
             LLMService.LLMResponse phaseB = llm.analyze(new LLMService.LLMRequest(
                     requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs, false));
+            cloudResponse = phaseB;
             if (phaseB.status() != LLMService.LLMStatus.SUCCESS) {
                 degraded = true;
                 degradeReason = phaseB.failureKind();
                 explanation = fallback.explain(new LLMService.LLMRequest(
                         requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
             } else {
-                // M1/M3: the Phase B output is an UNTRUSTED draft; verify before formal use.
+                // M1/M3: the sole cloud explanation output is an UNTRUSTED draft; verify before formal use.
                 // M3 strict contract: only the strict JSON claims envelope is acceptable; plain
                 // free text, malformed JSON, missing/empty/partial claims reject the WHOLE draft
                 // (MODEL_RESPONSE_REJECTED:MALFORMED_STRUCTURED_RESPONSE) -> JAVA_TEMPLATE.
@@ -203,7 +188,7 @@ public final class AgentOrchestrator {
                 factSummaries, claims, List.of(), List.copyOf(limitations), OffsetDateTime.now());
         String reportRef = reportStore.store(report);
         RiskProjectionV1 riskProjection = buildRiskProjection(evidenceSource, evidencePack, mode);
-        return new AgentResult(evidencePack, phaseAResponse, reportRef, report, degraded, degradeReason,
+        return new AgentResult(evidencePack, cloudResponse, reportRef, report, degraded, degradeReason,
                 riskProjection);
     }
 
@@ -410,11 +395,107 @@ public final class AgentOrchestrator {
                 input.itemId() == null ? List.of() : List.of(input.itemId()),
                 input.businessDate(), input.periodStart(), input.periodEnd(), "Asia/Shanghai");
     }
+    private static AgentQueryInput deterministicInput(AgentQueryInput input) {
+        String startDate = input.startDate();
+        String endDate = input.endDate();
+        List<String> dates = new ArrayList<>();
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+                .compile("\\d{4}-\\d{2}-\\d{2}")
+                .matcher(input.question());
+        while (matcher.find()) {
+            dates.add(matcher.group());
+        }
+        if ((startDate == null || startDate.isBlank()) && !dates.isEmpty()) {
+            startDate = dates.get(0);
+        }
+        if ((endDate == null || endDate.isBlank()) && !dates.isEmpty()) {
+            endDate = dates.size() > 1 ? dates.get(1) : dates.get(0);
+        }
 
+        String grain = input.grain();
+        String periodStart = input.periodStart();
+        String periodEnd = input.periodEnd();
+        String month = input.month();
+        String question = input.question().toLowerCase(java.util.Locale.ROOT);
+        boolean asksMonthly = question.contains("月均") || question.contains("月度平均")
+                || question.contains("monthly average");
+        if (asksMonthly && startDate != null) {
+            try {
+                java.time.YearMonth target = java.time.YearMonth.from(
+                        java.time.LocalDate.parse(startDate));
+                if (grain == null || grain.isBlank()) {
+                    grain = "month";
+                }
+                if (periodStart == null || periodStart.isBlank()) {
+                    periodStart = target.atDay(1).toString();
+                }
+                if (periodEnd == null || periodEnd.isBlank()) {
+                    periodEnd = target.atEndOfMonth().toString();
+                }
+            } catch (java.time.DateTimeException ignored) {
+                // ToolArguments performs the authoritative fail-closed validation later.
+            }
+        }
+        if ((month == null || month.isBlank()) && question.contains("预警")
+                && startDate != null && startDate.length() >= 7) {
+            month = startDate.substring(0, 7);
+        }
+        return new AgentQueryInput(
+                input.question(), input.itemId(), startDate, endDate, grain,
+                periodStart, periodEnd, month, input.businessDate(), input.mode());
+    }
+
+    private static FactReadiness factReadiness(
+            String questionText, List<EvidencePackV1.Fact> facts
+    ) {
+        if (facts.isEmpty()) {
+            return new FactReadiness(false, "没有可引用的已验证标准事实");
+        }
+        String question = questionText == null
+                ? "" : questionText.toLowerCase(java.util.Locale.ROOT);
+        if ((question.contains("最新") || question.contains("latest"))
+                && facts.stream().noneMatch(fact -> "history.latest".equals(fact.factType()))) {
+            return new FactReadiness(false, "缺少最新已发布值事实");
+        }
+        if ((question.contains("月均") || question.contains("月度平均")
+                || question.contains("monthly average"))
+                && facts.stream().noneMatch(fact -> "period.metrics.avg".equals(fact.factType()))) {
+            return new FactReadiness(false, "缺少持久化月度平均事实");
+        }
+        if ((question.contains("数据质量") || question.contains("完整")
+                || question.contains("quality"))
+                && facts.stream().noneMatch(fact -> "quality.rowCount".equals(fact.factType()))) {
+            return new FactReadiness(false, "缺少质量统计事实");
+        }
+        if ((question.contains("来源") || question.contains("source"))
+                && facts.stream().noneMatch(fact -> fact.actualSourceName() != null
+                && !fact.actualSourceName().isBlank())) {
+            return new FactReadiness(false, "缺少可追溯实际来源事实");
+        }
+        return new FactReadiness(true, "READY");
+    }
+
+    private record FactReadiness(boolean ready, String reason) {
+    }
+
+    private static String standardStatement(EvidencePackV1.Fact fact) {
+        return switch (fact.factType()) {
+            case "history.query" -> "published daily value";
+            case "history.latest" -> "latest published value";
+            case "period.metrics.avg" -> "persisted period average";
+            case "quality.rowCount" -> "published row count";
+            case "quality.expectedCount" -> "expected observation count";
+            case "quality.missingCount" -> "missing observation count";
+            case "quality.completeRowCount" -> "complete row count";
+            case "quality.completeness" -> "Java-computed completeness percentage";
+            case "warning.explain" -> "verified warning current value";
+            default -> fact.factType();
+        };
+    }
     private static List<LLMService.LlmFact> toLlmFacts(List<EvidencePackV1.Fact> facts) {
         return facts.stream()
                 .map(fact -> new LLMService.LlmFact(
-                        fact.factId(), fact.factType(), fact.itemId(), fact.value(), fact.unit(), fact.currency(),
+                        fact.factId(), standardStatement(fact), fact.itemId(), fact.value(), fact.unit(), fact.currency(),
                         fact.businessDate(),
                         fact.periodStart() == null ? fact.businessDate() : fact.periodStart() + "~" + fact.periodEnd(),
                         fact.validationStatus(), fact.actualSourceName(),
@@ -423,7 +504,7 @@ public final class AgentOrchestrator {
     }
 
     /**
-     * M3 STRICT: the production Phase B path ONLY accepts the strict JSON claims envelope:
+     * M3 STRICT: the production cloud explanation path ONLY accepts the strict JSON claims envelope:
      * {"answer": "...", "claims": [{"claimId": "...", "text": "...", "factIds": [...],
      * "evidenceRefs": [...], "sourceNames": [...], "businessDates": [...]}]}.
      * Free text, malformed JSON, missing/empty claims, a claim without any reference or a
@@ -457,8 +538,8 @@ public final class AgentOrchestrator {
                 }
                 List<String> factIds = stringList(node.get("factIds"));
                 List<String> refs = stringList(node.get("evidenceRefs"));
-                if (factIds.isEmpty() && refs.isEmpty()) {
-                    return null; // every formal claim must carry a non-empty reference set
+                if (factIds.isEmpty()) {
+                    return null; // Java evidence auto-binding requires at least one standard factId
                 }
                 List<String> sourceNames = stringList(node.get("sourceNames"));
                 List<String> businessDates = stringList(node.get("businessDates"));
@@ -529,15 +610,26 @@ public final class AgentOrchestrator {
                 continue;
             }
             Object rows = result.result().get("rows");
+            if (!(rows instanceof List<?>)) {
+                rows = result.result().get("warnings");
+            }
             if (rows instanceof List<?> list) {
                 for (Object entry : list) {
                     if (entry instanceof Map<?, ?> row) {
                         Object itemIdValue = row.get("itemId");
                         String itemId = itemIdValue == null
                                 ? String.valueOf(result.result().get("itemId")) : String.valueOf(itemIdValue);
+                        String factType = result.toolName();
                         String value = row.get("value") == null ? null : String.valueOf(row.get("value"));
                         if (value == null || value.isBlank() || "null".equals(value)) {
                             // M3: warning.explain rows use the structured currentValue field.
+                            // Persisted aggregate rows use avg/min/max rather than a generic
+                            // value field. The formal monthly average is projected explicitly so
+                            // the LLM never has to recompute it from daily rows.
+                            if ("period.metrics".equals(result.toolName()) && row.get("avg") != null) {
+                                value = String.valueOf(row.get("avg"));
+                                factType = "period.metrics.avg";
+                            }
                             if (WarningExplainToolAdapter.TOOL_NAME.equals(result.toolName())) {
                                 Object currentValue = row.get("currentValue");
                                 if (currentValue != null && !String.valueOf(currentValue).isBlank()) {
@@ -587,7 +679,7 @@ public final class AgentOrchestrator {
                             sourceFingerprint = String.valueOf(row.get("sourceFingerprint"));
                         }
                         facts.add(new EvidencePackV1.Fact(
-                                "fact-" + (factId++), result.toolName(), itemId, businessDate,
+                                "fact-" + (factId++), factType, itemId, businessDate,
                                 row.get("periodStart") == null ? null : String.valueOf(row.get("periodStart")),
                                 row.get("periodEnd") == null ? null : String.valueOf(row.get("periodEnd")),
                                 value,
@@ -603,7 +695,91 @@ public final class AgentOrchestrator {
                 }
             }
         }
+        List<EvidencePackV1.Fact> dailyFacts = facts.stream()
+                .filter(fact -> "history.query".equals(fact.factType()))
+                .toList();
+        if (!dailyFacts.isEmpty()) {
+            EvidencePackV1.Fact latest = dailyFacts.stream()
+                    .filter(fact -> fact.businessDate() != null)
+                    .max(java.util.Comparator.comparing(EvidencePackV1.Fact::businessDate))
+                    .orElse(dailyFacts.get(dailyFacts.size() - 1));
+            facts.add(copyFact("fact-" + (factId++), "history.latest", latest));
+
+            List<String> dailyRefs = dailyFacts.stream()
+                    .flatMap(fact -> fact.evidenceRefs().stream()).distinct().toList();
+            String periodStart = dailyFacts.stream().map(EvidencePackV1.Fact::businessDate)
+                    .filter(Objects::nonNull).min(String::compareTo).orElse(null);
+            String periodEnd = dailyFacts.stream().map(EvidencePackV1.Fact::businessDate)
+                    .filter(Objects::nonNull).max(String::compareTo).orElse(null);
+            for (ToolResult result : toolResults) {
+                if (!"quality.inspect".equals(result.toolName())
+                        || result.status() != ToolStatus.SUCCESS || dailyRefs.isEmpty()) {
+                    continue;
+                }
+                String itemId = String.valueOf(result.result().get("itemId"));
+                int rowCount = integerOf(result.result().get("rowCount"));
+                int expectedCount = integerOf(result.result().get("expectedCountTotal"));
+                int missingCount = integerOf(result.result().get("missingCountTotal"));
+                int completeRowCount = integerOf(result.result().get("completeRowCount"));
+                facts.add(standardFact("fact-" + (factId++), "quality.rowCount",
+                        latest, periodStart, periodEnd, String.valueOf(rowCount), "count", dailyRefs));
+                facts.add(standardFact("fact-" + (factId++), "quality.expectedCount",
+                        latest, periodStart, periodEnd, String.valueOf(expectedCount), "count", dailyRefs));
+                facts.add(standardFact("fact-" + (factId++), "quality.missingCount",
+                        latest, periodStart, periodEnd, String.valueOf(missingCount), "count", dailyRefs));
+                facts.add(standardFact("fact-" + (factId++), "quality.completeRowCount",
+                        latest, periodStart, periodEnd, String.valueOf(completeRowCount), "count", dailyRefs));
+                if (expectedCount > 0) {
+                    java.math.BigDecimal completeness = java.math.BigDecimal
+                            .valueOf(Math.max(expectedCount - missingCount, 0))
+                            .multiply(java.math.BigDecimal.valueOf(100))
+                            .divide(java.math.BigDecimal.valueOf(expectedCount), 12,
+                                    java.math.RoundingMode.HALF_UP)
+                            .stripTrailingZeros();
+                    facts.add(standardFact("fact-" + (factId++), "quality.completeness",
+                            latest, periodStart, periodEnd,
+                            completeness.toPlainString() + "%", "%", dailyRefs));
+                }
+            }
+        }
         return List.copyOf(facts);
+    }
+    private static EvidencePackV1.Fact copyFact(
+            String factId, String factType, EvidencePackV1.Fact source
+    ) {
+        return new EvidencePackV1.Fact(
+                factId, factType, source.itemId(), source.businessDate(),
+                source.periodStart(), source.periodEnd(), source.value(), source.unit(),
+                source.currency(), source.qualityStatus(), source.validationStatus(),
+                source.validationVersion(), source.calculationVersion(), source.calendarVersion(),
+                source.configVersions(), source.actualSourceName(), source.sourceFingerprint(),
+                source.evidenceRefs());
+    }
+
+    private static EvidencePackV1.Fact standardFact(
+            String factId, String factType, EvidencePackV1.Fact source,
+            String periodStart, String periodEnd,
+            String value, String unit, List<String> evidenceRefs
+    ) {
+        return new EvidencePackV1.Fact(
+                factId, factType, source.itemId(), null, periodStart, periodEnd, value, unit,
+                source.currency(), "VERIFIED", source.validationStatus(),
+                source.validationVersion(), source.calculationVersion(), source.calendarVersion(),
+                source.configVersions(), source.actualSourceName(), source.sourceFingerprint(), evidenceRefs);
+    }
+
+    private static int integerOf(Object value) {
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        if (value == null) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(String.valueOf(value));
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
     }
 
     private static List<String> usableRefs(List<String> candidateRefs, Set<String> usableRefSet) {

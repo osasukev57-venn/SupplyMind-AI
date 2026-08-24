@@ -75,8 +75,9 @@ public final class AgentResponseVerifier {
         for (EvidencePackV1.Fact fact : evidencePack.facts()) {
             knownFactIds.add(fact.factId());
             knownVerifiedEvidenceRefs.addAll(fact.evidenceRefs());
-            facts.add(new EvidenceFact(fact.factId(), fact.value(), fact.evidenceRefs(),
-                    fact.businessDate(), fact.periodStart(), fact.periodEnd(), fact.actualSourceName()));
+            facts.add(new EvidenceFact(fact.factId(), fact.value(), fact.itemId(), fact.unit(), fact.currency(),
+                    fact.evidenceRefs(), fact.businessDate(), fact.periodStart(), fact.periodEnd(),
+                    fact.actualSourceName()));
         }
         for (EvidencePackV1.EvidenceRefEntry entry : evidencePack.evidenceRefs()) {
             if (entry.status() == EvidenceStatus.VERIFIED) {
@@ -156,13 +157,58 @@ public final class AgentResponseVerifier {
      */
     private static boolean everyNumberSupportedByClaimFacts(ModelClaimV1 claim, List<EvidenceFact> facts) {
         List<EvidenceFact> referenced = referencedFacts(claim, facts);
-        List<String> claimNumbers = extractBusinessNumbers(claim.text());
+        List<String> claimNumbers = extractClaimBusinessNumbers(claim.text(), referenced);
         for (String number : claimNumbers) {
             if (!matchesAnyFactValueInFacts(number, referenced)) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Numbers embedded in an exact, cited metadata literal are identifiers/units rather than
+     * calculated business values (for example AZ91D or CNY/1 USD). Only exact occurrences from
+     * the claim's referenced facts are exempt; the same number elsewhere still needs a fact value.
+     */
+    private static List<String> extractClaimBusinessNumbers(String text, List<EvidenceFact> referenced) {
+        if (text == null || text.isBlank()) {
+            return List.of();
+        }
+        List<int[]> nonValueSpans = new ArrayList<>();
+        Matcher dateMatcher = DATE_TOKEN.matcher(text);
+        while (dateMatcher.find()) {
+            nonValueSpans.add(new int[]{dateMatcher.start(), dateMatcher.end()});
+        }
+        for (EvidenceFact fact : referenced) {
+            addLiteralSpans(text, fact.itemId(), nonValueSpans);
+            addLiteralSpans(text, fact.unit(), nonValueSpans);
+            addLiteralSpans(text, fact.currency(), nonValueSpans);
+            addLiteralSpans(text, fact.actualSourceName(), nonValueSpans);
+        }
+        List<String> numbers = new ArrayList<>();
+        Matcher matcher = NUMBER_TOKEN.matcher(text);
+        while (matcher.find()) {
+            if (!insideAnyDateSpan(matcher.start(), matcher.end(), nonValueSpans)) {
+                numbers.add(matcher.group());
+            }
+        }
+        return List.copyOf(numbers);
+    }
+
+    private static void addLiteralSpans(String text, String literal, List<int[]> spans) {
+        if (literal == null || literal.isBlank()) {
+            return;
+        }
+        int from = 0;
+        while (from < text.length()) {
+            int start = text.indexOf(literal, from);
+            if (start < 0) {
+                return;
+            }
+            spans.add(new int[]{start, start + literal.length()});
+            from = start + literal.length();
+        }
     }
 
     /** M3: the facts this claim references (by factId or evidenceRef) - the ONLY support set. */
@@ -515,8 +561,9 @@ public final class AgentResponseVerifier {
     }
 
     private record EvidenceFact(
-            String factId, String value, List<String> evidenceRefs,
-            String businessDate, String periodStart, String periodEnd, String actualSourceName
+            String factId, String value, String itemId, String unit, String currency,
+            List<String> evidenceRefs, String businessDate, String periodStart, String periodEnd,
+            String actualSourceName
     ) {
     }
 

@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /** Independent M2 FORMAL/DEMO attack using a persisted, manifest-valid demo warning. */
 class Day6R2IndependentIsolationAttackTest {
@@ -47,7 +48,9 @@ class Day6R2IndependentIsolationAttackTest {
                 .flatMap(fact -> fact.evidenceRefs().stream())
                 .anyMatch(ref -> ref.startsWith("warning/")),
                 "FORMAL: warning evidence must never reach the facts/LLM context");
-        assertFalse(formalRequest.get().evidenceRefs().stream().anyMatch(ref -> ref.startsWith("warning/")));
+        assertNull(formalRequest.get(), "FORMAL has no allowed standard fact and must not call cloud");
+        assertTrue(formal.degradeReason().startsWith("STANDARD_FACTS_NOT_READY:"));
+        assertTrue(formal.evidencePack().facts().isEmpty());
 
         AtomicReference<LLMService.LLMRequest> demoRequest = new AtomicReference<>();
         AgentOrchestrator.AgentResult demo = fixture.orchestrator(request -> {

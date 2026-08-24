@@ -76,6 +76,11 @@ public final class HistoryQueryToolAdapter {
                 entry.put("configVersions", normalizedConfigVersions(row));
                 entry.put("actualSourceName", row.actualSourceName());
                 entry.put("complete", row.complete());
+                // Standard-fact projection consumes the persisted completeness counters
+                // directly. They are exposed as strings/numbers only; no calculation is
+                // delegated to the LLM or the frontend.
+                entry.put("expectedCount", row.expectedCount());
+                entry.put("missingCount", row.missingCount());
                 // M2 R4: every row keeps the evidence refs IT really comes from (never the whole
                 // ToolResult set) and its OWN source fingerprint.
                 List<String> rowRefs = new ArrayList<>();

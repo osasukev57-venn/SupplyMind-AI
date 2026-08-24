@@ -48,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * DAY6 Round3 M2: multi-row file authoritative lineage - the first row never represents a file.
@@ -195,13 +196,10 @@ class Day6FinalStageMultiRowLineageAttackTest {
                                 && ("MANIFEST_MISMATCH".equals(entry.reasonCode())
                                 || "SCHEMA_DECODE_FAILED".equals(entry.reasonCode()))),
                 "M2 four-state: the INVALID ref stays in the EvidencePack with its reasonCode");
-        assertNotNull(requestSeen.get());
-        assertFalse(requestSeen.get().evidenceRefs().contains(fixture.rawRef()),
-                "the INVALID ref must never reach the Phase B LLM request");
-        assertFalse(requestSeen.get().facts().stream()
-                        .anyMatch(fact -> fact.evidenceRef() != null
-                                && fact.evidenceRef().equals(fixture.rawRef())),
-                "the INVALID ref must never back a Phase B fact");
+        assertNull(requestSeen.get(),
+                "without verified standard facts the cloud must not be called at all");
+        assertTrue(result.degradeReason().startsWith("STANDARD_FACTS_NOT_READY:"),
+                "invalid evidence must stop at the Java readiness gate");
     }
 
     @Test
