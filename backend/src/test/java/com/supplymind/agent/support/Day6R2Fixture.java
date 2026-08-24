@@ -147,6 +147,14 @@ public final class Day6R2Fixture {
                 new EvidenceRefVerifier(root), reportStore, verifier);
     }
 
+    public AgentOrchestrator orchestrator(
+            LLMService.Port llm, AgentResponseVerifier verifier, java.time.Clock clock
+    ) {
+        return new AgentOrchestrator(new ToolExecutor(seriesResolve, historyQuery, periodMetrics, qualityInspect,
+                costImpact, warningExplain, provenanceTrace), llm, new TemplateFallbackService(),
+                new EvidenceRefVerifier(root), reportStore, verifier, clock);
+    }
+
     public AgentOrchestrator.AgentQueryInput formalHistoryQuery() {
         return new AgentOrchestrator.AgentQueryInput("analyse deterministic D6 fixture", ITEM,
                 "2026-08-10", "2026-08-10", null, null, null, null, null, "FORMAL");

@@ -8,6 +8,7 @@ import com.supplymind.agent.infrastructure.springai.QualityInspectToolAdapter;
 import com.supplymind.agent.infrastructure.springai.SeriesResolveToolAdapter;
 import com.supplymind.agent.infrastructure.springai.WarningExplainToolAdapter;
 import com.supplymind.agent.tool.ToolResult;
+import com.supplymind.agent.tool.ToolStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,12 +50,14 @@ public final class ToolExecutor {
 
     public List<ToolResult> execute(AgentOrchestrator.AgentQueryInput input, String requestId) {
         List<ToolResult> results = new ArrayList<>();
-        if (input.itemId() == null || input.itemId().isBlank()) {
-            results.add(ToolResult.rejected("series.resolve", "1.0", requestId,
-                    "itemId is required"));
+        ToolResult resolved = input.itemId() == null || input.itemId().isBlank()
+                ? seriesResolve.seriesResolveQuestion(input.question(), requestId)
+                : seriesResolve.seriesResolve(input.itemId(), requestId);
+        results.add(resolved);
+        if (resolved.status() != ToolStatus.SUCCESS) {
             return results;
         }
-        results.add(seriesResolve.seriesResolve(input.itemId(), requestId));
+        String effectiveItemId = String.valueOf(resolved.result().get("itemId"));
         boolean hasHistoryRange = input.startDate() != null && input.endDate() != null;
         boolean hasPeriod = input.periodStart() != null;
         boolean hasMonth = input.month() != null;
@@ -62,21 +65,21 @@ public final class ToolExecutor {
 
         if (hasHistoryRange) {
             results.add(historyQuery.historyQuery(
-                    input.itemId(), input.startDate(), input.endDate(), requestId));
+                    effectiveItemId, input.startDate(), input.endDate(), requestId));
             results.add(qualityInspect.qualityInspect(
-                    input.itemId(), input.startDate(), input.endDate(), requestId));
+                    effectiveItemId, input.startDate(), input.endDate(), requestId));
             results.add(provenanceTrace.provenanceTrace(
-                    input.itemId(), input.startDate(), input.endDate(), requestId));
+                    effectiveItemId, input.startDate(), input.endDate(), requestId));
         }
         if (hasPeriod && hasGrain) {
             int year = java.time.YearMonth.parse(input.periodStart().substring(0, 7)).getYear();
             results.add(periodMetrics.periodMetrics(
-                    input.itemId(), input.grain(), String.valueOf(year), String.valueOf(year), requestId));
+                    effectiveItemId, input.grain(), String.valueOf(year), String.valueOf(year), requestId));
             results.add(costImpact.costImpact(
-                    input.itemId(), input.grain(), input.periodStart(), requestId));
+                    effectiveItemId, input.grain(), input.periodStart(), requestId));
         }
         if (hasMonth) {
-            results.add(warningExplain.warningExplain(input.itemId(), input.month(), requestId));
+            results.add(warningExplain.warningExplain(effectiveItemId, input.month(), requestId));
         }
         return List.copyOf(results);
     }

@@ -7,6 +7,9 @@ import com.supplymind.agent.support.Day6R2Fixture;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -91,6 +94,59 @@ class AgentFactFirstPipelineTest {
         assertTrue(result.degraded());
         assertTrue(result.degradeReason().startsWith("STANDARD_FACTS_NOT_READY:"));
         assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
+    }
+
+
+    @Test
+    void exactItemWithoutDatesUsesCurrentShanghaiMonthAndBuildsFacts() {
+        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "default-month");
+        AtomicInteger calls = new AtomicInteger();
+        AtomicReference<LLMService.LLMRequest> captured = new AtomicReference<>();
+        Clock clock = Clock.fixed(Instant.parse("2026-08-24T03:00:00Z"), ZoneOffset.UTC);
+        AgentOrchestrator orchestrator = fixture.orchestrator(request -> {
+            calls.incrementAndGet();
+            captured.set(request);
+            return LLMService.LLMResponse.failure(LLMService.LLMStatus.UNAVAILABLE, "test-fallback");
+        }, new AgentResponseVerifier(List.of()), clock);
+
+        AgentOrchestrator.AgentResult result = orchestrator.answer(
+                new AgentOrchestrator.AgentQueryInput(
+                        Day6R2Fixture.ITEM, Day6R2Fixture.ITEM,
+                        null, null, null, null, null, null, null, "FORMAL"));
+
+        assertEquals(1, calls.get(), "current-month facts must reach the cloud explanation phase");
+        assertNotNull(captured.get());
+        assertTrue(captured.get().facts().stream()
+                .anyMatch(fact -> "latest published value".equals(fact.statement())));
+        assertTrue(result.evidencePack().toolExecutions().stream()
+                .anyMatch(tool -> "history.query".equals(tool.toolName())
+                        && String.valueOf(tool.input()).contains("range=2026-08-01..2026-08-24")));
+        assertFalse(result.degradeReason().startsWith("STANDARD_FACTS_NOT_READY:"));
+    }
+
+    @Test
+    void omittedItemIdCanResolveAnExactItemMentionBeforeHistoryQuery() {
+        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "question-resolve");
+        AtomicInteger calls = new AtomicInteger();
+        AtomicReference<LLMService.LLMRequest> captured = new AtomicReference<>();
+        Clock clock = Clock.fixed(Instant.parse("2026-08-24T03:00:00Z"), ZoneOffset.UTC);
+        AgentOrchestrator orchestrator = fixture.orchestrator(request -> {
+            calls.incrementAndGet();
+            captured.set(request);
+            return LLMService.LLMResponse.failure(LLMService.LLMStatus.UNAVAILABLE, "test-fallback");
+        }, new AgentResponseVerifier(List.of()), clock);
+
+        AgentOrchestrator.AgentResult result = orchestrator.answer(
+                new AgentOrchestrator.AgentQueryInput(
+                        "分析 " + Day6R2Fixture.ITEM, null,
+                        null, null, null, null, null, null, null, "FORMAL"));
+
+        assertEquals(1, calls.get());
+        assertNotNull(captured.get());
+        assertTrue(captured.get().facts().stream()
+                .anyMatch(fact -> "latest published value".equals(fact.statement())));
+        assertEquals(List.of(Day6R2Fixture.ITEM), result.evidencePack().scope().itemIds());
+        assertFalse(result.degradeReason().startsWith("STANDARD_FACTS_NOT_READY:"));
     }
 
     private static LLMService.LlmFact fact(

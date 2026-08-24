@@ -107,6 +107,28 @@ class AgentToolBoundaryTest {
         assertEquals(ToolStatus.REJECTED, windowsAttack.status());
     }
 
+
+    @Test
+    void questionResolutionPrefersUniqueFullNameAndFailsClosedOnAmbiguousCode() {
+        DataRoot root = DataRoot.forTest(temporaryDirectory.resolve("question ambiguity"));
+        AtomicMoveSupport.probeOrFail(root);
+        AtomicFileStore files = new AtomicFileStore(root, new DirtyMarkerCodec());
+        ConfigActivationStore configs = new ConfigActivationStore(root, files, CLOCK);
+        configs.activate(new MonitorSeriesConfigV1("1.0", 1, Mode.FORMAL, AT,
+                List.of(fxItem(), alternateFxItem())));
+        SeriesResolveToolAdapter adapter = new SeriesResolveToolAdapter(
+                new ConfigManagementService(configs, new com.supplymind.provider.DataProviderRegistry()));
+
+        ToolResult ambiguous = adapter.seriesResolveQuestion("分析 USD", "r-ambiguous");
+        assertEquals(ToolStatus.NO_DATA, ambiguous.status());
+        assertTrue(ambiguous.inputSummary().contains(FX_ITEM));
+        assertTrue(ambiguous.inputSummary().contains("FX.USD.CNY.ALTERNATE"));
+
+        ToolResult unique = adapter.seriesResolveQuestion("分析美元替代序列", "r-unique");
+        assertEquals(ToolStatus.SUCCESS, unique.status());
+        assertEquals("FX.USD.CNY.ALTERNATE", unique.result().get("itemId"));
+    }
+
     @Test
     void historyQueryReusesProductionHistoryServiceAndEnforcesBounds() {
         Harness harness = harness("t01 history");
@@ -219,6 +241,17 @@ class AgentToolBoundaryTest {
                 RouteDecision.PRIMARY, null, AT, null, "USD", "1美元对人民币", "人民币汇率中间价",
                 "arithmetic-mean-v1", 8, 4, RoundingMode.HALF_UP, "weekday-asia-shanghai-v1",
                 "CNY", "USD", "CNY/1 USD", null);
+    }
+
+
+    private static MonitorSeriesItemV1 alternateFxItem() {
+        return new MonitorSeriesItemV1(
+                "FX.USD.CNY.ALTERNATE", "美元替代序列", true, "PBOC_ALT",
+                ProviderType.OFFICIAL_WEB, AccessMethod.PUBLIC_OFFICIAL_HTML,
+                "中国人民银行官网（授权中国外汇交易中心公布）",
+                RouteDecision.PRIMARY, null, AT, null, "USD", "1美元对人民币",
+                "人民币汇率中间价", "arithmetic-mean-v1", 8, 4, RoundingMode.HALF_UP,
+                "weekday-asia-shanghai-v1", "CNY", "USD", "CNY/1 USD", null);
     }
 
     private static String writeDailyFixture(DataRoot root, AtomicFileStore files, String itemId) {

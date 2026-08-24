@@ -15,7 +15,9 @@ import com.supplymind.agent.report.ReportStore;
 import com.supplymind.agent.tool.ToolResult;
 import com.supplymind.agent.tool.ToolStatus;
 
+import java.time.Clock;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -48,6 +50,7 @@ public final class AgentOrchestrator {
     private final EvidenceRefVerifier evidenceVerifier;
     private final ReportStore reportStore;
     private final AgentResponseVerifier responseVerifier;
+    private final Clock clock;
 
     public AgentOrchestrator(
             ToolExecutor toolExecutor,
@@ -57,12 +60,26 @@ public final class AgentOrchestrator {
             ReportStore reportStore,
             AgentResponseVerifier responseVerifier
     ) {
+        this(toolExecutor, llm, fallback, evidenceVerifier, reportStore, responseVerifier,
+                Clock.system(ZoneId.of("Asia/Shanghai")));
+    }
+
+    public AgentOrchestrator(
+            ToolExecutor toolExecutor,
+            LLMService.Port llm,
+            TemplateFallbackService fallback,
+            EvidenceRefVerifier evidenceVerifier,
+            ReportStore reportStore,
+            AgentResponseVerifier responseVerifier,
+            Clock clock
+    ) {
         this.toolExecutor = Objects.requireNonNull(toolExecutor, "toolExecutor");
         this.llm = Objects.requireNonNull(llm, "llm");
         this.fallback = Objects.requireNonNull(fallback, "fallback");
         this.evidenceVerifier = Objects.requireNonNull(evidenceVerifier, "evidenceVerifier");
         this.reportStore = Objects.requireNonNull(reportStore, "reportStore");
         this.responseVerifier = Objects.requireNonNull(responseVerifier, "responseVerifier");
+        this.clock = Objects.requireNonNull(clock, "clock");
     }
 
     public AgentResult answer(AgentQueryInput input) {
@@ -76,6 +93,7 @@ public final class AgentOrchestrator {
         // The cloud model is never responsible for selecting authoritative data tools.
         AgentQueryInput effectiveInput = deterministicInput(input);
         List<ToolResult> evidenceSource = toolExecutor.execute(effectiveInput, requestId);
+        effectiveInput = withResolvedItemId(effectiveInput, evidenceSource);
 
 
         boolean toolChainClean = evidenceSource.stream()
@@ -395,7 +413,7 @@ public final class AgentOrchestrator {
                 input.itemId() == null ? List.of() : List.of(input.itemId()),
                 input.businessDate(), input.periodStart(), input.periodEnd(), "Asia/Shanghai");
     }
-    private static AgentQueryInput deterministicInput(AgentQueryInput input) {
+    private AgentQueryInput deterministicInput(AgentQueryInput input) {
         String startDate = input.startDate();
         String endDate = input.endDate();
         List<String> dates = new ArrayList<>();
@@ -410,6 +428,16 @@ public final class AgentOrchestrator {
         }
         if ((endDate == null || endDate.isBlank()) && !dates.isEmpty()) {
             endDate = dates.size() > 1 ? dates.get(1) : dates.get(0);
+        }
+        if ((startDate == null || startDate.isBlank())
+                && (endDate == null || endDate.isBlank())
+                && (input.periodStart() == null || input.periodStart().isBlank())
+                && (input.month() == null || input.month().isBlank())
+                && (input.businessDate() == null || input.businessDate().isBlank())) {
+            java.time.LocalDate today = java.time.LocalDate.now(
+                    clock.withZone(ZoneId.of("Asia/Shanghai")));
+            startDate = java.time.YearMonth.from(today).atDay(1).toString();
+            endDate = today.toString();
         }
 
         String grain = input.grain();
@@ -443,6 +471,27 @@ public final class AgentOrchestrator {
         return new AgentQueryInput(
                 input.question(), input.itemId(), startDate, endDate, grain,
                 periodStart, periodEnd, month, input.businessDate(), input.mode());
+    }
+
+    private static AgentQueryInput withResolvedItemId(
+            AgentQueryInput input, List<ToolResult> toolResults
+    ) {
+        if (input.itemId() != null && !input.itemId().isBlank()) {
+            return input;
+        }
+        String resolved = toolResults.stream()
+                .filter(result -> "series.resolve".equals(result.toolName()))
+                .filter(result -> result.status() == ToolStatus.SUCCESS)
+                .map(result -> result.result().get("itemId"))
+                .filter(Objects::nonNull)
+                .map(String::valueOf)
+                .findFirst().orElse(null);
+        if (resolved == null || resolved.isBlank()) {
+            return input;
+        }
+        return new AgentQueryInput(
+                input.question(), resolved, input.startDate(), input.endDate(), input.grain(),
+                input.periodStart(), input.periodEnd(), input.month(), input.businessDate(), input.mode());
     }
 
     private static FactReadiness factReadiness(

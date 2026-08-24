@@ -161,10 +161,11 @@ public class AgentConfiguration {
             TemplateFallbackService templateFallbackService,
             EvidenceRefVerifier evidenceRefVerifier,
             ReportStore reportStore,
-            com.supplymind.agent.application.AgentResponseVerifier agentResponseVerifier
+            com.supplymind.agent.application.AgentResponseVerifier agentResponseVerifier,
+            java.time.Clock foundationClock
     ) {
         return new AgentOrchestrator(toolExecutor, agentLlmPort, templateFallbackService,
-                evidenceRefVerifier, reportStore, agentResponseVerifier);
+                evidenceRefVerifier, reportStore, agentResponseVerifier, foundationClock);
     }
 
     @Bean
