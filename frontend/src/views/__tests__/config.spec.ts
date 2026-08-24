@@ -105,6 +105,7 @@ const job: BackfillJobView = {
 
 describe('ConfigView (D8-T01)', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
     vi.mocked(fetchConfigItems).mockResolvedValue(config)
     vi.mocked(fetchConfigHistory).mockResolvedValue([
       { configVersion: 1, verified: true, message: null },
@@ -185,6 +186,37 @@ describe('ConfigView (D8-T01)', () => {
     expect(wrapper.text()).toContain('已新增 英镑/人民币中间价')
     expect(wrapper.text()).toContain('当前采集')
     expect(wrapper.text()).toContain('已完成')
+    wrapper.unmount()
+  })
+
+  it('maps a material LocalImport item to the frozen provider/access/route tuple', async () => {
+    vi.mocked(addItem).mockResolvedValue({
+      config: { ...config, configVersion: 3 },
+      currentIntake: { itemId: 'MAT.AZ91D.DEMO_IMPORT', status: 'AWAITING_MANUAL_INPUT', rawCount: 0, failureReasons: [] },
+      backfillJobs: []
+    })
+    const wrapper = mount(ConfigView, { attachTo: document.body })
+    await flushPromises()
+    await wrapper.findAll('button').find((button) => button.text() === '新增监测项')?.trigger('click')
+    await flushPromises()
+    const inputs = wrapper.findAll('input')
+    await inputs[0].setValue('MAT.AZ91D.DEMO_IMPORT')
+    await inputs[1].setValue('AZ91D模拟导入数据')
+    await inputs[2].setValue('模拟验收数据')
+    await inputs[3].setValue('material')
+    await inputs[4].setValue('元/吨')
+    await inputs[5].setValue('CNY')
+    await wrapper.findAll('select')[0].setValue('local_import')
+    await wrapper.findAll('button').find((button) => button.text() === '新增并立即采集')?.trigger('click')
+    await flushPromises()
+
+    const request = vi.mocked(addItem).mock.calls[0][0] as AddItemRequest
+    expect(request.providerType).toBe('local_import')
+    expect(request.accessMethod).toBe('local_import')
+    expect(request.actualSourceName).toBe('本地文件导入（LocalImport）')
+    expect(request.routeDecision).toBe('direct_local_import')
+    expect(request.fallbackReason).toBeNull()
+    expect(request.materialValidation?.canonicalSpecCode).toBe('AZ91D')
     wrapper.unmount()
   })
 

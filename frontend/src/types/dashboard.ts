@@ -222,6 +222,25 @@ export interface ImportRowError {
   message: string
 }
 
+export interface ImportBatchResponse {
+  status: string
+  message: string
+  rows: ImportProcessRow[]
+}
+
+export interface ImportProcessRow {
+  runId: string
+  itemId: string | null
+  businessDate: string | null
+  status: string
+  validationStatus: string | null
+  validationVersion: string | null
+  publishRef: string | null
+  dailyRef: string | null
+  aggregateRefs: string[]
+  message: string
+}
+
 /** Complete deterministic showcase. It is persisted only in the isolated DEMO tree. */
 export interface SyntheticDemoResponse {
   status: string

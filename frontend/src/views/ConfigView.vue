@@ -119,15 +119,18 @@ function controlledAddRequest(): AddItemRequest | null {
     return null
   }
   const material = newRateKind.value === 'material'
+  const localImport = material && newProviderType.value === 'local_import'
   return {
     itemId: newItemId.value,
     displayName: newDisplayName.value,
     sourceIntent: newSourceIntent.value,
     providerType: newProviderType.value,
-    accessMethod: material ? 'manual' : 'public_official_html',
-    actualSourceName: material ? '人工录入（Manual）' : '中国人民银行官网（授权中国外汇交易中心公布）',
-    routeDecision: material ? 'fallback_manual' : 'primary',
-    fallbackReason: material ? 'MANUAL_FALLBACK' : null,
+    accessMethod: localImport ? 'local_import' : material ? 'manual' : 'public_official_html',
+    actualSourceName: localImport
+      ? '本地文件导入（LocalImport）'
+      : material ? '人工录入（Manual）' : '中国人民银行官网（授权中国外汇交易中心公布）',
+    routeDecision: localImport ? 'direct_local_import' : material ? 'fallback_manual' : 'primary',
+    fallbackReason: localImport ? null : material ? 'MANUAL_FALLBACK' : null,
     externalCode: newItemId.value.split('.')[1] ?? newItemId.value,
     sourceFieldKey: material ? 'material-field-key' : `1${newBaseCurrency.value}对人民币`,
     rateKind: newRateKind.value,

@@ -73,11 +73,24 @@ public final class ManualMaterialProcessingService {
     }
 
     public Result process(String runId) {
+        return processIngress(runId, ProviderType.MANUAL, "Manual input");
+    }
+
+    /**
+     * Explicit operator action for a row previously accepted by LocalImportService. The same
+     * frozen validation, publish, daily and aggregate gates are reused; provider identity is
+     * checked before any lifecycle transition so a Manual or synthetic raw cannot cross over.
+     */
+    public Result processLocalImport(String runId) {
+        return processIngress(runId, ProviderType.LOCAL_IMPORT, "Local import row");
+    }
+
+    private Result processIngress(String runId, ProviderType expectedProvider, String ingressName) {
         if (runId == null || runId.isBlank()) {
             throw new IllegalArgumentException("runId is required");
         }
         LifecycleTimelineV1 initial = timelines.read(runId);
-        RawReceiptV1 raw = readManualRaw(initial);
+        RawReceiptV1 raw = readIngressRaw(initial, expectedProvider);
         ValidationOutcome validated = validation.process(runId);
         PublishOutcome published = publish.process(runId);
         LifecycleTimelineV1 finalTimeline = timelines.read(runId);
@@ -87,7 +100,7 @@ public final class ManualMaterialProcessingService {
                     "REJECTED", runId, raw.itemId(), raw.sourceBusinessDate(),
                     validated.validationStatus() == null ? null : validated.validationStatus().name(),
                     validated.validationVersion(), null, null, List.of(),
-                    "Manual input did not pass the frozen validation and publish gates");
+                    ingressName + " did not pass the frozen validation and publish gates");
         }
 
         LocalDate businessDate = LocalDate.parse(raw.sourceBusinessDate());
@@ -101,24 +114,28 @@ public final class ManualMaterialProcessingService {
                 finalTimeline.current().publishRef(),
                 dailyResult.dailyRef(),
                 aggregateResult.writtenRefs(),
-                "Manual input passed validation and is now available to dashboard queries");
+                ingressName + " passed validation and is now available to dashboard queries");
     }
 
-    private RawReceiptV1 readManualRaw(LifecycleTimelineV1 timeline) {
+    private RawReceiptV1 readIngressRaw(
+            LifecycleTimelineV1 timeline,
+            ProviderType expectedProvider
+    ) {
         String rawRef = timeline.rawRef();
         Path rawPath = dataRoot.resolveDataRef(rawRef);
         Path manifestPath = dataRoot.resolveDataRef(DataPaths.manifestRef(rawRef));
         if (!ManifestVerifier.matches(dataRoot, rawRef, rawPath, manifestPath, List.of(timeline.runId()))) {
-            throw new StorageException("Manual raw is missing or fails its manifest");
+            throw new StorageException("Ingress raw is missing or fails its manifest");
         }
         try {
             RawReceiptV1 raw = JsonV1Codec.decodeFile(Files.readAllBytes(rawPath), RawReceiptV1.class);
-            if (raw.providerType() != ProviderType.MANUAL || !raw.runId().equals(timeline.runId())) {
-                throw new StorageException("Only a Manual raw can use the manual processing workflow");
+            if (raw.providerType() != expectedProvider || !raw.runId().equals(timeline.runId())) {
+                throw new StorageException("Only a " + expectedProvider.wireValue()
+                        + " raw can use this processing workflow");
             }
             return raw;
         } catch (IOException exception) {
-            throw new StorageException("Unable to read Manual raw", exception);
+            throw new StorageException("Unable to read ingress raw", exception);
         }
     }
 }

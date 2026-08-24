@@ -3,6 +3,7 @@ import { http } from './client'
 import type {
   CurrentAcquisitionStatus,
   HistoryResponse,
+  ImportBatchResponse,
   ImportResponse,
   ManualPendingResponse,
   ManualProcessResponse,
@@ -55,7 +56,7 @@ export function fetchSources(): Promise<SourcesResponse | null> {
   return getJson<SourcesResponse>('/dashboard/sources')
 }
 
-/** D7 M1: manual submission -> backend accept-into-PENDING (nothing persisted). */
+/** Manual submission -> backend persists immutable raw and a PENDING lifecycle timeline. */
 export async function submitManual(fields: {
   itemId: string
   source: string
@@ -88,6 +89,16 @@ export async function submitImport(file: File): Promise<ImportResponse | null> {
   form.append('file', file)
   try {
     const response = await http.post<ImportResponse>('/dashboard/import', form)
+    return response.data
+  } catch {
+    return null
+  }
+}
+
+/** Explicit operator action after import: validate, publish and rebuild daily/aggregate files. */
+export async function processImport(runIds: string[]): Promise<ImportBatchResponse | null> {
+  try {
+    const response = await http.post<ImportBatchResponse>('/dashboard/import/process', { runIds })
     return response.data
   } catch {
     return null

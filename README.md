@@ -80,6 +80,7 @@ docs/       需求基线、追踪矩阵、验收计划、任务、台账、决�
 - PBOC：USD/CNY、EUR/CNY 人民币汇率中间价，保存完整官方 HTTP response entity bytes 与 SHA-256。
 - SHFE FreePublic：`ad_f` 铸造铝合金期货日行情；按成交量选择主力合约，同量时按较早交割月确定，使用结算价、单位 `元/吨`。这是 ADC12 的同类公开期货基准，不是 ADC12 现货成交价，也不是 SMM/Asian Metal 报价。
 - Manual/LocalImport：用于 AZ91D 或暂时没有合适公开源的标的，先 PENDING，再经过统一校验与发布门禁。
+- 批量演示：`demo-data/` 提供 LocalImport 六行示例 CSV 与操作说明；上传受理后需显式点击「批量校验并发布到面板」，再到总览/历史趋势查看结果。
 - 一键 DEMO：走真实 Synthetic Provider、不可变 DEMO raw、标准化、校验、日/月/季/半年/年演示投影、预警求值和审计报告；所有产物只在 `data/demo` 与 `data/raw/demo`，永不进入正式 PUBLISHED/daily/aggregate。
 
 ## 开源许可

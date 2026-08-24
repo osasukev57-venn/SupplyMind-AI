@@ -100,6 +100,40 @@ public final class DashboardV1 {
     ) {
     }
 
+    /** Explicit operator request after import intake; bounded and deduplicated by the backend. */
+    public record ImportBatchRequest(List<String> runIds) {
+        public ImportBatchRequest {
+            runIds = runIds == null ? List.of() : List.copyOf(runIds);
+        }
+    }
+
+    public record ImportBatchResponse(
+            String status,
+            String message,
+            List<ImportProcessRow> rows
+    ) {
+        public ImportBatchResponse {
+            rows = rows == null ? List.of() : List.copyOf(rows);
+        }
+    }
+
+    public record ImportProcessRow(
+            String runId,
+            String itemId,
+            String businessDate,
+            String status,
+            String validationStatus,
+            String validationVersion,
+            String publishRef,
+            String dailyRef,
+            List<String> aggregateRefs,
+            String message
+    ) {
+        public ImportProcessRow {
+            aggregateRefs = aggregateRefs == null ? List.of() : List.copyOf(aggregateRefs);
+        }
+    }
+
     /** D7: synthetic demo entry - REAL deterministic demo flow (persisted only in DEMO isolation). */
     public record SyntheticDemoResponse(
             String status,

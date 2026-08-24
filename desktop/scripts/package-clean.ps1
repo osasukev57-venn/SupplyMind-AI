@@ -110,6 +110,14 @@ Get-ChildItem -LiteralPath $dist -Force | ForEach-Object {
     Copy-Item -LiteralPath $_.FullName -Destination $webDir -Recurse -Force
 }
 
+# User-facing LocalImport sample data is documentation, not runtime business state. Keep it
+# outside data/ so the initial-data allowlist remains exact and formal processing starts empty.
+$demoDataSource = Join-Path $RepoRoot 'demo-data'
+if (-not (Test-Path -LiteralPath $demoDataSource)) {
+    throw "demo-data directory missing: $demoDataSource"
+}
+Copy-Item -LiteralPath $demoDataSource -Destination (Join-Path $root 'demo-data') -Recurse -Force
+
 # Generate the canonical initial config through the production storage code with a fixed
 # packaging timestamp. The resulting four files are deterministic and are the only data/
 # entries permitted in the release ZIP.

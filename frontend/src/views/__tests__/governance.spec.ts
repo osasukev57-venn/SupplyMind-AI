@@ -14,6 +14,7 @@ vi.mock('../../api/dashboard', () => ({
   submitManual: vi.fn(),
   processManual: vi.fn(),
   submitImport: vi.fn(),
+  processImport: vi.fn(),
   submitSyntheticDemo: vi.fn()
 }))
 

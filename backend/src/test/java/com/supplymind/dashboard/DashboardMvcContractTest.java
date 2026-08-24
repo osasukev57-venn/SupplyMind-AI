@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -81,6 +83,25 @@ class DashboardMvcContractTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("REJECTED"))
                 .andExpect(jsonPath("$.message").value("unknown itemId"));
+    }
+
+    @Test
+    void importBatchBindsJsonAndReturnsStructuredPerRowResult() throws Exception {
+        when(dashboard.processImportBatch(any())).thenReturn(new DashboardV1.ImportBatchResponse(
+                "PUBLISHED", "processed 1 distinct rows: 1 published, 0 rejected",
+                List.of(new DashboardV1.ImportProcessRow(
+                        "import-run-1", "MAT.AZ91D.DEMO_IMPORT", "2026-08-24",
+                        "PUBLISHED", "VERIFIED", "material-basic-validation-v2",
+                        "published/ref.json", "processed/daily/ref.csv",
+                        List.of("processed/aggregate/month.csv"), "published"))));
+
+        mockMvc.perform(post("/api/dashboard/import/process")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"runIds\":[\"import-run-1\"]}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PUBLISHED"))
+                .andExpect(jsonPath("$.rows[0].runId").value("import-run-1"))
+                .andExpect(jsonPath("$.rows[0].publishRef").value("published/ref.json"));
     }
 
     @Test

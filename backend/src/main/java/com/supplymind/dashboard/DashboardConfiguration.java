@@ -6,6 +6,7 @@ import com.supplymind.demo.DemoShowcaseService;
 import com.supplymind.foundation.storage.AtomicFileStore;
 import com.supplymind.foundation.storage.DataRoot;
 import com.supplymind.history.HistoryQueryService;
+import com.supplymind.localimport.LocalImportBatchProcessingService;
 import com.supplymind.localimport.LocalImportService;
 import com.supplymind.manual.ManualMaterialIntakeService;
 import com.supplymind.provider.DataProviderRegistry;
@@ -47,12 +48,13 @@ public class DashboardConfiguration {
             ManualMaterialIntakeService manualMaterialIntakeService,
             LocalImportService localImportService,
             DataProviderRegistry dataProviderRegistry,
-            DemoShowcaseService demoShowcaseService
+            DemoShowcaseService demoShowcaseService,
+            LocalImportBatchProcessingService localImportBatchProcessingService
     ) {
         return new DashboardService(configManagementService, publishedQueryService,
                 historyQueryService, dashboardWarningService, foundationClock,
                 manualMaterialIntakeService, localImportService, dataProviderRegistry,
-                demoShowcaseService);
+                demoShowcaseService, localImportBatchProcessingService);
     }
 
     @Bean

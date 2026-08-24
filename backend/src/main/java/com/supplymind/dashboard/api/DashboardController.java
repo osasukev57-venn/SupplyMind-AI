@@ -4,6 +4,7 @@ import com.supplymind.dashboard.DashboardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -89,6 +90,12 @@ public class DashboardController {
         } catch (RuntimeException exception) {
             return rejected("dashboard data unavailable for the requested parameters");
         }
+    }
+
+    /** Explicit operator action: validate and publish rows already accepted by LocalImport. */
+    @PostMapping("/import/process")
+    public ResponseEntity<?> processImport(@RequestBody DashboardV1.ImportBatchRequest request) {
+        return okOrRejected(() -> dashboard.processImportBatch(request.runIds()));
     }
 
     /** D7: frozen import CSV template download (the exact LocalImport boundary header). */

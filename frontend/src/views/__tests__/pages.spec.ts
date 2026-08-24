@@ -12,6 +12,7 @@ vi.mock('../../api/dashboard', () => ({
   submitManual: vi.fn(),
   processManual: vi.fn(),
   submitImport: vi.fn(),
+  processImport: vi.fn(),
   submitSyntheticDemo: vi.fn()
 }))
 
@@ -32,6 +33,7 @@ import {
   fetchQuality,
   fetchSources,
   submitImport,
+  processImport,
   submitManual,
   processManual,
   submitSyntheticDemo
@@ -383,6 +385,31 @@ describe('dashboard pages', () => {
     expect(wrapper.text()).toContain('待处理')
     expect(wrapper.text()).toContain('第 3 行')
     expect(wrapper.text()).toContain('已受理')
+
+    vi.mocked(processImport).mockResolvedValue({
+      status: 'PUBLISHED',
+      message: 'processed 1 distinct rows: 1 published, 0 rejected',
+      rows: [{
+        runId: 'import-MAT.IMPORT.TEST.001-20260810-abc',
+        itemId: 'MAT.IMPORT.TEST.001',
+        businessDate: '2026-08-10',
+        status: 'PUBLISHED',
+        validationStatus: 'VERIFIED',
+        validationVersion: 'material-basic-validation-v2',
+        publishRef: 'published/MAT.IMPORT.TEST.001/2026-08-10.json',
+        dailyRef: 'processed/daily/MAT.IMPORT.TEST.001/2026-08.csv',
+        aggregateRefs: ['processed/aggregate/MAT.IMPORT.TEST.001/month/2026.csv'],
+        message: 'Local import row passed validation and is now available to dashboard queries'
+      }]
+    })
+    const batchButton = wrapper.findAll('button')
+      .find((button) => button.text().includes('批量校验并发布'))
+    expect(batchButton).toBeTruthy()
+    await batchButton!.trigger('click')
+    await flushPromises()
+    expect(processImport).toHaveBeenCalledWith(['import-MAT.IMPORT.TEST.001-20260810-abc'])
+    expect(wrapper.text()).toContain('已发布')
+    expect(wrapper.text()).toContain('统计已重建')
   })
 
   it('import xlsx shows the backend REJECTED status without local parsing', async () => {

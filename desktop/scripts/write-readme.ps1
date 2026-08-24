@@ -37,6 +37,7 @@ Version: __SUPPLYMIND_VERSION__
 - ADC12：联网启动后读取上海期货交易所 ad_f 公开日行情，显示主力合约结算价；
   这是明确标注的同类期货公开基准，不是 SMM/Asian Metal 或 ADC12 现货成交价。
 - AZ91D：当前保留来源与录入页的 Manual/LocalImport 流程；提交后必须经过校验与发布门禁。
+- 批量导入演示：根目录 demo-data/ 内含六行 AZ91D 示例 CSV 和操作说明。先创建说明中的 LocalImport 监测项，上传后点击「批量校验并发布到面板」。
 - “运行完整演示流程”：生成可审计的 DEMO raw、校验、多级演示均值和报告；
   DEMO 不进入正式 PUBLISHED、processed、warning 或 Agent 业务证据。
 

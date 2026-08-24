@@ -30,6 +30,7 @@
 | POST | `/manual`（form 参数 itemId/source/businessDate/value/unit） | 人工录入受理 → `{status:"PENDING", runId, rawRef, timelineRef, message}` |
 | POST | `/api/manual/{runId}/process` | 显式操作员步骤：复用冻结校验/发布/daily/aggregate；成功返回 `status=PUBLISHED`，不自动信任 Manual |
 | POST | `/import`（multipart `file`） | CSV/XLSX 导入受理 → 逐行受理证据 + 逐行错误 |
+| POST | `/import/process`（JSON `{runIds:[...]}`） | 显式批量处理已受理 LocalImport 行；逐行 validation → publish → daily/aggregate，返回 PUBLISHED/PARTIAL_SUCCESS/REJECTED 与逐行结果 |
 | GET | `/import/template` | 导入 CSV 模板下载 |
 | POST | `/synthetic-demo` | 运行完整确定性 DEMO 链；只持久化 DEMO raw/时间线/审计报告，不产生 PUBLISHED 或正式 processed/warning/report |
 

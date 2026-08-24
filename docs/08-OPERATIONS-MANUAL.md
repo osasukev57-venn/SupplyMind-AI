@@ -38,7 +38,8 @@
 1. 「来源与录入」→「文件导入」→ 下载导入模板（CSV）。
 2. 按模板填写（schemaVersion、itemId、businessDate、value、unit、currency、实际来源名称、引用、URL）。
 3. 上传 CSV 或 XLSX。系统逐行解析并受理为 RECEIVED+PENDING（返回逐行受理证据），无效行逐行报告，文件级错误整体拒绝。
-4. 导入的数据同样必须通过校验/发布门禁才能进入展示层。
+4. 核对受理行后，点击「批量校验并发布到面板」。系统逐行复用正式 validation/publish gate，并重建 daily 与月/季/半年/年度 aggregate；单行失败不会中断其他行，重复执行保持幂等。
+5. 运行包的 `demo-data/SupplyMindAI-AZ91D-local-import-demo.csv` 提供六行非真实市场的验收数据；必须先按同目录 README 新增 `MAT.AZ91D.DEMO_IMPORT` 本地导入监测项。该文件仅用于功能演示。
 
 ### 2.5 动态配置（H07-H09 场景）
 

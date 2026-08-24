@@ -50,6 +50,7 @@ public final class DashboardService {
     private final com.supplymind.localimport.LocalImportService localImport;
     private final com.supplymind.provider.DataProviderRegistry registry;
     private final com.supplymind.demo.DemoShowcaseService demoShowcase;
+    private final com.supplymind.localimport.LocalImportBatchProcessingService importProcessing;
 
     public DashboardService(
             ConfigManagementService configs,
@@ -61,7 +62,7 @@ public final class DashboardService {
             com.supplymind.localimport.LocalImportService localImport,
             com.supplymind.provider.DataProviderRegistry registry
     ) {
-        this(configs, published, history, warnings, clock, manualIntake, localImport, registry, null);
+        this(configs, published, history, warnings, clock, manualIntake, localImport, registry, null, null);
     }
 
     public DashboardService(
@@ -75,6 +76,22 @@ public final class DashboardService {
             com.supplymind.provider.DataProviderRegistry registry,
             com.supplymind.demo.DemoShowcaseService demoShowcase
     ) {
+        this(configs, published, history, warnings, clock, manualIntake, localImport, registry,
+                demoShowcase, null);
+    }
+
+    public DashboardService(
+            ConfigManagementService configs,
+            PublishedQueryService published,
+            HistoryQueryService history,
+            WarningService warnings,
+            Clock clock,
+            com.supplymind.manual.ManualMaterialIntakeService manualIntake,
+            com.supplymind.localimport.LocalImportService localImport,
+            com.supplymind.provider.DataProviderRegistry registry,
+            com.supplymind.demo.DemoShowcaseService demoShowcase,
+            com.supplymind.localimport.LocalImportBatchProcessingService importProcessing
+    ) {
         this.configs = Objects.requireNonNull(configs, "configs");
         this.published = Objects.requireNonNull(published, "published");
         this.history = Objects.requireNonNull(history, "history");
@@ -84,6 +101,7 @@ public final class DashboardService {
         this.localImport = Objects.requireNonNull(localImport, "localImport");
         this.registry = Objects.requireNonNull(registry, "registry");
         this.demoShowcase = demoShowcase;
+        this.importProcessing = importProcessing;
     }
     public DashboardV1.OverviewResponse overview() {
         MonitorSeriesConfigV1 config = configs.active();
@@ -399,6 +417,22 @@ public final class DashboardService {
                 fileName, List.copyOf(accepted), rowErrorsOf(result));
     }
 
+
+    /** Explicit post-intake operator action; upload itself remains RECEIVED+PENDING. */
+    public DashboardV1.ImportBatchResponse processImportBatch(List<String> runIds) {
+        if (importProcessing == null) {
+            throw new IllegalStateException("local import processing is unavailable");
+        }
+        com.supplymind.localimport.LocalImportBatchProcessingService.BatchResult result =
+                importProcessing.process(runIds);
+        List<DashboardV1.ImportProcessRow> rows = result.rows().stream()
+                .map(row -> new DashboardV1.ImportProcessRow(
+                        row.runId(), row.itemId(), row.businessDate(), row.status(),
+                        row.validationStatus(), row.validationVersion(), row.publishRef(),
+                        row.dailyRef(), row.aggregateRefs(), row.message()))
+                .toList();
+        return new DashboardV1.ImportBatchResponse(result.status(), result.message(), rows);
+    }
     private static List<DashboardV1.ImportRowError> rowErrorsOf(
             com.supplymind.localimport.LocalImportResult result
     ) {

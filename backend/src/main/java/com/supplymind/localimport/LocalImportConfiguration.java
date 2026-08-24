@@ -8,6 +8,7 @@ import com.supplymind.foundation.storage.ConfigActivationStore;
 import com.supplymind.foundation.storage.DataRoot;
 import com.supplymind.foundation.storage.RawReceiptStore;
 import com.supplymind.foundation.storage.TimelineStore;
+import com.supplymind.manual.ManualMaterialProcessingService;
 import com.supplymind.foundation.storage.AtomicFileStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,6 +55,13 @@ public class LocalImportConfiguration {
     ) {
         return new LocalImportDataProvider(() ->
                 localImportRouteItemIds(dataRoot, fileStore, foundationClock));
+    }
+
+    @Bean
+    LocalImportBatchProcessingService localImportBatchProcessingService(
+            ManualMaterialProcessingService processing
+    ) {
+        return new LocalImportBatchProcessingService(processing);
     }
 
     @Bean

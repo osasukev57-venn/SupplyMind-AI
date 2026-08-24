@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { fetchSources, processManual, submitImport, submitManual, submitSyntheticDemo } from '../api/dashboard'
-import type { DemoItemView, SourcesResponse } from '../types/dashboard'
+import { fetchSources, processImport, processManual, submitImport, submitManual, submitSyntheticDemo } from '../api/dashboard'
+import type { DemoItemView, ImportProcessRow, SourcesResponse } from '../types/dashboard'
 import StatusBadge from '../components/StatusBadge.vue'
 import { accessLabel, fallbackReasonLabel, modeLabel, providerLabel, routeLabel, sourceDisplayName, stageLabel, validationLabel } from '../lib/labels'
 
@@ -27,6 +27,8 @@ const importStatus = ref<string | null>(null)
 const importMessage = ref<string | null>(null)
 const importAccepted = ref<{ rowNumber: number; runId: string; rawRef: string; timelineRef: string; processingStage: string | null; validationStatus: string | null }[]>([])
 const importErrors = ref<{ rowNumber: number; message: string }[]>([])
+const importProcessed = ref<ImportProcessRow[]>([])
+const importProcessing = ref(false)
 const showImportDetail = ref(false)
 
 // Synthetic demo entry: deterministic demo data for the demo scenario only.
@@ -99,6 +101,21 @@ async function onImportFile(event: Event): Promise<void> {
   importAccepted.value = response.acceptedRows
   importErrors.value = response.rowErrors
   if (response.acceptedRows.length > 0) showImportDetail.value = true
+}
+
+async function processAcceptedImport(): Promise<void> {
+  if (importAccepted.value.length === 0 || importProcessing.value) return
+  importProcessing.value = true
+  const response = await processImport(importAccepted.value.map((row) => row.runId))
+  importProcessing.value = false
+  if (response === null) {
+    importStatus.value = 'REJECTED'
+    importMessage.value = '批量处理失败：请检查监测项是否为本地导入路线，以及数据值、单位和日期'
+    return
+  }
+  importStatus.value = response.status
+  importMessage.value = response.message
+  importProcessed.value = response.rows
 }
 
 async function runSyntheticDemo(): Promise<void> {
@@ -243,6 +260,12 @@ onMounted(async () => {
             第 {{ err.rowNumber }} 行：{{ err.message }}
           </div>
         </div>
+        <div v-if="importAccepted.length > 0" class="import-actions">
+          <button class="btn-primary" :disabled="importProcessing" @click="processAcceptedImport">
+            {{ importProcessing ? '批量处理中…' : '批量校验并发布到面板' }}
+          </button>
+          <span class="muted">上传只负责受理；点击后才逐行执行正式校验、发布和统计重建。</span>
+        </div>
         <div v-if="importAccepted.length > 0" class="table-scroll" style="margin-top: 10px">
           <table class="sm-table">
             <thead>
@@ -271,6 +294,22 @@ onMounted(async () => {
               第 {{ row.rowNumber }} 行：受理 {{ row.runId }}；原始 {{ row.rawRef }}；生命周期 {{ row.timelineRef }}
             </div>
           </div>
+        </div>
+        <div v-if="importProcessed.length > 0" class="table-scroll import-results">
+          <table class="sm-table responsive-data-table">
+            <thead><tr>
+              <th>监测项 / 日期</th><th>结果</th><th>校验</th><th>发布与统计</th><th>说明</th>
+            </tr></thead>
+            <tbody>
+              <tr v-for="row in importProcessed" :key="row.runId">
+                <td><div>{{ row.itemId ?? '—' }}</div><div class="muted">{{ row.businessDate ?? '—' }}</div></td>
+                <td><StatusBadge :status="row.status" /></td>
+                <td>{{ validationLabel(row.validationStatus) }}</td>
+                <td>{{ row.publishRef ? '已发布' : '未发布' }} · {{ row.dailyRef ? '统计已重建' : '无统计文件' }}</td>
+                <td>{{ row.message }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
@@ -393,5 +432,12 @@ onMounted(async () => {
   color: white;
   font-size: 10px;
 }
+.import-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.import-results { margin-top: 14px; }
 .demo-results { margin-top: 16px; }
 </style>
