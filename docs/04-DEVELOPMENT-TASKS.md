@@ -3,7 +3,9 @@
 > 文档性质：跨窗口可独立执行的任务清单  
 > 规范版本：v1.5（任务状态字段与进度锚点可按执行协议更新，需求/契约/依赖/测试/DoD冻结）  
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
-> 当前进度锚点：Day 1～Day 10均已完成；Post-Day10 数据可用性补充实现=`ee48994`，DEC-063=`EFFECTIVE`。真实 PBOC 双币、SHFE ADC12 同类公开基准、AZ91D Manual 与一键完整隔离 DEMO 均已实现；Backend=`654 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`34/34 + build PASS`。最终运行/源码 ZIP 的 SHA-256 以 release 同名 `.sha256` sidecar 为唯一权威值；DEC-062 安全边界继续生效。
+> 当前进度锚点：Day 1～Day 10均已完成；Post-Day10 数据可用性补充实现=`ee48994`，DEC-063=`EFFECTIVE`。真实 PBOC 双币、SHFE ADC12 同类公开基准、AZ91D Manual 与一键完整隔离 DEMO 均已实现；Backend=`131 suites/669 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`38/38 + build PASS`。最终运行/源码 ZIP 的 SHA-256 以 release 同名 `.sha256` sidecar 为唯一权威值；DEC-062 安全边界继续生效。
+
+> Post-Day10 warning closure（DEC-064，2026-08-25）：每个启用正式监测项自动绑定 `warning-relative-change-v1` 默认规则；材料=7日/5%，其他=1日/1%，双向且等于阈值触发；支持逐项版本化覆盖。EXT-07=`ACCEPTED_VERSIONED_DEFAULT`，EXT-08继续`OPEN_EXTERNAL`。历史 D5/D8 的 TEST/DEMO 记录仅作当时审计，不代表当前能力。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`TaskExecutionStatus=DONE`（实施 + Attack Validation + Final Stage Review 全部 PASS，MAJOR Finding 全部关闭）；最终实施候选=`feaedd3`；CURRENT 全量回归=110 suites/578 backend tests/0 failures/0 errors/8 skipped，前端 11/11 PASS + build PASS；历史候选（1b83410、d2b0965、5f1491c、01d4270 等中间状态）一律 HISTORICAL，详见 docs/05-PROGRESS-LEDGER 与 docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md。Day1-Day6 代码零修改。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
@@ -619,7 +621,7 @@ D1-T02的外部访问失败证据只能完成调查产物，不能让PBOC真实�
 - **输出：** warningId、规则版本、证据引用、严重级别、状态、创建/确认时间和处置备注。
 - **依赖任务：** D4-T04、D5-T03、D7-T01。
 - **具体测试：** 阈值命中/未命中、缺失数据、规则变更、重复执行幂等、跨月轮转、确认后重启保持（DEC-061：原warning不可改写、sidecar CREATE_NEW/幂等/冲突fail-closed、ack文件不得被当WarningRecord解码）。
-- **Definition of Done：** LLM不参与规则判定；每条预警可回溯到数据与公式；重复调度不产生重复记录；确认走独立sidecar且原warning逐字节不变；EXT-07/EXT-08保持`OPEN_EXTERNAL`，页面/API显示demoRule=true。
+- **Definition of Done：** LLM不参与规则判定；每条预警可回溯到数据与公式；重复调度不产生重复记录；确认走独立sidecar且原warning逐字节不变。历史 Day8 Gate 当时要求 EXT-07/08=`OPEN_EXTERNAL` 与 demoRule=true；当前 EXT-07 部分已被 DEC-064 的正式 `warning-relative-change-v1` 取代，EXT-08仍`OPEN_EXTERNAL`，旧 demo API/记录仅作兼容与历史审计。
 - **失败回退：** 暂停故障规则并显示规则不可用，不把未计算结果当作正常。
 - **是否阻塞后续：** 是，阻塞Agent风险报告和最终展示。
 

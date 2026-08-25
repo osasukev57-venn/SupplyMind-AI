@@ -134,11 +134,9 @@ describe('AgentView (D8-T03)', () => {
     expect(request.mode).toBe('FORMAL')
 
     expect(wrapper.text()).toContain('ADC12 \u8fd1\u671f\u8d8b\u52bf\u5e73\u7a33')
-    // The report-source badge keeps the technical token (JAVA_TEMPLATE); the user-facing
-    // degraded note uses product copy.
-    expect(wrapper.text()).toContain('JAVA_TEMPLATE')
-    expect(wrapper.text()).toContain('\u667a\u80fd\u5206\u6790\u670d\u52a1\u4e0d\u53ef\u7528')
-    expect(wrapper.text()).toContain('\u672c\u5730\u53ef\u4fe1\u62a5\u544a')
+    expect(wrapper.text()).toContain('Java 事实报告')
+    expect(wrapper.text()).toContain('云端语言分析未被采用')
+    expect(wrapper.text()).not.toContain('JAVA_TEMPLATE')
     expect(wrapper.text()).toContain('history.query')
     expect(wrapper.text()).toContain('19850.50')
     expect(wrapper.text()).toContain('\u8d8b\u52bf\u5e73\u7a33')

@@ -1,5 +1,6 @@
 package com.supplymind.warning;
 
+import com.supplymind.config.ConfigManagementService;
 import com.supplymind.foundation.storage.AtomicFileStore;
 import com.supplymind.foundation.storage.DataRoot;
 import com.supplymind.history.HistoryQueryService;
@@ -28,12 +29,44 @@ public class WarningApiConfiguration {
     }
 
     @Bean
+    WarningRuleStore warningRuleStore(
+            DataRoot dataRoot, AtomicFileStore fileStore, Clock foundationClock
+    ) {
+        return new WarningRuleStore(dataRoot, fileStore, foundationClock);
+    }
+
+    @Bean
+    FormalWarningEvaluationService formalWarningEvaluationService(
+            HistoryQueryService historyQueryService,
+            DataRoot dataRoot,
+            AtomicFileStore fileStore,
+            Clock foundationClock
+    ) {
+        return new FormalWarningEvaluationService(
+                historyQueryService, new WarningStore(dataRoot, fileStore, foundationClock));
+    }
+
+    @Bean
+    WarningRuleManagementService warningRuleManagementService(
+            ConfigManagementService configManagementService,
+            WarningRuleStore warningRuleStore,
+            FormalWarningEvaluationService formalWarningEvaluationService,
+            Clock foundationClock
+    ) {
+        return new WarningRuleManagementService(
+                configManagementService, warningRuleStore,
+                formalWarningEvaluationService, foundationClock);
+    }
+    @Bean
     WarningController warningController(
             WarningService warningService,
             WarningQueryService warningQueryService,
             WarningAckStore warningAckStore,
-            java.time.Clock foundationClock
+            java.time.Clock foundationClock,
+            WarningRuleManagementService warningRuleManagementService
     ) {
-        return new WarningController(warningService, warningQueryService, warningAckStore, foundationClock);
+        return new WarningController(
+                warningService, warningQueryService, warningAckStore,
+                foundationClock, warningRuleManagementService);
     }
 }

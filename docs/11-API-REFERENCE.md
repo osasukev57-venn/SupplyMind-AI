@@ -2,7 +2,7 @@
 
 > 文档编号：SMA-API-001
 > 适用版本：P0 便携发布
-> 最后更新：2026-08-21
+> 最后更新：2026-08-25
 
 ## 1. 通则
 
@@ -74,7 +74,11 @@
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| POST | `/evaluate` | 请求驱动评估（v1 仅 demoRule=true 的 TEST/DEMO 规则）：`{ruleId, ruleKind, itemId, grain, threshold, direction, periodStart, periodEnd, baselinePeriods?}` → `{status:"TRIGGERED", warning}` 或 `{status:"NOT_TRIGGERED"}` |
+| GET | `/rules` | 返回每个启用且非 Synthetic 监测项的有效规则（系统默认或用户覆盖），含 `lookbackDays/threshold/thresholdPercent/direction/origin` |
+| POST | `/rules/evaluate-all` | 对全部有效规则立即执行 Java 正式评估，返回 `TRIGGERED/NOT_TRIGGERED/INSUFFICIENT_DATA/INVALID_DATA/DISABLED` 与 display-ready 变化率 |
+| POST | `/rules/{itemId}` | 保存单项覆盖并立即评估：`{lookbackDays, thresholdPercent, direction, enabled, description}`；百分比由后端转换为 BigDecimal 比例 |
+| POST | `/rules/{itemId}/reset` | 删除该项覆盖、恢复类型默认并立即评估 |
+| POST | `/evaluate` | 兼容旧客户端的 TEST/DEMO 试算端点；正式产品页不再使用 |
 | GET | `?itemId&from&to` | 区间预警列表 |
 | GET | `/{warningId}?itemId` | 预警详情 |
 | POST | `/{warningId}/ack?itemId` | 确认（DEC-061 sidecar；`acknowledgedAt` 由服务端时钟生成） |

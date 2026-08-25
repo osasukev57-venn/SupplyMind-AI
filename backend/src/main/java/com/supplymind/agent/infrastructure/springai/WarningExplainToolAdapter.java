@@ -25,8 +25,8 @@ import java.util.stream.Stream;
 /**
  * D6-T01 warning.explain: read-only explanation of persisted warning evidence (D5-T05
  * warning/YYYY-MM files). Only manifest-valid warning records are returned; corrupt records are
- * never surfaced as evidence; absent warnings are NO_DATA. Demo rules stay TEST/DEMO (EXT-07/08
- * open).
+ * never surfaced as evidence; absent warnings are NO_DATA. Persisted records retain ruleVersion
+ * and demoRule so DEC-064 formal warnings and legacy TEST/DEMO warnings remain distinguishable.
  */
 public final class WarningExplainToolAdapter {
 
@@ -85,7 +85,7 @@ public final class WarningExplainToolAdapter {
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("warnings", rows);
             body.put("warningCount", rows.size());
-            body.put("note", "warning rules are TEST/DEMO until EXT-07/08 are confirmed");
+            body.put("note", "ruleVersion and demoRule identify DEC-064 formal versus legacy demo warnings");
             return ToolResult.success(TOOL_NAME, TOOL_VERSION, requestId,
                     "itemId=" + safeItem + (monthFilter == null ? "" : " month=" + monthFilter),
                     body, List.copyOf(evidenceRefs), List.of());

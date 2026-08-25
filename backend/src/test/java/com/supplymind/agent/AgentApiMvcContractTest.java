@@ -73,8 +73,11 @@ class AgentApiMvcContractTest {
                 true, "TOOL_EXECUTION_REJECTED",
                 List.of(new AgentReportV1.FactSummary("f1", "TREND", "6.79040000", "2026-08-10",
                         "2026-08-01", "VERIFIED")),
-                List.of(new AgentReportV1.Claim("claim-1", "趋势平稳",
-                        List.of("processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv"))),
+                List.of(
+                        new AgentReportV1.Claim("claim-1", "趋势平稳",
+                                List.of("processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv")),
+                        new AgentReportV1.Claim("claim-2", "数据截至 2026-08-10",
+                                List.of("processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv"))),
                 List.of(), List.of("fallback: model did not select any tool"),
                 OffsetDateTime.parse("2026-08-10T10:00:00+08:00"));
         AgentOrchestrator.AgentResult result = new AgentOrchestrator.AgentResult(
@@ -104,6 +107,9 @@ class AgentApiMvcContractTest {
                 .andExpect(jsonPath("$.claims[0].text").value("趋势平稳"))
                 .andExpect(jsonPath("$.claims[0].evidenceRefs[0]").value(
                         "processed/daily/FX.USD.CNY.PBOC_MID/2026-08.csv"))
+                .andExpect(jsonPath("$.claims[1].text").value("数据截至 2026-08-10"))
+                .andExpect(jsonPath("$.answer").value("趋势平稳" + System.lineSeparator()
+                        + "数据截至 2026-08-10"))
                 .andExpect(jsonPath("$.dataThrough").value("2026-08-10"))
                 .andExpect(jsonPath("$.facts[0].value").value("6.79040000"))
                 // M3: controlled evidence navigation links projected from VERIFIED entries

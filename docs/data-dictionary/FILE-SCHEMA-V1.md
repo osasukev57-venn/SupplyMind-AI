@@ -17,6 +17,8 @@
 ```text
 data/config/monitor-series.json
 data/config/history/<configVersion>.json
+data/config/warning-rules.json
+data/config/warning-rules/history/<configVersion>.json
 data/raw/<mode>/<providerType>/<itemId>/YYYY/MM/<runId>.json
 data/staging/<runId>.json
 data/quarantine/<itemId>/YYYY-MM/<runId>.json
@@ -115,6 +117,13 @@ items 按 itemId Unicode code point 升序且唯一。history `<configVersion>.j
 
 生产初始 PBOC 配置是 formal/configVersion 1：`FX.EUR.CNY.PBOC_MID` 与 `FX.USD.CNY.PBOC_MID`，均使用 `arithmetic-mean-v1`、scale 8/4、`HALF_UP`、`weekday-asia-shanghai-v1`；其货币为 CNY、baseCurrency 分别为 EUR/USD。GD-01 test fixture 才使用 scale 12/9 与 `golden-calendar-v1`。
 
+## WarningRuleSetV1 / WarningRuleConfigV1（DEC-064）
+
+活动覆盖文件为 `data/config/warning-rules.json`，不可变历史为 `data/config/warning-rules/history/<configVersion>.json`；两者均有相邻 manifest。一次 `CONFIG_ACTIVATION` 必须先 CREATE_NEW history，再替换 active，且两份业务字节完全相同。
+
+`WarningRuleSetV1` 固定字段顺序：`schemaVersion`、`configVersion`、`updatedAt`、`overrides`。`overrides` 按 itemId Unicode code point 排序且唯一，只允许 `origin=USER_CUSTOM`。
+
+`WarningRuleConfigV1` 固定字段顺序：`schemaVersion`、`ruleId`、`ruleVersion`、`itemId`、`rateKind`、`lookbackDays`（1..365）、`threshold`（BigDecimal 比例字符串，(0,10]）、`direction`（UP/DOWN/BOTH）、`enabled`、`origin`（SYSTEM_DEFAULT/USER_CUSTOM）、`description`。系统默认不重复持久化，由 active monitor metadata + DEC-064 确定性派生；用户覆盖才进入 overrides。
 ## Daily / Aggregate CSV
 
 Daily 固定表头：`schemaVersion,businessDate,itemId,providerType,actualSourceName,accessMethod,processingStage,validationStatus,validationVersion,configVersions,calculationVersion,calculationScale,displayScale,roundingMode,calendarVersion,sum,validCount,avg,expectedCount,missingCount,complete,currency,unit,inputRefs,updatedAt`。

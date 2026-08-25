@@ -288,9 +288,13 @@ public final class AtomicFileStore {
         }
         FileTransactionTarget history = targets.get(0);
         FileTransactionTarget active = targets.get(1);
-        if (!history.dataRef().startsWith("config/history/")
-                || !active.dataRef().equals(DataPaths.configActiveRef())) {
-            throw new StorageException("CONFIG_ACTIVATION must target config/history/<configVersion>.json then config/monitor-series.json");
+        boolean monitorConfig = history.dataRef().startsWith("config/history/")
+                && active.dataRef().equals(DataPaths.configActiveRef());
+        boolean warningRules = history.dataRef().startsWith("config/warning-rules/history/")
+                && active.dataRef().equals(DataPaths.warningRulesActiveRef());
+        if (!monitorConfig && !warningRules) {
+            throw new StorageException(
+                    "CONFIG_ACTIVATION must target one registered config history/active pair");
         }
         if (!Arrays.equals(history.dataBytes(), active.dataBytes())) {
             throw new StorageException("CONFIG_ACTIVATION history and active configuration bytes must be identical");
@@ -301,7 +305,10 @@ public final class AtomicFileStore {
     }
 
     private boolean isConfigurationTarget(FileTransactionTarget target) {
-        return target.dataRef().equals(DataPaths.configActiveRef()) || target.dataRef().startsWith("config/history/");
+        return target.dataRef().equals(DataPaths.configActiveRef())
+                || target.dataRef().startsWith("config/history/")
+                || target.dataRef().equals(DataPaths.warningRulesActiveRef())
+                || target.dataRef().startsWith("config/warning-rules/history/");
     }
 
     private String lockKey(List<FileTransactionTarget> targets) {

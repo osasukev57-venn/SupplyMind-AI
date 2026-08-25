@@ -22,8 +22,9 @@ import java.util.stream.Stream;
  * D5-T05 deterministic warning evaluation (AT-ALT-001 backend). Inputs are exclusively
  * published/processed data (aggregate/daily files that by construction only contain
  * PUBLISHED+VERIFIED-class rows), so PENDING/REJECTED/CONFLICT/DEMO can never trigger a
- * formal warning. All arithmetic is BigDecimal. Rules are explicit TEST/DEMO configurations
- * (EXT-07/EXT-08 thresholds not yet confirmed); the same logical inputs produce the same
+ * formal warning. All arithmetic is BigDecimal. This legacy service accepts only explicit
+ * TEST/DEMO configurations; DEC-064 formal relative-change rules are evaluated by
+ * {@link FormalWarningEvaluationService}. The same logical inputs produce the same
  * fingerprint-derived warningId, so re-runs never duplicate business warnings.
  */
 public final class WarningService {
@@ -179,12 +180,12 @@ public final class WarningService {
                 String.join("\u0000", canonical).getBytes(StandardCharsets.UTF_8));
     }
 
-    /** Demo rule factory: clearly marked non-final (EXT-07/EXT-08 still open). */
+    /** Legacy demo rule factory; it does not create a DEC-064 formal warning rule. */
     public static WarningRuleV1 demoPriceChangeRule(String itemId, String grain, String threshold) {
         return new WarningRuleV1(
                 "demo-price-change-" + itemId, "demo-v1", WarningRuleV1.RuleKind.PRICE_CHANGE,
                 itemId, grain, threshold, WarningRuleV1.Direction.ABOVE, 1, true,
-                "TEST/DEMO threshold - not a final business threshold (EXT-07 open)");
+                "TEST/DEMO threshold - not a DEC-064 formal warning rule");
     }
 
     /**

@@ -1,17 +1,18 @@
-import { getJson } from './client'
-import { http } from './client'
+import { getJson, http } from './client'
 import type {
   AckView,
   EvaluateRequest,
   EvaluateResponse,
-  WarningListResponse,
-  WarningView
+  RuleEvaluationView,
+  RuleListResponse,
+  RuleUpdateResponse,
+  UpdateRuleRequest,
+  WarningListResponse
 } from '../types/warning'
 
 /**
- * D8-T02 warning API. Evaluation is a deterministic Java chain (demoRule=true only); the
- * acknowledgement writes a DEC-061 sidecar - the original warning evidence is never modified.
- * The frontend never computes thresholds, risk levels or completeness.
+ * Warning API. Formal rule evaluation is deterministic Java logic over published/verified data.
+ * The UI receives display-ready percentages and never recalculates thresholds or change ratios.
  */
 
 export function fetchWarnings(
@@ -21,6 +22,47 @@ export function fetchWarnings(
 ): Promise<WarningListResponse | null> {
   const params = new URLSearchParams({ itemId, from, to })
   return getJson<WarningListResponse>(`/warnings?${params.toString()}`)
+}
+
+export function fetchWarningRules(): Promise<RuleListResponse | null> {
+  return getJson<RuleListResponse>('/warnings/rules')
+}
+
+export async function evaluateAllWarningRules(): Promise<RuleEvaluationView[] | null> {
+  try {
+    const response = await http.post<{ evaluations: RuleEvaluationView[] }>(
+      '/warnings/rules/evaluate-all'
+    )
+    return response.data.evaluations
+  } catch {
+    return null
+  }
+}
+
+export async function updateWarningRule(
+  itemId: string,
+  request: UpdateRuleRequest
+): Promise<RuleUpdateResponse | null> {
+  try {
+    const response = await http.post<RuleUpdateResponse>(
+      `/warnings/rules/${encodeURIComponent(itemId)}`,
+      request
+    )
+    return response.data
+  } catch {
+    return null
+  }
+}
+
+export async function resetWarningRule(itemId: string): Promise<RuleUpdateResponse | null> {
+  try {
+    const response = await http.post<RuleUpdateResponse>(
+      `/warnings/rules/${encodeURIComponent(itemId)}/reset`
+    )
+    return response.data
+  } catch {
+    return null
+  }
 }
 
 export async function acknowledgeWarning(
@@ -39,6 +81,7 @@ export async function acknowledgeWarning(
   }
 }
 
+/** Legacy demo endpoint retained for old clients/tests; not used by the formal warning page. */
 export async function evaluateWarning(request: EvaluateRequest): Promise<EvaluateResponse | null> {
   try {
     const response = await http.post<EvaluateResponse>('/warnings/evaluate', request)

@@ -63,7 +63,7 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 编码前基线对齐 | `v1.5 FROZEN` 保持；DEC-060/061/062不变；新增 DEC-063 仅冻结 ADC12 SHFE FreePublic 与 DEMO 隔离口径，不降低 H01-H09。 |
 | 已完成任务 | Day1～Day10全部 P0 开发任务及最终验收；D10-T01～D10-T05=`DONE` |
 | 正在进行任务 | 无 |
-| 阻塞项 | 无 P0 BLOCKER/MAJOR；EXT-07/08保持 OPEN_EXTERNAL；物理改时/干净VM/主动断网方法按DEC-062保持NOT_RUN，不阻塞已通过的业务结果 |
+| 阻塞项 | 无 P0 BLOCKER/MAJOR；EXT-07=`ACCEPTED_VERSIONED_DEFAULT`（DEC-064）；EXT-08保持 OPEN_EXTERNAL；物理改时/干净VM/主动断网方法按DEC-062保持NOT_RUN，不阻塞已通过的业务结果 |
 | 最近验收结果 | Post-Day10：真实启动同时完成 PBOC USD/EUR 与 SHFE ADC12 双 item 的 raw/发布/daily/四级 aggregate；DEMO 八阶段及审计报告通过；回归=`127/656/0/0/9 + Desktop 31/31 + Frontend 37/37/build PASS` |
 | 新增风险 | 指定 SMM/Asian 自动能力仍为 N/A_APPROVED_FALLBACK；SHFE 仅是 ADC12 同类期货公开基准，AZ91D 仍 Manual；官方网络失败时不造数，云端调用失败继续由 JAVA_TEMPLATE 降级 |
 | 下一任务 | 无 P0 开发任务；进入最终发布/merge/tag决策 |
@@ -142,7 +142,7 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | EXT-04 | 指定商业源自动采集能力 | `OPEN_EXTERNAL_NON_BLOCKING` | 对应自动适配器声明 | 合法自动可用则接入，否则记录证据并转FreePublic→Manual |
 | EXT-05 | 历史回填范围 | 待确认 | H08 | 区间配置化；Manual/LocalImport同样经过发布门禁 |
 | EXT-06 | 节假日/未发布日 | `ACCEPTED_VERSIONED_DEFAULT`（via DEC-054；weekday-asia-shanghai-v1，当前版本口径） | 完整率、均值 | DEC-054 已生效；缺失不补0，不代表完整法定节假日日历，未来以新calendarVersion演进 |
-| EXT-07 | 预警阈值 | 待确认 | 预警验收 | 使用显式测试规则，不冒充最终业务阈值 |
+| EXT-07 | 通用变化率预警阈值 | `ACCEPTED_VERSIONED_DEFAULT`（via DEC-064；warning-relative-change-v1） | 正式预警验收 | 材料7日/5%、其他1日/1%、双向、等于阈值触发；用户可按项版本化覆盖；缺失不补0 |
 | EXT-08 | 动态调价公式 | 待确认 | 成本影响、建议 | P0仅规则预警和非约束建议，不自动调价 |
 | EXT-09 | “跨卷”含义 | 待确认 | H06 | 临时解释为同一data根下多个轮转文件 |
 | EXT-10 | 免费材料信源及映射 | `PARTIALLY_RESOLVED_NON_BLOCKING`（DEC-063） | FreePublic能力 | ADC12=SHFE 铸造铝合金期货公开基准；AZ91D与指定商业源仍Manual/LocalImport |

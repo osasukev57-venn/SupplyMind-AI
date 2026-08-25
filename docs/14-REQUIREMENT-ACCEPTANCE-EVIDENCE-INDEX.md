@@ -72,5 +72,5 @@ Day10 原始最终机器证据位于 `docs/evidence/Day10/`；Post-Day10 SHFE/DE
 - AT-TIME-003/004 的物理修改 Windows 时间步骤：`NOT_RUN`。
 - 干净 Windows VM 逐项安装态证明：`NOT_RUN`；便携制品边界按 DEC-062 为 `SAFE_EQUIVALENT_PASS`。
 - 主动断开宿主机网络：`NOT_RUN`；故障行为按 stub 为 `SAFE_EQUIVALENT_PASS`。
-- EXT-07/08：`OPEN_EXTERNAL`；不影响 Java 模板预警/Agent P0。
+- EXT-07：`ACCEPTED_VERSIONED_DEFAULT`（DEC-064，正式通用相对变化预警）；EXT-08：`OPEN_EXTERNAL`（自动调价/成本权重未冻结）。
 - 指定 SMM/Asian 商业源自动采集：`N/A_APPROVED_FALLBACK`；SHFE ADC12 同类公开基准与 Manual 合法路线为 `PASS`；AZ91D 仍走 Manual/LocalImport。

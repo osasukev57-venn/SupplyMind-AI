@@ -33,6 +33,10 @@ vi.mock('../../api/config', () => ({
 
 vi.mock('../../api/warning', () => ({
   fetchWarnings: vi.fn(),
+  fetchWarningRules: vi.fn(),
+  evaluateAllWarningRules: vi.fn(),
+  updateWarningRule: vi.fn(),
+  resetWarningRule: vi.fn(),
   acknowledgeWarning: vi.fn(),
   evaluateWarning: vi.fn()
 }))
@@ -51,7 +55,7 @@ import AgentView from '../AgentView.vue'
 import App from '../../App.vue'
 import { fetchOverview, fetchHistory, fetchMetrics, fetchQuality, fetchSources } from '../../api/dashboard'
 import { fetchConfigItems, fetchConfigHistory, fetchCapabilities, fetchBackfillJobs } from '../../api/config'
-import { fetchWarnings } from '../../api/warning'
+import { evaluateAllWarningRules, fetchWarningRules, fetchWarnings } from '../../api/warning'
 import { queryAgent } from '../../api/agent'
 import type { ConfigView as ConfigViewType } from '../../types/config'
 
@@ -168,6 +172,8 @@ describe('governance isolation (UI product copy)', () => {
     ])
     vi.mocked(fetchCapabilities).mockResolvedValue({ providers: [] })
     vi.mocked(fetchBackfillJobs).mockResolvedValue({ jobs: [] })
+    vi.mocked(fetchWarningRules).mockResolvedValue({ rules: [] })
+    vi.mocked(evaluateAllWarningRules).mockResolvedValue([])
     vi.mocked(fetchWarnings).mockResolvedValue({
       itemId: 'MAT.ADC12.SMM',
       from: '2026-07-01',

@@ -15,6 +15,90 @@ public final class WarningV1 {
     private WarningV1() {
     }
 
+    /** Effective system-default or user-custom rule bound to one monitored series. */
+    public record RuleView(
+            String itemId,
+            String displayName,
+            String actualSourceName,
+            String unit,
+            String rateKind,
+            boolean monitorEnabled,
+            String ruleId,
+            String ruleVersion,
+            int lookbackDays,
+            String threshold,
+            String thresholdPercent,
+            String direction,
+            boolean enabled,
+            String origin,
+            String description
+    ) {
+    }
+
+    /** Controlled user override. thresholdPercent is the user-facing percentage (5 = 5%). */
+    public record UpdateRuleRequest(
+            Integer lookbackDays,
+            String thresholdPercent,
+            String direction,
+            Boolean enabled,
+            String description
+    ) {
+        public UpdateRuleRequest {
+            if (lookbackDays == null || lookbackDays < 1 || lookbackDays > 365) {
+                throw new IllegalArgumentException("lookbackDays must be between 1 and 365");
+            }
+            if (thresholdPercent == null || thresholdPercent.isBlank()) {
+                throw new IllegalArgumentException("thresholdPercent is required");
+            }
+            if (direction == null || direction.isBlank()) {
+                throw new IllegalArgumentException("direction is required");
+            }
+            if (enabled == null) {
+                throw new IllegalArgumentException("enabled is required");
+            }
+        }
+    }
+
+    /** Java-computed current evaluation state; the frontend never recalculates it. */
+    public record EvaluationView(
+            RuleView rule,
+            String status,
+            String message,
+            String currentBusinessDate,
+            String currentValue,
+            String baselineBusinessDate,
+            String baselineValue,
+            String changeRatio,
+            String changePercent,
+            String unit,
+            WarningView warning
+    ) {
+    }
+
+    public static RuleView toView(com.supplymind.warning.WarningRuleManagementService.BoundRule bound) {
+        com.supplymind.warning.WarningRuleConfigV1 rule = bound.rule();
+        return new RuleView(
+                bound.itemId(), bound.displayName(), bound.actualSourceName(), bound.unit(),
+                bound.rateKind(), bound.monitorEnabled(), rule.ruleId(), rule.ruleVersion(),
+                rule.lookbackDays(), rule.threshold(), percent(rule.threshold()),
+                rule.direction().name(), rule.enabled(),
+                rule.origin().name(), rule.description());
+    }
+
+    public static EvaluationView toView(com.supplymind.warning.WarningEvaluationV1 evaluation) {
+        com.supplymind.warning.WarningRuleConfigV1 rule = evaluation.rule();
+        RuleView ruleView = new RuleView(
+                rule.itemId(), rule.itemId(), null, evaluation.unit(), rule.rateKind(), true,
+                rule.ruleId(), rule.ruleVersion(), rule.lookbackDays(), rule.threshold(),
+                percent(rule.threshold()), rule.direction().name(), rule.enabled(),
+                rule.origin().name(), rule.description());
+        return new EvaluationView(
+                ruleView, evaluation.status(), evaluation.message(),
+                evaluation.currentBusinessDate(), evaluation.currentValue(),
+                evaluation.baselineBusinessDate(), evaluation.baselineValue(),
+                evaluation.changeRatio(), percentNullable(evaluation.changeRatio()), evaluation.unit(),
+                evaluation.warning() == null ? null : toView(evaluation.warning(), false, null));
+    }
     /** Read-only projection of one immutable WarningRecordV1. */
     public record WarningView(
             String warningId,
@@ -63,7 +147,7 @@ public final class WarningV1 {
         }
     }
 
-    /** Request-driven evaluation (v1 demo rules only; EXT-07/EXT-08 stay open). */
+    /** Compatibility request for the legacy demo-only evaluation endpoint. */
     public record EvaluateRequest(
             String ruleId,
             String ruleVersion,
@@ -111,6 +195,14 @@ public final class WarningV1 {
                 warning.evidenceRefs(), warning.dataStatus(),
                 warning.evaluatedAt() == null ? null : warning.evaluatedAt().toString(),
                 warning.demoRule(), warning.ruleDescription(), acknowledged, ackRef);
+    }
+
+    private static String percent(String ratio) {
+        return new java.math.BigDecimal(ratio).movePointRight(2).stripTrailingZeros().toPlainString();
+    }
+
+    private static String percentNullable(String ratio) {
+        return ratio == null ? null : percent(ratio);
     }
 
     public static AckView toView(WarningAcknowledgementV1 ack) {

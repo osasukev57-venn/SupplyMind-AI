@@ -118,6 +118,18 @@ async function processAcceptedImport(): Promise<void> {
   importProcessed.value = response.rows
 }
 
+function processedRow(runId: string): ImportProcessRow | undefined {
+  return importProcessed.value.find((row) => row.runId === runId)
+}
+
+function importRowStage(row: (typeof importAccepted.value)[number]): string | null {
+  return processedRow(row.runId)?.status ?? row.processingStage
+}
+
+function importRowStatus(row: (typeof importAccepted.value)[number]): string {
+  return processedRow(row.runId)?.status ?? row.validationStatus ?? 'PENDING'
+}
+
 async function runSyntheticDemo(): Promise<void> {
   const response = await submitSyntheticDemo()
   if (response === null) {
@@ -279,8 +291,8 @@ onMounted(async () => {
             <tbody>
               <tr v-for="row in importAccepted.slice(0, 20)" :key="row.rowNumber">
                 <td class="num">{{ row.rowNumber }}</td>
-                <td>{{ stageLabel(row.processingStage) }}</td>
-                <td><StatusBadge :status="row.validationStatus ?? 'PENDING'" /></td>
+                <td>{{ stageLabel(importRowStage(row)) }}</td>
+                <td><StatusBadge :status="importRowStatus(row)" /></td>
                 <td>
                   <button class="btn-ghost" @click="showImportDetail = !showImportDetail">
                     {{ showImportDetail ? '收起' : '详情' }}

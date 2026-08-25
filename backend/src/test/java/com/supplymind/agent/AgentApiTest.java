@@ -105,6 +105,10 @@ class AgentApiTest {
         assertTrue(body.scope().itemIds().contains(FX_ITEM));
         assertNotNull(body.claims());
         assertFalse(body.claims().isEmpty(), "claims restate verified report content");
+        assertEquals(body.claims().get(0).text(), body.answer(),
+                "public answer must be the Java-verified report claim, never raw model output");
+        assertFalse(body.answer().stripLeading().startsWith("{"),
+                "a rejected structured model envelope must never leak into the user answer");
         assertTrue(body.claims().stream().allMatch(claim -> !claim.evidenceRefs().isEmpty()),
                 "claims always carry traceable evidenceRefs");
         assertNotNull(body.dataThrough(), "dataThrough comes from the EvidencePack facts");

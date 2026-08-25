@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * D5-T05 one versioned deterministic warning rule. EXT-07/EXT-08 thresholds and cost weights
- * are not yet confirmed by the business, so rules are explicit TEST/DEMO configurations and
- * always carry demoRule=true and a description stating they are not final business
- * thresholds. Rules never decide risk levels through an LLM - the service maps deterministic
+ * D5-T05 legacy versioned deterministic warning rule. This schema remains restricted to
+ * explicit TEST/DEMO configurations; DEC-064 formal relative-change rules use
+ * {@link WarningRuleConfigV1}. Legacy rules always carry demoRule=true.
+ * Rules never decide risk levels through an LLM - the service maps deterministic
  * outcomes to frozen risk levels.
  */
 @JsonPropertyOrder({
@@ -64,12 +64,10 @@ public record WarningRuleV1(
         }
         ModelRules.positive(baselinePeriods, "baselinePeriods");
         ModelRules.nonBlank(description, "description");
-        // F6: EXT-07/EXT-08 are not confirmed - every rule in this version must be an explicit
-        // TEST/DEMO rule. A formal rule requires a future rule version and a frozen decision.
+        // This legacy schema remains demo-only. DEC-064 formal rules use WarningRuleConfigV1.
         if (!demoRule) {
             throw new SchemaValidationException(
-                    "WarningRuleV1 demoRule=false is rejected: business thresholds are not confirmed"
-                            + " (EXT-07/EXT-08 open); a formal rule requires a new rule version and a frozen decision");
+                    "WarningRuleV1 demoRule=false is rejected: DEC-064 formal rules use WarningRuleConfigV1");
         }
     }
 

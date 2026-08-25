@@ -2,7 +2,7 @@
 
 > 文档编号：SMA-DATA-001
 > 适用版本：P0 便携发布（FILE-SCHEMA-V1）
-> 最后更新：2026-08-21
+> 最后更新：2026-08-25
 
 ## 1. 存储总则
 
@@ -20,6 +20,8 @@ data/
   config/
     monitor-series.json               # 唯一活动配置（configVersion、mode、items[]）
     history/<configVersion>.json      # 不可变已生效配置快照
+    warning-rules.json                # 用户预警规则覆盖 active
+    warning-rules/history/<configVersion>.json  # 不可变覆盖历史
   raw/
     source/<acquisitionId>.json       # 官方源抓取实体证据（DEC-056）
     import/<importId>.json            # 导入源文件证据（LocalImport）
@@ -45,6 +47,14 @@ data/
 
 item 字段：`itemId`、`displayName`、`enabled`、`sourceIntent`（PBOC|SMM|Asian Metal 等）、`providerType`（official_web|authorized_api|free_public|manual|local_import|synthetic_demo）、`accessMethod`、`actualSourceName`（必须为真实来源名）、`routeDecision`（primary|fallback_free_public|fallback_manual|direct_local_import）、`fallbackReason`、`routeEffectiveAt`、`supersedesItemId`、`externalCode`、`sourceFieldKey`、`rateKind`（人民币汇率中间价|material）、`calculationVersion`、`calculationScale`、`displayScale`、`roundingMode`（Java RoundingMode 字符串）、`calendarVersion`、`currency`、`baseCurrency`、`unit`、`materialValidation`（材料：valueMinExclusive/valueMaxInclusive/staleThresholdDays/canonicalSpecCode/acceptedSpecAliases）。
 
+## 3A. 正式预警规则配置（DEC-064）
+
+`config/warning-rules.json` 只保存用户覆盖；系统默认由当前活动 monitor-series 元数据确定性派生。相邻 manifest 必须有效。
+
+- 顶层 `WarningRuleSetV1`：`schemaVersion`、`configVersion`、`updatedAt`、`overrides`。overrides 按 itemId 排序且唯一。
+- `WarningRuleConfigV1`：`schemaVersion`、`ruleId`、`ruleVersion`、`itemId`、`rateKind`、`lookbackDays`、`threshold`（比例十进制字符串）、`direction`（UP|DOWN|BOTH）、`enabled`、`origin`（持久化覆盖只允许 USER_CUSTOM）、`description`。
+- history 与当时 active 逐字节相同、CREATE_NEW、不可改写；active 才可替换。恢复默认会生成下一 configVersion 并从 overrides 删除该 itemId。
+- `warning-relative-change-v1` 默认：material=7 自然日/5%，其他=1 自然日/1%，双向且等于阈值触发。缺失不补0；Java BigDecimal 独占计算。
 ## 4. Raw 记录（RawReceiptV1）
 
 关键字段：`schemaVersion`、`rawRef`、`acquisitionId`、`runId`、`mode`、`providerType`、`accessMethod`、`configVersion`、`actualSourceName`、`sourceUrl`、`sourceReference`、`itemId`、`sourceBusinessDateRaw`、`sourceBusinessDate`、`sourcePublishedAtRaw`、`sourcePublishedAt`、`receivedAt`、`rawValue`（原始词法字符串，原样保留）、`rawUnit`、`rawCurrency`、`operatorRef`（Manual）、`contentType`、`payloadBase64`、`payloadSha256`、`sourceFieldKey`、`updatedAt`。

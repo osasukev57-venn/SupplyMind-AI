@@ -45,6 +45,9 @@ class WarningApiMvcContractTest {
     @MockBean
     private WarningAckStore ackStore;
 
+    @MockBean
+    private WarningRuleManagementService ruleManagement;
+
     @TestConfiguration
     static class ClockConfig {
         @Bean
@@ -157,4 +160,48 @@ class WarningApiMvcContractTest {
                 .andExpect(jsonPath("$.warning.ruleId").value("demo-price-change-x"))
                 .andExpect(jsonPath("$.warning.demoRule").value(true));
     }
-}
+
+    @Test
+    void formalRulesExposeDefaultsAndAcceptUserFacingPercent() throws Exception {
+        WarningRuleConfigV1 systemRule = new WarningRuleConfigV1(
+                "1.0", "default-warning-MAT.ADC12.SMM", WarningRuleConfigV1.VERSION,
+                "MAT.ADC12.SMM", "material", 7, "0.05",
+                WarningRuleConfigV1.Direction.BOTH, true,
+                WarningRuleConfigV1.Origin.SYSTEM_DEFAULT, "系统通用材料预警模板");
+        WarningRuleManagementService.BoundRule bound =
+                new WarningRuleManagementService.BoundRule(
+                        "MAT.ADC12.SMM", "ADC12 铝合金锭", "公开市场来源",
+                        "元/吨", "material", true, systemRule);
+        WarningEvaluationV1 noData = new WarningEvaluationV1(
+                systemRule, WarningEvaluationV1.INSUFFICIENT_DATA, "没有可用数据",
+                null, null, null, null, null, null, null);
+        when(ruleManagement.listRules()).thenReturn(List.of(bound));
+        when(ruleManagement.update(
+                org.mockito.ArgumentMatchers.eq("MAT.ADC12.SMM"),
+                org.mockito.ArgumentMatchers.eq(14),
+                org.mockito.ArgumentMatchers.eq("0.03"),
+                org.mockito.ArgumentMatchers.eq(WarningRuleConfigV1.Direction.UP),
+                org.mockito.ArgumentMatchers.eq(true),
+                org.mockito.ArgumentMatchers.eq("自定义规则"))).thenReturn(bound);
+        when(ruleManagement.evaluateItem("MAT.ADC12.SMM")).thenReturn(noData);
+
+        mockMvc.perform(get("/api/warnings/rules"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.rules[0].threshold").value("0.05"))
+                .andExpect(jsonPath("$.rules[0].thresholdPercent").value("5"))
+                .andExpect(jsonPath("$.rules[0].origin").value("SYSTEM_DEFAULT"));
+
+        mockMvc.perform(post("/api/warnings/rules/MAT.ADC12.SMM")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"lookbackDays":14,"thresholdPercent":"3",
+                                 "direction":"UP","enabled":true,
+                                 "description":"自定义规则"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.evaluation.status").value("INSUFFICIENT_DATA"));
+
+        org.mockito.Mockito.verify(ruleManagement).update(
+                "MAT.ADC12.SMM", 14, "0.03",
+                WarningRuleConfigV1.Direction.UP, true, "自定义规则");
+    }}

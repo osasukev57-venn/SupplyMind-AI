@@ -1,4 +1,4 @@
-/** D8-T02 warning wire types. All values come from the backend as strings. */
+/** Warning wire types. Numeric values and percentages are backend strings; the UI never recalculates them. */
 
 export interface WarningView {
   warningId: string
@@ -37,6 +37,56 @@ export interface WarningListResponse {
   warnings: WarningView[]
 }
 
+export interface RuleView {
+  itemId: string
+  displayName: string
+  actualSourceName: string | null
+  unit: string
+  rateKind: string
+  monitorEnabled: boolean
+  ruleId: string
+  ruleVersion: string
+  lookbackDays: number
+  threshold: string
+  thresholdPercent: string
+  direction: 'UP' | 'DOWN' | 'BOTH'
+  enabled: boolean
+  origin: 'SYSTEM_DEFAULT' | 'USER_CUSTOM'
+  description: string
+}
+
+export interface RuleEvaluationView {
+  rule: RuleView
+  status: 'TRIGGERED' | 'NOT_TRIGGERED' | 'INSUFFICIENT_DATA' | 'INVALID_DATA' | 'DISABLED'
+  message: string
+  currentBusinessDate: string | null
+  currentValue: string | null
+  baselineBusinessDate: string | null
+  baselineValue: string | null
+  changeRatio: string | null
+  changePercent: string | null
+  unit: string | null
+  warning: WarningView | null
+}
+
+export interface RuleListResponse {
+  rules: RuleView[]
+}
+
+export interface UpdateRuleRequest {
+  lookbackDays: number
+  thresholdPercent: string
+  direction: 'UP' | 'DOWN' | 'BOTH'
+  enabled: boolean
+  description: string
+}
+
+export interface RuleUpdateResponse {
+  rule: RuleView
+  evaluation: RuleEvaluationView
+}
+
+/** Legacy demo endpoint types retained for compatibility; the product UI no longer exposes it. */
 export interface EvaluateRequest {
   ruleId: string
   ruleKind: string

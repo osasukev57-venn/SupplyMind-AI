@@ -69,16 +69,16 @@ const label = computed(() => badgeLabel(props.status))
 export function badgeTone(status: string | null): string {
   if (!status) return 'plain'
   const s = status.toUpperCase()
-  if (['VERIFIED', 'COMPLETE', 'SUCCEEDED', 'FORMAL', 'ACKNOWLEDGED', 'ENABLED'].includes(s)) {
+  if (['VERIFIED', 'COMPLETE', 'SUCCEEDED', 'FORMAL', 'ACKNOWLEDGED', 'ENABLED', 'JAVA_FACT_REPORT', 'USER_CUSTOM'].includes(s)) {
     return 'ok'
   }
   if (['VERIFIED_WITH_NOTICE', 'STALE', 'PARTIAL_SUCCESS', 'LOW', 'MEDIUM', 'WARN'].includes(s)) {
     return 'warn'
   }
-  if (['PENDING', 'WAITING', 'AWAITING_MANUAL_INPUT', 'RUNNING', 'NO_DATA', 'NOT_TRIGGERED'].includes(s)) {
+  if (['PENDING', 'WAITING', 'AWAITING_MANUAL_INPUT', 'RUNNING', 'NO_DATA', 'NOT_TRIGGERED', 'INSUFFICIENT_DATA', 'SYSTEM_DEFAULT'].includes(s)) {
     return 'info'
   }
-  if (['REJECTED', 'CONFLICT', 'FAILED', 'DISABLED', 'INVALID', 'CORRUPT', 'UNAVAILABLE', 'HIGH', 'BLOCKED'].includes(s)) {
+  if (['REJECTED', 'CONFLICT', 'FAILED', 'DISABLED', 'INVALID', 'INVALID_DATA', 'CORRUPT', 'UNAVAILABLE', 'HIGH', 'BLOCKED', 'TRIGGERED'].includes(s)) {
     return 'bad'
   }
   if (s === 'DEMO' || s.startsWith('DEMO_')) {
@@ -108,7 +108,12 @@ export function badgeLabel(status: string | null): string {
     ENABLED: '已启用',
     DISABLED: '已停用',
     ACKNOWLEDGED: '已确认',
-    TRIGGERED: '已触发'
+    TRIGGERED: '已触发',
+    JAVA_FACT_REPORT: 'Java 事实报告',
+    SYSTEM_DEFAULT: '系统默认',
+    USER_CUSTOM: '用户自定义',
+    INSUFFICIENT_DATA: '数据不足',
+    INVALID_DATA: '数据无效'
   }
   return map[status] ?? status
 }

@@ -28,17 +28,21 @@ public record FileTransactionTarget(
         if (dataRef.startsWith("raw/") && role != DirtyTargetRole.BUSINESS_FILE) {
             throw new StorageException("RawReceipt targets must use the BUSINESS_FILE role");
         }
-        if (dataRef.startsWith("config/history/") && role != DirtyTargetRole.CONFIG_HISTORY) {
-            throw new StorageException("config/history targets must use the CONFIG_HISTORY role");
+        boolean configurationHistory = dataRef.startsWith("config/history/")
+                || dataRef.startsWith("config/warning-rules/history/");
+        boolean configurationActive = dataRef.equals(DataPaths.configActiveRef())
+                || dataRef.equals(DataPaths.warningRulesActiveRef());
+        if (configurationHistory && role != DirtyTargetRole.CONFIG_HISTORY) {
+            throw new StorageException("configuration history targets must use the CONFIG_HISTORY role");
         }
-        if (dataRef.equals(DataPaths.configActiveRef()) && role != DirtyTargetRole.CONFIG_ACTIVE) {
-            throw new StorageException("config/monitor-series.json must use the CONFIG_ACTIVE role");
+        if (configurationActive && role != DirtyTargetRole.CONFIG_ACTIVE) {
+            throw new StorageException("active configuration targets must use the CONFIG_ACTIVE role");
         }
-        if (role == DirtyTargetRole.CONFIG_HISTORY && !dataRef.startsWith("config/history/")) {
-            throw new StorageException("CONFIG_HISTORY must target config/history/<configVersion>.json");
+        if (role == DirtyTargetRole.CONFIG_HISTORY && !configurationHistory) {
+            throw new StorageException("CONFIG_HISTORY must target a registered immutable config history");
         }
-        if (role == DirtyTargetRole.CONFIG_ACTIVE && !dataRef.equals(DataPaths.configActiveRef())) {
-            throw new StorageException("CONFIG_ACTIVE must target config/monitor-series.json");
+        if (role == DirtyTargetRole.CONFIG_ACTIVE && !configurationActive) {
+            throw new StorageException("CONFIG_ACTIVE must target a registered active configuration");
         }
         if (role == DirtyTargetRole.CONFIG_HISTORY && !immutableData) {
             throw new StorageException("CONFIG_HISTORY must use immutable CREATE_NEW data semantics");

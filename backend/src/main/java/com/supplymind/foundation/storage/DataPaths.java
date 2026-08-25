@@ -66,6 +66,18 @@ public final class DataPaths {
         }
         return "config/history/" + configVersion + ".json";
     }
+    /** DEC-064 active per-series warning-rule overrides. */
+    public static String warningRulesActiveRef() {
+        return "config/warning-rules.json";
+    }
+
+    /** DEC-064 immutable warning-rule override history. */
+    public static String warningRulesHistoryRef(int configVersion) {
+        if (configVersion < 1) {
+            throw new StorageException("warning rule configVersion must be positive");
+        }
+        return "config/warning-rules/history/" + configVersion + ".json";
+    }
 
     public static String dailyRef(String itemId, YearMonth businessMonth) {
         requireIdentifier(itemId, "itemId");
@@ -215,6 +227,14 @@ public final class DataPaths {
     private static boolean isBusinessDataRef(String ref) {
         String[] segments = ref.split("/");
         if (ref.equals("config/monitor-series.json")) {
+            return true;
+        }
+        if (ref.equals("config/warning-rules.json")) {
+            return true;
+        }
+        if (segments.length == 4 && segments[0].equals("config")
+                && segments[1].equals("warning-rules") && segments[2].equals("history")
+                && segments[3].matches("[1-9][0-9]*\\.json")) {
             return true;
         }
         if (segments.length == 3 && segments[0].equals("config") && segments[1].equals("history")

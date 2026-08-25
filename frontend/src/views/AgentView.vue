@@ -49,8 +49,13 @@ async function ask() {
 
 function sourceLabel() {
   if (!result.value) return '—'
-  if (result.value.degraded) return '本地可信报告'
-  return result.value.generatedBy === 'LLM' ? '智能分析' : (result.value.generatedBy ?? '—')
+  if (result.value.degraded) return 'Java 事实报告'
+  return result.value.generatedBy === 'LLM' ? '云端智能分析（Java 事实约束）' : (result.value.generatedBy ?? '—')
+}
+
+function reportStatus(): string {
+  if (!result.value) return 'UNKNOWN'
+  return result.value.degraded ? 'JAVA_FACT_REPORT' : 'VERIFIED'
 }
 
 function linkTarget(link: EvidenceLinkView): string {
@@ -67,7 +72,7 @@ function evidenceKind(link: EvidenceLinkView): string {
     <header class="page-head">
       <div class="page-eyebrow">运营分析</div>
       <h1 class="page-title">Agent 工作台</h1>
-      <p class="page-desc">基于已验证的数据和只读分析工具生成可追溯报告。智能分析服务不可用时，系统会自动切换到本地可信报告。</p>
+      <p class="page-desc">Java 确定性工具链先生成并校验标准事实，云端模型仅在事实约束内组织分析语言；所有结论都可追溯到正式证据。</p>
     </header>
 
     <div v-if="errorMessage" class="error-banner">{{ errorMessage }}</div>
@@ -103,13 +108,14 @@ function evidenceKind(link: EvidenceLinkView): string {
       <div class="section-head">
         <h2>分析结果</h2>
         <span>
-          <StatusBadge :status="result.degraded ? 'JAVA_TEMPLATE' : (result.generatedBy ?? '')" />
+          <StatusBadge :status="reportStatus()" />
         </span>
       </div>
       <div class="section-body">
         <div v-if="result.degraded" class="demo-banner">
-          智能分析服务不可用，已切换到本地可信报告{{ result.degradeReason ? '（' + result.degradeReason + '）' : '' }}
+          云端语言分析未被采用，当前展示经过证据约束的 Java 事实报告{{ result.degradeReason ? '（' + result.degradeReason + '）' : '' }}
         </div>
+        <div v-else class="fact-banner">Java 标准事实校验通过，云端模型仅负责组织以下分析表达。</div>
         <p class="answer-text">{{ result.answer }}</p>
         <p class="muted">
           报告来源：{{ sourceLabel() }}

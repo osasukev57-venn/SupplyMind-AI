@@ -132,7 +132,7 @@
 | EXT-04 | SMM/Asian Metal是否存在合法公开页面、接口或已授权自动路径。 | D. 外部待确认 | 指定源自动能力/非全局阻塞 | 来源合规、路由 | D3-T02；D3-T06 | 能合法自动则使用；否则记录依据并转FreePublic→Manual。 | 条款/授权依据、能力矩阵、routeDecision | OPEN_EXTERNAL_NON_BLOCKING |
 | EXT-05 | 新增标的及初始化所需的历史回填范围。 | D. 外部待确认 | P0-验收范围 | 回填、历史能力 | D5-T04；D10-T04 | 确认起止日期；无自动历史时可由Manual/LocalImport进入同一门禁。 | 书面范围、回填报告、来源审计 | OPEN_EXTERNAL |
 | EXT-06 | 节假日、周末、停报和未发布日如何计入完整率及均值。 | D. 外部待确认 | P0-计算口径 | 日历、完整率 | D2-T03；D4-T03；D4-T04 | 缺失不补0，日历规则配置化。 | 日历配置、黄金样例、完整率测试 | ACCEPTED_VERSIONED_DEFAULT（DEC-054；weekday-asia-shanghai-v1，当前版本口径；不代表完整法定节假日日历，未来以新calendarVersion演进） |
-| EXT-07 | 价格、汇率、质量和成本影响预警阈值。 | D. 外部待确认 | P0-业务规则 | 预警规则 | D5-T05；D10-T04 | 业务方确认阈值；未确认时只使用显式测试规则。 | alert-rules、确认记录、边界测试 | OPEN_EXTERNAL |
+| EXT-07 | 价格、汇率、质量和成本影响预警阈值。 | C. 已接受版本化默认 | P0-业务规则 | 预警规则 | D5-T05；D10-T04；Post-Day10 | DEC-064：正式通用相对变化规则自动绑定启用项，材料7自然日/5%，其他1自然日/1%，双向且等于阈值触发；允许逐项版本化覆盖。 | warning-rules active/history、WarningRecord、确认记录、边界测试 | ACCEPTED_VERSIONED_DEFAULT（DEC-064；未来品种/来源专用阈值须升级ruleVersion） |
 | EXT-08 | 动态调价公式、成本权重和自动执行边界。 | D. 外部待确认 | P0-业务边界 | 成本影响、Agent | D5-T05；D6-T02；D10-T04 | P0默认非约束建议，不自动调价。 | 公式确认、审批说明 | OPEN_EXTERNAL |
 | EXT-09 | “跨卷”是多个轮转文件还是物理磁盘卷。 | D. 外部待确认 | P0-存储边界 | 轮转、历史查询 | D5-T01；D5-T02；D10-T02 | 默认同一data根目录多个轮转文件。 | 术语确认、跨卷测试 | OPEN_EXTERNAL |
 | EXT-10 | 获认可的免费公开材料信源、许可条款、更新频率和字段映射。 | F/C. DEC-063 部分决议 | 免费源能力/非全局阻塞 | FreePublic、provenance | D3-T03；D3-T06；Post-Day10 | ADC12 使用 SHFE 铸造铝合金期货结算价公开基准；AZ91D 未确认时 Manual 保底。 | URL、完整 raw/SHA、字段映射、解析/全链测试 | PARTIALLY_RESOLVED_NON_BLOCKING |
@@ -162,7 +162,7 @@
 | EXT-04 | 指定商业源自动能力 | 合法公开/授权自动优先；不可用则FreePublic→Manual，禁止绕过限制。 | 只缺少指定网站自动能力，不应拖停整体P0。 | Day3 | 记录routeDecision/fallbackReason并走替代链。 | 否；仅影响对应能力声明。 |
 | EXT-05 | 历史回填范围 | 至少准备连续13个自然月并跨年，最终范围按确认。 | 随机历史月和H08覆盖不足。 | Day5前 | 黄金跨年验证；真实数据可通过Manual/LocalImport进入门禁。 | 是，影响范围。 |
 | EXT-06 | 节假日和未发布日 | 已正式接受版本化默认：`calendarVersion=weekday-asia-shanghai-v1`（DEC-054），D2-T03 EXT Gate 已满足。Asia/Shanghai周一至周五为预期业务日期；daily expectedCount=1、missingCount=max(expectedCount-validCount,0)、complete=validCount>=expectedCount；缺失不补0、空月不生成虚构数据；仅覆盖expected-count/completeness，不代表完整法定节假日/调休/停报/特殊交易日日历，提升日历精度须新增calendarVersion与configVersion。 | 完整率和均值权重错误。 | Day2 | DEC-054 已生效；可配置日历和黄金样例。 | 是（已接受版本化默认）。 |
-| EXT-07 | 预警阈值 | 规则版本化；未确认时只启用质量告警或显式demo阈值。 | 误报漏报。 | Day5前 | 不宣称测试阈值为生产规则。 | 部分。 |
+| EXT-07 | 预警阈值 | DEC-064 已接受 `warning-relative-change-v1` 版本化默认：材料7自然日/5%，其他1自然日/1%，双向且等于阈值触发；用户可逐项覆盖。 | 通用默认可能不等同于品种专用阈值。 | Post-Day10 | 历史 demo 规则继续隔离；正式规则按 ruleVersion/configVersion 留痕，未来细化不得改写历史。 | 是（已接受版本化默认）。 |
 | EXT-08 | 调价公式和执行权限 | P0仅输出Java计算的影响与非约束建议，不自动修改价格。 | 越权调价。 | Day5前 | 演示成本权重。 | 不影响H01-H09。 |
 | EXT-09 | 跨卷含义 | 默认同一data根下多轮转文件，不含多个物理盘。 | 若指物理盘需重构路径发现。 | Day5前 | dataRoot可配置并显著记录假设。 | 是，影响H05/H06。 |
 | EXT-10 | 免费公开信源认可与字段映射 | DEC-063 已接受 SHFE 铸造铝合金期货结算价作为 ADC12 同类公开基准；AZ91D 仍待确认。 | 来源失效或语义不等价。 | Post-Day10 | SHFE fail-closed；AZ91D 用 Manual/LocalImport；均不能冒充商业源。 | 否，不阻塞整体P0。 |

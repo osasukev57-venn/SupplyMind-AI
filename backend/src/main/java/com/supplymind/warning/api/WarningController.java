@@ -4,6 +4,8 @@ import com.supplymind.warning.WarningAcknowledgementV1;
 import com.supplymind.warning.WarningAckStore;
 import com.supplymind.warning.WarningQueryService;
 import com.supplymind.warning.WarningRecordV1;
+import com.supplymind.warning.WarningRuleConfigV1;
+import com.supplymind.warning.WarningRuleManagementService;
 import com.supplymind.warning.WarningRuleV1;
 import com.supplymind.warning.WarningService;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +24,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * D8-T02 warning API. Evaluation reuses the frozen WarningService (deterministic, demoRule
- * only, EXT-07/EXT-08 stay open); listing uses the WarningQueryService real from/to range;
- * acknowledgement writes a DEC-061 sidecar through WarningAckStore - the original warning
- * evidence is never modified. The controller never scans the filesystem itself and never
- * computes risk levels or thresholds.
+ * Warning API. Formal default/custom rules use deterministic Java evaluation over published data;
+ * the legacy demo endpoint remains for compatibility. Listing uses an exact date range and
+ * acknowledgements stay in DEC-061 sidecars without rewriting warning evidence.
  */
 @RestController
 @RequestMapping("/api/warnings")
@@ -36,20 +36,63 @@ public class WarningController {
     private final WarningQueryService query;
     private final WarningAckStore ackStore;
     private final java.time.Clock clock;
+    private final WarningRuleManagementService ruleManagement;
 
     public WarningController(
             WarningService warnings,
             WarningQueryService query,
             WarningAckStore ackStore,
-            java.time.Clock clock
+            java.time.Clock clock,
+            WarningRuleManagementService ruleManagement
     ) {
         this.warnings = warnings;
         this.query = query;
         this.ackStore = ackStore;
         this.clock = clock;
+        this.ruleManagement = ruleManagement;
     }
 
-    /** Request-driven evaluation (v1 demo rules only). */
+    /** Effective rules for every enabled monitored series (defaults plus user overrides). */
+    @GetMapping("/rules")
+    public ResponseEntity<?> rules() {
+        return ResponseEntity.ok(Map.of("rules", requireRuleManagement().listRules().stream()
+                .map(WarningV1::toView).toList()));
+    }
+
+    /** Save one per-series override and immediately perform a formal evaluation. */
+    @PostMapping("/rules/{itemId}")
+    public ResponseEntity<?> updateRule(
+            @PathVariable("itemId") String itemId,
+            @RequestBody WarningV1.UpdateRuleRequest request
+    ) {
+        WarningRuleManagementService management = requireRuleManagement();
+        WarningRuleManagementService.BoundRule rule = management.update(
+                itemId, request.lookbackDays(),
+                new java.math.BigDecimal(request.thresholdPercent()).movePointLeft(2).toPlainString(),
+                WarningRuleConfigV1.Direction.valueOf(request.direction()),
+                request.enabled(), request.description());
+        return ResponseEntity.ok(Map.of(
+                "rule", WarningV1.toView(rule),
+                "evaluation", WarningV1.toView(management.evaluateItem(itemId))));
+    }
+
+    /** Remove the override, restore the type default and evaluate it immediately. */
+    @PostMapping("/rules/{itemId}/reset")
+    public ResponseEntity<?> resetRule(@PathVariable("itemId") String itemId) {
+        WarningRuleManagementService management = requireRuleManagement();
+        WarningRuleManagementService.BoundRule rule = management.reset(itemId);
+        return ResponseEntity.ok(Map.of(
+                "rule", WarningV1.toView(rule),
+                "evaluation", WarningV1.toView(management.evaluateItem(itemId))));
+    }
+
+    /** Evaluate all enabled rules against the latest published data. */
+    @PostMapping("/rules/evaluate-all")
+    public ResponseEntity<?> evaluateAllRules() {
+        return ResponseEntity.ok(Map.of("evaluations", requireRuleManagement().evaluateAll().stream()
+                .map(WarningV1::toView).toList()));
+    }
+    /** Compatibility endpoint for legacy v1 demo rules; the product UI uses /rules/evaluate-all. */
     @PostMapping("/evaluate")
     public ResponseEntity<?> evaluate(@RequestBody WarningV1.EvaluateRequest request) {
         WarningRuleV1 rule = toDemoRule(request);
@@ -128,6 +171,12 @@ public class WarningController {
                 "ack", WarningV1.toView(verified.get())));
     }
 
+    private WarningRuleManagementService requireRuleManagement() {
+        if (ruleManagement == null) {
+            throw new IllegalStateException("formal warning-rule management is unavailable");
+        }
+        return ruleManagement;
+    }
     private static WarningRuleV1 toDemoRule(WarningV1.EvaluateRequest request) {
         return new WarningRuleV1(
                 request.ruleId(), request.ruleVersion() == null ? "demo-v1" : request.ruleVersion(),
@@ -135,9 +184,9 @@ public class WarningController {
                 request.itemId(), request.grain(), request.threshold(),
                 WarningRuleV1.Direction.valueOf(request.direction()),
                 request.baselinePeriods() == null ? 1 : request.baselinePeriods(),
-                true, // v1 evaluate accepts demoRule=true only; EXT-07/EXT-08 stay open
+                true, // Legacy v1 stays demo-only; DEC-064 formal rules use WarningRuleConfigV1.
                 request.description() == null
-                        ? "TEST/DEMO threshold - not a final business threshold (EXT-07/EXT-08 open)"
+                        ? "TEST/DEMO threshold - not a DEC-064 formal warning rule"
                         : request.description());
     }
 }

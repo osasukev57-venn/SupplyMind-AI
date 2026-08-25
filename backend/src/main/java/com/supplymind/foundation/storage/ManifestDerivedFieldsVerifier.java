@@ -87,6 +87,8 @@ final class ManifestDerivedFieldsVerifier {
     private static boolean isJsonTarget(String dataRef) {
         return dataRef.equals(DataPaths.configActiveRef())
                 || dataRef.startsWith("config/history/")
+                || dataRef.equals(DataPaths.warningRulesActiveRef())
+                || dataRef.startsWith("config/warning-rules/history/")
                 || dataRef.startsWith("raw/")
                 || dataRef.startsWith("staging/")
                 || dataRef.startsWith("quarantine/")
@@ -98,6 +100,11 @@ final class ManifestDerivedFieldsVerifier {
     }
 
     private static DerivedFields deriveJson(String dataRef, byte[] dataBytes) {
+        if (dataRef.equals(DataPaths.warningRulesActiveRef())
+                || dataRef.startsWith("config/warning-rules/history/")) {
+            JsonV1Codec.decodeFile(dataBytes, com.supplymind.warning.WarningRuleSetV1.class);
+            return jsonFields(List.of());
+        }
         if (dataRef.equals(DataPaths.configActiveRef()) || dataRef.startsWith("config/history/")) {
             JsonV1Codec.decodeFile(dataBytes, MonitorSeriesConfigV1.class);
             return jsonFields(List.of());

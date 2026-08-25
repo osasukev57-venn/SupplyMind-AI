@@ -255,10 +255,13 @@ public record AgentQueryResponse(
         }
         return new AgentQueryResponse(
                 pack.requestId(),
-                result.llmResponse().explanation() != null && !result.llmResponse().explanation().isBlank()
-                        ? result.llmResponse().explanation()
-                        : (report == null || report.claims().isEmpty()
-                        ? null : report.claims().get(0).text()),
+                // Public output comes only from the persisted, Java-verified report. A rejected
+                // cloud response may still contain its raw JSON envelope and must never leak.
+                report == null || report.claims().isEmpty()
+                        ? null
+                        : report.claims().stream()
+                                .map(AgentReportV1.Claim::text)
+                                .collect(java.util.stream.Collectors.joining(System.lineSeparator())),
                 result.llmResponse().status().name(),
                 result.degraded(),
                 result.degradeReason(),

@@ -575,7 +575,7 @@ P1/P2 只有在 P0 验收通过且有剩余资源时启动。
 | EXT-04 | SMM/Asian Metal 是否存在合法公开页面、接口或已授权自动路径 | 能合法自动则优先；否则免费公开信源→Manual | 只影响指定源自动采集能力 | Day 3 | 记录routeDecision与fallbackReason并执行三层降级 | 否，不阻塞整体P0；影响对应自动能力声明 |
 | EXT-05 | 新增标的及初始化所需的历史回填范围 | 验收夹具默认至少连续13个自然月并跨年；真实来源回填起止日期仍配置化 | H08历史覆盖范围不明确 | Day 5 | Manual/LocalImport可补历史，任何回填仍经过发布门禁 | 是，影响H08范围，不阻塞通用链路 |
 | EXT-06 | 节假日和未发布日处理 | 已正式接受版本化默认：`calendarVersion=weekday-asia-shanghai-v1`（DEC-054）。Asia/Shanghai周一至周五为预期业务日期；daily expectedCount=1、missingCount=max(expectedCount-validCount,0)、complete=validCount>=expectedCount；缺失不补0、空月不生成虚构数据。仅覆盖expected-count/completeness，不代表完整法定节假日/调休/停报/特殊交易日日历；提升日历精度须新增calendarVersion与configVersion。 | expectedCount与均值口径争议 | Day 2 | DEC-054 已生效；D2-T03 EXT Gate 已满足 | 是，影响完整率 |
-| EXT-07 | 预警阈值和严重度 | 使用演示阈值并明确标记非正式 | 无法声称业务预警阈值正式有效 | Day 5前 | 完成规则框架与演示规则 | 部分 |
+| EXT-07 | 预警阈值和严重度 | `ACCEPTED_VERSIONED_DEFAULT`（DEC-064）：`warning-relative-change-v1` 自动绑定所有启用的正式监测项；材料默认7自然日/5%，其他默认1自然日/1%，双向且等于阈值触发；允许逐项版本化覆盖 | 通用默认不等同于品种/来源专用业务阈值，未来细化必须升级规则版本 | Post-Day10 已闭合 | 正式默认规则、逐项覆盖、不可变预警证据与边界测试 | 是，已接受版本化默认 |
 | EXT-08 | 动态调价公式、成本权重、汇率换算 | P0只输出参考成本影响，不自动执行调价 | 成本建议缺少业务依据 | Day 5前 | 可配置演示成本篮子 | 是，影响正式建议 |
 | EXT-09 | “跨卷”是否仅指多个轮转文件，或包含多个物理磁盘卷 | 默认指按月/年轮转文件 | 物理跨盘场景可能漏验 | Day 5前 | 完成跨文件/跨年；不自动跨物理盘 | 是，影响H06边界 |
 | EXT-10 | 项目方认可的免费公开材料信源、许可条款、更新频率和字段映射 | `PARTIALLY_RESOLVED` via DEC-063：ADC12 接受 SHFE 铸造铝合金期货主力合约结算价公开基准；AZ91D 未确认 | 公开基准不得冒充指定源或现货价 | Post-Day10 | ADC12 自动 FreePublic；AZ91D 使用 Manual/LocalImport 保底 | 否，不阻塞PBOC或整体P0 |

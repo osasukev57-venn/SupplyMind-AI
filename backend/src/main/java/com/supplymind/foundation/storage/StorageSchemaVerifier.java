@@ -15,7 +15,16 @@ final class StorageSchemaVerifier {
     }
 
     static void verifyData(String dataRef, byte[] bytes) {
-        if (dataRef.equals(DataPaths.configActiveRef()) || dataRef.startsWith("config/history/")) {
+        if (dataRef.equals(DataPaths.warningRulesActiveRef())
+                || dataRef.startsWith("config/warning-rules/history/")) {
+            com.supplymind.warning.WarningRuleSetV1 rules = JsonV1Codec.decodeFile(
+                    bytes, com.supplymind.warning.WarningRuleSetV1.class);
+            if (dataRef.startsWith("config/warning-rules/history/")
+                    && !dataRef.equals(DataPaths.warningRulesHistoryRef(rules.configVersion()))) {
+                throw new StorageException(
+                        "warning-rule history reference must match WarningRuleSetV1.configVersion: " + dataRef);
+            }
+        } else if (dataRef.equals(DataPaths.configActiveRef()) || dataRef.startsWith("config/history/")) {
             MonitorSeriesConfigV1 configuration = JsonV1Codec.decodeFile(bytes, MonitorSeriesConfigV1.class);
             if (dataRef.startsWith("config/history/")
                     && !dataRef.equals(DataPaths.configHistoryRef(configuration.configVersion()))) {
