@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * D6-T02/D6-T04 controlled Agent pipeline (Final Stage Major fixes M1/M2/M4/M5).
@@ -43,6 +45,9 @@ import java.util.UUID;
  * M5: user input is secret-scanned before EvidencePack/LLM/persistence; mode is strict.
  */
 public final class AgentOrchestrator {
+
+    private static final Pattern FACT_TEMPLATE_TOKEN =
+            Pattern.compile("\\{\\{(fact-[A-Za-z0-9._-]+)}}");
 
     private final ToolExecutor toolExecutor;
     private final LLMService.Port llm;
@@ -114,9 +119,9 @@ public final class AgentOrchestrator {
             limitations.add("部分只读工具未成功；云端仅可使用已验证标准事实");
         }
 
-        boolean degraded;
-        String degradeReason;
-        String explanation;
+        boolean degraded = true;
+        String degradeReason = "MODEL_RESPONSE_REJECTED:UNHANDLED_PIPELINE_STATE";
+        String explanation = "";
         List<String> draftUsedFactIds = List.of();
         LLMService.LLMResponse cloudResponse = LLMService.LLMResponse.failure(
                 LLMService.LLMStatus.REJECTED, "STANDARD_FACTS_NOT_READY");
@@ -137,30 +142,53 @@ public final class AgentOrchestrator {
                 explanation = fallback.explain(new LLMService.LLMRequest(
                         requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
             } else {
-                // The cloud returns only polished answer + selected StandardFactPack ids. Java`n                // verifies every selected id and all stated numbers/dates/sources/conclusions,`n                // then re-attaches evidence. Malformed or unsupported output fails closed.
-                ModelDraftV1 draft = parseStructuredDraft(requestId, phaseB.explanation());
-                if (draft == null) {
+                // The cloud arranges Java-owned fact placeholders. Java renders every placeholder
+                // from StandardFactPack, verifies the final prose, and then re-attaches evidence.
+                ParsedCloudDraft parsed = parseStructuredDraft(requestId, phaseB.explanation());
+                if (parsed == null) {
                     degraded = true;
                     degradeReason = "MODEL_RESPONSE_REJECTED:MALFORMED_STRUCTURED_RESPONSE";
                     explanation = fallback.explain(new LLMService.LLMRequest(
                             requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
                 } else {
-                    draftUsedFactIds = draft.usedFactIds();
-                    AgentResponseVerifier.Verification verification =
-                            responseVerifier.verify(draft, evidencePack);
-                    if (!verification.verified()) {
-                        degraded = true;
-                        degradeReason = "MODEL_RESPONSE_REJECTED:" + verification.reason();
-                        explanation = fallback.explain(new LLMService.LLMRequest(
-                                requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
-                    } else {
-                        degraded = false;
-                        degradeReason = null;
-                        // The answer is safe to display only after validation against the Java-owned`n                        // facts selected by usedFactIds.
-                        explanation = draft.rawText();
+                    ModelDraftV1 draft = parsed.draft();
+                    if (parsed.factTemplate()) {
+                        String rendered = renderFactTemplate(
+                                draft.rawText(), draft.usedFactIds(), facts);
+                        if (rendered == null) {
+                            degraded = true;
+                            degradeReason = "MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE";
+                            explanation = fallback.explain(new LLMService.LLMRequest(
+                                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
+                            draft = null;
+                        } else {
+                            draft = new ModelDraftV1(
+                                    requestId, rendered, draft.usedFactIds(), List.of());
+                        }
+                    }
+                    if (draft != null) {
+                        draftUsedFactIds = draft.usedFactIds();
+                        AgentResponseVerifier.Verification verification =
+                                responseVerifier.verify(draft, evidencePack);
+                        if (!verification.verified()) {
+                            degraded = true;
+                            degradeReason = "MODEL_RESPONSE_REJECTED:" + verification.reason();
+                            explanation = fallback.explain(new LLMService.LLMRequest(
+                                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
+                        } else {
+                            degraded = false;
+                            degradeReason = null;
+                            // Safe only after Java rendered and verified the selected facts.
+                            explanation = draft.rawText();
+                        }
                     }
                 }
             }
+        }
+
+        if (explanation.isBlank()) {
+            explanation = fallback.explain(new LLMService.LLMRequest(
+                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
         }
 
         List<AgentReportV1.FactSummary> factSummaries = facts.stream()
@@ -556,11 +584,12 @@ public final class AgentOrchestrator {
     }
 
     /**
-     * Production cloud contract: {"answer":"...","usedFactIds":["fact-..."]}.
-     * The model never supplies claims, evidence paths, hashes, dates or source side channels;
-     * Java verifies the answer against the selected StandardFactPack entries and re-attaches refs.
+     * Production cloud contract:
+     * {"answerTemplate":"...{{fact-...}}...","usedFactIds":["fact-..."]}.
+     * The model arranges opaque fact placeholders; Java renders all business literals from the
+     * StandardFactPack. The legacy answer field remains accepted for frozen attack tests only.
      */
-    private static ModelDraftV1 parseStructuredDraft(String requestId, String explanation) {
+    private static ParsedCloudDraft parseStructuredDraft(String requestId, String explanation) {
         String trimmed = explanation == null ? "" : explanation.trim();
         if (!trimmed.startsWith("{")) {
             return null;
@@ -571,18 +600,115 @@ public final class AgentOrchestrator {
             if (!root.isObject() || root.has("claims") || root.has("evidenceRefs")) {
                 return null;
             }
+            com.fasterxml.jackson.databind.JsonNode answerTemplate = root.get("answerTemplate");
             com.fasterxml.jackson.databind.JsonNode answer = root.get("answer");
+            if (answerTemplate != null && answer != null) {
+                return null;
+            }
+            boolean factTemplate = answerTemplate != null;
+            com.fasterxml.jackson.databind.JsonNode content = factTemplate ? answerTemplate : answer;
             List<String> usedFactIds = stringList(root.get("usedFactIds"));
-            if (answer == null || !answer.isTextual() || answer.asText().isBlank()
+            if (content == null || !content.isTextual() || content.asText().isBlank()
                     || usedFactIds.isEmpty()) {
                 return null;
             }
-            return new ModelDraftV1(requestId, answer.asText(), usedFactIds, List.of());
+            return new ParsedCloudDraft(
+                    new ModelDraftV1(requestId, content.asText(), usedFactIds, List.of()),
+                    factTemplate);
         } catch (com.fasterxml.jackson.core.JsonProcessingException | IllegalArgumentException malformed) {
             return null;
         }
     }
 
+    private record ParsedCloudDraft(ModelDraftV1 draft, boolean factTemplate) {
+    }
+
+    /**
+     * Renders only exact, selected placeholders. Unknown, missing, duplicated or dangling tokens
+     * fail closed. The cloud never gets to author a business number, date, source or status.
+     */
+    private static String renderFactTemplate(
+            String template, List<String> usedFactIds, List<EvidencePackV1.Fact> facts
+    ) {
+        LinkedHashSet<String> selected = new LinkedHashSet<>(usedFactIds);
+        if (selected.size() != usedFactIds.size()) {
+            return null;
+        }
+        Map<String, EvidencePackV1.Fact> byId = new java.util.LinkedHashMap<>();
+        for (EvidencePackV1.Fact fact : facts) {
+            byId.put(fact.factId(), fact);
+        }
+        Matcher matcher = FACT_TEMPLATE_TOKEN.matcher(template);
+        LinkedHashSet<String> referenced = new LinkedHashSet<>();
+        StringBuffer rendered = new StringBuffer();
+        while (matcher.find()) {
+            String factId = matcher.group(1);
+            EvidencePackV1.Fact fact = byId.get(factId);
+            if (fact == null || !selected.contains(factId)) {
+                return null;
+            }
+            referenced.add(factId);
+            matcher.appendReplacement(rendered,
+                    Matcher.quoteReplacement(renderStandardFactForAnswer(fact)));
+        }
+        matcher.appendTail(rendered);
+        if (!referenced.equals(selected)
+                || rendered.indexOf("{{") >= 0 || rendered.indexOf("}}") >= 0) {
+            return null;
+        }
+        return rendered.toString().trim();
+    }
+
+    private static String renderStandardFactForAnswer(EvidencePackV1.Fact fact) {
+        String valueWithUnit = fact.value() + (fact.unit() == null || fact.unit().isBlank()
+                ? "" : " " + fact.unit());
+        String period = fact.periodStart() == null || fact.periodEnd() == null
+                ? fact.businessDate() : fact.periodStart() + " 至 " + fact.periodEnd();
+        String source = fact.actualSourceName() == null || fact.actualSourceName().isBlank()
+                ? "" : "，实际来源为" + fact.actualSourceName();
+        return switch (fact.factType()) {
+            case "history.query" -> fact.businessDate() + "的已发布值为" + valueWithUnit
+                    + "，校验状态为" + fact.validationStatus() + source;
+            case "history.latest" -> "截至" + fact.businessDate() + "，最新已发布值为"
+                    + valueWithUnit + source;
+            case "period.metrics.avg" -> period + "的已发布平均值为" + valueWithUnit;
+            case "quality.rowCount" -> period + "共有" + fact.value() + "条已发布记录";
+            case "quality.expectedCount" -> period + "的预期观测数为" + fact.value();
+            case "quality.missingCount" -> period + "的缺失观测数为" + fact.value();
+            case "quality.completeRowCount" -> period + "的完整记录数为" + fact.value();
+            case "quality.completeness" -> period + "的数据完整率为" + fact.value();
+            case "history.trend.direction" -> period + "的已发布数据趋势为"
+                    + localizedEnum(fact.value());
+            case "history.trend.change" -> period + "的首尾变化为" + valueWithUnit;
+            case "warning.explain" -> "预警当前值为" + valueWithUnit;
+            case "warning.baselineValue" -> "预警基准值为" + valueWithUnit;
+            case "warning.thresholdPercent" -> "预警阈值为" + fact.value();
+            case "warning.riskLevel" -> "系统按已发布数据判定风险等级为"
+                    + localizedEnum(fact.value());
+            case "warning.id" -> "预警编号为" + fact.value();
+            case "warning.acknowledged" -> "预警处理状态为" + localizedEnum(fact.value());
+            case "warning.acknowledgedAt" -> "预警确认时间为" + fact.value();
+            case "warning.disposition" -> "预警处置记录为" + fact.value();
+            default -> standardStatement(fact) + "为" + valueWithUnit;
+        };
+    }
+
+    private static String localizedEnum(String value) {
+        if (value == null) {
+            return "未知";
+        }
+        return switch (value.toUpperCase(java.util.Locale.ROOT)) {
+            case "UPWARD" -> "上升";
+            case "DOWNWARD" -> "下降";
+            case "FLAT" -> "持平";
+            case "HIGH" -> "高风险";
+            case "MEDIUM" -> "中风险";
+            case "LOW" -> "低风险";
+            case "ACKNOWLEDGED" -> "已确认";
+            case "PENDING" -> "待处理";
+            default -> value;
+        };
+    }
     private static List<String> stringList(com.fasterxml.jackson.databind.JsonNode node) {
         if (node == null || !node.isArray()) {
             return List.of();

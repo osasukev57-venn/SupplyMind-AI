@@ -294,15 +294,17 @@ public final class SpringAiLlmService implements LLMService.Port {
             // The cloud receives a Java-owned standard fact catalog. It selects factIds and
             // organises language; Java owns evidence binding and all calculations.
             prompt.append("\nFact explanation contract - return exactly one JSON object and nothing else:\n")
-                    .append("{\"answer\":\"<concise Chinese analysis using only selected facts>\",")
+                    .append("{\"answerTemplate\":\"<concise Chinese prose arranging {{fact-id}} placeholders>\",")
                     .append("\"usedFactIds\":[\"<copy exact allowed factId>\"]}\n")
-                    .append("Select every factId needed by the answer. Do not output claims, evidenceRefs, paths or hashes. ")
+                    .append("Every selected factId must appear in answerTemplate exactly as {{fact-id}}, and every placeholder ")
+                    .append("must appear in usedFactIds. Do not write business numbers, dates, units, currencies, sources, ")
+                    .append("statuses, trend directions or risk levels yourself; Java replaces placeholders with those literals. ")
+                    .append("Use placeholders as complete factual clauses and add only concise connective analysis. ")
+                    .append("Do not output answer, claims, evidenceRefs, paths or hashes. ")
                     .append("Java has already queried, validated, calculated trend facts and evaluated warning facts. ")
-                    .append("You only organise and polish those facts; never calculate or infer another value. ")
-                    .append("Every number, date, unit, source, trend direction, risk and acknowledgement statement ")
-                    .append("must be directly supported by one selected factId. ")
+                    .append("You only select, order and connect those facts; never calculate or infer another value. ")
                     .append("If the requested conclusion has no supplied fact, clearly state that it is unavailable ")
-                    .append("without inventing a value. Never expose factIds in answer text.");
+                    .append("without inventing a value. Placeholder syntax is mandatory and is removed by Java.");
         }
         return prompt.toString();
     }

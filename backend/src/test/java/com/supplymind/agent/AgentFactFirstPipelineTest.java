@@ -38,11 +38,10 @@ class AgentFactFirstPipelineTest {
             LLMService.LlmFact completeness =
                     fact(request, "Java-computed completeness percentage", null);
             String json = """
-                    {"answer":"最新已发布值为 %s %s，业务日期为 %s；持久化月均值为 %s；已发布 %s 条，完整率为 %s；实际来源为 %s。",
+                    {"answerTemplate":"最新情况：{{%s}}。月度表现：{{%s}}。数据质量：{{%s}}，{{%s}}。",
                      "usedFactIds":["%s","%s","%s","%s"]}
                     """.formatted(
-                    latest.value(), latest.unit(), latest.businessDate(), average.value(),
-                    rowCount.value(), completeness.value(), latest.actualSourceName(),
+                    latest.factId(), average.factId(), rowCount.factId(), completeness.factId(),
                     latest.factId(), average.factId(), rowCount.factId(), completeness.factId());
             return LLMService.LLMResponse.success(json);
         }, new AgentResponseVerifier(List.of()));
@@ -62,10 +61,56 @@ class AgentFactFirstPipelineTest {
                         && "100%".equals(fact.value())));
         assertFalse(result.degraded(), "valid fact-selected language must pass");
         assertEquals("LLM", result.report().generatedBy());
+        LLMService.LlmFact renderedLatest = fact(captured.get(), "latest published value", null);
+        LLMService.LlmFact renderedAverage = fact(
+                captured.get(), "persisted period average", "2026-08-01~2026-08-31");
+        assertTrue(result.report().claims().get(0).text().contains(renderedLatest.value()));
+        assertTrue(result.report().claims().get(0).text().contains(renderedAverage.value()));
+        assertFalse(result.report().claims().get(0).text().contains("{{fact-"));
         assertEquals(1, result.report().claims().size());
         assertTrue(result.report().claims().stream()
                 .allMatch(claim -> !claim.evidenceRefs().isEmpty()),
                 "Java must bind evidence from cited factIds");
+    }
+
+    @Test
+    void templateCannotSmuggleAnUnbackedBusinessNumber() {
+        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "template-number-attack");
+        AgentOrchestrator orchestrator = fixture.orchestrator(request -> {
+            LLMService.LlmFact latest = fact(request, "latest published value", null);
+            return LLMService.LLMResponse.success("""
+                    {"answerTemplate":"{{%s}}，并额外声称数值为 999999.999。",
+                     "usedFactIds":["%s"]}
+                    """.formatted(latest.factId(), latest.factId()));
+        }, new AgentResponseVerifier(List.of()));
+
+        AgentOrchestrator.AgentResult result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
+                "说明最新值", Day6R2Fixture.ITEM, null, null, null,
+                null, null, null, null, "FORMAL"));
+
+        assertTrue(result.degraded());
+        assertEquals("MODEL_RESPONSE_REJECTED:UNSUPPORTED_CLAIM_REFERENCE", result.degradeReason());
+        assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
+    }
+
+    @Test
+    void templateFactSetMustExactlyMatchUsedFactIds() {
+        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "template-ref-attack");
+        AgentOrchestrator orchestrator = fixture.orchestrator(request -> {
+            LLMService.LlmFact latest = fact(request, "latest published value", null);
+            return LLMService.LLMResponse.success("""
+                    {"answerTemplate":"{{%s}}。",
+                     "usedFactIds":["%s","fact-unknown"]}
+                    """.formatted(latest.factId(), latest.factId()));
+        }, new AgentResponseVerifier(List.of()));
+
+        AgentOrchestrator.AgentResult result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
+                "说明最新值", Day6R2Fixture.ITEM, null, null, null,
+                null, null, null, null, "FORMAL"));
+
+        assertTrue(result.degraded());
+        assertEquals("MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE", result.degradeReason());
+        assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
     }
 
     @Test

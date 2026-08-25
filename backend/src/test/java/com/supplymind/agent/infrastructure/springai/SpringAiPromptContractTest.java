@@ -38,8 +38,10 @@ class SpringAiPromptContractTest {
         assertTrue(prompt.contains("\"actualSourceName\":\"上海期货交易所公开基准\""), prompt);
         assertTrue(prompt.contains("Allowed factIds: [\"fact-7\"]"), prompt);
         assertFalse(prompt.contains(evidenceRef), prompt);
+        assertTrue(prompt.contains("\"answerTemplate\""), prompt);
+        assertTrue(prompt.contains("{{fact-id}}"), prompt);
         assertTrue(prompt.contains("\"usedFactIds\""), prompt);
-        assertTrue(prompt.contains("Do not output claims, evidenceRefs, paths or hashes"), prompt);
+        assertTrue(prompt.contains("claims, evidenceRefs, paths or hashes"), prompt);
         assertTrue(prompt.contains("copy it exactly and never renumber it"), prompt);
         assertFalse(prompt.contains("Allowed factIds: [\"fact-0\"]"), prompt);
     }
