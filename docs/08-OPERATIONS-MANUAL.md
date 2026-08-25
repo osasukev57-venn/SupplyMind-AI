@@ -61,8 +61,8 @@
 输入问题（可选 itemId、日期范围、周期），系统：
 1. 用 7 个受控只读 Java 工具从本地已发布数据及完整性验证通过的预警/确认记录收集证据（series.resolve / history.query / period.metrics / quality.inspect / cost.impact / warning.explain / provenance.trace）；
 2. Java 生成 StandardFactPack，并在本地确定性计算数值、趋势方向与变化量、预警阈值/风险和确认状态；没有可引用事实时不允许云端形成业务结论；
-3. 云端模型只接收不含本地路径/hash的标准事实，返回润色后的 `answer + usedFactIds`；它不负责取数、计算趋势或判定预警；
-4. Java 校验 usedFactIds 以及正文全部数字、日期、单位、来源、趋势、风险与确认语义，通过后自动补回 evidenceRefs 并持久化报告；未知引用、伪造或相反结论整体拒绝并展示同一事实包的 Java 事实报告；
+3. 云端模型只接收不含本地路径/hash的标准事实，返回 `answerTemplate + usedFactIds`；模板只用 `{{factId}}` 安排事实顺序和连接语，不直接书写数值、日期、来源、趋势或预警结论；
+4. Java 校验 usedFactIds 与占位符集合，按 factId 注入权威数值、日期、单位、来源、趋势、风险和确认状态，再复核完整正文并自动补回 evidenceRefs；未知/缺失/悬空占位符、模板外伪造或相反结论整体拒绝并展示同一事实包的 Java 事实报告；
 5. Agent 请求采用独立 90 秒等待上限（其他页面 API 仍为 15 秒）。分析中请等待按钮恢复，不要重复提交；超过 90 秒时页面会给出明确提示，后端仍保持安全降级边界。
 
 ### 2.8 一键完整 DEMO
