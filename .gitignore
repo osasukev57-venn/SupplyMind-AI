@@ -53,3 +53,7 @@ target/
 /项目源码和本地化部署手册/
 /项目源码和本地化部署手册.zip
 /项目源码和本地化部署手册.zip.sha256
+
+# Local test artifacts
+test-output/
+测试运行/
