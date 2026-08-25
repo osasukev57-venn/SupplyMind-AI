@@ -1,9 +1,9 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 1～Day 10=`COMPLETE`；Post-Day10 数据可用性补充=`COMPLETE`；DEC-063=`EFFECTIVE`；项目=`FINAL_RELEASE_READY`。真实 Cloud 历史 Gate=`PASS`；本轮未执行新的计费请求。
+> 当前阶段：Day 1～Day 10=`COMPLETE`；Post-Day10 数据可用性与正式预警补充=`COMPLETE`；DEC-063/064=`EFFECTIVE`；项目=`FINAL_RELEASE_READY`。真实 Cloud 历史 Gate=`PASS`；本轮未执行新的计费请求。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`DONE`；**Final Implementation Candidate=`feaedd3`**；**CURRENT regression=110 suites/578 backend tests/0 failures/0 errors/8 skipped**，前端 `npm run test` **11/11 PASS** + `npm run build` PASS；历史候选（1b83410、d2b0965、a4006c4、3fd1d35、5f1491c、01d4270 等中间状态）一律 HISTORICAL（不删除）；Closure Evidence=`docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md`。Day1-Day6 代码零修改。
-> 当前最终发布补充：implementation=`ee48994`；Backend=`127 suites/656 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`37/37 + build PASS`；干净启动实证同时生成真实 PBOC USD/EUR 与 SHFE 两条 ADC12 raw→PUBLISHED→daily→四级 aggregate；一键 Synthetic DEMO 完整且仅写 DEMO 隔离区。
+> 当前最终发布补充：implementation=`42d16b4`（基于数据可用性补充 `ee48994`）；Backend=`131 suites/669 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`38/38 + build PASS`；LocalImport 行状态闭环、Agent Java 标准事实展示与 DEC-064 正式默认/逐项自定义预警均已完成；未发起新的计费请求。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -60,19 +60,28 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 当前开发日 | Day 1～Day 10=`COMPLETE` |
 | 当前任务编号 | 无进行中 P0 任务；D10-T01～D10-T05=`DONE` |
 | 当前任务状态 | D10-T01～D10-T05=`DONE`；Day10=`COMPLETE`；项目=`FINAL_RELEASE_READY`；本分支未执行 merge/tag/push |
-| 编码前基线对齐 | `v1.5 FROZEN` 保持；DEC-060/061/062不变；新增 DEC-063 仅冻结 ADC12 SHFE FreePublic 与 DEMO 隔离口径，不降低 H01-H09。 |
+| 编码前基线对齐 | `v1.5 FROZEN` 保持；DEC-060/061/062不变；DEC-063 冻结 ADC12 SHFE FreePublic 与 DEMO 隔离；DEC-064 接受版本化正式通用预警，不降低 H01-H09。 |
 | 已完成任务 | Day1～Day10全部 P0 开发任务及最终验收；D10-T01～D10-T05=`DONE` |
 | 正在进行任务 | 无 |
 | 阻塞项 | 无 P0 BLOCKER/MAJOR；EXT-07=`ACCEPTED_VERSIONED_DEFAULT`（DEC-064）；EXT-08保持 OPEN_EXTERNAL；物理改时/干净VM/主动断网方法按DEC-062保持NOT_RUN，不阻塞已通过的业务结果 |
-| 最近验收结果 | Post-Day10：真实启动同时完成 PBOC USD/EUR 与 SHFE ADC12 双 item 的 raw/发布/daily/四级 aggregate；DEMO 八阶段及审计报告通过；回归=`127/656/0/0/9 + Desktop 31/31 + Frontend 37/37/build PASS` |
-| 新增风险 | 指定 SMM/Asian 自动能力仍为 N/A_APPROVED_FALLBACK；SHFE 仅是 ADC12 同类期货公开基准，AZ91D 仍 Manual；官方网络失败时不造数，云端调用失败继续由 JAVA_TEMPLATE 降级 |
+| 最近验收结果 | Post-Day10：DEC-064 正式默认/自定义预警、LocalImport 最终行状态、Agent Java 已验证 claim 展示通过；回归=`131 suites/669 tests/0 failures/0 errors/9 skipped + Desktop 31/31 + Frontend 38/38/build PASS` |
+| 新增风险 | 指定 SMM/Asian 自动能力仍为 N/A_APPROVED_FALLBACK；SHFE 仅是 ADC12 同类期货公开基准，AZ91D 仍 Manual；官方网络失败时不造数；云端输出未通过事实约束时仅展示 Java 已验证事实报告 |
 | 下一任务 | 无 P0 开发任务；进入最终发布/merge/tag决策 |
-| 最近一次可运行版本 | Post-Day10 Implementation=`ee48994`；最终运行 ZIP/源码 ZIP 及其 SHA-256 sidecar 由 release clean build 生成，sidecar 为唯一权威值 |
-| 最近一次Git提交 | `ee48994`（SHFE FreePublic、完整隔离 DEMO、前端展示、测试与 Apache-2.0 LICENSE） |
-| 是否偏离计划 | 否；按原三层路线补齐 FreePublic，同时保持 Manual、文件存储、无数据库、只读 Agent、DEC-062 安全边界与 Synthetic 隔离 |
-| 最后更新人/窗口 | 技术负责人 / Post-Day10 Final Release Closure |
-| 最后更新时间 | 2026-08-21（Asia/Shanghai） |
+| 最近一次可运行版本 | Post-Day10 Warning Closure Implementation=`42d16b4`；最终运行 ZIP/源码 ZIP 及其 SHA-256 sidecar 由 release clean build 生成，sidecar 为唯一权威值 |
+| 最近一次Git提交 | `42d16b4`（LocalImport 状态、Agent 已验证输出、DEC-064 正式默认/自定义预警及完整回归） |
+| 是否偏离计划 | 否；保持三层来源路线、Manual、文件存储、无数据库、只读 Agent、DEC-062 安全边界与 Synthetic 隔离；正式预警按 DEC-064 版本化扩展 |
+| 最后更新人/窗口 | 技术负责人 / Post-Day10 Warning Closure |
+| 最后更新时间 | 2026-08-25（Asia/Shanghai） |
 
+### 3.6 Post-Day10 Formal Warning / Agent / Import Closure（2026-08-25）
+
+- Implementation：`42d16b4`；DEC-064=`EFFECTIVE`；EXT-07=`ACCEPTED_VERSIONED_DEFAULT`；EXT-08=`OPEN_EXTERNAL`。
+- 正式预警：所有启用且非 Synthetic 的监测项自动绑定默认规则；材料7自然日/5%，其他1自然日/1%，双向且等于阈值触发；支持逐项版本化覆盖与恢复默认。
+- 数据边界：只读取已发布/已校验 daily，BigDecimal 计算；缺失不补0，冲突/损坏/单位币种不一致 fail-closed；触发写不可变 WarningRecord，确认继续使用 DEC-061 sidecar。
+- Agent：对外 answer 仅由持久化 Java 已验证 claims 顺序拼接；被拒绝的模型 JSON envelope 不再泄漏；云端模型只在标准事实约束内组织语言。
+- LocalImport：批量受理行在正式处理后按 runId 显示最终 PUBLISHED/REJECTED，不再与顶部已发布状态冲突。
+- 回归：Backend=`131 suites/669 tests/0 failures/0 errors/9 skipped`；Desktop=`31/31`；Frontend=`6 files/38 tests/0 failures + build PASS`。
+- 安全：未执行真实联网采集、真实 Cloud 计费请求、物理改时、断网、VM 或主机网络/Hyper-V/服务修改。
 ### 3.5 Post-Day10 FreePublic / DEMO / Open-source Closure（2026-08-21）
 
 - Implementation：`ee48994`；DEC-063=`EFFECTIVE`。

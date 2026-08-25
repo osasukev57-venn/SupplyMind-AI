@@ -5,7 +5,7 @@
 > 执行顺序：P0完成并通过退出门禁后，才允许进入P1；P2不进入本次10天交付  
 > 当前进度锚点：Day 1～Day 10均已完成；Post-Day10 数据可用性补充实现=`ee48994`，DEC-063=`EFFECTIVE`。真实 PBOC 双币、SHFE ADC12 同类公开基准、AZ91D Manual 与一键完整隔离 DEMO 均已实现；Backend=`131 suites/669 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`38/38 + build PASS`。最终运行/源码 ZIP 的 SHA-256 以 release 同名 `.sha256` sidecar 为唯一权威值；DEC-062 安全边界继续生效。
 
-> Post-Day10 warning closure（DEC-064，2026-08-25）：每个启用正式监测项自动绑定 `warning-relative-change-v1` 默认规则；材料=7日/5%，其他=1日/1%，双向且等于阈值触发；支持逐项版本化覆盖。EXT-07=`ACCEPTED_VERSIONED_DEFAULT`，EXT-08继续`OPEN_EXTERNAL`。历史 D5/D8 的 TEST/DEMO 记录仅作当时审计，不代表当前能力。
+> Post-Day10 warning closure（implementation=`42d16b4`，DEC-064，2026-08-25）：每个启用正式监测项自动绑定 `warning-relative-change-v1` 默认规则；材料=7日/5%，其他=1日/1%，双向且等于阈值触发；支持逐项版本化覆盖。EXT-07=`ACCEPTED_VERSIONED_DEFAULT`，EXT-08继续`OPEN_EXTERNAL`。历史 D5/D8 的 TEST/DEMO 记录仅作当时审计，不代表当前能力。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`TaskExecutionStatus=DONE`（实施 + Attack Validation + Final Stage Review 全部 PASS，MAJOR Finding 全部关闭）；最终实施候选=`feaedd3`；CURRENT 全量回归=110 suites/578 backend tests/0 failures/0 errors/8 skipped，前端 11/11 PASS + build PASS；历史候选（1b83410、d2b0965、5f1491c、01d4270 等中间状态）一律 HISTORICAL，详见 docs/05-PROGRESS-LEDGER 与 docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md。Day1-Day6 代码零修改。
 > 功能冻结：Day 8完成后禁止新增业务功能，仅允许修复P0验收缺陷
 
