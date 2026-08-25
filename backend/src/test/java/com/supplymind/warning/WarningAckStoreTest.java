@@ -1,5 +1,7 @@
 package com.supplymind.warning;
 
+import com.supplymind.agent.infrastructure.springai.WarningExplainToolAdapter;
+import com.supplymind.agent.tool.ToolResult;
 import com.supplymind.foundation.codec.JsonV1Codec;
 import com.supplymind.foundation.storage.AtomicFileStore;
 import com.supplymind.foundation.storage.AtomicMoveSupport;
@@ -68,6 +70,24 @@ class WarningAckStoreTest {
         assertEquals(ack.warningFileSha256(), persisted.warningFileSha256());
     }
 
+    @Test
+    void verifiedAcknowledgementBecomesQueryableAgentEvidence() {
+        Harness harness = harness();
+        WarningRecordV1 warning = harness.store().store(warningRecord());
+        harness.ackStore().acknowledge(warning, "已核实并处理", NOW);
+        ToolResult result = new WarningExplainToolAdapter(harness.root(), harness.ackStore())
+                .warningExplain(warning.itemId(), "2026-08", "agent-ack-1");
+        assertEquals(com.supplymind.agent.tool.ToolStatus.SUCCESS, result.status());
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, Object> row = (java.util.Map<String, Object>)
+                ((java.util.List<?>) result.result().get("warnings")).get(0);
+        assertEquals("ACKNOWLEDGED", row.get("acknowledgedStatus"));
+        assertEquals("已核实并处理", row.get("dispositionNote"));
+        assertEquals(NOW.toString(), row.get("acknowledgedAt"));
+        String ackRef = DataPaths.warningAckRef(warning.warningMonth(), warning.warningId());
+        assertTrue(result.evidenceRefs().contains(ackRef));
+        assertTrue(((java.util.List<?>) row.get("evidenceRefs")).contains(ackRef));
+    }
     @Test
     void identicalRetryIsIdempotentAndDifferentContentFailsClosed() {
         Harness harness = harness();

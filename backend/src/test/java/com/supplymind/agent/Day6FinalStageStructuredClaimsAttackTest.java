@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * DAY6 final stage M3: the PRODUCTION Phase B path prefers the strict structured claims
+ * DAY6 final stage M3: the PRODUCTION Phase B path prefers the strict answer + usedFactIds
  * envelope; each claim is verified individually (value B must be supported by the fact it
  * references - never by an unrelated reference), and only verified structured claims are
  * persisted into the AgentReport.
@@ -34,7 +34,7 @@ class Day6FinalStageStructuredClaimsAttackTest {
                 request -> LLMService.LLMResponse.success(envelope(request, firstFactValue(request))),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
 
-        assertFalse(result.degraded(), "a valid structured claims envelope must be accepted");
+        assertFalse(result.degraded(), "a valid fact-selection envelope must be accepted");
         assertEquals("LLM", result.report().generatedBy());
         assertFalse(result.report().claims().isEmpty(),
                 "the verified structured claims must be persisted in the AgentReport");
@@ -183,7 +183,6 @@ class Day6FinalStageStructuredClaimsAttackTest {
     }
 
     private static String envelopeWithFact(LLMService.LLMRequest request, String factId, String value) {
-        return "{\"answer\": \"answer\", \"claims\": [{\"claimId\": \"c1\", \"text\": \"当前值 "
-                + value + "\", \"factIds\": [\"" + factId + "\"], \"evidenceRefs\": []}]}";
+        return "{\"answer\":\"当前值 " + value + "\",\"usedFactIds\":[\"" + factId + "\"]}";
     }
 }

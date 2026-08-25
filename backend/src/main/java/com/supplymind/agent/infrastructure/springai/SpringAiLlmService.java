@@ -238,6 +238,24 @@ public final class SpringAiLlmService implements LLMService.Port {
         return false;
     }
 
+    private static List<java.util.Map<String, Object>> cloudFacts(List<LLMService.LlmFact> facts) {
+        List<java.util.Map<String, Object>> result = new java.util.ArrayList<>();
+        for (LLMService.LlmFact fact : facts) {
+            java.util.Map<String, Object> value = new java.util.LinkedHashMap<>();
+            value.put("factId", fact.factId());
+            value.put("statement", fact.statement());
+            value.put("itemId", fact.itemId());
+            value.put("value", fact.value());
+            value.put("unit", fact.unit());
+            value.put("currency", fact.currency());
+            value.put("businessDate", fact.businessDate());
+            value.put("period", fact.period());
+            value.put("validationStatus", fact.validationStatus());
+            value.put("actualSourceName", fact.actualSourceName());
+            result.add(value);
+        }
+        return List.copyOf(result);
+    }
     public List<String> exposedToolNames() {
         return Arrays.stream(toolCallbacks)
                 .map(callback -> callback.getToolDefinition().name())
@@ -260,12 +278,12 @@ public final class SpringAiLlmService implements LLMService.Port {
         prompt.append("Mode: ").append(request.mode()).append("\n");
         if (!request.facts().isEmpty()) {
             prompt.append("Verified facts as JSON. factId is an opaque identifier: copy it exactly and never renumber it.\n");
-            prompt.append(MAPPER.valueToTree(request.facts()).toString()).append("\n");
+            prompt.append(MAPPER.valueToTree(cloudFacts(request.facts())).toString()).append("\n");
             prompt.append("Allowed factIds: ")
                     .append(MAPPER.valueToTree(request.facts().stream().map(LLMService.LlmFact::factId).toList()).toString())
                     .append("\n");
         }
-        if (!request.evidenceRefs().isEmpty()) {
+        if (request.toolCallingEnabled() && !request.evidenceRefs().isEmpty()) {
             prompt.append("Allowed evidenceRefs: ")
                     .append(MAPPER.valueToTree(request.evidenceRefs()).toString())
                     .append("\n");
@@ -276,21 +294,15 @@ public final class SpringAiLlmService implements LLMService.Port {
             // The cloud receives a Java-owned standard fact catalog. It selects factIds and
             // organises language; Java owns evidence binding and all calculations.
             prompt.append("\nFact explanation contract - return exactly one JSON object and nothing else:\n")
-                    .append("{\"answer\":\"<short meta-summary without numbers, dates, sources or references>\",")
-                    .append("\"claims\":[{\"claimId\":\"c1\",\"text\":\"<statement supported by cited facts>\",")
-                    .append("\"factIds\":[\"<copy exact allowed factId>\"],")
-                    .append("\"evidenceRefs\":[],")
-                    .append("\"sourceNames\":[\"<exact actualSourceName when the claim states a source>\"],")
-                    .append("\"businessDates\":[\"<exact businessDate when the claim states a date>\"]}]}\n")
-                    .append("Every claim must cite one or more allowed factIds; Java resolves evidenceRefs automatically. ")
-                    .append("Keep evidenceRefs empty and never copy file paths into claim.text. ")
-                    .append("Use one small conclusion per claim and cite every fact needed by that conclusion. ")
-                    .append("Every numeric token in claim.text must exactly equal value from one cited fact. ")
-                    .append("Never calculate, convert, round, divide, combine or infer a new number. ")
-                    .append("Every date, unit, currency and source in claim.text must come from cited facts. ")
-                    .append("Use sourceNames/businessDates only when claim.text states them, and copy exact values. ")
-                    .append("If a requested conclusion has no standard fact, omit that conclusion. ")
-                    .append("Never output placeholder text or an ID not listed in Allowed factIds.");
+                    .append("{\"answer\":\"<concise Chinese analysis using only selected facts>\",")
+                    .append("\"usedFactIds\":[\"<copy exact allowed factId>\"]}\n")
+                    .append("Select every factId needed by the answer. Do not output claims, evidenceRefs, paths or hashes. ")
+                    .append("Java has already queried, validated, calculated trend facts and evaluated warning facts. ")
+                    .append("You only organise and polish those facts; never calculate or infer another value. ")
+                    .append("Every number, date, unit, source, trend direction, risk and acknowledgement statement ")
+                    .append("must be directly supported by one selected factId. ")
+                    .append("If the requested conclusion has no supplied fact, clearly state that it is unavailable ")
+                    .append("without inventing a value. Never expose factIds in answer text.");
         }
         return prompt.toString();
     }

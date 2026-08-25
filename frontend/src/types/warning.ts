@@ -9,6 +9,7 @@ export interface WarningView {
   periodStart: string
   periodEnd: string
   threshold: string
+  thresholdPercent: string
   currentValue: string
   baselineValue: string
   riskLevel: string | null
@@ -28,6 +29,11 @@ export interface AckView {
   status: string
   acknowledgedAt: string | null
   dispositionNote: string
+}
+
+export interface AckStatusResponse {
+  acknowledged: boolean
+  ack?: AckView
 }
 
 export interface WarningListResponse {

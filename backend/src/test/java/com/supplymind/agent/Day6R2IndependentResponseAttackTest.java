@@ -30,9 +30,7 @@ class Day6R2IndependentResponseAttackTest {
         // is now rejected earlier as MALFORMED_STRUCTURED_RESPONSE, both fail closed).
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"summary\",\"claims\":[{\"claimId\":\"c1\","
-                                + "\"text\":\"Current value is 999999.999\",\"factIds\":[\"fact-0\"],"
-                                + "\"evidenceRefs\":[]}]}"),
+                        "{\"answer\":\"Current value is 999999.999\",\"usedFactIds\":[\"fact-0\"]}"),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
 
         assertTrue(result.degraded());
@@ -51,8 +49,7 @@ class Day6R2IndependentResponseAttackTest {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "secret");
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"Authorization: Bearer " + secret + "\",\"claims\":[{\"claimId\":\"c1\","
-                                + "\"text\":\"ok\",\"factIds\":[\"fact-0\"],\"evidenceRefs\":[]}]}"),
+                        "{\"answer\":\"Authorization: Bearer " + secret + "\",\"usedFactIds\":[\"fact-0\"]}"),
                 new AgentResponseVerifier(List.of(secret)))
                 .answer(fixture.formalHistoryQuery());
 
@@ -69,10 +66,7 @@ class Day6R2IndependentResponseAttackTest {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "unknown-reference");
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"summary\",\"claims\":[{\"claimId\":\"c1\","
-                                + "\"text\":\"I rely on fact-does-not-exist\",\"factIds\":[\"fact-does-not-exist\"],"
-                                + "\"evidenceRefs\":[]},{\"claimId\":\"c2\",\"text\":\"x\","
-                                + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[\"raw/unknown-evidence.json\"]}]}"),
+                        "{\"answer\":\"unknown selection\",\"usedFactIds\":[\"fact-does-not-exist\"]}"),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
 
         assertTrue(result.degraded(), "unknown fact/evidence references from a model response require fallback");

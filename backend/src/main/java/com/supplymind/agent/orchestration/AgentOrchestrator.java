@@ -117,7 +117,7 @@ public final class AgentOrchestrator {
         boolean degraded;
         String degradeReason;
         String explanation;
-        List<ModelClaimV1> draftClaims = List.of();
+        List<String> draftUsedFactIds = List.of();
         LLMService.LLMResponse cloudResponse = LLMService.LLMResponse.failure(
                 LLMService.LLMStatus.REJECTED, "STANDARD_FACTS_NOT_READY");
         if (!readiness.ready()) {
@@ -137,10 +137,7 @@ public final class AgentOrchestrator {
                 explanation = fallback.explain(new LLMService.LLMRequest(
                         requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
             } else {
-                // M1/M3: the sole cloud explanation output is an UNTRUSTED draft; verify before formal use.
-                // M3 strict contract: only the strict JSON claims envelope is acceptable; plain
-                // free text, malformed JSON, missing/empty/partial claims reject the WHOLE draft
-                // (MODEL_RESPONSE_REJECTED:MALFORMED_STRUCTURED_RESPONSE) -> JAVA_TEMPLATE.
+                // The cloud returns only polished answer + selected StandardFactPack ids. Java`n                // verifies every selected id and all stated numbers/dates/sources/conclusions,`n                // then re-attaches evidence. Malformed or unsupported output fails closed.
                 ModelDraftV1 draft = parseStructuredDraft(requestId, phaseB.explanation());
                 if (draft == null) {
                     degraded = true;
@@ -148,7 +145,7 @@ public final class AgentOrchestrator {
                     explanation = fallback.explain(new LLMService.LLMRequest(
                             requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
                 } else {
-                    draftClaims = draft.claims();
+                    draftUsedFactIds = draft.usedFactIds();
                     AgentResponseVerifier.Verification verification =
                             responseVerifier.verify(draft, evidencePack);
                     if (!verification.verified()) {
@@ -159,9 +156,8 @@ public final class AgentOrchestrator {
                     } else {
                         degraded = false;
                         degradeReason = null;
-                        // M3: the explanation is composed ONLY from the verified claim texts in a
-                        // deterministic order - the unverified raw model answer is never reused.
-                        explanation = verifiedClaimsText(draft);
+                        // The answer is safe to display only after validation against the Java-owned`n                        // facts selected by usedFactIds.
+                        explanation = draft.rawText();
                     }
                 }
             }
@@ -177,14 +173,12 @@ public final class AgentOrchestrator {
         // references the top-level EvidencePack refs (auditable paths) so it stays traceable even
         // when no verified fact value is available.
         List<AgentReportV1.Claim> claims = new ArrayList<>();
-        if (!draftClaims.isEmpty() && !degraded) {
-            // M3: the persisted AgentReport claims ARE the verified structured claims.
-            for (ModelClaimV1 claim : draftClaims) {
-                List<String> refs = claimRefsOf(claim, facts);
-                if (refs.isEmpty()) {
-                    continue;
-                }
-                claims.add(new AgentReportV1.Claim(claim.claimId(), claim.text(), refs));
+        if (!draftUsedFactIds.isEmpty() && !degraded) {
+            // The cloud supplies language + selected factIds only. Java resolves every evidence
+            // reference from the selected StandardFactPack entries and persists one verified claim.
+            List<String> refs = claimRefsOf(draftUsedFactIds, facts);
+            if (!refs.isEmpty()) {
+                claims.add(new AgentReportV1.Claim("claim-1", explanation, refs));
             }
         }
         if (claims.isEmpty()) {
@@ -538,6 +532,15 @@ public final class AgentOrchestrator {
             case "quality.completeRowCount" -> "complete row count";
             case "quality.completeness" -> "Java-computed completeness percentage";
             case "warning.explain" -> "verified warning current value";
+            case "warning.baselineValue" -> "verified warning baseline value";
+            case "warning.thresholdPercent" -> "Java-evaluated warning threshold percentage";
+            case "warning.riskLevel" -> "Java-evaluated warning risk level";
+            case "warning.id" -> "immutable warning identifier";
+            case "warning.acknowledged" -> "verified warning acknowledgement status";
+            case "warning.acknowledgedAt" -> "verified warning acknowledgement time";
+            case "warning.disposition" -> "verified warning disposition note";
+            case "history.trend.direction" -> "Java-computed trend direction";
+            case "history.trend.change" -> "Java-computed start-to-end change";
             default -> fact.factType();
         };
     }
@@ -553,59 +556,29 @@ public final class AgentOrchestrator {
     }
 
     /**
-     * M3 STRICT: the production cloud explanation path ONLY accepts the strict JSON claims envelope:
-     * {"answer": "...", "claims": [{"claimId": "...", "text": "...", "factIds": [...],
-     * "evidenceRefs": [...], "sourceNames": [...], "businessDates": [...]}]}.
-     * Free text, malformed JSON, missing/empty claims, a claim without any reference or a
-     * malformed claim (missing/wrong-typed fields) rejects the WHOLE draft - a bad claim is
-     * never skipped in favour of the remaining good ones. Returns null when the response does
-     * not satisfy the contract; ModelDraftV1.untrusted(...) is never an acceptable LLM output.
+     * Production cloud contract: {"answer":"...","usedFactIds":["fact-..."]}.
+     * The model never supplies claims, evidence paths, hashes, dates or source side channels;
+     * Java verifies the answer against the selected StandardFactPack entries and re-attaches refs.
      */
     private static ModelDraftV1 parseStructuredDraft(String requestId, String explanation) {
-        String text = explanation == null ? "" : explanation;
-        String trimmed = text.trim();
+        String trimmed = explanation == null ? "" : explanation.trim();
         if (!trimmed.startsWith("{")) {
             return null;
         }
         try {
             com.fasterxml.jackson.databind.JsonNode root =
                     new com.fasterxml.jackson.databind.ObjectMapper().readTree(trimmed);
-            com.fasterxml.jackson.databind.JsonNode claimsNode = root.get("claims");
-            if (claimsNode == null || !claimsNode.isArray() || claimsNode.isEmpty()) {
+            if (!root.isObject() || root.has("claims") || root.has("evidenceRefs")) {
                 return null;
             }
-            List<ModelClaimV1> claims = new ArrayList<>();
-            for (com.fasterxml.jackson.databind.JsonNode node : claimsNode) {
-                if (!node.isObject()) {
-                    return null;
-                }
-                com.fasterxml.jackson.databind.JsonNode claimId = node.get("claimId");
-                com.fasterxml.jackson.databind.JsonNode claimText = node.get("text");
-                if (claimId == null || !claimId.isTextual() || claimId.asText().isBlank()
-                        || claimText == null || !claimText.isTextual()) {
-                    return null; // a single malformed claim rejects the whole draft
-                }
-                List<String> factIds = stringList(node.get("factIds"));
-                List<String> refs = stringList(node.get("evidenceRefs"));
-                if (factIds.isEmpty()) {
-                    return null; // Java evidence auto-binding requires at least one standard factId
-                }
-                List<String> sourceNames = stringList(node.get("sourceNames"));
-                List<String> businessDates = stringList(node.get("businessDates"));
-                claims.add(new ModelClaimV1(
-                        claimId.asText(), claimText.asText(), factIds, refs, sourceNames, businessDates));
-            }
-            if (claims.isEmpty()) {
-                return null;
-            }
-            // rawText carries ONLY the answer field for secret/unknown-reference/number scanning;
-            // the persisted explanation is composed from verified claim texts, never this answer.
             com.fasterxml.jackson.databind.JsonNode answer = root.get("answer");
-            String rawText = answer != null && answer.isTextual() ? answer.asText() : "";
-            return new ModelDraftV1(requestId, rawText, claims);
-        } catch (com.fasterxml.jackson.core.JsonProcessingException malformed) {
-            return null;
-        } catch (RuntimeException malformed) {
+            List<String> usedFactIds = stringList(root.get("usedFactIds"));
+            if (answer == null || !answer.isTextual() || answer.asText().isBlank()
+                    || usedFactIds.isEmpty()) {
+                return null;
+            }
+            return new ModelDraftV1(requestId, answer.asText(), usedFactIds, List.of());
+        } catch (com.fasterxml.jackson.core.JsonProcessingException | IllegalArgumentException malformed) {
             return null;
         }
     }
@@ -617,36 +590,20 @@ public final class AgentOrchestrator {
         List<String> values = new ArrayList<>();
         for (com.fasterxml.jackson.databind.JsonNode element : node) {
             if (!element.isTextual()) {
-                throw new IllegalArgumentException("claim field must be a string array");
+                throw new IllegalArgumentException("usedFactIds must be a string array");
             }
             values.add(element.asText());
         }
         return values;
     }
 
-    /** M3: the persisted explanation is the deterministic composition of verified claim texts. */
-    private static String verifiedClaimsText(ModelDraftV1 draft) {
-        StringBuilder builder = new StringBuilder();
-        for (ModelClaimV1 claim : draft.claims()) {
-            if (builder.length() > 0) {
-                builder.append('\n');
-            }
-            builder.append(claim.text());
-        }
-        return builder.toString();
-    }
-
-    /** M3: the persisted claim references the facts the claim cited (factIds -> fact evidenceRefs). */
-    private static List<String> claimRefsOf(ModelClaimV1 claim, List<EvidencePackV1.Fact> facts) {
-        List<String> refs = new ArrayList<>();
-        Set<String> factIdSet = new LinkedHashSet<>(claim.factIds());
-        for (EvidencePackV1.Fact fact : facts) {
-            if (factIdSet.contains(fact.factId())) {
-                refs.addAll(fact.evidenceRefs());
-            }
-        }
-        refs.addAll(claim.evidenceRefs());
-        return refs.stream().distinct().toList();
+    /** Java resolves evidence refs exclusively from the selected factIds. */
+    private static List<String> claimRefsOf(
+            List<String> usedFactIds, List<EvidencePackV1.Fact> facts
+    ) {
+        Set<String> selected = new LinkedHashSet<>(usedFactIds);
+        return facts.stream().filter(fact -> selected.contains(fact.factId()))
+                .flatMap(fact -> fact.evidenceRefs().stream()).distinct().toList();
     }
 
     private static List<EvidencePackV1.Fact> buildFacts(
@@ -740,6 +697,23 @@ public final class AgentOrchestrator {
                                 calculationVersion, calendarVersion, configVersions,
                                 actualSourceName, sourceFingerprint,
                                 rowRefs));
+                        if (WarningExplainToolAdapter.TOOL_NAME.equals(result.toolName())) {
+                            EvidencePackV1.Fact warningFact = facts.get(facts.size() - 1);
+                            addDerivedFact(facts, "fact-" + (factId++), "warning.baselineValue",
+                                    row.get("baselineValue"), warningFact.unit(), warningFact);
+                            addDerivedFact(facts, "fact-" + (factId++), "warning.thresholdPercent",
+                                    row.get("thresholdPercent"), "%", warningFact);
+                            addDerivedFact(facts, "fact-" + (factId++), "warning.riskLevel",
+                                    row.get("riskLevel"), "risk", warningFact);
+                            addDerivedFact(facts, "fact-" + (factId++), "warning.id",
+                                    row.get("warningId"), "id", warningFact);
+                            addDerivedFact(facts, "fact-" + (factId++), "warning.acknowledged",
+                                    row.get("acknowledgedStatus"), "status", warningFact);
+                            addDerivedFact(facts, "fact-" + (factId++), "warning.acknowledgedAt",
+                                    row.get("acknowledgedAt"), "datetime", warningFact);
+                            addDerivedFact(facts, "fact-" + (factId++), "warning.disposition",
+                                    row.get("dispositionNote"), "text", warningFact);
+                        }
                     }
                 }
             }
@@ -753,6 +727,28 @@ public final class AgentOrchestrator {
                     .max(java.util.Comparator.comparing(EvidencePackV1.Fact::businessDate))
                     .orElse(dailyFacts.get(dailyFacts.size() - 1));
             facts.add(copyFact("fact-" + (factId++), "history.latest", latest));
+            EvidencePackV1.Fact earliest = dailyFacts.stream()
+                    .filter(fact -> fact.businessDate() != null)
+                    .min(java.util.Comparator.comparing(EvidencePackV1.Fact::businessDate))
+                    .orElse(dailyFacts.get(0));
+            if (dailyFacts.size() >= 2 && earliest.value() != null && latest.value() != null) {
+                try {
+                    java.math.BigDecimal startValue = new java.math.BigDecimal(earliest.value());
+                    java.math.BigDecimal endValue = new java.math.BigDecimal(latest.value());
+                    String direction = endValue.compareTo(startValue) > 0 ? "UPWARD"
+                            : endValue.compareTo(startValue) < 0 ? "DOWNWARD" : "FLAT";
+                    List<String> trendRefs = dailyFacts.stream()
+                            .flatMap(fact -> fact.evidenceRefs().stream()).distinct().toList();
+                    facts.add(standardFact("fact-" + (factId++), "history.trend.direction",
+                            latest, earliest.businessDate(), latest.businessDate(),
+                            direction, "direction", trendRefs));
+                    facts.add(standardFact("fact-" + (factId++), "history.trend.change",
+                            latest, earliest.businessDate(), latest.businessDate(),
+                            endValue.subtract(startValue).toPlainString(), latest.unit(), trendRefs));
+                } catch (NumberFormatException ignored) {
+                    // Non-numeric series still retain their published facts; no trend is invented.
+                }
+            }
 
             List<String> dailyRefs = dailyFacts.stream()
                     .flatMap(fact -> fact.evidenceRefs().stream()).distinct().toList();
@@ -792,6 +788,22 @@ public final class AgentOrchestrator {
             }
         }
         return List.copyOf(facts);
+    }
+    private static void addDerivedFact(
+            List<EvidencePackV1.Fact> facts, String factId, String factType,
+            Object rawValue, String unit, EvidencePackV1.Fact source
+    ) {
+        if (rawValue == null || String.valueOf(rawValue).isBlank()
+                || "null".equals(String.valueOf(rawValue))) {
+            return;
+        }
+        facts.add(new EvidencePackV1.Fact(
+                factId, factType, source.itemId(), source.businessDate(),
+                source.periodStart(), source.periodEnd(), String.valueOf(rawValue), unit,
+                source.currency(), source.qualityStatus(), source.validationStatus(),
+                source.validationVersion(), source.calculationVersion(), source.calendarVersion(),
+                source.configVersions(), source.actualSourceName(), source.sourceFingerprint(),
+                source.evidenceRefs()));
     }
     private static EvidencePackV1.Fact copyFact(
             String factId, String factType, EvidencePackV1.Fact source

@@ -15,11 +15,11 @@ import java.util.regex.Pattern;
 /**
  * M1/M3/M5 AgentResponseVerifier: the LLM output is an UNTRUSTED MODEL DRAFT. Verification rules:
  *
- * M1/M3: every claim must reference factIds/evidenceRefs that EXIST in the current EvidencePack,
- * and each claim's references must SUPPORT the numbers stated in that claim (an unrelated
- * reference never validates the whole draft). Every business number in the draft - integer,
- * one-decimal, multi-decimal, negative, percentage, thousands-separated or scientific notation -
- * must strictly match a verified deterministic fact value; fabricated numbers reject the draft.
+ * Production contract: Java builds the StandardFactPack; the cloud may return only polished
+ * {@code answer + usedFactIds}. Every selected id must exist in the current pack, every number,
+ * date and source in the answer must be supported by those selected facts, and controlled
+ * trend/risk/acknowledgement wording must not contradict them. Java attaches evidence refs only
+ * after verification. Historical structured-claim verification remains for frozen attack tests.
  *
  * M5: `requireNoSecret` scans USER INPUT (question/args) before EvidencePack/LLM/persistence.
  *
@@ -75,7 +75,7 @@ public final class AgentResponseVerifier {
         for (EvidencePackV1.Fact fact : evidencePack.facts()) {
             knownFactIds.add(fact.factId());
             knownVerifiedEvidenceRefs.addAll(fact.evidenceRefs());
-            facts.add(new EvidenceFact(fact.factId(), fact.value(), fact.itemId(), fact.unit(), fact.currency(),
+            facts.add(new EvidenceFact(fact.factId(), fact.factType(), fact.value(), fact.itemId(), fact.unit(), fact.currency(),
                     fact.evidenceRefs(), fact.businessDate(), fact.periodStart(), fact.periodEnd(),
                     fact.actualSourceName()));
         }
@@ -85,6 +85,11 @@ public final class AgentResponseVerifier {
             }
         }
 
+        // Current production cloud contract: answer + usedFactIds only. Java owns the
+        // StandardFactPack and re-attaches evidence after this verification succeeds.
+        if (!draft.usedFactIds().isEmpty()) {
+            return verifyUsedFactsAnswer(draft, facts, knownFactIds);
+        }
         // M3: unknown references anywhere in the draft reject the whole draft.
         String unknownRef = findUnknownReference(draft.rawText(), knownFactIds, knownVerifiedEvidenceRefs);
         if (unknownRef != null) {
@@ -131,9 +136,123 @@ public final class AgentResponseVerifier {
         return Verification.accepted();
     }
 
+    private Verification verifyUsedFactsAnswer(
+            ModelDraftV1 draft, List<EvidenceFact> facts, Set<String> knownFactIds
+    ) {
+        if (draft.rawText().isBlank()) {
+            return Verification.rejected("EMPTY_ANSWER");
+        }
+        LinkedHashSet<String> selectedIds = new LinkedHashSet<>();
+        for (String factId : draft.usedFactIds()) {
+            if (factId == null || factId.isBlank() || !knownFactIds.contains(factId)) {
+                return Verification.rejected("UNKNOWN_FACT_REFERENCE");
+            }
+            if (!selectedIds.add(factId)) {
+                return Verification.rejected("DUPLICATE_FACT_REFERENCE");
+            }
+        }
+        if (FACT_REF.matcher(draft.rawText()).find() || EVIDENCE_REF.matcher(draft.rawText()).find()) {
+            return Verification.rejected("MODEL_REFERENCE_LEAKAGE");
+        }
+        List<EvidenceFact> selected = facts.stream()
+                .filter(fact -> selectedIds.contains(fact.factId()))
+                .toList();
+        List<String> sourceNames = selected.stream().map(EvidenceFact::actualSourceName)
+                .filter(Objects::nonNull).filter(value -> !value.isBlank()).distinct().toList();
+        ModelClaimV1 synthetic = new ModelClaimV1(
+                "cloud-answer", draft.rawText(), List.copyOf(selectedIds), List.of(),
+                sourceNames, List.of());
+        if (!everyNumberSupportedByClaimFacts(synthetic, selected)
+                || !claimDateAndSourceSupported(synthetic, selected)
+                || !claimSourceDeclarationsClosed(synthetic, selected)) {
+            return Verification.rejected("UNSUPPORTED_CLAIM_REFERENCE");
+        }
+        if (contradictsControlledSemantics(draft.rawText(), selected)) {
+            return Verification.rejected("CONTRADICTED_STANDARD_FACT");
+        }
+        if (!hasSemanticAnchor(draft.rawText(), selected)) {
+            return Verification.rejected("UNSUPPORTED_CLAIM_REFERENCE");
+        }
+        return Verification.accepted();
+    }
+
+    /** At least one selected Java fact must be visibly represented in the polished answer. */
+    private static boolean hasSemanticAnchor(String answer, List<EvidenceFact> selected) {
+        String lower = answer.toLowerCase(java.util.Locale.ROOT);
+        for (EvidenceFact fact : selected) {
+            for (String literal : new String[]{
+                    fact.value(), fact.itemId(), fact.unit(), fact.currency(), fact.businessDate(),
+                    fact.actualSourceName()}) {
+                if (literal != null && !literal.isBlank() && answer.contains(literal)) {
+                    return true;
+                }
+            }
+            String value = fact.value() == null ? "" : fact.value().toUpperCase(java.util.Locale.ROOT);
+            if ("history.trend.direction".equals(fact.factType())) {
+                if (("UPWARD".equals(value) && (answer.contains("上升") || answer.contains("上涨")))
+                        || ("DOWNWARD".equals(value) && (answer.contains("下降") || answer.contains("下跌")))
+                        || ("FLAT".equals(value) && (answer.contains("持平") || answer.contains("平稳")))) {
+                    return true;
+                }
+            }
+            if ("warning.riskLevel".equals(fact.factType())) {
+                if (lower.contains(value.toLowerCase(java.util.Locale.ROOT))
+                        || ("HIGH".equals(value) && (answer.contains("高风险") || answer.contains("高等级") || answer.contains("严重")))
+                        || ("MEDIUM".equals(value) && (answer.contains("中风险") || answer.contains("中等风险")))
+                        || ("LOW".equals(value) && (answer.contains("低风险") || answer.contains("较低风险")))) {
+                    return true;
+                }
+            }
+            if ("warning.acknowledged".equals(fact.factType())
+                    && (("ACKNOWLEDGED".equals(value) && (answer.contains("已确认") || answer.contains("已处理")))
+                    || ("PENDING".equals(value) && (answer.contains("待处理") || answer.contains("未确认"))))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Reject polished prose that states the opposite of a selected Java-controlled conclusion. */
+    private static boolean contradictsControlledSemantics(String answer, List<EvidenceFact> selected) {
+        for (EvidenceFact fact : selected) {
+            String value = fact.value() == null ? "" : fact.value().toUpperCase(java.util.Locale.ROOT);
+            if ("history.trend.direction".equals(fact.factType())) {
+                if (("UPWARD".equals(value) && containsAny(answer, "下降", "下跌", "走低"))
+                        || ("DOWNWARD".equals(value) && containsAny(answer, "上升", "上涨", "走高"))
+                        || ("FLAT".equals(value) && containsAny(answer, "上升", "上涨", "下降", "下跌"))) {
+                    return true;
+                }
+            }
+            if ("warning.acknowledged".equals(fact.factType())) {
+                if (("ACKNOWLEDGED".equals(value) && containsAny(answer, "待处理", "未确认", "未处理"))
+                        || ("PENDING".equals(value) && containsAny(answer, "已确认", "已处理"))) {
+                    return true;
+                }
+            }
+            if ("warning.riskLevel".equals(fact.factType())) {
+                if (("HIGH".equals(value) && containsAny(answer, "低风险", "中风险"))
+                        || ("MEDIUM".equals(value) && containsAny(answer, "高风险", "低风险"))
+                        || ("LOW".equals(value) && containsAny(answer, "高风险", "中风险"))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean containsAny(String text, String... values) {
+        for (String value : values) {
+            if (text.contains(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** M3 R4: any secret in ANY persistable structured field rejects the whole draft. */
     private boolean secretInAnyPersistableField(ModelDraftV1 draft) {
-        if (findSecret(draft.rawText()) != null) {
+        if (findSecret(draft.rawText()) != null
+                || findSecret(String.join(" ", draft.usedFactIds())) != null) {
             return true;
         }
         for (ModelClaimV1 claim : draft.claims()) {
@@ -561,7 +680,7 @@ public final class AgentResponseVerifier {
     }
 
     private record EvidenceFact(
-            String factId, String value, String itemId, String unit, String currency,
+            String factId, String factType, String value, String itemId, String unit, String currency,
             List<String> evidenceRefs, String businessDate, String periodStart, String periodEnd,
             String actualSourceName
     ) {

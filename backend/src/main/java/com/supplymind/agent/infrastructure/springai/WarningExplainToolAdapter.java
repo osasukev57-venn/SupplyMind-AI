@@ -7,6 +7,8 @@ import com.supplymind.foundation.codec.JsonV1Codec;
 import com.supplymind.foundation.storage.DataPaths;
 import com.supplymind.foundation.storage.DataRoot;
 import com.supplymind.foundation.storage.ManifestVerifier;
+import com.supplymind.warning.WarningAcknowledgementV1;
+import com.supplymind.warning.WarningAckStore;
 import com.supplymind.warning.WarningRecordV1;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
@@ -34,9 +36,15 @@ public final class WarningExplainToolAdapter {
     public static final String TOOL_VERSION = "1.0";
 
     private final DataRoot dataRoot;
+    private final WarningAckStore ackStore;
 
     public WarningExplainToolAdapter(DataRoot dataRoot) {
+        this(dataRoot, null);
+    }
+
+    public WarningExplainToolAdapter(DataRoot dataRoot, WarningAckStore ackStore) {
         this.dataRoot = dataRoot;
+        this.ackStore = ackStore;
     }
 
     @Tool(name = TOOL_NAME, description = "Explain persisted warning evidence for a series, optionally filtered by warning month (yyyy-MM).")
@@ -76,9 +84,33 @@ public final class WarningExplainToolAdapter {
                 entry.put("riskLevel", warning.riskLevel().name());
                 entry.put("dataStatus", warning.dataStatus());
                 entry.put("demoRule", warning.demoRule());
+                entry.put("thresholdPercent", new java.math.BigDecimal(warning.threshold())
+                        .movePointRight(2).stripTrailingZeros().toPlainString() + "%");
+                java.util.Optional<WarningAcknowledgementV1> acknowledgement = java.util.Optional.empty();
+                if (ackStore != null) {
+                    try {
+                        acknowledgement = ackStore.readVerified(warning);
+                    } catch (RuntimeException invalidAck) {
+                        entry.put("ackVerificationStatus", "INVALID");
+                    }
+                }
+                if (acknowledgement.isPresent()) {
+                    WarningAcknowledgementV1 ack = acknowledgement.get();
+                    String ackRef = DataPaths.warningAckRef(warning.warningMonth(), warning.warningId());
+                    entry.put("acknowledgedStatus", "ACKNOWLEDGED");
+                    entry.put("acknowledgedAt", ack.acknowledgedAt().toString());
+                    entry.put("dispositionNote", ack.dispositionNote());
+                    entry.put("ackRef", ackRef);
+                    entry.put("evidenceRefs", List.of(evidenceRef, ackRef));
+                    evidenceRefs.add(ackRef);
+                } else {
+                    entry.put("acknowledgedStatus", "PENDING");
+                }
                 // Row-scoped binding: one warning row may only support a projection through
                 // its own immutable warning evidence.
-                entry.put("evidenceRefs", List.of(evidenceRef));
+                if (!entry.containsKey("evidenceRefs")) {
+                    entry.put("evidenceRefs", List.of(evidenceRef));
+                }
                 rows.add(entry);
                 evidenceRefs.add(evidenceRef);
             }
@@ -109,6 +141,7 @@ public final class WarningExplainToolAdapter {
                 files.filter(Files::isRegularFile)
                         .filter(path -> path.getFileName().toString().endsWith(".json"))
                         .filter(path -> !path.getFileName().toString().endsWith(".manifest.json"))
+                        .filter(path -> !path.getFileName().toString().endsWith(".ack.json"))
                         .forEach(path -> {
                             String warningId = path.getFileName().toString()
                                     .substring(0, path.getFileName().toString().length() - ".json".length());

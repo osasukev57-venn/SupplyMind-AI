@@ -83,10 +83,9 @@ class AgentPipelineIntegrationTest {
     @Test
     void llmSuccessPathBuildsEvidencePackAndPersistsReport() throws Exception {
         Harness harness = harness("pipeline-llm");
-        // M3 strict contract: a successful Phase B must return the JSON claims envelope.
+        // Fact-first contract: the cloud returns language plus selected Java factIds only.
         AgentOrchestrator orchestrator = orchestrator(harness, new FixedAnswerChatModel(
-                "{\"answer\":\"LLM 解释\",\"claims\":[{\"claimId\":\"c1\",\"text\":\"LLM 解释\","
-                        + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[],\"sourceNames\":[],\"businessDates\":[]}]}"));
+                "{\"answer\":\"FX.USD.CNY.PBOC_MID 已有可用的正式数据。\",\"usedFactIds\":[\"fact-0\"]}"));
         AgentOrchestrator.AgentQueryInput input = new AgentOrchestrator.AgentQueryInput(
                 "请分析 2026-08-01 至 2026-08-10 的美元/人民币趋势", FX_ITEM,
                 "2026-08-01", "2026-08-10", null, null, null, null, null, "FORMAL");

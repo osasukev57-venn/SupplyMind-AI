@@ -3,12 +3,13 @@ import { computed, onMounted, ref } from 'vue'
 import {
   acknowledgeWarning,
   evaluateAllWarningRules,
+  fetchWarningAck,
   fetchWarningRules,
   fetchWarnings,
   resetWarningRule,
   updateWarningRule
 } from '../api/warning'
-import type { RuleEvaluationView, RuleView, WarningView } from '../types/warning'
+import type { AckView, RuleEvaluationView, RuleView, WarningView } from '../types/warning'
 import StatusBadge from '../components/StatusBadge.vue'
 
 /**
@@ -36,6 +37,9 @@ const editDescription = ref('')
 
 const ackNote = ref('')
 const ackFor = ref<WarningView | null>(null)
+const ackDetail = ref<AckView | null>(null)
+const ackDetailFor = ref<WarningView | null>(null)
+const ackDetailLoading = ref(false)
 
 const selectedRule = computed(() => rules.value.find(rule => rule.itemId === editItemId.value) ?? null)
 const evaluationByItem = computed(() => new Map(evaluations.value.map(result => [result.rule.itemId, result])))
@@ -175,6 +179,19 @@ function openAck(warning: WarningView) {
   ackNote.value = ''
 }
 
+async function viewAck(warning: WarningView) {
+  ackDetailLoading.value = true
+  errorMessage.value = null
+  const response = await fetchWarningAck(warning.itemId, warning.warningId)
+  ackDetailLoading.value = false
+  if (!response?.acknowledged || !response.ack) {
+    errorMessage.value = '确认记录不可用或未通过完整性校验'
+    return
+  }
+  ackDetailFor.value = warning
+  ackDetail.value = response.ack
+}
+
 async function submitAck() {
   if (!ackFor.value || !ackNote.value.trim()) {
     errorMessage.value = '请填写处置备注'
@@ -185,7 +202,9 @@ async function submitAck() {
     errorMessage.value = '确认失败：服务暂时不可用，或备注不符合要求'
     return
   }
-  notice.value = `已确认 ${ack.warningId}`
+  notice.value = `已确认 ${ack.warningId}，确认记录已保存，可随时查询`
+  ackDetailFor.value = ackFor.value
+  ackDetail.value = ack
   ackFor.value = null
   await loadWarnings()
 }
@@ -360,12 +379,15 @@ onMounted(() => {
                 <td>{{ warning.ruleId }}<div class="muted">{{ warning.ruleVersion }}</div></td>
                 <td>{{ warning.periodStart }} → {{ warning.periodEnd }}</td>
                 <td class="num">{{ warning.baselineValue }} → {{ warning.currentValue }}</td>
-                <td class="num">{{ warning.threshold }}</td>
+                <td class="num">{{ warning.thresholdPercent }}%</td>
                 <td><StatusBadge :status="warning.riskLevel ?? 'UNKNOWN'" /></td>
                 <td><StatusBadge :status="warning.acknowledged ? 'ACKNOWLEDGED' : 'PENDING'" /></td>
                 <td>
                   <button v-if="!warning.acknowledged" class="btn-secondary" @click="openAck(warning)">
                     确认处理
+                  </button>
+                  <button v-else class="btn-secondary" :disabled="ackDetailLoading" @click="viewAck(warning)">
+                    查看确认记录
                   </button>
                 </td>
               </tr>
@@ -376,6 +398,26 @@ onMounted(() => {
       </div>
     </section>
 
+    <section v-if="ackDetailFor && ackDetail" class="section ack-audit">
+      <div class="section-head">
+        <h2>确认记录</h2>
+        <button class="btn-ghost" @click="ackDetailFor = null; ackDetail = null">关闭</button>
+      </div>
+      <div class="section-body">
+        <div class="ack-grid">
+          <div><span>预警编号</span><strong>{{ ackDetail.warningId }}</strong></div>
+          <div><span>处理状态</span><StatusBadge :status="ackDetail.status" /></div>
+          <div><span>确认时间</span><strong>{{ ackDetail.acknowledgedAt ?? '—' }}</strong></div>
+          <div class="ack-note"><span>处置备注</span><strong>{{ ackDetail.dispositionNote }}</strong></div>
+        </div>
+        <details class="audit-details">
+          <summary>查看审计绑定</summary>
+          <div class="id-cell">原预警：{{ ackDetail.warningRef }}</div>
+          <div class="id-cell">原文件 SHA-256：{{ ackDetail.warningFileSha256 }}</div>
+          <div v-if="ackDetailFor.ackRef" class="id-cell">确认记录：{{ ackDetailFor.ackRef }}</div>
+        </details>
+      </div>
+    </section>
     <section v-if="ackFor" class="section">
       <div class="section-head"><h2>确认处理 {{ ackFor.warningId }}</h2></div>
       <div class="section-body">
@@ -410,6 +452,25 @@ textarea:focus {
   border-color: var(--sm-focus);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--sm-focus) 22%, transparent);
 }
+.ack-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.ack-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--sm-border);
+  border-radius: var(--sm-radius);
+  background: var(--sm-surface-subtle);
+}
+.ack-grid span { color: var(--sm-muted); font-size: 12px; }
+.ack-note { grid-column: 1 / -1; }
+.audit-details { margin-top: 14px; color: var(--sm-muted); }
+.audit-details .id-cell { margin-top: 8px; }
+@media (max-width: 760px) { .ack-grid { grid-template-columns: 1fr; } }
 .note-field {
   display: flex;
   flex-direction: column;

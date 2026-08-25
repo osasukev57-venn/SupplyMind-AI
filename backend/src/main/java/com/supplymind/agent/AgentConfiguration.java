@@ -20,6 +20,7 @@ import com.supplymind.config.ConfigManagementService;
 import com.supplymind.foundation.storage.AtomicFileStore;
 import com.supplymind.foundation.storage.DataRoot;
 import com.supplymind.history.HistoryQueryService;
+import com.supplymind.warning.WarningAckStore;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,8 +70,8 @@ public class AgentConfiguration {
     }
 
     @Bean
-    WarningExplainToolAdapter warningExplainToolAdapter(DataRoot dataRoot) {
-        return new WarningExplainToolAdapter(dataRoot);
+    WarningExplainToolAdapter warningExplainToolAdapter(DataRoot dataRoot, WarningAckStore warningAckStore) {
+        return new WarningExplainToolAdapter(dataRoot, warningAckStore);
     }
 
     @Bean

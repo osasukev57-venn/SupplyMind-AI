@@ -50,9 +50,9 @@ class Day6FinalStageStrictEnvelopeAttackTest {
     }
 
     @Test
-    void d_missingOrEmptyClaimsAreRejectedAsMalformed() {
+    void d_missingOrEmptyUsedFactIdsAreRejectedAsMalformed() {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "no-claims");
-        for (String envelope : List.of("{\"answer\":\"ok\"}", "{\"answer\":\"ok\",\"claims\":[]}")) {
+        for (String envelope : List.of("{\"answer\":\"ok\"}", "{\"answer\":\"ok\",\"usedFactIds\":[]}")) {
             AgentOrchestrator.AgentResult result = fixture.orchestrator(
                     request -> LLMService.LLMResponse.success(envelope),
                     new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
@@ -88,9 +88,7 @@ class Day6FinalStageStrictEnvelopeAttackTest {
         // binding must reject the claim even though the first value is supported.
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"ok\",\"claims\":[{\"claimId\":\"c1\","
-                                + "\"text\":\"值为 " + pair[0] + " 和 999999.999\","
-                                + "\"factIds\":[\"" + pair[2] + "\"],\"evidenceRefs\":[]}]}"),
+                        "{\"answer\":\"值为 " + pair[0] + " 和 999999.999\"," + "\"usedFactIds\":[\"" + pair[2] + "\"]}"),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
         assertTrue(result.degraded(),
                 "a claim stating value B must not pass because value A is supported by its fact");
@@ -124,6 +122,30 @@ class Day6FinalStageStrictEnvelopeAttackTest {
         assertTrue("UNSUPPORTED_CLAIM_REFERENCE".equals(v.reason()), "reason=" + v.reason());
     }
 
+    @Test
+    void selectedJavaTrendFactCannotBePolishedIntoTheOppositeDirection() {
+        AgentResponseVerifier verifier = new AgentResponseVerifier(List.of());
+        EvidencePackV1.Fact trend = new EvidencePackV1.Fact(
+                "fact-trend", "history.trend.direction", Day6R2Fixture.ITEM,
+                "2026-08-10", "2026-08-01", "2026-08-10", "UPWARD", null, null,
+                "true", "VERIFIED", "pboc-basic-validation-v1", "arithmetic-mean-v1",
+                "weekday-asia-shanghai-v1", List.of("1"), "source", "fp",
+                List.of("processed/daily/x.csv"));
+        EvidencePackV1 pack = new EvidencePackV1(
+                "AGENT-EVIDENCE-SCHEMA-V1", "pack-trend", "req-trend", "FORMAL", "q",
+                Day6R2Fixture.AT,
+                new EvidencePackV1.Scope(List.of(Day6R2Fixture.ITEM), "2026-08-10", null, null,
+                        "Asia/Shanghai"),
+                List.of(), List.of(trend), List.of(), List.of(), List.of(), List.of());
+        com.supplymind.agent.application.ModelDraftV1 draft =
+                new com.supplymind.agent.application.ModelDraftV1(
+                        "req-trend", "该监测项呈下降趋势。", List.of("fact-trend"), List.of());
+
+        AgentResponseVerifier.Verification verification = verifier.verify(draft, pack);
+
+        assertFalse(verification.verified());
+        assertEquals("CONTRADICTED_STANDARD_FACT", verification.reason());
+    }
     private static EvidencePackV1.Fact fact(String factId, String value) {
         return new EvidencePackV1.Fact(factId, "history.query", Day6R2Fixture.ITEM,
                 "2026-08-10", null, null, value, "CNY/1 USD", "CNY", "true", "VERIFIED",
@@ -137,10 +159,7 @@ class Day6FinalStageStrictEnvelopeAttackTest {
         String[] pair = differentValuePair(fixture);
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"ok\",\"claims\":[{\"claimId\":\"c1\","
-                                + "\"text\":\"值为 " + pair[0] + " 和 " + pair[1] + "\","
-                                + "\"factIds\":[\"" + pair[2] + "\",\"" + pair[3] + "\"],"
-                                + "\"evidenceRefs\":[]}]}"),
+                        "{\"answer\":\"值为 " + pair[0] + " 和 " + pair[1] + "\"," + "\"usedFactIds\":[\"" + pair[2] + "\",\"" + pair[3] + "\"]}"),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
         assertFalse(result.degraded(),
                 "each stated value supported by its own referenced fact must pass (reason="
@@ -153,11 +172,10 @@ class Day6FinalStageStrictEnvelopeAttackTest {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "claim-wrong");
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"ok\",\"claims\":[{\"claimId\":\"c1\","
-                                + "\"text\":\"值为 999999.999\",\"factIds\":[\"fact-0\"],\"evidenceRefs\":[]}]}"),
+                        "{\"answer\":\"值为 999999.999\",\"usedFactIds\":[\"fact-unknown\"]}"),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
         assertTrue(result.degraded(), "a wrong claim must reject even when the answer is fine");
-        assertTrue(result.degradeReason().contains("UNSUPPORTED_CLAIM_REFERENCE"),
+        assertTrue(result.degradeReason().contains("UNKNOWN_FACT_REFERENCE"),
                 "reason=" + result.degradeReason());
         assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
     }
@@ -167,8 +185,7 @@ class Day6FinalStageStrictEnvelopeAttackTest {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "answer-fabrication");
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"值为 999999.999\",\"claims\":[{\"claimId\":\"c1\","
-                                + "\"text\":\"ok\",\"factIds\":[\"fact-0\"],\"evidenceRefs\":[]}]}"),
+                        "{\"answer\":\"值为 999999.999\",\"usedFactIds\":[\"fact-0\"]}"),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
         assertTrue(result.degraded(),
                 "an answer that adds a fabricated business fact must never be persisted");
@@ -184,9 +201,7 @@ class Day6FinalStageStrictEnvelopeAttackTest {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "unknown-source");
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"ok\",\"claims\":[{\"claimId\":\"c1\",\"text\":\"ok\","
-                                + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[],"
-                                + "\"sourceNames\":[\"fabricated source\"],\"businessDates\":[]}]}"),
+                        "{\"answer\":\"来源为 fabricated source。\",\"usedFactIds\":[\"fact-0\"]}"),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
         assertTrue(result.degraded(), "an unknown sourceName must reject the claim");
         assertTrue(result.degradeReason().contains("UNSUPPORTED_CLAIM_REFERENCE"),
@@ -199,9 +214,7 @@ class Day6FinalStageStrictEnvelopeAttackTest {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "unsupported-date");
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"ok\",\"claims\":[{\"claimId\":\"c1\",\"text\":\"ok\","
-                                + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[],"
-                                + "\"sourceNames\":[],\"businessDates\":[\"2026-07-01\"]}]}"),
+                        "{\"answer\":\"业务日期为 2026-07-01。\",\"usedFactIds\":[\"fact-0\"]}"),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
         assertTrue(result.degraded(),
                 "a businessDate the referenced facts do not cover must reject the claim");

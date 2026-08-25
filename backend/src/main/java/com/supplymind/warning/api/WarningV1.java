@@ -109,6 +109,7 @@ public final class WarningV1 {
             String periodStart,
             String periodEnd,
             String threshold,
+            String thresholdPercent,
             String currentValue,
             String baselineValue,
             String riskLevel,
@@ -190,7 +191,7 @@ public final class WarningV1 {
         return new WarningView(
                 warning.warningId(), warning.ruleId(), warning.ruleVersion(), warning.itemId(),
                 warning.grain(), warning.periodStart(), warning.periodEnd(), warning.threshold(),
-                warning.currentValue(), warning.baselineValue(),
+                percent(warning.threshold()), warning.currentValue(), warning.baselineValue(),
                 warning.riskLevel() == null ? null : warning.riskLevel().name(),
                 warning.evidenceRefs(), warning.dataStatus(),
                 warning.evaluatedAt() == null ? null : warning.evaluatedAt().toString(),

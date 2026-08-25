@@ -64,9 +64,7 @@ class Day6FinalStageRowToRefConfigTest {
                     String valueB = request.facts().size() > 1
                             ? request.facts().get(1).value() : "200.00000000";
                     return LLMService.LLMResponse.success(
-                            "{\"answer\":\"ok\",\"claims\":[{\"claimId\":\"c1\","
-                                    + "\"text\":\"值为 " + valueB + "\","
-                                    + "\"factIds\":[\"fact-0\"],\"evidenceRefs\":[]}]}");
+                            "{\"answer\":\"值为 " + valueB + "\",\"usedFactIds\":[\"fact-0\"]}");
                 }, new AgentResponseVerifier(List.of())).answer(fixture.rangeQuery());
 
         assertTrue(result.degraded(),

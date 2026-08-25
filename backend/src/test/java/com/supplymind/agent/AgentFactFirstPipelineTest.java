@@ -38,21 +38,12 @@ class AgentFactFirstPipelineTest {
             LLMService.LlmFact completeness =
                     fact(request, "Java-computed completeness percentage", null);
             String json = """
-                    {"answer":"可信事实说明","claims":[
-                      {"claimId":"latest","text":"最新已发布值为 %s %s，业务日期为 %s。",
-                       "factIds":["%s"],"evidenceRefs":[],"sourceNames":[],"businessDates":["%s"]},
-                      {"claimId":"average","text":"持久化月均值为 %s。",
-                       "factIds":["%s"],"evidenceRefs":[],"sourceNames":[],"businessDates":[]},
-                      {"claimId":"quality","text":"已发布 %s 条，完整率为 %s。",
-                       "factIds":["%s","%s"],"evidenceRefs":[],"sourceNames":[],"businessDates":[]},
-                      {"claimId":"source","text":"实际来源为 %s。",
-                       "factIds":["%s"],"evidenceRefs":[],"sourceNames":["%s"],"businessDates":[]}
-                    ]}
+                    {"answer":"最新已发布值为 %s %s，业务日期为 %s；持久化月均值为 %s；已发布 %s 条，完整率为 %s；实际来源为 %s。",
+                     "usedFactIds":["%s","%s","%s","%s"]}
                     """.formatted(
-                    latest.value(), latest.unit(), latest.businessDate(), latest.factId(),
-                    latest.businessDate(), average.value(), average.factId(),
-                    rowCount.value(), completeness.value(), rowCount.factId(), completeness.factId(),
-                    latest.actualSourceName(), latest.factId(), latest.actualSourceName());
+                    latest.value(), latest.unit(), latest.businessDate(), average.value(),
+                    rowCount.value(), completeness.value(), latest.actualSourceName(),
+                    latest.factId(), average.factId(), rowCount.factId(), completeness.factId());
             return LLMService.LLMResponse.success(json);
         }, new AgentResponseVerifier(List.of()));
 
@@ -71,7 +62,7 @@ class AgentFactFirstPipelineTest {
                         && "100%".equals(fact.value())));
         assertFalse(result.degraded(), "valid fact-selected language must pass");
         assertEquals("LLM", result.report().generatedBy());
-        assertEquals(4, result.report().claims().size());
+        assertEquals(1, result.report().claims().size());
         assertTrue(result.report().claims().stream()
                 .allMatch(claim -> !claim.evidenceRefs().isEmpty()),
                 "Java must bind evidence from cited factIds");

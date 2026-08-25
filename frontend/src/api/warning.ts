@@ -1,5 +1,6 @@
 import { getJson, http } from './client'
 import type {
+  AckStatusResponse,
   AckView,
   EvaluateRequest,
   EvaluateResponse,
@@ -81,6 +82,12 @@ export async function acknowledgeWarning(
   }
 }
 
+export function fetchWarningAck(itemId: string, warningId: string): Promise<AckStatusResponse | null> {
+  const params = new URLSearchParams({ itemId })
+  return getJson<AckStatusResponse>(
+    `/warnings/${encodeURIComponent(warningId)}/ack?${params.toString()}`
+  )
+}
 /** Legacy demo endpoint retained for old clients/tests; not used by the formal warning page. */
 export async function evaluateWarning(request: EvaluateRequest): Promise<EvaluateResponse | null> {
   try {

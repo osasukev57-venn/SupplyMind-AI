@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 
 vi.mock('../../api/warning', () => ({
   fetchWarnings: vi.fn(),
+  fetchWarningAck: vi.fn(),
   fetchWarningRules: vi.fn(),
   evaluateAllWarningRules: vi.fn(),
   updateWarningRule: vi.fn(),
@@ -15,6 +16,7 @@ import WarningView from '../WarningView.vue'
 import {
   acknowledgeWarning,
   evaluateAllWarningRules,
+  fetchWarningAck,
   fetchWarningRules,
   fetchWarnings,
   resetWarningRule,
@@ -49,6 +51,7 @@ const warning: WarningViewType = {
   periodStart: '2026-08-17',
   periodEnd: '2026-08-24',
   threshold: '0.05',
+  thresholdPercent: '5',
   currentValue: '24900.00',
   baselineValue: '23000.00',
   riskLevel: 'HIGH',
@@ -156,6 +159,29 @@ describe('WarningView formal rule closure', () => {
     wrapper.unmount()
   })
 
+  it('queries and displays the persisted acknowledgement audit record', async () => {
+    const acknowledged = { ...warning, acknowledged: true, ackRef: 'warning/2026-08/w1.ack.json' }
+    vi.mocked(fetchWarnings).mockResolvedValue({
+      itemId: rule.itemId, from: '2026-06-01', to: '2026-08-25', warnings: [acknowledged]
+    })
+    vi.mocked(fetchWarningAck).mockResolvedValue({
+      acknowledged: true,
+      ack: {
+        warningId: 'w1', warningRef: 'warning/2026-08/w1.json',
+        warningFileSha256: 'a'.repeat(64), status: 'ACKNOWLEDGED',
+        acknowledgedAt: '2026-08-25T02:00:00+08:00', dispositionNote: '已核实并处理'
+      }
+    })
+    const wrapper = mount(WarningView, { attachTo: document.body })
+    await flushPromises()
+    await wrapper.findAll('button').find(button => button.text() === '查看确认记录')?.trigger('click')
+    await flushPromises()
+    expect(fetchWarningAck).toHaveBeenCalledWith(rule.itemId, 'w1')
+    expect(wrapper.text()).toContain('2026-08-25T02:00:00+08:00')
+    expect(wrapper.text()).toContain('已核实并处理')
+    expect(wrapper.text()).toContain('原文件 SHA-256')
+    wrapper.unmount()
+  })
   it('fails honestly when formal rule service is unavailable', async () => {
     vi.mocked(fetchWarningRules).mockResolvedValue(null)
     const wrapper = mount(WarningView, { attachTo: document.body })

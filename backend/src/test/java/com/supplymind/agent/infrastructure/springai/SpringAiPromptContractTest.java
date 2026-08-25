@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SpringAiPromptContractTest {
 
     @Test
-    void phaseBPublishesExactOpaqueFactAndEvidenceIdentifiersWithBusinessMetadata() {
+    void phaseBPublishesStandardFactsWithoutEvidencePathsAndRequiresUsedFactIds() {
         String evidenceRef = "processed/daily/MAT.ADC12.SMM/2026-08.csv";
         LLMService.LlmFact fact = new LLMService.LlmFact(
                 "fact-7",
@@ -37,7 +37,9 @@ class SpringAiPromptContractTest {
         assertTrue(prompt.contains("\"currency\":\"CNY\""), prompt);
         assertTrue(prompt.contains("\"actualSourceName\":\"上海期货交易所公开基准\""), prompt);
         assertTrue(prompt.contains("Allowed factIds: [\"fact-7\"]"), prompt);
-        assertTrue(prompt.contains("Allowed evidenceRefs: [\"" + evidenceRef + "\"]"), prompt);
+        assertFalse(prompt.contains(evidenceRef), prompt);
+        assertTrue(prompt.contains("\"usedFactIds\""), prompt);
+        assertTrue(prompt.contains("Do not output claims, evidenceRefs, paths or hashes"), prompt);
         assertTrue(prompt.contains("copy it exactly and never renumber it"), prompt);
         assertFalse(prompt.contains("Allowed factIds: [\"fact-0\"]"), prompt);
     }
