@@ -59,7 +59,7 @@ Day10 原始最终机器证据位于 `docs/evidence/Day10/`；Post-Day10 SHFE/DE
 ## 5. 最终发布制品与回归
 
 - ZIP：`release/SupplyMindAI-0.9.0-win32-x64.zip`
-- 源码包：elease/SupplyMindAI-0.9.0-source.zip（README、LICENSE、源码与 docs；SHA 见 sidecar）
+- 源码包：`release/SupplyMindAI-0.9.0-source.zip`（README、LICENSE、源码与 docs；SHA 见 sidecar）
 - ZIP SHA-256：以同目录 `.sha256` sidecar 为唯一权威值（每次最终 clean build 重新生成）
 - Release manifest：`release/SupplyMindAI-0.9.0-win32-x64.zip.manifest.json`（绑定构建输入与制品哈希）
 - 制品条目数与白名单结果以当前 release manifest / verify report 为准；最终制品 API Key 命中必须为 0。
