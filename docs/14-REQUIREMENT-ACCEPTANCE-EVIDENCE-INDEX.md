@@ -13,7 +13,7 @@
 - `N/A_APPROVED_FALLBACK`：指定商业材料源自动能力不可合法取得；获准走 FreePublic/Manual，指定能力本身不是 PASS。
 - `APPROVED_FREE_PUBLIC`：免费公开源的身份、字段和映射已由决策冻结并通过实际链路验证；不等于指定商业源。
 
-Day10 原始最终机器证据位于 `docs/evidence/Day10/`；Post-Day10 SHFE/DEMO/开源交付补充证据位于 `docs/evidence/FinalRelease/`；Agent事实优先与预警确认审计证据位于 `docs/evidence/Post-Day10/AGENT-WARNING-AUDIT-CLOSURE-20260825.md`。制品 SHA-256 以 `release/` 下同名 sidecar 为唯一权威值。
+Day10 原始最终机器证据位于 `docs/evidence/Day10/`；Post-Day10 SHFE/DEMO/开源交付补充证据位于 `docs/evidence/FinalRelease/`；Agent事实优先与预警确认审计证据位于 `docs/evidence/Post-Day10/AGENT-WARNING-AUDIT-CLOSURE-20260825.md`；云端事实占位符与Java权威渲染修复证据位于 `docs/evidence/Post-Day10/AGENT-FACT-TEMPLATE-CLOSURE-20260825.md`。制品 SHA-256 以 `release/` 下同名 sidecar 为唯一权威值。
 
 ## 2. 官方验收项（H01-H09）
 
@@ -49,7 +49,7 @@ Day10 原始最终机器证据位于 `docs/evidence/Day10/`；Post-Day10 SHFE/DE
 | Windows 便携启动、随包 JRE、loopback | `package-verification.json`、`final-portable-exe-data-visibility.json`、Day9 final-attack | PASS；干净 VM 原方法 NOT_RUN |
 | JSON/CSV 与重启持久化 | 最终 EXE 首次运行与重启数据一致 | PASS |
 | 本地文件存储、无数据库 | `backend-regression-summary.json` 依赖树与最终制品进程/文件事实 | PASS |
-| 云模型事实优先/无 Key/故障降级 | DEC-065：Java StandardFactPack→云端answer+usedFactIds→Java逐事实验证/证据回绑；Bailian qwen-plus真实连通性1/1；核心监测不依赖LLM | PASS |
+| 云模型事实优先/无 Key/故障降级 | DEC-065/066：Java StandardFactPack→云端answerTemplate+usedFactIds→Java权威渲染→逐事实验证/证据回绑；Bailian qwen-plus真实连通性1/1；核心监测不依赖LLM | PASS |
 | 网络/401/429/超时/5xx/畸形 | 本地 stub 与模板降级矩阵，不主动断开宿主机网络 | SAFE_EQUIVALENT_PASS |
 | 文件损坏/半写/重启恢复 | Atomic/manifest/DirtyMarker/历史冲突攻击回归，使用临时 dataRoot | SAFE_EQUIVALENT_PASS |
 | 动态 EUR/GBP/MAT-REPL-01 | Day8 Web P0 矩阵与 DynamicConfig/CurrentIntake/PbocDynamic 测试 | PASS |
@@ -63,7 +63,7 @@ Day10 原始最终机器证据位于 `docs/evidence/Day10/`；Post-Day10 SHFE/DE
 - ZIP SHA-256：以同目录 `.sha256` sidecar 为唯一权威值（每次最终 clean build 重新生成）
 - Release manifest：`release/SupplyMindAI-0.9.0-win32-x64.zip.manifest.json`（绑定构建输入与制品哈希）
 - 制品条目数与白名单结果以当前 release manifest / verify report 为准；最终制品 API Key 命中必须为 0。
-- Backend：最终回归 131 suites / 671 tests / 0 failures / 0 errors / 9 skipped。
+- Backend：最终回归 131 suites / 673 tests / 0 failures / 0 errors / 9 skipped。
 - Desktop：31 / 31 PASS。
 - Frontend：6 files / 39 tests PASS；production build PASS。
 - 最终执行报告：`docs/evidence/Day10/D10-FINAL-ACCEPTANCE.md`。

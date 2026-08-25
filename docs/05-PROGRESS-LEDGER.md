@@ -1,9 +1,9 @@
 # SupplyMind AI 跨窗口进度台账
 
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
-> 当前阶段：Day 1～Day 10=`COMPLETE`；Post-Day10 数据可用性与正式预警补充=`COMPLETE`；DEC-063/064/065=`EFFECTIVE`；项目=`FINAL_RELEASE_READY`。真实 Cloud 历史 Gate=`PASS`；本轮按既有授权执行Bailian qwen-plus连通性Gate=`1/1 PASS`，密钥未输出/持久化。
+> 当前阶段：Day 1～Day 10=`COMPLETE`；Post-Day10 数据可用性与正式预警补充=`COMPLETE`；DEC-063/064/065/066=`EFFECTIVE`；项目=`FINAL_RELEASE_READY`。真实 Cloud 历史 Gate=`PASS`；本轮按既有授权执行Bailian qwen-plus连通性Gate=`1/1 PASS`，密钥未输出/持久化。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`DONE`；**Final Implementation Candidate=`feaedd3`**；**CURRENT regression=110 suites/578 backend tests/0 failures/0 errors/8 skipped**，前端 `npm run test` **11/11 PASS** + `npm run build` PASS；历史候选（1b83410、d2b0965、a4006c4、3fd1d35、5f1491c、01d4270 等中间状态）一律 HISTORICAL（不删除）；Closure Evidence=`docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md`。Day1-Day6 代码零修改。
-> 当前最终发布补充：implementation=`63cc9a8`（基于正式预警补充 `42d16b4`）；Backend=`131 suites/671 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`39/39 + build PASS`；DEC-065 Java标准事实→云端润色→Java逐事实校验/证据回绑与预警确认可查询审计闭环均已完成；真实Bailian `qwen-plus`连通性Gate=`1/1 PASS`（密钥未持久化/未输出）。
+> 当前最终发布补充：implementation=`dfb5158`（基于DEC-065实现 `63cc9a8`）；Backend=`131 suites/673 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`39/39 + build PASS`；DEC-066 云端事实占位符→Java权威渲染→逐事实校验/证据回绑已完成；真实Bailian `qwen-plus`连通性Gate=`1/1 PASS`（密钥未持久化/未输出），含演示业务事实的新版端到端云端复测等待本次明确授权。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -60,17 +60,17 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 当前开发日 | Day 1～Day 10=`COMPLETE` |
 | 当前任务编号 | 无进行中 P0 任务；D10-T01～D10-T05=`DONE` |
 | 当前任务状态 | D10-T01～D10-T05=`DONE`；Day10=`COMPLETE`；项目=`FINAL_RELEASE_READY`；本分支未执行 merge/tag/push |
-| 编码前基线对齐 | `v1.5 FROZEN` 保持；DEC-060/061/062不变；DEC-063 冻结 ADC12 SHFE FreePublic 与 DEMO 隔离；DEC-064 接受版本化正式通用预警；DEC-065 冻结Java事实优先云端润色与确认审计闭环，不降低 H01-H09。 |
+| 编码前基线对齐 | `v1.5 FROZEN` 保持；DEC-060/061/062不变；DEC-063 冻结 ADC12 SHFE FreePublic 与 DEMO 隔离；DEC-064 接受版本化正式通用预警；DEC-065 冻结Java事实优先云端润色与确认审计闭环；DEC-066 将云端自由文本改为事实占位符并由Java权威渲染，不降低 H01-H09。 |
 | 已完成任务 | Day1～Day10全部 P0 开发任务及最终验收；D10-T01～D10-T05=`DONE` |
 | 正在进行任务 | 无 |
 | 阻塞项 | 无 P0 BLOCKER/MAJOR；EXT-07=`ACCEPTED_VERSIONED_DEFAULT`（DEC-064）；EXT-08保持 OPEN_EXTERNAL；物理改时/干净VM/主动断网方法按DEC-062保持NOT_RUN，不阻塞已通过的业务结果 |
-| 最近验收结果 | Post-Day10：DEC-064 正式默认/自定义预警、LocalImport 最终行状态、DEC-065 Agent事实优先云端润色与确认记录审计通过；回归=`131 suites/671 tests/0 failures/0 errors/9 skipped + Desktop 31/31 + Frontend 39/39/build PASS`；真实Bailian Gate=`1/1 PASS` |
+| 最近验收结果 | Post-Day10：DEC-064 正式默认/自定义预警、LocalImport 最终行状态、DEC-065/066 Agent事实优先与Java权威渲染、确认记录审计通过；回归=`131 suites/673 tests/0 failures/0 errors/9 skipped + Desktop 31/31 + Frontend 39/39/build PASS`；真实Bailian连通性Gate=`1/1 PASS` |
 | 新增风险 | 指定 SMM/Asian 自动能力仍为 N/A_APPROVED_FALLBACK；SHFE 仅是 ADC12 同类期货公开基准，AZ91D 仍 Manual；官方网络失败时不造数；云端输出未通过事实约束时仅展示 Java 已验证事实报告 |
 | 下一任务 | 无 P0 开发任务；进入最终发布/merge/tag决策 |
-| 最近一次可运行版本 | Post-Day10 Agent/Warning Audit Closure Implementation=`63cc9a8`；最终运行 ZIP/源码 ZIP 及其 SHA-256 sidecar 由 release clean build 生成，sidecar 为唯一权威值 |
-| 最近一次Git提交 | `63cc9a8`（Agent事实优先云端润色、逐事实验证/证据回绑与预警确认查询审计闭环） |
+| 最近一次可运行版本 | Post-Day10 Agent事实模板修复 Implementation=`dfb5158`；最终运行 ZIP/源码 ZIP 及其 SHA-256 sidecar 由 release clean build 生成，sidecar 为唯一权威值 |
+| 最近一次Git提交 | `dfb5158`（云端仅组织事实占位符、Java权威渲染业务字面量、逐事实验证/证据回绑） |
 | 是否偏离计划 | 否；保持三层来源路线、Manual、文件存储、无数据库、只读 Agent、DEC-062 安全边界与 Synthetic 隔离；正式预警按 DEC-064 版本化扩展 |
-| 最后更新人/窗口 | 技术负责人 / Post-Day10 Agent + Warning Audit Closure |
+| 最后更新人/窗口 | 技术负责人 / Post-Day10 Agent Fact Template Closure |
 | 最后更新时间 | 2026-08-25（Asia/Shanghai） |
 
 ### 3.6 Post-Day10 Formal Warning / Agent / Import Closure（2026-08-25）
@@ -78,10 +78,10 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 - Implementation：`42d16b4`；DEC-064=`EFFECTIVE`；EXT-07=`ACCEPTED_VERSIONED_DEFAULT`；EXT-08=`OPEN_EXTERNAL`。
 - 正式预警：所有启用且非 Synthetic 的监测项自动绑定默认规则；材料7自然日/5%，其他1自然日/1%，双向且等于阈值触发；支持逐项版本化覆盖与恢复默认。
 - 数据边界：只读取已发布/已校验 daily，BigDecimal 计算；缺失不补0，冲突/损坏/单位币种不一致 fail-closed；触发写不可变 WarningRecord，确认继续使用 DEC-061 sidecar。
-- Agent（DEC-065）：Java从已发布数据/有效预警证据生成StandardFactPack并确定趋势、风险和确认状态；云端只返回`answer + usedFactIds`润色结果；Java逐项验证数字/日期/来源/受控结论并自动回绑evidenceRefs，失败显示同一事实包的Java事实报告。`63cc9a8`已实现。
+- Agent（DEC-065/066）：Java从已发布数据/有效预警证据生成StandardFactPack并确定趋势、风险和确认状态；云端只返回`answerTemplate + usedFactIds`，以`{{factId}}`组织事实顺序和连接语；Java按factId注入数值/日期/来源/状态并继续逐项验证、自动回绑evidenceRefs，失败显示同一事实包的Java事实报告。`dfb5158`已实现。
 - 预警确认审计：确认sidecar可通过API/UI再次查询并显示确认时间、处置备注、warningRef/SHA/ackRef；只有通过DEC-061完整绑定验证的确认记录才进入Agent warning.explain事实。
 - LocalImport：批量受理行在正式处理后按 runId 显示最终 PUBLISHED/REJECTED，不再与顶部已发布状态冲突。
-- 回归：Backend=`131 suites/671 tests/0 failures/0 errors/9 skipped`；Desktop=`31/31`；Frontend=`6 files/39 tests/0 failures + build PASS`；真实Bailian qwen-plus连通性=`1/1 PASS`。
+- 回归：Backend=`131 suites/673 tests/0 failures/0 errors/9 skipped`；Desktop=`31/31`；Frontend=`6 files/39 tests/0 failures + build PASS`；真实Bailian qwen-plus连通性=`1/1 PASS`。
 - 安全：仅按既有书面授权执行一次真实Bailian计费连通性Gate；API Key未输出、未写入仓库/证据/日志。未执行真实来源采集、物理改时、断网、VM 或任何主机网络/Hyper-V/服务修改。
 ### 3.5 Post-Day10 FreePublic / DEMO / Open-source Closure（2026-08-21）
 
