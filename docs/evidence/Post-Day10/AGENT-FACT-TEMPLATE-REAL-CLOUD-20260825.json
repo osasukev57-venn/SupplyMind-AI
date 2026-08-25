@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "POST-D10-AGENT-FACT-TEMPLATE-REAL-CLOUD",
+  "executedAt": "2026-08-25T14:46:07+08:00",
+  "provider": "Alibaba Bailian",
+  "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "model": "qwen-plus",
+  "implementationCommit": "dfb5158",
+  "decision": "DEC-066",
+  "dataIsolation": "copied-demo-data-root",
+  "requestScope": {
+    "itemId": "MAT.AZ91D.DEMO_IMPORT",
+    "startDate": "2026-08-17",
+    "endDate": "2026-08-24",
+    "mode": "FORMAL"
+  },
+  "result": "PASS",
+  "requestId": "req-d4d9b812-eca",
+  "generatedBy": "LLM",
+  "degraded": false,
+  "dataThrough": "2026-08-24",
+  "claimCount": 1,
+  "evidenceRefCount": 7,
+  "limitations": [],
+  "toolTrace": [
+    {
+      "toolName": "series.resolve",
+      "status": "SUCCESS"
+    },
+    {
+      "toolName": "history.query",
+      "status": "SUCCESS"
+    },
+    {
+      "toolName": "quality.inspect",
+      "status": "SUCCESS"
+    },
+    {
+      "toolName": "provenance.trace",
+      "status": "SUCCESS"
+    }
+  ],
+  "verifiedFacts": {
+    "latestValue": "24900.00",
+    "unit": "元/吨",
+    "trend": "UPWARD",
+    "startToEndChange": "1900.00",
+    "publishedRows": 6,
+    "expectedObservations": 6,
+    "missingObservations": 0,
+    "completeRows": 6,
+    "completeness": "100%"
+  },
+  "secretPersisted": false,
+  "originalUserDataModified": false,
+  "temporaryServiceStopped": true,
+  "temporaryDataRemoved": true
+}

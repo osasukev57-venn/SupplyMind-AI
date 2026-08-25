@@ -17,7 +17,9 @@
 - Backend full regression：131 suites / 673 tests / 0 failures / 0 errors / 9 skipped。
 - Frontend：6 files / 39 tests / 0 failures；build PASS。
 - Desktop：31/31 PASS。
-- 真实Bailian `qwen-plus`连通性沿用已审1/1 PASS；本次包含复制演示业务事实的新版端到端请求因需要单独明确授权，当前未执行，不伪装PASS。
+- 真实Bailian `qwen-plus`业务事实端到端Gate：`PASS`（2026-08-25 14:46 +08:00）。使用隔离数据副本与当前源码JAR，Java先生成标准事实，云端返回事实模板，Java渲染并复核后得到 `generatedBy=LLM`、`degraded=false`、`limitations=[]`。
+- 真实请求调用 `series.resolve`、`history.query`、`quality.inspect`、`provenance.trace` 四个只读工具，全部 `SUCCESS`；报告包含1条已验证claim、7条evidenceRef，数据截至 `2026-08-24`。
+- 机器可读摘要：`docs/evidence/Post-Day10/AGENT-FACT-TEMPLATE-REAL-CLOUD-20260825.json`。API Key未输出、未写入请求体、日志、证据或制品。
 
 ## Preservation
 

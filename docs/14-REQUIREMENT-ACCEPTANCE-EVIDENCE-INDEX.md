@@ -49,7 +49,7 @@ Day10 原始最终机器证据位于 `docs/evidence/Day10/`；Post-Day10 SHFE/DE
 | Windows 便携启动、随包 JRE、loopback | `package-verification.json`、`final-portable-exe-data-visibility.json`、Day9 final-attack | PASS；干净 VM 原方法 NOT_RUN |
 | JSON/CSV 与重启持久化 | 最终 EXE 首次运行与重启数据一致 | PASS |
 | 本地文件存储、无数据库 | `backend-regression-summary.json` 依赖树与最终制品进程/文件事实 | PASS |
-| 云模型事实优先/无 Key/故障降级 | DEC-065/066：Java StandardFactPack→云端answerTemplate+usedFactIds→Java权威渲染→逐事实验证/证据回绑；Bailian qwen-plus真实连通性1/1；核心监测不依赖LLM | PASS |
+| 云模型事实优先/无 Key/故障降级 | DEC-065/066：Java StandardFactPack→云端answerTemplate+usedFactIds→Java权威渲染→逐事实验证/证据回绑；Bailian qwen-plus真实业务事实端到端结果为`generatedBy=LLM`且`degraded=false`，见`AGENT-FACT-TEMPLATE-REAL-CLOUD-20260825.json`；核心监测不依赖LLM | PASS |
 | 网络/401/429/超时/5xx/畸形 | 本地 stub 与模板降级矩阵，不主动断开宿主机网络 | SAFE_EQUIVALENT_PASS |
 | 文件损坏/半写/重启恢复 | Atomic/manifest/DirtyMarker/历史冲突攻击回归，使用临时 dataRoot | SAFE_EQUIVALENT_PASS |
 | 动态 EUR/GBP/MAT-REPL-01 | Day8 Web P0 矩阵与 DynamicConfig/CurrentIntake/PbocDynamic 测试 | PASS |

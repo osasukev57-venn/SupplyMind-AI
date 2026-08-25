@@ -3,7 +3,7 @@
 > 文档性质：跨 Codex 窗口的唯一进度事实源  
 > 当前阶段：Day 1～Day 10=`COMPLETE`；Post-Day10 数据可用性与正式预警补充=`COMPLETE`；DEC-063/064/065/066=`EFFECTIVE`；项目=`FINAL_RELEASE_READY`。真实 Cloud 历史 Gate=`PASS`；本轮按既有授权执行Bailian qwen-plus连通性Gate=`1/1 PASS`，密钥未输出/持久化。
 > Day7=`COMPLETE`，Stage Review=`PASS`：D7-T01～D7-T04=`DONE`；**Final Implementation Candidate=`feaedd3`**；**CURRENT regression=110 suites/578 backend tests/0 failures/0 errors/8 skipped**，前端 `npm run test` **11/11 PASS** + `npm run build` PASS；历史候选（1b83410、d2b0965、a4006c4、3fd1d35、5f1491c、01d4270 等中间状态）一律 HISTORICAL（不删除）；Closure Evidence=`docs/evidence/Day7/DAY7-FINAL-CLOSURE-20260817.md`。Day1-Day6 代码零修改。
-> 当前最终发布补充：implementation=`dfb5158`（基于DEC-065实现 `63cc9a8`）；Backend=`131 suites/673 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`39/39 + build PASS`；DEC-066 云端事实占位符→Java权威渲染→逐事实校验/证据回绑已完成；真实Bailian `qwen-plus`连通性Gate=`1/1 PASS`（密钥未持久化/未输出），含演示业务事实的新版端到端云端复测等待本次明确授权。
+> 当前最终发布补充：implementation=`dfb5158`（基于DEC-065实现 `63cc9a8`）；Backend=`131 suites/673 tests/0 failures/0 errors/9 skipped`，Desktop=`31/31`，Frontend=`39/39 + build PASS`；DEC-066 云端事实占位符→Java权威渲染→逐事实校验/证据回绑已完成；真实Bailian `qwen-plus`含演示业务事实端到端Gate=`PASS`（`generatedBy=LLM`、`degraded=false`、密钥未持久化/未输出）。
 > 更新规则：每个开发任务结束前必须更新本文件；不得只在聊天中报告进度。
 
 ## 1. 使用规则
@@ -64,7 +64,7 @@ D1-T02即使为`DONE`，若只有外部失败证据，AT-SRC-002仍只能是`NOT
 | 已完成任务 | Day1～Day10全部 P0 开发任务及最终验收；D10-T01～D10-T05=`DONE` |
 | 正在进行任务 | 无 |
 | 阻塞项 | 无 P0 BLOCKER/MAJOR；EXT-07=`ACCEPTED_VERSIONED_DEFAULT`（DEC-064）；EXT-08保持 OPEN_EXTERNAL；物理改时/干净VM/主动断网方法按DEC-062保持NOT_RUN，不阻塞已通过的业务结果 |
-| 最近验收结果 | Post-Day10：DEC-064 正式默认/自定义预警、LocalImport 最终行状态、DEC-065/066 Agent事实优先与Java权威渲染、确认记录审计通过；回归=`131 suites/673 tests/0 failures/0 errors/9 skipped + Desktop 31/31 + Frontend 39/39/build PASS`；真实Bailian连通性Gate=`1/1 PASS` |
+| 最近验收结果 | Post-Day10：DEC-064 正式默认/自定义预警、LocalImport 最终行状态、DEC-065/066 Agent事实优先与Java权威渲染、确认记录审计通过；回归=`131 suites/673 tests/0 failures/0 errors/9 skipped + Desktop 31/31 + Frontend 39/39/build PASS`；真实Bailian `qwen-plus`业务事实端到端Gate=`PASS`（`generatedBy=LLM`、`degraded=false`） |
 | 新增风险 | 指定 SMM/Asian 自动能力仍为 N/A_APPROVED_FALLBACK；SHFE 仅是 ADC12 同类期货公开基准，AZ91D 仍 Manual；官方网络失败时不造数；云端输出未通过事实约束时仅展示 Java 已验证事实报告 |
 | 下一任务 | 无 P0 开发任务；进入最终发布/merge/tag决策 |
 | 最近一次可运行版本 | Post-Day10 Agent事实模板修复 Implementation=`dfb5158`；最终运行 ZIP/源码 ZIP 及其 SHA-256 sidecar 由 release clean build 生成，sidecar 为唯一权威值 |
