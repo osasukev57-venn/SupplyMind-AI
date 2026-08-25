@@ -1,6 +1,8 @@
 package com.supplymind.agent;
 
 import com.supplymind.agent.application.AgentResponseVerifier;
+import com.supplymind.agent.application.ModelDraftV1;
+import com.supplymind.agent.evidence.EvidencePackV1;
 import com.supplymind.agent.llm.LLMService;
 import com.supplymind.agent.orchestration.AgentOrchestrator;
 import com.supplymind.agent.support.Day6R2Fixture;
@@ -89,7 +91,55 @@ class AgentFactFirstPipelineTest {
                 null, null, null, null, "FORMAL"));
 
         assertTrue(result.degraded());
-        assertEquals("MODEL_RESPONSE_REJECTED:UNSUPPORTED_CLAIM_REFERENCE", result.degradeReason());
+        assertEquals("MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE", result.degradeReason());
+        assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
+    }
+
+    @Test
+    void javaRenderedWarningIdentifierIsNotMisreadAsFabricatedNumbers() {
+        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "rendered-warning-id");
+        EvidencePackV1 base = fixture.verifiedEvidencePack("req-rendered-warning");
+        EvidencePackV1.Fact original = base.facts().get(0);
+        EvidencePackV1.Fact warningId = new EvidencePackV1.Fact(
+                "fact-warning-id", "warning.id", original.itemId(), original.businessDate(),
+                original.periodStart(), original.periodEnd(),
+                "a8d41a2647344a7cd4d6c0a1095e55dc", "id", original.currency(),
+                original.qualityStatus(), original.validationStatus(), original.validationVersion(),
+                original.calculationVersion(), original.calendarVersion(), original.configVersions(),
+                original.actualSourceName(), original.sourceFingerprint(), original.evidenceRefs());
+        EvidencePackV1 pack = new EvidencePackV1(
+                base.schemaVersion(), base.evidencePackId(), base.requestId(), base.mode(),
+                base.question(), base.createdAt(), base.scope(), base.toolExecutions(),
+                List.of(warningId), base.evidenceRefs(), base.warnings(), base.notices(),
+                base.limitations());
+        ModelDraftV1 rendered = new ModelDraftV1(
+                base.requestId(), "预警编号为a8d41a2647344a7cd4d6c0a1095e55dc",
+                List.of(warningId.factId()), List.of());
+
+        AgentResponseVerifier.Verification result = new AgentResponseVerifier(List.of())
+                .verifyJavaRenderedFactTemplate(rendered, pack);
+
+        assertTrue(result.verified(),
+                "Java-rendered immutable identifiers must not be split into fabricated numbers");
+    }
+
+    @Test
+    void templateShellCannotStateTrendOutsideJavaPlaceholder() {
+        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "template-trend-attack");
+        AgentOrchestrator orchestrator = fixture.orchestrator(request -> {
+            LLMService.LlmFact latest = fact(request, "latest published value", null);
+            return LLMService.LLMResponse.success("""
+                    {"answerTemplate":"{{%s}}，整体呈下降趋势。",
+                     "usedFactIds":["%s"]}
+                    """.formatted(latest.factId(), latest.factId()));
+        }, new AgentResponseVerifier(List.of()));
+
+        AgentOrchestrator.AgentResult result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
+                "说明最新值", Day6R2Fixture.ITEM, null, null, null,
+                null, null, null, null, "FORMAL"));
+
+        assertTrue(result.degraded());
+        assertEquals("MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE", result.degradeReason());
         assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
     }
 

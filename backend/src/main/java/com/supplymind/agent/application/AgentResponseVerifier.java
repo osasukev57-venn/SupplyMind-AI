@@ -136,6 +136,63 @@ public final class AgentResponseVerifier {
         return Verification.accepted();
     }
 
+    /**
+     * Verifies prose whose business literals were rendered by Java from an already closed fact
+     * placeholder set. Unlike cloud-authored free text, these literals must not be reclassified by
+     * regex heuristics: doing so can split immutable identifiers (for example a warningId) into
+     * apparent numbers and reject Java's own authoritative output. The cloud shell was checked
+     * before rendering; this stage keeps secret, reference, evidence and controlled-semantic gates.
+     */
+    public Verification verifyJavaRenderedFactTemplate(
+            ModelDraftV1 draft, EvidencePackV1 evidencePack
+    ) {
+        Objects.requireNonNull(draft, "draft");
+        Objects.requireNonNull(evidencePack, "evidencePack");
+        if (secretInAnyPersistableField(draft)) {
+            return Verification.rejected("SECRET_INJECTION");
+        }
+        List<EvidenceFact> facts = evidencePack.facts().stream()
+                .map(fact -> new EvidenceFact(
+                        fact.factId(), fact.factType(), fact.value(), fact.itemId(), fact.unit(),
+                        fact.currency(), fact.evidenceRefs(), fact.businessDate(),
+                        fact.periodStart(), fact.periodEnd(), fact.actualSourceName()))
+                .toList();
+        Set<String> knownFactIds = new LinkedHashSet<>();
+        facts.forEach(fact -> knownFactIds.add(fact.factId()));
+        if (draft.rawText().isBlank()) {
+            return Verification.rejected("EMPTY_ANSWER");
+        }
+        LinkedHashSet<String> selectedIds = new LinkedHashSet<>();
+        for (String factId : draft.usedFactIds()) {
+            if (factId == null || factId.isBlank() || !knownFactIds.contains(factId)) {
+                return Verification.rejected("UNKNOWN_FACT_REFERENCE");
+            }
+            if (!selectedIds.add(factId)) {
+                return Verification.rejected("DUPLICATE_FACT_REFERENCE");
+            }
+        }
+        if (selectedIds.isEmpty()
+                || FACT_REF.matcher(draft.rawText()).find()
+                || EVIDENCE_REF.matcher(draft.rawText()).find()) {
+            return Verification.rejected("MODEL_REFERENCE_LEAKAGE");
+        }
+        List<EvidenceFact> selected = facts.stream()
+                .filter(fact -> selectedIds.contains(fact.factId()))
+                .toList();
+        if (selected.size() != selectedIds.size()
+                || selected.stream().anyMatch(fact -> fact.evidenceRefs() == null
+                || fact.evidenceRefs().isEmpty())) {
+            return Verification.rejected("UNSUPPORTED_CLAIM_REFERENCE");
+        }
+        if (contradictsControlledSemantics(draft.rawText(), selected)) {
+            return Verification.rejected("CONTRADICTED_STANDARD_FACT");
+        }
+        if (!hasSemanticAnchor(draft.rawText(), selected)) {
+            return Verification.rejected("UNSUPPORTED_CLAIM_REFERENCE");
+        }
+        return Verification.accepted();
+    }
+
     private Verification verifyUsedFactsAnswer(
             ModelDraftV1 draft, List<EvidenceFact> facts, Set<String> knownFactIds
     ) {

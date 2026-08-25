@@ -168,8 +168,9 @@ public final class AgentOrchestrator {
                     }
                     if (draft != null) {
                         draftUsedFactIds = draft.usedFactIds();
-                        AgentResponseVerifier.Verification verification =
-                                responseVerifier.verify(draft, evidencePack);
+                        AgentResponseVerifier.Verification verification = parsed.factTemplate()
+                                ? responseVerifier.verifyJavaRenderedFactTemplate(draft, evidencePack)
+                                : responseVerifier.verify(draft, evidencePack);
                         if (!verification.verified()) {
                             degraded = true;
                             degradeReason = "MODEL_RESPONSE_REJECTED:" + verification.reason();
@@ -656,7 +657,46 @@ public final class AgentOrchestrator {
                 || rendered.indexOf("{{") >= 0 || rendered.indexOf("}}") >= 0) {
             return null;
         }
+        if (!factTemplateShellIsSafe(template, facts)) {
+            return null;
+        }
         return rendered.toString().trim();
+    }
+
+    /**
+     * The cloud-authored shell may contain connective prose only. Business literals must arrive
+     * through placeholders and are inserted by Java. This check happens before rendering so the
+     * dedicated post-render verifier never has to guess which literals came from the model.
+     */
+    private static boolean factTemplateShellIsSafe(
+            String template, List<EvidencePackV1.Fact> facts
+    ) {
+        String shell = FACT_TEMPLATE_TOKEN.matcher(template).replaceAll("");
+        if (shell.chars().anyMatch(Character::isDigit)
+                || shell.contains("{{") || shell.contains("}}")) {
+            return false;
+        }
+        String upperShell = shell.toUpperCase(java.util.Locale.ROOT);
+        for (String forbidden : List.of(
+                "UPWARD", "DOWNWARD", "FLAT", "HIGH", "MEDIUM", "LOW",
+                "ACKNOWLEDGED", "PENDING", "VERIFIED", "REJECTED", "CONFLICT",
+                "上升", "上涨", "走高", "下降", "下跌", "走低", "持平",
+                "高风险", "中风险", "低风险", "已确认", "待处理")) {
+            if (upperShell.contains(forbidden.toUpperCase(java.util.Locale.ROOT))) {
+                return false;
+            }
+        }
+        for (EvidencePackV1.Fact fact : facts) {
+            for (String literal : new String[]{
+                    fact.value(), fact.itemId(), fact.unit(), fact.currency(), fact.businessDate(),
+                    fact.periodStart(), fact.periodEnd(), fact.validationStatus(),
+                    fact.actualSourceName()}) {
+                if (literal != null && !literal.isBlank() && shell.contains(literal)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static String renderStandardFactForAnswer(EvidencePackV1.Fact fact) {
