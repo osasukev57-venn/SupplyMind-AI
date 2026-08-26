@@ -16,7 +16,9 @@ SupplyMind AI 自动聚合官方权威数据源，执行数据核验与本地文
 
 ## 快速开始（Windows x64）
 
-1. 解压 `SupplyMindAI-<版本>-win32-x64.zip` 到任意可写目录（支持普通路径、带空格路径、中文路径）。
+> [前往 GitHub Releases 下载最新 Windows 运行包与完整交付包](https://github.com/osasukev57-venn/SupplyMind-AI/releases/latest)
+
+1. 从 GitHub Releases 下载并解压 `SupplyMindAI-<版本>-win32-x64.zip` 到任意可写目录（支持普通路径、带空格路径、中文路径）。
 2. 双击 `SupplyMindAI\SupplyMindAI.exe`。
 3. 应用自动使用内置 JRE 启动本地服务并打开面板（127.0.0.1 动态端口）。联网时会在后台读取中国人民银行最新公开公告，并从上海期货交易所公开日行情取得 ADC12 的同类铸造铝合金期货基准；总览显示真实来源和状态，获取失败不会阻塞本地历史查询。
 4. 在「预警」页直接查看全部监测项的系统默认规则和当前计算状态；无需先配置即可使用。需要时选择某项修改周期、百分比阈值和方向，保存后会立即重新评估。
@@ -25,13 +27,16 @@ SupplyMind AI 自动聚合官方权威数据源，执行数据核验与本地文
 
 ## 发布制品
 
+正式二进制制品发布在 [GitHub Releases](https://github.com/osasukev57-venn/SupplyMind-AI/releases)，不提交到 Git 历史。仓库中的 `release/` 仅为本地构建输出目录，并由 `.gitignore` 排除。
+
 | 制品 | 说明 |
 |---|---|
-| `release/SupplyMindAI-<版本>-win32-x64.zip` | 最终用户便携 ZIP（含内置 Temurin JRE 17、Electron 33 壳、Spring Boot 3.5.15 后端、Vue 3 前端） |
-| `release/SupplyMindAI-<版本>-win32-x64.zip.sha256` | ZIP 的 SHA-256 校验值 |
-| `release/SupplyMindAI-<版本>-win32-x64.zip.manifest.json` | 构建输入/制品哈希与确定性构建清单 |
-| `release/SupplyMindAI-<版本>-source.zip` | 可直接用于 GitHub/二次开发的完整源码、README、LICENSE 与 docs |
-| `release/SupplyMindAI-<版本>-source.zip.sha256` | 源码包 SHA-256 校验值 |
+| `SupplyMindAI-<版本>-win32-x64.zip` | 最终用户便携 ZIP（含内置 Temurin JRE 17、Electron 33 壳、Spring Boot 3.5.15 后端、Vue 3 前端） |
+| `SupplyMindAI-<版本>-win32-x64.zip.sha256` | Windows 运行包的 SHA-256 校验值 |
+| `SupplyMindAI-<版本>-win32-x64.zip.manifest.json` | 构建输入、提交号与制品哈希清单 |
+| `SupplyMindAI-<版本>-complete-delivery.zip` | 面向接收方的单文件完整交付包：Windows 运行包、源码包、人工文档、演示数据与验收索引 |
+| `SupplyMindAI-<版本>-complete-delivery.zip.sha256` | 完整交付包的 SHA-256 校验值 |
+| `Source code (zip/tar.gz)` | GitHub 根据对应版本标签自动生成的开源源码包 |
 
 完整部署步骤见 `docs/07-WINDOWS-DEPLOYMENT-MANUAL.md`。
 
@@ -41,7 +46,7 @@ SupplyMind AI 自动聚合官方权威数据源，执行数据核验与本地文
 backend/    Spring Boot 3.5.15 + Java 17 后端（Provider→校验→发布→加工→聚合→文件持久化）
 frontend/   Vue 3 + Vite 前端（总览/历史/质量/来源录入/动态配置/预警/Agent）
 desktop/    Electron 便携壳（单实例、动态端口、随包 JRE、父进程看门狗）
-release/    最终发布 ZIP 与校验文件
+release/    本地构建输出目录（不纳入 Git；正式制品上传至 GitHub Releases）
 docs/       需求基线、追踪矩阵、验收计划、任务、台账、决策日志与全部验收证据
 ```
 
