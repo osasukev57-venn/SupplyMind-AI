@@ -129,8 +129,12 @@ class AgentPipelineIntegrationTest {
         String explanation = result.report().claims().isEmpty() ? null
                 : result.report().claims().get(0).text();
         assertNotNull(explanation);
-        assertTrue(explanation.contains("正式数据"),
-                "the Java template must produce a Chinese explanation from the facts");
+        assertTrue(explanation.contains("根据已发布并通过校验的数据"),
+                "the Java template must produce a concise Chinese explanation from verified facts");
+        assertFalse(explanation.contains("raw/"),
+                "the user-facing fallback must not leak raw evidence paths");
+        assertFalse(explanation.stripLeading().startsWith("{"),
+                "the user-facing fallback must not expose a JSON payload");
         assertNotNull(result.reportRef(), "fallback still persists the report");
         assertEquals("report-", result.report().reportId().substring(0, 7));
         assertEquals(result.evidencePack().requestId(), result.report().requestId());

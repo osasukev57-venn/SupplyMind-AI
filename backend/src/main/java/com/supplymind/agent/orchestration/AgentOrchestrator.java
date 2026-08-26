@@ -387,7 +387,7 @@ public final class AgentOrchestrator {
             llmUsableRefSet.add(entry.ref());
         }
 
-        List<EvidencePackV1.Fact> facts = buildFacts(toolResults, llmUsableRefSet, mode);
+        List<EvidencePackV1.Fact> facts = buildFacts(toolResults, llmUsableRefSet, mode, input.itemId());
         List<String> llmEvidenceRefs = llmUsableRefs.stream()
                 .map(EvidencePackV1.EvidenceRefEntry::ref).toList();
         // M2: the EvidencePack carries the FULL four-state structured list.
@@ -657,7 +657,11 @@ public final class AgentOrchestrator {
                 || rendered.indexOf("{{") >= 0 || rendered.indexOf("}}") >= 0) {
             return null;
         }
-        if (!factTemplateShellIsSafe(template, facts)) {
+        List<EvidencePackV1.Fact> selectedFacts = selected.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .toList();
+        if (!factTemplateShellIsSafe(template, selectedFacts)) {
             return null;
         }
         return rendered.toString().trim();
@@ -676,16 +680,7 @@ public final class AgentOrchestrator {
                 || shell.contains("{{") || shell.contains("}}")) {
             return false;
         }
-        String upperShell = shell.toUpperCase(java.util.Locale.ROOT);
-        for (String forbidden : List.of(
-                "UPWARD", "DOWNWARD", "FLAT", "HIGH", "MEDIUM", "LOW",
-                "ACKNOWLEDGED", "PENDING", "VERIFIED", "REJECTED", "CONFLICT",
-                "上升", "上涨", "走高", "下降", "下跌", "走低", "持平",
-                "高风险", "中风险", "低风险", "已确认", "待处理")) {
-            if (upperShell.contains(forbidden.toUpperCase(java.util.Locale.ROOT))) {
-                return false;
-            }
-        }
+
         for (EvidencePackV1.Fact fact : facts) {
             for (String literal : new String[]{
                     fact.value(), fact.itemId(), fact.unit(), fact.currency(), fact.businessDate(),
@@ -696,7 +691,47 @@ public final class AgentOrchestrator {
                 }
             }
         }
+        return controlledShellSemanticsSupported(shell, facts);
+    }
+
+    /**
+     * The model may restate a controlled conclusion in natural Chinese only when the exact
+     * selected StandardFactPack already contains it. Matching prose is accepted; unsupported or
+     * contradictory trend/risk/acknowledgement wording remains fail-closed.
+     */
+    private static boolean controlledShellSemanticsSupported(
+            String shell, List<EvidencePackV1.Fact> selectedFacts
+    ) {
+        if (containsAny(shell, "上升", "上涨", "走高")
+                && !hasFact(selectedFacts, "history.trend.direction", "UPWARD")) return false;
+        if (containsAny(shell, "下降", "下跌", "走低")
+                && !hasFact(selectedFacts, "history.trend.direction", "DOWNWARD")) return false;
+        if (containsAny(shell, "持平", "平稳")
+                && !hasFact(selectedFacts, "history.trend.direction", "FLAT")) return false;
+        if (containsAny(shell, "高风险", "高等级", "严重")
+                && !hasFact(selectedFacts, "warning.riskLevel", "HIGH")) return false;
+        if (containsAny(shell, "中风险", "中等风险")
+                && !hasFact(selectedFacts, "warning.riskLevel", "MEDIUM")) return false;
+        if (containsAny(shell, "低风险", "较低风险")
+                && !hasFact(selectedFacts, "warning.riskLevel", "LOW")) return false;
+        if (containsAny(shell, "已确认", "已处理")
+                && !hasFact(selectedFacts, "warning.acknowledged", "ACKNOWLEDGED")) return false;
+        if (containsAny(shell, "待处理", "未确认")
+                && !hasFact(selectedFacts, "warning.acknowledged", "PENDING")) return false;
         return true;
+    }
+
+    private static boolean containsAny(String text, String... candidates) {
+        for (String candidate : candidates) {
+            if (text.contains(candidate)) return true;
+        }
+        return false;
+    }
+    private static boolean hasFact(
+            List<EvidencePackV1.Fact> facts, String factType, String value
+    ) {
+        return facts.stream().anyMatch(fact -> factType.equals(fact.factType())
+                && value.equalsIgnoreCase(fact.value()));
     }
 
     private static String renderStandardFactForAnswer(EvidencePackV1.Fact fact) {
@@ -773,7 +808,7 @@ public final class AgentOrchestrator {
     }
 
     private static List<EvidencePackV1.Fact> buildFacts(
-            List<ToolResult> toolResults, Set<String> usableRefSet, String mode
+            List<ToolResult> toolResults, Set<String> usableRefSet, String mode, String authoritativeItemId
     ) {
         List<EvidencePackV1.Fact> facts = new ArrayList<>();
         int factId = 0;
@@ -789,8 +824,9 @@ public final class AgentOrchestrator {
                 for (Object entry : list) {
                     if (entry instanceof Map<?, ?> row) {
                         Object itemIdValue = row.get("itemId");
-                        String itemId = itemIdValue == null
-                                ? String.valueOf(result.result().get("itemId")) : String.valueOf(itemIdValue);
+                        Object resultItemId = result.result().get("itemId");
+                        String itemId = itemIdValue != null ? String.valueOf(itemIdValue)
+                                : resultItemId != null ? String.valueOf(resultItemId) : authoritativeItemId;
                         String factType = result.toolName();
                         String value = row.get("value") == null ? null : String.valueOf(row.get("value"));
                         if (value == null || value.isBlank() || "null".equals(value)) {

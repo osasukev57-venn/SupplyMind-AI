@@ -57,6 +57,9 @@ class AgentFactFirstPipelineTest {
         assertTrue(captured.get().facts().stream()
                 .anyMatch(fact -> "latest published value".equals(fact.statement())));
         assertTrue(captured.get().facts().stream()
+                .allMatch(fact -> Day6R2Fixture.ITEM.equals(fact.itemId())),
+                "every cloud-visible fact must retain the required authoritative itemId");
+        assertTrue(captured.get().facts().stream()
                 .anyMatch(fact -> "persisted period average".equals(fact.statement())));
         assertTrue(captured.get().facts().stream()
                 .anyMatch(fact -> "Java-computed completeness percentage".equals(fact.statement())
@@ -75,6 +78,24 @@ class AgentFactFirstPipelineTest {
                 "Java must bind evidence from cited factIds");
     }
 
+    @Test
+    void templateMayUseNaturalTrendWordingWhenSelectedJavaFactSupportsIt() throws Exception {
+        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "supported-trend-prose");
+        EvidencePackV1.Fact base = fixture.verifiedEvidencePack("req-supported-trend").facts().get(0);
+        EvidencePackV1.Fact upward = new EvidencePackV1.Fact(
+                "fact-trend", "history.trend.direction", base.itemId(), null,
+                "2026-08-01", "2026-08-24", "UPWARD", "direction", base.currency(),
+                base.qualityStatus(), base.validationStatus(), base.validationVersion(),
+                base.calculationVersion(), base.calendarVersion(), base.configVersions(),
+                base.actualSourceName(), base.sourceFingerprint(), base.evidenceRefs());
+        var method = AgentOrchestrator.class.getDeclaredMethod(
+                "controlledShellSemanticsSupported", String.class, List.class);
+        method.setAccessible(true);
+
+        assertEquals(true, method.invoke(null, "从已发布数据看，整体呈上升趋势。", List.of(upward)));
+        assertEquals(false, method.invoke(null, "从已发布数据看，整体呈下降趋势。", List.of(upward)));
+        assertEquals(false, method.invoke(null, "整体呈上升趋势。", List.of(base)));
+    }
     @Test
     void templateCannotSmuggleAnUnbackedBusinessNumber() {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "template-number-attack");
@@ -204,10 +225,18 @@ class AgentFactFirstPipelineTest {
         assertNotNull(captured.get());
         assertTrue(captured.get().facts().stream()
                 .anyMatch(fact -> "latest published value".equals(fact.statement())));
+        assertTrue(captured.get().facts().stream()
+                .allMatch(fact -> Day6R2Fixture.ITEM.equals(fact.itemId())),
+                "every cloud-visible fact must retain the required authoritative itemId");
         assertTrue(result.evidencePack().toolExecutions().stream()
                 .anyMatch(tool -> "history.query".equals(tool.toolName())
                         && String.valueOf(tool.input()).contains("range=2026-08-01..2026-08-24")));
         assertFalse(result.degradeReason().startsWith("STANDARD_FACTS_NOT_READY:"));
+        String fallbackText = result.report().claims().get(0).text();
+        assertTrue(fallbackText.contains("最新值"));
+        assertFalse(fallbackText.contains("raw/"), "raw evidence paths belong in evidenceRefs, not prose");
+        assertFalse(fallbackText.contains("published daily value"), "fallback must not enumerate internal fact types");
+        assertTrue(fallbackText.length() < 700, "fallback must stay readable instead of dumping all facts");
     }
 
     @Test
@@ -231,6 +260,9 @@ class AgentFactFirstPipelineTest {
         assertNotNull(captured.get());
         assertTrue(captured.get().facts().stream()
                 .anyMatch(fact -> "latest published value".equals(fact.statement())));
+        assertTrue(captured.get().facts().stream()
+                .allMatch(fact -> Day6R2Fixture.ITEM.equals(fact.itemId())),
+                "every cloud-visible fact must retain the required authoritative itemId");
         assertEquals(List.of(Day6R2Fixture.ITEM), result.evidencePack().scope().itemIds());
         assertFalse(result.degradeReason().startsWith("STANDARD_FACTS_NOT_READY:"));
     }

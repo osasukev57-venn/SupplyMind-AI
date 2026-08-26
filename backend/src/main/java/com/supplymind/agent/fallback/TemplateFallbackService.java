@@ -3,7 +3,9 @@ package com.supplymind.agent.fallback;
 import com.supplymind.agent.evidence.EvidencePackV1;
 import com.supplymind.agent.llm.LLMService;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * D6-T05 Java deterministic template fallback. Produces a natural-language explanation using
@@ -13,37 +15,70 @@ import java.util.List;
  */
 public final class TemplateFallbackService {
 
-    /** Builds the fallback explanation from the provided deterministic facts. */
+    /** Builds a concise fallback summary from deterministic facts without recomputation. */
     public String explain(LLMService.LLMRequest request, EvidencePackV1 evidencePack) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("根据正式数据（Java 确定性工具链），");
+        StringBuilder builder = new StringBuilder("根据已发布并通过校验的数据，");
         if (request.facts().isEmpty()) {
-            builder.append("当前问题没有可用的已发布/已验证事实，无法给出确定性解释。");
-            return builder.toString();
+            return builder.append("当前问题没有可用的已发布/已验证事实，无法给出确定性解释。").toString();
         }
-        for (int index = 0; index < request.facts().size(); index++) {
-            LLMService.LlmFact fact = request.facts().get(index);
-            if (index > 0) {
-                builder.append("；");
-            }
-            builder.append(fact.statement())
-                    .append("，值为 ").append(fact.value());
-            if (fact.period() != null && !fact.period().isBlank()) {
-                builder.append("（周期 ").append(fact.period()).append("）");
-            }
-            if (fact.validationStatus() != null && !fact.validationStatus().isBlank()) {
-                builder.append("，验证状态 ").append(fact.validationStatus());
-            }
-            if (fact.evidenceRef() != null && !fact.evidenceRef().isBlank()) {
-                builder.append("，证据 ").append(fact.evidenceRef());
-            }
+        List<LLMService.LlmFact> summaryFacts = summaryFacts(request.facts());
+        for (int index = 0; index < summaryFacts.size(); index++) {
+            if (index > 0) builder.append("；");
+            builder.append(render(summaryFacts.get(index)));
         }
         builder.append("。");
         List<String> notices = evidencePack == null ? List.of() : evidencePack.notices();
         if (!notices.isEmpty()) {
             builder.append(" 注意：").append(String.join("；", notices)).append("。");
         }
-        builder.append(" 本回答由 Java 模板生成（云端 LLM 不可用），数值均来自已发布的正式数据，未做任何重算。");
+        builder.append(" 当前为 Java 事实摘要；云端语言服务未采用，所有数值均直接来自标准事实，未在回答阶段重算。");
         return builder.toString();
+    }
+
+    private static List<LLMService.LlmFact> summaryFacts(List<LLMService.LlmFact> facts) {
+        Map<String, LLMService.LlmFact> firstByType = new LinkedHashMap<>();
+        for (LLMService.LlmFact fact : facts) firstByType.putIfAbsent(fact.statement(), fact);
+        List<String> priority = List.of(
+                "latest published value", "Java-computed trend direction",
+                "Java-computed start-to-end change", "persisted period average",
+                "Java-computed completeness percentage", "missing observation count",
+                "Java-evaluated warning risk level", "Java-evaluated warning threshold percentage",
+                "verified warning acknowledgement status");
+        List<LLMService.LlmFact> selected = priority.stream()
+                .map(firstByType::get).filter(java.util.Objects::nonNull).limit(6).toList();
+        return selected.isEmpty() ? facts.stream().limit(3).toList() : selected;
+    }
+
+    private static String render(LLMService.LlmFact fact) {
+        String period = fact.period() == null || fact.period().isBlank() ? "" : "（" + fact.period() + "）";
+        String value = fact.value() + (fact.unit() == null || fact.unit().isBlank()
+                || "%".equals(fact.unit()) ? "" : " " + fact.unit());
+        return switch (fact.statement()) {
+            case "latest published value" -> "最新值为" + value + period;
+            case "Java-computed trend direction" -> "趋势为" + localize(fact.value()) + period;
+            case "Java-computed start-to-end change" -> "首尾变化为" + value + period;
+            case "persisted period average" -> "已持久化平均值为" + value + period;
+            case "Java-computed completeness percentage" -> "数据完整率为" + fact.value() + period;
+            case "missing observation count" -> "缺失观测数为" + fact.value() + period;
+            case "Java-evaluated warning risk level" -> "当前预警风险为" + localize(fact.value());
+            case "Java-evaluated warning threshold percentage" -> "预警阈值为" + fact.value();
+            case "verified warning acknowledgement status" -> "预警处理状态为" + localize(fact.value());
+            default -> fact.statement() + "为" + value + period;
+        };
+    }
+
+    private static String localize(String value) {
+        if (value == null) return "未知";
+        return switch (value.toUpperCase(java.util.Locale.ROOT)) {
+            case "UPWARD" -> "上升";
+            case "DOWNWARD" -> "下降";
+            case "FLAT" -> "持平";
+            case "HIGH" -> "高风险";
+            case "MEDIUM" -> "中风险";
+            case "LOW" -> "低风险";
+            case "ACKNOWLEDGED" -> "已确认";
+            case "PENDING" -> "待处理";
+            default -> value;
+        };
     }
 }

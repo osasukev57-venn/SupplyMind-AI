@@ -48,6 +48,15 @@ class AgentApiMvcContractTest {
     }
 
     @Test
+    void missingItemIdIs400RejectedBeforeOrchestration() throws Exception {
+        mockMvc.perform(post("/api/agent/query")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"question\":\"分析走势\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.message").value("itemId is required"));
+    }
+    @Test
     void extendedResponsePreservesD6FieldsAndAddsReportProjection() throws Exception {
         EvidencePackV1.Scope scope = new EvidencePackV1.Scope(
                 List.of("FX.USD.CNY.PBOC_MID"), "2026-08-10", "2026-08-01", "2026-08-10", "Asia/Shanghai");

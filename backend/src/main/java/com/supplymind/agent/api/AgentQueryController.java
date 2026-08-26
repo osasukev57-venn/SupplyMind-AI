@@ -33,6 +33,11 @@ public class AgentQueryController {
                     "status", "REJECTED",
                     "message", "question is required"));
         }
+        if (body.get("itemId") == null || body.get("itemId").isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "REJECTED",
+                    "message", "itemId is required"));
+        }
         AgentOrchestrator.AgentQueryInput input = new AgentOrchestrator.AgentQueryInput(
                 body.get("question"),
                 body.get("itemId"),

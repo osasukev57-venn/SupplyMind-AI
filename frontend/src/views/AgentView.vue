@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { queryAgent } from '../api/agent'
 import type { AgentQueryResponse, EvidenceLinkView } from '../types/agent'
@@ -24,13 +24,17 @@ async function ask() {
     errorMessage.value = '请输入问题'
     return
   }
+  if (!itemId.value.trim()) {
+    errorMessage.value = '请选择或填写监测项编号'
+    return
+  }
   loading.value = true
   errorMessage.value = null
   result.value = null
   try {
     const response = await queryAgent({
       question: question.value.trim(),
-      itemId: itemId.value || undefined,
+      itemId: itemId.value.trim(),
       mode: mode.value
     })
     if (!response) {
@@ -65,6 +69,12 @@ function linkTarget(link: EvidenceLinkView): string {
 function evidenceKind(link: EvidenceLinkView): string {
   return link.targetView === 'HISTORY' ? '历史' : link.targetView === 'WARNING' ? '预警' : '质量'
 }
+
+const visibleClaims = computed(() => {
+  if (!result.value) return []
+  const answer = result.value.answer?.trim()
+  return result.value.claims.filter((claim) => claim.text.trim() !== answer)
+})
 </script>
 
 <template>
@@ -86,8 +96,8 @@ function evidenceKind(link: EvidenceLinkView): string {
           <label style="grid-column: 1 / -1">问题
             <textarea v-model="question" rows="3" placeholder="例如：分析 ADC12 近期价格走势" />
           </label>
-          <label>监测项编号（可选）
-            <input v-model="itemId" placeholder="如 MAT.ADC12.SMM" />
+          <label>监测项编号 <span class="required-mark">*</span>
+            <input v-model="itemId" required placeholder="如 MAT.ADC12.SMM" />
           </label>
           <label>运行模式
             <select v-model="mode">
@@ -154,8 +164,8 @@ function evidenceKind(link: EvidenceLinkView): string {
         </table>
       </div>
 
-      <div class="section-body" v-if="result.facts.length > 0">
-        <h3>事实数据</h3>
+      <details class="section-body audit-details" v-if="result.facts.length > 0">
+        <summary>查看事实数据（{{ result.facts.length }} 条）</summary>
         <div class="table-scroll">
           <table class="sm-table">
             <thead>
@@ -176,10 +186,11 @@ function evidenceKind(link: EvidenceLinkView): string {
             </tbody>
           </table>
         </div>
-      </div>
+      </details>
 
-      <div class="section-body" v-if="result.toolTrace.length > 0">
-        <h3>分析步骤</h3>
+      <details class="section-body audit-details" v-if="result.toolTrace.length > 0">
+        <summary>查看分析步骤（{{ result.toolTrace.length }} 步）</summary>
+        <p class="muted">详细输入输出保存在可追溯报告中，工作台仅展示步骤状态，避免内部结构化数据干扰阅读。</p>
         <div class="table-scroll">
           <table class="sm-table">
             <thead>
@@ -187,8 +198,7 @@ function evidenceKind(link: EvidenceLinkView): string {
                 <th>#</th>
                 <th>步骤</th>
                 <th>状态</th>
-                <th>输入</th>
-                <th>输出</th>
+                <th>证据数</th>
               </tr>
             </thead>
             <tbody>
@@ -196,18 +206,17 @@ function evidenceKind(link: EvidenceLinkView): string {
                 <td class="num">{{ trace.invocationIndex }}</td>
                 <td>{{ trace.toolName }}</td>
                 <td><StatusBadge :status="trace.status" /></td>
-                <td class="cell-truncate">{{ trace.input }}</td>
-                <td class="cell-truncate">{{ trace.output }}</td>
+                <td class="num">{{ trace.evidenceRefs.length }}</td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
+      </details>
 
-      <div class="section-body" v-if="result.claims.length > 0">
+      <div class="section-body" v-if="visibleClaims.length > 0">
         <h3>结论</h3>
         <ul class="claim-list">
-          <li v-for="claim in result.claims" :key="claim.claimId">
+          <li v-for="claim in visibleClaims" :key="claim.claimId">
             {{ claim.text }}
             <span class="muted">[{{ claim.evidenceRefs.length }} 条证据]</span>
           </li>
@@ -276,6 +285,17 @@ function evidenceKind(link: EvidenceLinkView): string {
   font-size: 14px;
   line-height: 1.65;
   white-space: pre-wrap;
+}
+.required-mark {
+  color: var(--sm-danger);
+}
+.audit-details > summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: var(--sm-text-2);
+}
+.audit-details[open] > summary {
+  margin-bottom: 12px;
 }
 .claim-list {
   padding-left: 18px;

@@ -89,7 +89,7 @@ export interface AgentQueryResponse {
 
 export interface AgentQueryRequest {
   question: string
-  itemId?: string
+  itemId: string
   startDate?: string
   endDate?: string
   grain?: string

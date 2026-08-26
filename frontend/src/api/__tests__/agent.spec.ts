@@ -10,7 +10,7 @@ import { http } from '../client'
 import { AGENT_REQUEST_TIMEOUT_MS, queryAgent } from '../agent'
 import type { AgentQueryRequest } from '../../types/agent'
 
-const request: AgentQueryRequest = { question: '分析 ADC12', mode: 'FORMAL' }
+const request: AgentQueryRequest = { question: '分析 ADC12', itemId: 'MAT.ADC12.SMM', mode: 'FORMAL' }
 
 describe('Agent API timeout contract', () => {
   beforeEach(() => {

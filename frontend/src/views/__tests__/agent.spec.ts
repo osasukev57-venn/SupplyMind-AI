@@ -23,6 +23,11 @@ function mountWithRouter() {
   return mount(AgentView, { attachTo: document.body, global: { plugins: [router] } })
 }
 
+async function fillRequiredFields(wrapper: ReturnType<typeof mountWithRouter>, question: string) {
+  await wrapper.find('textarea').setValue(question)
+  await wrapper.find('input').setValue('MAT.ADC12.SMM')
+}
+
 const response: AgentQueryResponse = {
   requestId: 'req-1',
   answer: '\u0041DC12 \u8fd1\u671f\u8d8b\u52bf\u5e73\u7a33\uff0c\u672a\u89c1\u663e\u8457\u4e0a\u6da8\u98ce\u9669\u3002',
@@ -123,8 +128,7 @@ describe('AgentView (D8-T03)', () => {
 
   it('renders the backend facts, tool timeline, claims and template label', async () => {
     const wrapper = mountWithRouter()
-    const textarea = wrapper.find('textarea')
-    await textarea.setValue('\u5206\u6790 ADC12 \u8fd1\u671f\u4e0a\u6da8\u98ce\u9669')
+    await fillRequiredFields(wrapper, '\u5206\u6790 ADC12 \u8fd1\u671f\u4e0a\u6da8\u98ce\u9669')
     await wrapper.findAll('button').find((button) => button.text().includes('\u63d0\u4ea4\u5206\u6790'))?.trigger('click')
     await flushPromises()
 
@@ -146,7 +150,7 @@ describe('AgentView (D8-T03)', () => {
 
   it('renders evidence links as real RouterLink navigations from backend params', async () => {
     const wrapper = mountWithRouter()
-    await wrapper.find('textarea').setValue('\u5206\u6790 ADC12')
+    await fillRequiredFields(wrapper, '\u5206\u6790 ADC12')
     await wrapper.findAll('button').find((button) => button.text().includes('\u63d0\u4ea4\u5206\u6790'))?.trigger('click')
     await flushPromises()
 
@@ -167,7 +171,7 @@ describe('AgentView (D8-T03)', () => {
 
   it('renders recommendations and the calculation basis without computing anything', async () => {
     const wrapper = mountWithRouter()
-    await wrapper.find('textarea').setValue('\u5206\u6790 ADC12')
+    await fillRequiredFields(wrapper, '\u5206\u6790 ADC12')
     await wrapper.findAll('button').find((button) => button.text().includes('\u63d0\u4ea4\u5206\u6790'))?.trigger('click')
     await flushPromises()
 
@@ -190,7 +194,7 @@ describe('AgentView (D8-T03)', () => {
 
   it('shows the honest fallback limitation', async () => {
     const wrapper = mountWithRouter()
-    await wrapper.find('textarea').setValue('\u6d4b\u8bd5\u95ee\u9898')
+    await fillRequiredFields(wrapper, '\u6d4b\u8bd5\u95ee\u9898')
     await wrapper.findAll('button').find((button) => button.text().includes('\u63d0\u4ea4\u5206\u6790'))?.trigger('click')
     await flushPromises()
     expect(wrapper.text()).toContain('fallback: model did not select any tool')
@@ -200,7 +204,7 @@ describe('AgentView (D8-T03)', () => {
   it('backend failure shows an error banner without white screen', async () => {
     vi.mocked(queryAgent).mockResolvedValue(null)
     const wrapper = mountWithRouter()
-    await wrapper.find('textarea').setValue('\u6d4b\u8bd5\u95ee\u9898')
+    await fillRequiredFields(wrapper, '\u6d4b\u8bd5\u95ee\u9898')
     await wrapper.findAll('button').find((button) => button.text().includes('\u63d0\u4ea4\u5206\u6790'))?.trigger('click')
     await flushPromises()
     expect(wrapper.text()).toContain('\u670d\u52a1\u6682\u65f6\u4e0d\u53ef\u7528\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5')
@@ -211,7 +215,7 @@ describe('AgentView (D8-T03)', () => {
     vi.mocked(queryAgent).mockRejectedValue(
       new Error('智能分析处理超过 90 秒，后端可能仍在生成报告，请勿重复提交'))
     const wrapper = mountWithRouter()
-    await wrapper.find('textarea').setValue('分析 ADC12')
+    await fillRequiredFields(wrapper, '分析 ADC12')
     const submit = wrapper.findAll('button').find((button) => button.text().includes('提交分析'))
     await submit?.trigger('click')
     await flushPromises()
@@ -219,6 +223,15 @@ describe('AgentView (D8-T03)', () => {
     expect(wrapper.text()).toContain('智能分析处理超过 90 秒')
     expect(wrapper.text()).toContain('请勿重复提交')
     expect(wrapper.find('button.btn-primary').attributes('disabled')).toBeUndefined()
+    wrapper.unmount()
+  })
+  it('missing itemId is rejected client-side without calling the backend', async () => {
+    const wrapper = mountWithRouter()
+    await wrapper.find('textarea').setValue('分析走势')
+    await wrapper.findAll('button').find((button) => button.text().includes('提交分析'))?.trigger('click')
+    await flushPromises()
+    expect(queryAgent).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('请选择或填写监测项编号')
     wrapper.unmount()
   })
   it('empty question is rejected client-side without calling the backend', async () => {

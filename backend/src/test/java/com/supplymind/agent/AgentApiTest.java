@@ -135,6 +135,18 @@ class AgentApiTest {
     }
 
     @Test
+    void missingItemIdIsRejectedWithStructuredBadRequest() throws Exception {
+        Harness harness = harness();
+        var controller = new com.supplymind.agent.api.AgentQueryController(orchestrator(harness));
+
+        var response = controller.query(Map.of("question", "分析走势"));
+
+        assertEquals(400, response.getStatusCode().value());
+        Map<?, ?> body = (Map<?, ?>) response.getBody();
+        assertEquals("REJECTED", body.get("status"));
+        assertEquals("itemId is required", body.get("message"));
+    }
+    @Test
     void warningExplainProducesTheRealStructuredRiskViewThroughTheProductionChain() throws Exception {
         Harness harness = harness();
         // M3: persist a REAL warning evidence file so warning.explain has something to read.
