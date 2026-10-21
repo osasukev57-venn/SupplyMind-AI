@@ -105,7 +105,7 @@ class AgentPipelineIntegrationTest {
         assertTrue(result.evidencePack().facts().stream().anyMatch(fact -> fact.value() != null));
         assertEquals("AGENT-REPORT-V1", result.report().schemaVersion());
         assertNotNull(result.reportRef());
-        assertTrue(result.reportRef().startsWith("report/2026-08/"),
+        assertTrue(result.reportRef().startsWith("report/" + YearMonth.from(result.report().createdAt().atZoneSameInstant(java.time.ZoneId.of("Asia/Shanghai"))) + "/"),
                 "report must be persisted under data/report/YYYY-MM: " + result.reportRef());
         assertTrue(Files.isRegularFile(harness.root().resolveDataRef(result.reportRef())));
         assertTrue(Files.isRegularFile(harness.root().resolveDataRef(

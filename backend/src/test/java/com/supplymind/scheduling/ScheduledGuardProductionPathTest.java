@@ -99,19 +99,19 @@ class ScheduledGuardProductionPathTest {
 
             clock.set(at("2026-08-31T23:59:50+08:00"));
             scheduler.runGuardedCycle();
-            assertEquals(2, transport.callCount(), "Aug31 scheduled invocation must run exactly one collection cycle");
+            assertEquals(4, transport.callCount(), "Aug31 scheduled invocation must run exactly one collection cycle");
             assertEquals("2026-08", timeState(context).lastCompletedPeriod());
 
             clock.set(at("2026-09-01T00:00:10+08:00"));
             scheduler.runGuardedCycle();
-            assertEquals(4, transport.callCount(), "Sep1 scheduled invocation must run exactly one more cycle");
+            assertEquals(8, transport.callCount(), "Sep1 scheduled invocation must run exactly one more cycle");
             TimeStateV1 afterSeptember = timeState(context);
             assertEquals("2026-09", afterSeptember.lastCompletedPeriod());
             assertEquals(java.time.LocalDate.parse("2026-09-01"), afterSeptember.effectiveBusinessDate());
 
             clock.set(at("2026-08-31T12:00:00+08:00"));
             scheduler.runGuardedCycle();
-            assertEquals(4, transport.callCount(),
+            assertEquals(8, transport.callCount(),
                     "a rollback scheduled invocation must NOT trigger collection/publish/process");
             TimeStateV1 afterRollback = timeState(context);
             assertEquals(afterSeptember.effectiveHighWaterTime(), afterRollback.effectiveHighWaterTime(),
@@ -119,13 +119,13 @@ class ScheduledGuardProductionPathTest {
 
             clock.set(at("2026-09-01T10:00:00+08:00"));
             scheduler.runGuardedCycle();
-            assertEquals(6, transport.callCount(), "recover scheduled invocation runs exactly one cycle");
+            assertEquals(12, transport.callCount(), "recover scheduled invocation runs exactly one cycle");
             assertEquals("2026-09", timeState(context).lastCompletedPeriod(),
                     "recover must not duplicate the September month rotation");
 
             clock.set(at("2026-09-02T10:00:00+08:00"));
             scheduler.runGuardedCycle();
-            assertEquals(8, transport.callCount(), "Sep2 scheduled invocation runs exactly one cycle");
+            assertEquals(16, transport.callCount(), "Sep2 scheduled invocation runs exactly one cycle");
             assertEquals("2026-09", timeState(context).lastCompletedPeriod(),
                     "Sep2 must not repeat the month rotation");
             assertEquals(java.time.LocalDate.parse("2026-09-02"), timeState(context).effectiveBusinessDate());
@@ -160,6 +160,19 @@ class ScheduledGuardProductionPathTest {
     static class TestSchedulingConfig {
         private static final Instant CLOCK_EPOCH = Instant.parse("2026-08-31T15:59:50Z");
 
+        // Use the new production current chain, with a direct executor for deterministic guard assertions.
+        @Bean CurrentAcquisitionService currentAcquisitionService(DataRoot root, AtomicFileStore files,
+                ConfigActivationStore configs, SettableClock clock, PbocOfficialWebDataProvider provider,
+                RawAcquisitionStore acquisitions, RawReceiptStore raws, TimelineStore timelines,
+                LifecycleValidationService validation, LifecyclePublishService publish,
+                DailyProcessingService daily, AggregateProcessingService aggregate) {
+            var registry = new com.supplymind.provider.DataProviderRegistry();
+            registry.register(provider);
+            var intake = new com.supplymind.backfill.BackfillOrchestrator(root,
+                    new com.supplymind.backfill.BackfillJobStore(root, files, clock), configs, registry,
+                    acquisitions, raws, timelines, validation, publish, daily, aggregate);
+            return new CurrentAcquisitionService(new ActiveCurrentCollectionService(configs, intake), clock, Runnable::run);
+        }
         @Bean
         SettableClock foundationClock() {
             return new SettableClock(CLOCK_EPOCH);

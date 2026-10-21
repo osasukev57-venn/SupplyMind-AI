@@ -24,8 +24,14 @@ public final class TimeRotationService {
     public static final ZoneId SHANGHAI = ZoneId.of("Asia/Shanghai");
 
     private final TimeStateStore stateStore;
+    private final java.time.Clock clock;
 
     public TimeRotationService(TimeStateStore stateStore) {
+        this(stateStore, java.time.Clock.system(SHANGHAI));
+    }
+
+    public TimeRotationService(TimeStateStore stateStore, java.time.Clock clock) {
+        this.clock = Objects.requireNonNull(clock, "clock");
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
     }
 
@@ -70,7 +76,7 @@ public final class TimeRotationService {
 
     /** Startup recovery: materialize the state if missing (idempotent). */
     public RotationCheckResult recover() {
-        return check(OffsetDateTime.now(java.time.Clock.system(SHANGHAI)));
+        return check(OffsetDateTime.now(clock));
     }
 
     private static int quarterOf(YearMonth month) {

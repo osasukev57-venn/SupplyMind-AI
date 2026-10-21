@@ -67,7 +67,7 @@ class ShfeAdFreePublicDataProviderTest {
         configs.ensureInitialDefault();
         RawReceiptStore rawStore = new RawReceiptStore(root, files, CLOCK);
         ShfeAdFreePublicDataProvider provider = new ShfeAdFreePublicDataProvider(
-                configs, rawStore, CLOCK, new StubTransport(), new ShfeDailyMarketParser());
+                configs, rawStore, new RawAcquisitionStore(root, files, CLOCK), CLOCK, new StubTransport(), new ShfeDailyMarketParser());
 
         String itemId = com.supplymind.foundation.model.MonitorSeriesDefaults.ADC12_SMM_ITEM_ID;
         String secondItemId = com.supplymind.foundation.model.MonitorSeriesDefaults.ADC12_AM_ITEM_ID;
@@ -114,6 +114,42 @@ class ShfeAdFreePublicDataProviderTest {
         var aggregates = new AggregateProcessingService(root, files, CLOCK).processYear(itemId, 2026);
         assertEquals(4, aggregates.writtenRefs().size());
         assertTrue(Files.isRegularFile(root.resolveDataRef(DataPaths.dailyRef(itemId, month))));
+    }
+
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"calendar", "daily", "http"})
+    void malformedResponseIsRetainedBeforeParsingAndNeverProducesItemData(String failure) throws Exception {
+        DataRoot root = DataRoot.forTest(temporaryDirectory.resolve(failure));
+        AtomicMoveSupport.probeOrFail(root);
+        var files = new AtomicFileStore(root, new DirtyMarkerCodec());
+        var configs = new ConfigActivationStore(root, files, CLOCK);
+        configs.ensureInitialDefault();
+        byte[] broken = "not a valid market response".getBytes(StandardCharsets.UTF_8);
+        ShfeHttpTransport transport = uri -> {
+            boolean calendar = uri.equals(ShfeAdFreePublicDataProvider.CURRENT_TRADING_DAY_URI);
+            boolean fail = failure.equals("calendar") ? calendar : !calendar;
+            return new ShfeHttpResponse(uri, fail && failure.equals("http") ? 503 : 200,
+                    "application/json", fail ? broken : TRADING_DAY);
+        };
+        var provider = new ShfeAdFreePublicDataProvider(configs, new RawReceiptStore(root, files, CLOCK),
+                new RawAcquisitionStore(root, files, CLOCK), CLOCK, transport, new ShfeDailyMarketParser());
+        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> provider.collect(
+                ProviderCollectRequest.current(java.util.List.of(com.supplymind.foundation.model.MonitorSeriesDefaults.ADC12_SMM_ITEM_ID))));
+        boolean retained = false;
+        try (var paths = Files.list(root.resolveInternalRelative("raw/source"))) {
+            for (Path file : paths.filter(f -> f.toString().endsWith(".json") && !f.toString().endsWith(".manifest.json")).toList()) {
+                var acq = com.supplymind.foundation.codec.JsonV1Codec.decodeFile(Files.readAllBytes(file), RawAcquisitionV1.class);
+                assertTrue(new com.supplymind.agent.evidence.EvidenceRefVerifier(root).verify(acq.acquisitionRef()).status()
+                        == com.supplymind.agent.evidence.EvidenceStatus.VERIFIED);
+                if (java.util.Arrays.equals(broken, Base64.getDecoder().decode(acq.payloadBase64()))) retained = true;
+            }
+        }
+        assertTrue(retained, "the failing HTTP entity itself must survive parsing failure");
+        for (String dir : java.util.List.of("raw/formal", "staging", "published", "processed")) {
+            Path path = root.resolveInternalRelative(dir);
+            if (Files.exists(path)) try (var paths = Files.walk(path)) { assertEquals(0, paths.filter(Files::isRegularFile).count()); }
+        }
     }
 
     private static final class StubTransport implements ShfeHttpTransport {

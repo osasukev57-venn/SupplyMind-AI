@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.supplymind.publish.MaterialPublishGateTest
+-------------------------------------------------------------------------------
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.628 s -- in com.supplymind.publish.MaterialPublishGateTest

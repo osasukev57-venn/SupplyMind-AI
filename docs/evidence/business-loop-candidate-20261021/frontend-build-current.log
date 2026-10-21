@@ -1,0 +1,30 @@
+
+> supplymind-dashboard@0.1.0 build
+> vue-tsc --noEmit && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 116 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                          0.39 kB │ gzip:  0.28 kB
+dist/assets/QualityView-lmy0VsIZ.css     0.41 kB │ gzip:  0.26 kB
+dist/assets/HistoryView-C37i87f6.css     0.58 kB │ gzip:  0.31 kB
+dist/assets/AgentView-Boson6VS.css       0.62 kB │ gzip:  0.29 kB
+dist/assets/StatusBadge-KJL_Mrzy.css     1.05 kB │ gzip:  0.33 kB
+dist/assets/WarningView-DVtsEmUJ.css     1.20 kB │ gzip:  0.50 kB
+dist/assets/SourcesView-CIa-hh51.css     1.53 kB │ gzip:  0.54 kB
+dist/assets/DashboardView-_QRNR0NA.css   2.39 kB │ gzip:  0.85 kB
+dist/assets/index-BGHBCxf6.css           8.20 kB │ gzip:  2.49 kB
+dist/assets/config-DDgZyPQy.js           1.16 kB │ gzip:  0.45 kB
+dist/assets/dashboard-vm5AKWjH.js        1.34 kB │ gzip:  0.49 kB
+dist/assets/QualityView-jmp1mmtH.js      4.34 kB │ gzip:  1.96 kB
+dist/assets/DashboardView-BLQ6An7C.js    5.30 kB │ gzip:  2.42 kB
+dist/assets/HistoryView-Vrct6ErV.js      5.91 kB │ gzip:  2.45 kB
+dist/assets/AgentView-Cjjl5reg.js        9.23 kB │ gzip:  3.78 kB
+dist/assets/SourcesView-O_VS48iU.js     11.61 kB │ gzip:  4.19 kB
+dist/assets/WarningView-BtHfm6kv.js     12.82 kB │ gzip:  4.65 kB
+dist/assets/ConfigView-gLYjklOC.js      16.32 kB │ gzip:  5.16 kB
+dist/assets/StatusBadge-U2w7o_km.js     52.77 kB │ gzip: 21.04 kB
+dist/assets/index-Rcu7Hh0Z.js           96.51 kB │ gzip: 37.73 kB
+✓ built in 29.52s

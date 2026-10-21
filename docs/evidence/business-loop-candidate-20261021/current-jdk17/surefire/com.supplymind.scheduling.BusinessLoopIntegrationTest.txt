@@ -1,0 +1,61 @@
+-------------------------------------------------------------------------------
+Test set: com.supplymind.scheduling.BusinessLoopIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 187.2 s <<< FAILURE! -- in com.supplymind.scheduling.BusinessLoopIntegrationTest
+com.supplymind.scheduling.BusinessLoopIntegrationTest.scheduledDynamicTargetsProduceFormalWarningAcknowledgementAndAgentReport -- Time elapsed: 187.2 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: cycle must finish ==> expected: not equal but was: <RUNNING>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertNotEquals.failEqual(AssertNotEquals.java:277)
+	at org.junit.jupiter.api.AssertNotEquals.assertNotEquals(AssertNotEquals.java:263)
+	at org.junit.jupiter.api.Assertions.assertNotEquals(Assertions.java:2832)
+	at com.supplymind.scheduling.BusinessLoopIntegrationTest.await(BusinessLoopIntegrationTest.java:156)
+	at com.supplymind.scheduling.BusinessLoopIntegrationTest.run(BusinessLoopIntegrationTest.java:152)
+	at com.supplymind.scheduling.BusinessLoopIntegrationTest.scheduledDynamicTargetsProduceFormalWarningAcknowledgementAndAgentReport(BusinessLoopIntegrationTest.java:126)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	Suppressed: org.junit.platform.commons.JUnitException: Failed to close extension context
+		... 2 more
+	Caused by: java.io.IOException: Failed to delete temp directory D:\Dev\Temp\junit-2796572614087289226. The following paths could not be deleted (see suppressed exceptions for details): <root>, processed, processed\aggregate, processed\aggregate\MAT.ADC12.SMM
+		at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:183)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+		at java.base/java.util.stream.SortedOps$RefSortingSink.end(SortedOps.java:395)
+		at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:258)
+		at java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:258)
+		at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:510)
+		at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+		at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:150)
+		at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:173)
+		at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+		at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+		... 2 more
+		Suppressed: java.nio.file.DirectoryNotEmptyException: D:\Dev\Temp\junit-2796572614087289226
+			at java.base/sun.nio.fs.WindowsFileSystemProvider.implDelete(WindowsFileSystemProvider.java:272)
+			at java.base/sun.nio.fs.AbstractFileSystemProvider.delete(AbstractFileSystemProvider.java:105)
+			at java.base/java.nio.file.Files.delete(Files.java:1152)
+			at java.base/java.nio.file.Files.walkFileTree(Files.java:2828)
+			at java.base/java.nio.file.Files.walkFileTree(Files.java:2882)
+			... 13 more
+		Suppressed: java.nio.file.DirectoryNotEmptyException: D:\Dev\Temp\junit-2796572614087289226\processed
+			at java.base/sun.nio.fs.WindowsFileSystemProvider.implDelete(WindowsFileSystemProvider.java:272)
+			at java.base/sun.nio.fs.AbstractFileSystemProvider.delete(AbstractFileSystemProvider.java:105)
+			at java.base/java.nio.file.Files.delete(Files.java:1152)
+			at java.base/java.nio.file.Files.walkFileTree(Files.java:2828)
+			at java.base/java.nio.file.Files.walkFileTree(Files.java:2882)
+			... 13 more
+		Suppressed: java.nio.file.DirectoryNotEmptyException: D:\Dev\Temp\junit-2796572614087289226\processed\aggregate
+			at java.base/sun.nio.fs.WindowsFileSystemProvider.implDelete(WindowsFileSystemProvider.java:272)
+			at java.base/sun.nio.fs.AbstractFileSystemProvider.delete(AbstractFileSystemProvider.java:105)
+			at java.base/java.nio.file.Files.delete(Files.java:1152)
+			at java.base/java.nio.file.Files.walkFileTree(Files.java:2828)
+			at java.base/java.nio.file.Files.walkFileTree(Files.java:2882)
+			... 13 more
+		Suppressed: java.nio.file.DirectoryNotEmptyException: D:\Dev\Temp\junit-2796572614087289226\processed\aggregate\MAT.ADC12.SMM
+			at java.base/sun.nio.fs.WindowsFileSystemProvider.implDelete(WindowsFileSystemProvider.java:272)
+			at java.base/sun.nio.fs.AbstractFileSystemProvider.delete(AbstractFileSystemProvider.java:105)
+			at java.base/java.nio.file.Files.delete(Files.java:1152)
+			at java.base/java.nio.file.Files.walkFileTree(Files.java:2828)
+			at java.base/java.nio.file.Files.walkFileTree(Files.java:2882)
+			... 13 more
+

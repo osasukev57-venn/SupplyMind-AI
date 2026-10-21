@@ -54,6 +54,7 @@ public final class ShfeAdFreePublicDataProvider implements DataProvider {
 
     private final ConfigActivationStore configs;
     private final RawReceiptStore rawStore;
+    private final com.supplymind.foundation.storage.RawAcquisitionStore acquisitions;
     private final Clock clock;
     private final ShfeHttpTransport transport;
     private final ShfeDailyMarketParser parser;
@@ -61,12 +62,14 @@ public final class ShfeAdFreePublicDataProvider implements DataProvider {
     public ShfeAdFreePublicDataProvider(
             ConfigActivationStore configs,
             RawReceiptStore rawStore,
+            com.supplymind.foundation.storage.RawAcquisitionStore acquisitions,
             Clock clock,
             ShfeHttpTransport transport,
             ShfeDailyMarketParser parser
     ) {
         this.configs = Objects.requireNonNull(configs, "configs");
         this.rawStore = Objects.requireNonNull(rawStore, "rawStore");
+        this.acquisitions = Objects.requireNonNull(acquisitions, "acquisitions");
         this.clock = Objects.requireNonNull(clock, "clock");
         this.transport = Objects.requireNonNull(transport, "transport");
         this.parser = Objects.requireNonNull(parser, "parser");
@@ -130,19 +133,22 @@ public final class ShfeAdFreePublicDataProvider implements DataProvider {
         }
 
         LocalDate date = request.collectionMode() == CollectionMode.CURRENT
-                ? fetchLastCompletedTradingDay()
+                ? fetchLastCompletedTradingDay(config)
                 : request.historyStartDate();
         URI dailyUri = dailyUri(date);
-        ShfeHttpResponse response = requireJson(transport.get(dailyUri));
-        ShfeDailyMarketParser.AdSettlement settlement =
-                parser.parseAdMainSettlement(date, response.entityBytes());
+        ShfeHttpResponse response = transport.get(dailyUri);
         OffsetDateTime receivedAt = OffsetDateTime.now(clock);
         byte[] payload = response.entityBytes();
         String payloadSha = FileDigest.sha256(payload);
         String targetSetSha = FileDigest.sha256(targets.stream().map(MonitorSeriesItemV1::itemId)
                 .sorted().collect(Collectors.joining(",")).getBytes(java.nio.charset.StandardCharsets.UTF_8));
         String acquisitionId = "shfe-ad-acq-" + date.format(BASIC_DATE) + "-"
-                + payloadSha.substring(0, 16) + "-" + targetSetSha.substring(0, 16);
+                + payloadSha.substring(0, 16) + "-" + targetSetSha.substring(0, 16)
+                + (config.configVersion() > 1 ? "-c" + config.configVersion() : "");
+        retainResponse(config, response, acquisitionId, receivedAt);
+        requireJson(response);
+        ShfeDailyMarketParser.AdSettlement settlement =
+                parser.parseAdMainSettlement(date, response.entityBytes());
         List<RawReceiptV1> raws = new ArrayList<>();
         for (MonitorSeriesItemV1 item : targets) {
             RawReceiptV1 incoming = raw(config, item, settlement, response,
@@ -164,9 +170,24 @@ public final class ShfeAdFreePublicDataProvider implements DataProvider {
                 date.toString(), payloadSha, raws, List.of(), rejected);
     }
 
-    private LocalDate fetchLastCompletedTradingDay() {
-        ShfeHttpResponse response = requireJson(transport.get(CURRENT_TRADING_DAY_URI));
+    private LocalDate fetchLastCompletedTradingDay(MonitorSeriesConfigV1 config) {
+        ShfeHttpResponse response = transport.get(CURRENT_TRADING_DAY_URI);
+        String id = "shfe-calendar-" + FileDigest.sha256(response.entityBytes()) + "-c" + config.configVersion();
+        retainResponse(config, response, id, OffsetDateTime.now(clock));
+        requireJson(response);
         return parser.lastCompletedTradingDay(response.entityBytes());
+    }
+
+    /** Preserve the exact HTTP response before content validation or business parsing. */
+    private void retainResponse(MonitorSeriesConfigV1 config, ShfeHttpResponse response,
+            String acquisitionId, OffsetDateTime receivedAt) {
+        acquisitions.store(new com.supplymind.foundation.model.RawAcquisitionV1(
+                SchemaV1.VERSION, DataPaths.acquisitionRef(acquisitionId), acquisitionId,
+                config.mode(), ProviderType.FREE_PUBLIC, AccessMethod.FREE_PUBLIC_WEB,
+                config.configVersion(), SOURCE_NAME, response.responseUri().toString(),
+                response.responseUri().toString(), response.statusCode(), response.contentType(),
+                receivedAt, "base64", Base64.getEncoder().encodeToString(response.entityBytes()),
+                FileDigest.sha256(response.entityBytes())));
     }
 
     private static RawReceiptV1 raw(

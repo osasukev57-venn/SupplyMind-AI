@@ -1,0 +1,56 @@
+✔ assertLoopbackUrl accepts only http://127.0.0.1:<port> (31.1837ms)
+✔ assertLoopbackUrl rejects non-loopback hosts (6.8709ms)
+✔ assertLoopbackUrl rejects out-of-range ports (2.371ms)
+✔ waitForBackend fails fast on a non-loopback URL before any request (75.9859ms)
+✔ waitForBackend resolves TIMEOUT and never hangs (179.6253ms)
+✔ waitForBackend resolves READY when the backend answers UP (175.8026ms)
+✔ waitForBackend resolves TIMEOUT when the backend never becomes healthy (217.9232ms)
+✔ waitForBackend keeps polling while the backend returns non-UP bodies (118.0509ms)
+✔ first instance owns the lock and registers second-instance handling (13.635ms)
+✔ second instance does not own the lock (1.1848ms)
+✔ second-instance event restores and focuses the existing window (61.2841ms)
+✔ second-instance event focuses without restore when the window is not minimized (10.3845ms)
+✔ second-instance event is a no-op when no window exists yet (32.8862ms)
+✔ waitForExit resolves immediately for an already-exited child (16.1051ms)
+✔ waitForExit resolves false on timeout and true on exit (148.0943ms)
+✔ forceKillTree runs taskkill with /T /F and resolves (4009.6452ms)
+✔ portableRoot resolves explicit override (9.6066ms)
+✔ layout builds the frozen portable directory shape (3.6593ms)
+✔ backendArgs pins dynamic loopback port, data root and loopback address (12.4554ms)
+✔ backendArgs omits static-locations when no web dir is provided (21.1942ms)
+✔ preflight reports every missing or unwritable path (126.3281ms)
+✔ preflight fails when the JRE or JAR is missing (9.2082ms)
+✔ preflight fails when index.html is missing from the web dir (31.08ms)
+✔ preflight fails when data is a file instead of a directory (153.3822ms)
+✔ layout exposes licenses and webIndex paths (7.2494ms)
+✔ pickFreePort returns a valid free port on the loopback interface (341.6402ms)
+✖ pickFreePort never returns the fixed dev default 8080 (190.8415ms)
+✔ pickFreePort port can actually be bound on 127.0.0.1 (17.6879ms)
+✔ backendArgs rejects fixed/default ports (never 8080) (3.968ms)
+✔ backendArgs always pins the loopback address (2.8916ms)
+✔ backendArgs never contains localhost, LAN or wildcard bindings (2.9295ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 30
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7882.1824
+
+✖ failing tests:
+
+test at desktop\test\port.test.js:15:1
+✖ pickFreePort never returns the fixed dev default 8080 (190.8415ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to: 8080
+      at TestContext.<anonymous> (D:\Dev\Projects\SupplyMind AI\desktop\test\port.test.js:18:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 8080,
+    expected: 8080,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }

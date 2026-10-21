@@ -1,0 +1,33 @@
+{
+  "command": "process JAVA_HOME=D:/Dev/SDK/Java/jdk-17; mvn.cmd -o -f backend/pom.xml -Dtest=BusinessLoopIntegrationTest,ShfeAdFreePublicDataProviderTest test",
+  "exitCode": 1,
+  "scope": "affected tests, not a new full-suite run",
+  "total": 5,
+  "failures": 1,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 4,
+  "jdk": [
+    "17.0.19"
+  ],
+  "suites": [
+    {
+      "file": "TEST-com.supplymind.provider.shfe.ShfeAdFreePublicDataProviderTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "durationSeconds": 28.576,
+      "skips": []
+    },
+    {
+      "file": "TEST-com.supplymind.scheduling.BusinessLoopIntegrationTest.xml",
+      "total": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "durationSeconds": 187.234,
+      "skips": []
+    }
+  ]
+}

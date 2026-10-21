@@ -464,7 +464,7 @@ class DynamicConfigWorkflowServiceTest {
                 // acquisition and the auto backfill never starve each other.
                 LocalDate from = request.collectionMode() == com.supplymind.provider.CollectionMode.HISTORY
                         ? request.historyStartDate()
-                        : LocalDate.parse("2026-08-17");
+                        : LocalDate.now(CLOCK);
                 LocalDate to = request.collectionMode() == com.supplymind.provider.CollectionMode.HISTORY
                         ? request.historyEndDate()
                         : from;

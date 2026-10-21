@@ -1,0 +1,20 @@
+{
+  "frontend": {
+    "command": "npm.cmd --prefix frontend test",
+    "passed": 41,
+    "start": "10:35:39",
+    "duration": "231.17s (transform 40.53s, setup 0ms, collect 120.11s, tests 21.20s, environment 976.02s, prepare 164.41s)"
+  },
+  "build": {
+    "command": "npm.cmd --prefix frontend run build",
+    "completed": true
+  },
+  "desktop": {
+    "command": "node --test desktop/test/*.test.js",
+    "total": 31,
+    "passed": 30,
+    "failed": 1,
+    "skipped": 0
+  },
+  "node": "v24.16.0"
+}

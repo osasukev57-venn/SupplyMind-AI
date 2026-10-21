@@ -63,6 +63,12 @@ public final class WarningAckStore {
      * per-caller check exists.
      */
     public java.util.Optional<WarningAcknowledgementV1> readVerified(WarningRecordV1 warning) {
+        return readVerified(dataRoot, warning);
+    }
+
+    /** Shared read-only verification; no writer or clock is needed to inspect evidence. */
+    public static java.util.Optional<WarningAcknowledgementV1> readVerified(
+            DataRoot dataRoot, WarningRecordV1 warning) {
         Objects.requireNonNull(warning, "warning");
         String warningRef = DataPaths.warningRef(warning.warningMonth(), warning.warningId());
         String ackRef = ackRefOf(warningRef, warning.warningId());

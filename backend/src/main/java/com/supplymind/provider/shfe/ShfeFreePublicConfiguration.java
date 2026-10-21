@@ -3,16 +3,12 @@ package com.supplymind.provider.shfe;
 import com.supplymind.backfill.BackfillOrchestrator;
 import com.supplymind.foundation.storage.ConfigActivationStore;
 import com.supplymind.foundation.storage.RawReceiptStore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.time.Clock;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /** Spring wiring for the approved credential-free SHFE public benchmark. */
 @Configuration
@@ -30,9 +26,10 @@ public class ShfeFreePublicConfiguration {
     @Bean
     ShfeAdFreePublicDataProvider shfeAdFreePublicDataProvider(
             ConfigActivationStore configs, RawReceiptStore raws, Clock foundationClock,
+            com.supplymind.foundation.storage.RawAcquisitionStore acquisitions,
             ShfeHttpTransport transport, ShfeDailyMarketParser parser
     ) {
-        return new ShfeAdFreePublicDataProvider(configs, raws, foundationClock, transport, parser);
+        return new ShfeAdFreePublicDataProvider(configs, raws, acquisitions, foundationClock, transport, parser);
     }
 
     @Bean
@@ -43,11 +40,4 @@ public class ShfeFreePublicConfiguration {
         return new FreePublicCurrentAcquisitionService(configs, orchestrator, currentAcquisitionExecutor);
     }
 
-    @Bean
-    @ConditionalOnProperty(name = "supplymind.current-acquisition.on-startup-enabled", havingValue = "true")
-    ApplicationListener<ApplicationReadyEvent> freePublicCurrentOnStartup(
-            FreePublicCurrentAcquisitionService service
-    ) {
-        return event -> service.trigger();
-    }
 }

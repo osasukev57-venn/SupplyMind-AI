@@ -102,6 +102,36 @@ public final class EvidenceRefVerifier {
         return entry(evidenceRefId, ref, refType, EvidenceStatus.VERIFIED, null, sha256);
     }
 
+    private com.supplymind.warning.WarningRecordV1 verifiedWarning(String ref) throws IOException {
+        String warningRef = ref.endsWith(".ack.json")
+                ? ref.substring(0, ref.length() - ".ack.json".length()) + ".json" : ref;
+        if (verify(warningRef).status() != EvidenceStatus.VERIFIED) {
+            throw new IllegalArgumentException("Warning is not manifest verified");
+        }
+        var warning = JsonV1Codec.decodeFile(Files.readAllBytes(dataRoot.resolveDataRef(warningRef)),
+                com.supplymind.warning.WarningRecordV1.class);
+        if (!warningRef.equals(DataPaths.warningRef(warning.warningMonth(), warning.warningId()))) {
+            throw new IllegalArgumentException("Warning identity does not match its path");
+        }
+        if (ref.endsWith(".ack.json")) {
+            com.supplymind.warning.WarningAckStore.readVerified(dataRoot, warning).orElseThrow();
+        }
+        return warning;
+    }
+
+    public boolean isFormalWarningEvidence(String ref) {
+        try {
+            if (verify(ref).status() != EvidenceStatus.VERIFIED) return false;
+            var warning = verifiedWarning(ref);
+            return !warning.demoRule() && "PUBLISHED_VERIFIED".equals(warning.dataStatus())
+                    && (com.supplymind.warning.WarningRuleConfigV1.VERSION.equals(warning.ruleVersion())
+                    || warning.ruleVersion().startsWith(
+                        com.supplymind.warning.WarningRuleConfigV1.VERSION + "-custom-r"));
+        } catch (IOException | RuntimeException invalid) {
+            return false;
+        }
+    }
+
     public boolean isVerified(EvidencePackV1.EvidenceRefEntry entry) {
         return entry != null && entry.status() == EvidenceStatus.VERIFIED;
     }
@@ -176,7 +206,10 @@ public final class EvidenceRefVerifier {
                         null, null, null, null, null, null,
                         List.of(String.valueOf(config.configVersion())));
             }
-            return entry; // WARNING and other manifest-valid refs carry no decodable lineage
+            if (ref.startsWith("warning/")) {
+                verifiedWarning(ref);
+            }
+            return entry; // warning identity/ack binding was verified above
         } catch (IOException | RuntimeException exception) {
             return new EvidencePackV1.EvidenceRefEntry(
                     entry.evidenceRefId(), entry.refType(), entry.ref(), entry.sha256(),

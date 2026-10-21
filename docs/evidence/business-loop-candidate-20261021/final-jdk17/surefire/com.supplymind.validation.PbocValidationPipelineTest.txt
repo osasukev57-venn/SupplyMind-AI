@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.supplymind.validation.PbocValidationPipelineTest
+-------------------------------------------------------------------------------
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.47 s -- in com.supplymind.validation.PbocValidationPipelineTest

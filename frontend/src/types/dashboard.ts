@@ -9,7 +9,7 @@ export interface OverviewResponse {
   warnings: string[]
 }
 export interface CurrentAcquisitionStatus {
-  state: 'IDLE' | 'RUNNING' | 'SUCCEEDED' | 'FAILED'
+  state: 'IDLE' | 'RUNNING' | 'SUCCEEDED' | 'PARTIAL_SUCCESS' | 'FAILED'
   businessDate: string | null
   message: string
   updatedAt: string | null

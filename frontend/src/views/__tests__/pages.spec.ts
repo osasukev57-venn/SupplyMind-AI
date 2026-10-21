@@ -199,13 +199,14 @@ describe('dashboard pages', () => {
     expect(wrapper.find('.demo-banner').exists()).toBe(false)
   })
 
-  it('dashboard exposes honest official-rate acquisition state and retry control', async () => {
+  it.each(['FAILED', 'PARTIAL_SUCCESS'] as const)('dashboard exposes %s acquisition state and retry control', async (state) => {
     vi.mocked(fetchCurrentAcquisition).mockResolvedValue({
-      state: 'FAILED', businessDate: null, message: 'unavailable', updatedAt: '2026-08-10T09:25:38+08:00'
+      state, businessDate: null, message: '未完成：FX.GBP.CNY.PBOC_MID', updatedAt: '2026-08-10T09:25:38+08:00'
     })
     const wrapper = mount(DashboardView)
     await flushPromises()
-    expect(wrapper.text()).toContain('暂时无法获取中国人民银行公开汇率')
+    expect(wrapper.text()).toContain('部分或全部自动监测项未完成更新')
+    expect(wrapper.text()).toContain('未完成：FX.GBP.CNY.PBOC_MID')
     await wrapper.get('button.action-btn').trigger('click')
     expect(refreshCurrentAcquisition).toHaveBeenCalledTimes(1)
   })

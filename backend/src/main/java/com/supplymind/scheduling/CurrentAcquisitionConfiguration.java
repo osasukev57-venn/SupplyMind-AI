@@ -21,15 +21,22 @@ public class CurrentAcquisitionConfiguration {
     @Bean(destroyMethod = "shutdown")
     ExecutorService currentAcquisitionExecutor() {
         return Executors.newSingleThreadExecutor(runnable -> {
-            Thread thread = new Thread(runnable, "pboc-current-acquisition");
+            Thread thread = new Thread(runnable, "current-acquisition");
             thread.setDaemon(true);
             return thread;
         });
     }
 
     @Bean
+    ActiveCurrentCollectionService activeCurrentCollectionService(
+            com.supplymind.foundation.storage.ConfigActivationStore configs,
+            com.supplymind.backfill.BackfillOrchestrator intake) {
+        return new ActiveCurrentCollectionService(configs, intake);
+    }
+
+    @Bean
     CurrentAcquisitionService currentAcquisitionService(
-            PbocDay2CollectionService collectionService,
+            ActiveCurrentCollectionService collectionService,
             Clock foundationClock,
             ExecutorService currentAcquisitionExecutor
     ) {

@@ -1,0 +1,1100 @@
+{
+  "command": "process JAVA_HOME=D:/Dev/SDK/Java/jdk-17; mvn.cmd -o -f backend/pom.xml test",
+  "exitCode": 1,
+  "total": 685,
+  "failures": 0,
+  "errors": 1,
+  "skipped": 9,
+  "passed": 675,
+  "javaRuntime": [
+    "17.0.19+10-LTS"
+  ],
+  "javaVendor": [
+    "Microsoft"
+  ],
+  "finishedAt": "2026-10-21T16:30:31+08:00",
+  "suites": [
+    {
+      "file": "TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skipReasons": [
+        "System property [at-src-002.real] does not exist"
+      ]
+    },
+    {
+      "file": "TEST-com.supplymind.acceptance.MaterialDay3AcceptanceTest.xml",
+      "total": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.acceptance.MaterialRoutePlanProductionTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentApiMvcContractTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentApiTest.xml",
+      "total": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentAttackTest.xml",
+      "total": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentF2MissingReferenceGuardTest.xml",
+      "total": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentF3LifecycleVerificationTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentFactFirstPipelineTest.xml",
+      "total": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentFinalStageMajorFixAttackTest.xml",
+      "total": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentPipelineIntegrationTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentR2StageFixAttackTest.xml",
+      "total": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentSpringAiToolCallingTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentToolBoundaryTest.xml",
+      "total": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageAuthorityBindingAttackTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageClaimFieldGuardAttackTest.xml",
+      "total": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageFullBindingAttackTest.xml",
+      "total": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageMultiRowLineageAttackTest.xml",
+      "total": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageRowToRefConfigTest.xml",
+      "total": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageStrictEnvelopeAttackTest.xml",
+      "total": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageStructuredClaimsAttackTest.xml",
+      "total": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentCostAttackTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest.xml",
+      "total": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentGoldenEvidenceTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentIsolationAttackTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentResponseAttackTest.xml",
+      "total": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentSpringAiAttackTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.infrastructure.springai.CloudLlmConfigurationTest.xml",
+      "total": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.agent.infrastructure.springai.CloudLlmRealApiAcceptanceTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skipReasons": [
+        "System property [supplymind.llm.real] does not exist"
+      ]
+    },
+    {
+      "file": "TEST-com.supplymind.agent.infrastructure.springai.SpringAiPromptContractTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.backfill.BackfillHistoryRangeContractTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.backfill.BackfillOrchestratorTest.xml",
+      "total": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.backfill.BackfillRangeCompletionRuleTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.backfill.Day5SecondHistoryRangeAttackTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.config.ConfigApiMvcContractTest.xml",
+      "total": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.config.ConfigManagementServiceTest.xml",
+      "total": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.config.CurrentIntakeAttackTest.xml",
+      "total": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.config.DynamicConfigWorkflowServiceTest.xml",
+      "total": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.dashboard.DashboardApiMockMvcTest.xml",
+      "total": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.dashboard.DashboardControllerTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.dashboard.DashboardDtoContractTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.dashboard.DashboardMvcContractTest.xml",
+      "total": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.dashboard.DashboardServiceTest.xml",
+      "total": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.AtAggDay4ContractHarnessTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.AtPrecDay4ContractHarnessTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.AtPubDay4ContractHarnessTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.AtSrcDay4ReconciliationHarnessTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.Day4DailyAggregateSchemaContractTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.Day4GoldenFixtureManifestTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.FutureMaterialDay4ContractTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.MaterialAggregateProcessingContractHarnessTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.MaterialBasicValidationV2ContractHarnessTest.xml",
+      "total": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.MaterialDailyProcessingContractHarnessTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.MaterialPublishNegativeMatrixHarnessTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.Day5ImplementationIntegrationTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5AlertContractHarnessTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5BackfillStateContractHarnessTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5ConfigurationActivationContractHarnessTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5CrossYearHistoryContractHarnessTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5FutureAcceptanceIntegrationHarnessTest.xml",
+      "total": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5TimeContractHarnessTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skipReasons": [
+        "PENDING_IMPLEMENTATION: AT-TIME-003/004 require a dedicated Windows/VM physical system-time run and final Electron package."
+      ]
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.Day5FinalProviderCapabilityDeclarationTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.Day5R2BackfillAttackTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.Day5R2RotationHistoryCapabilityAttackTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.Day5R2WarningAttackTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.Day5SecondDefaultCapabilityAttackTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.ProviderDefaultCapabilityFailClosedTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.demo.DemoShowcaseServiceTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.desktop.ChildProcessWatchdogTest.xml",
+      "total": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.desktop.HealthControllerTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.desktop.PortableInitialConfigExporterTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.AtFile000ConfigAndRawWindowAcceptanceTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.AtFile000DualArtifactImmutabilityAcceptanceTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.AtFile000RecoveryManifestRootAcceptanceTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.D1T03AtFile000SupplementalAcceptanceTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.DirtyMarkerAndProcessedCodecAcceptanceTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.DualCurrencyRawLifecycleAcceptanceTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.FoundationStartupAcceptanceTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.GoldenFixtureContractAcceptanceTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.IndependentFormatContractAcceptanceTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.boot.SupplyMindDataPropertiesTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.codec.CsvV1CodecTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.codec.JsonV1CodecTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.model.ConfigAndManifestV1Test.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.model.QuarantineAndPrecisionV1Test.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.model.RawReceiptAndTimelineV1Test.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.AtomicFileRecoveryTest.xml",
+      "total": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.AtomicFileStoreWriteInvariantTest.xml",
+      "total": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.DataRootAndPathsTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.DirtyMarkerCodecTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.DirtyMarkerRecoveryTest.xml",
+      "total": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.ManifestDerivedFieldsVerifierTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.RawAcquisitionLinkVerifierTest.xml",
+      "total": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.RawAndConfigStoreTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.history.HistoryQueryServiceTest.xml",
+      "total": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.localimport.LocalImportBatchProcessingServiceTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.localimport.LocalImportIsolationTest.xml",
+      "total": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.localimport.SyntheticDemoIsolationTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.manual.ManualMaterialIntakeTest.xml",
+      "total": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.manual.ManualMaterialProcessingServiceTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.processing.AggregateCalculatorTest.xml",
+      "total": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.processing.AggregateProcessingServiceTest.xml",
+      "total": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.processing.AggregateRealRawEvidenceTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skipReasons": [
+        "System property [d2-t04.real-raw] does not exist"
+      ]
+    },
+    {
+      "file": "TEST-com.supplymind.processing.DailyProcessingServiceTest.xml",
+      "total": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.processing.DailyRealRawEvidenceTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skipReasons": [
+        "System property [d2-t03.real-raw] does not exist"
+      ]
+    },
+    {
+      "file": "TEST-com.supplymind.processing.MaterialDailyAggregateTest.xml",
+      "total": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.provider.DataProviderRegistryTest.xml",
+      "total": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.provider.pboc.PbocDynamicTargetAttackTest.xml",
+      "total": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.provider.pboc.PbocOfficialWebDataProviderContractTest.xml",
+      "total": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.provider.pboc.PbocOfficialWebRealNetworkAttemptTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skipReasons": [
+        "System property [pboc.real-network] does not exist"
+      ]
+    },
+    {
+      "file": "TEST-com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skipReasons": [
+        "System property [pboc.real-network] does not exist"
+      ]
+    },
+    {
+      "file": "TEST-com.supplymind.provider.pboc.PbocRawFirstContractTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.provider.shfe.ShfeAdFreePublicDataProviderTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.publish.MaterialPublishGateTest.xml",
+      "total": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.publish.PublishedQueryServiceTest.xml",
+      "total": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.publish.PublishGateTest.xml",
+      "total": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.publish.PublishRealRawEvidenceTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skipReasons": [
+        "System property [d2-t02.real-raw] does not exist"
+      ]
+    },
+    {
+      "file": "TEST-com.supplymind.rotation.TimeRotationServiceTest.xml",
+      "total": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.routing.MaterialRoutingTest.xml",
+      "total": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.scheduling.ActiveCurrentCollectionServiceTest.xml",
+      "total": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.scheduling.BusinessLoopIntegrationTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 1,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.scheduling.CurrentAcquisitionServiceTest.xml",
+      "total": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.scheduling.ScheduledEntryPostFixAttackTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.scheduling.ScheduledGuardProductionPathTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.survey.FreePublicSourceSurveyTest.xml",
+      "total": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.validation.MaterialValidationPipelineTest.xml",
+      "total": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.validation.PbocValidationPipelineTest.xml",
+      "total": 25,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.validation.PbocValidationRealRawEvidenceTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skipReasons": [
+        "System property [d2-t01.real-raw] does not exist"
+      ]
+    },
+    {
+      "file": "TEST-com.supplymind.warning.FormalWarningEvaluationServiceTest.xml",
+      "total": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.warning.WarningAckStoreTest.xml",
+      "total": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.warning.WarningApiMvcContractTest.xml",
+      "total": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.warning.WarningRuleManagementServiceTest.xml",
+      "total": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    },
+    {
+      "file": "TEST-com.supplymind.warning.WarningServiceTest.xml",
+      "total": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipReasons": []
+    }
+  ]
+}

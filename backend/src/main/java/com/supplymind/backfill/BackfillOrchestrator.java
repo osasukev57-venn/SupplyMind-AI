@@ -303,7 +303,14 @@ public final class BackfillOrchestrator {
             acquisitionStore.store(acquisitionFor(raw));
         }
         rawStore.store(raw);
-        timelineStore.createInitial(raw.runId(), raw.rawRef(), raw.receivedAt());
+        if (java.nio.file.Files.exists(dataRoot.resolveDataRef(DataPaths.stagingRef(raw.runId())))) {
+            var existing = timelineStore.read(raw.runId());
+            if (!raw.runId().equals(existing.runId()) || !raw.rawRef().equals(existing.rawRef())) {
+                throw new com.supplymind.foundation.storage.StorageException("Existing timeline does not bind to raw");
+            }
+        } else {
+            timelineStore.createInitial(raw.runId(), raw.rawRef(), raw.receivedAt());
+        }
         validation.process(raw.runId());
         publish.process(raw.runId());
     }
@@ -321,6 +328,9 @@ public final class BackfillOrchestrator {
         Objects.requireNonNull(itemId, "itemId");
         MonitorSeriesConfigV1 config = configStore.readActiveConfig();
         MonitorSeriesItemV1 item = config.requireItem(itemId);
+        if (!item.enabled()) {
+            return new CurrentIntakeOutcome(CurrentIntakeStatus.FAILED, itemId, 0, List.of("TARGET_DISABLED"));
+        }
         if (isManual(item)) {
             return new CurrentIntakeOutcome(CurrentIntakeStatus.AWAITING_MANUAL_INPUT,
                     itemId, 0, List.of("AWAITING_MANUAL_INPUT"));
@@ -346,6 +356,13 @@ public final class BackfillOrchestrator {
                 continue;
             }
             persistRawChain(itemId, raw);
+            var current = timelineStore.read(raw.runId()).current();
+            if (current.processingStage() != com.supplymind.foundation.model.ProcessingStage.PUBLISHED
+                    || (current.validationStatus() != com.supplymind.foundation.model.ValidationStatus.VERIFIED
+                    && current.validationStatus() != com.supplymind.foundation.model.ValidationStatus.VERIFIED_WITH_NOTICE)) {
+                reasons.add("NOT_PUBLISHED:" + raw.runId());
+                continue;
+            }
             persisted++;
         }
         outcome.rejectedItemIds().forEach((rejectedItem, reason) ->
@@ -365,7 +382,8 @@ public final class BackfillOrchestrator {
             daily.processMonth(itemId, month);
             aggregate.processYear(itemId, month.getYear());
         }
-        return new CurrentIntakeOutcome(CurrentIntakeStatus.SUCCEEDED, itemId, persisted, reasons);
+        return new CurrentIntakeOutcome(reasons.isEmpty() ? CurrentIntakeStatus.SUCCEEDED
+                : CurrentIntakeStatus.FAILED, itemId, persisted, reasons);
     }
 
     /** M1: honest outcome of a CURRENT-value acquisition (distinct from backfill jobs). */

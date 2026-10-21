@@ -11,9 +11,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Non-blocking current PBOC acquisition boundary used by the desktop bootstrap and the
+ * Non-blocking current acquisition boundary used by the desktop bootstrap and the
  * operator refresh endpoint. The actual business chain remains owned by
- * {@link PbocDay2CollectionService}; this class only exposes honest observable state.
+ * {@link ActiveCurrentCollectionService}; this class only exposes honest observable state.
  */
 public final class CurrentAcquisitionService {
 
@@ -27,7 +27,7 @@ public final class CurrentAcquisitionService {
     ) {
     }
 
-    private final PbocDay2CollectionService collectionService;
+    private final ActiveCurrentCollectionService collectionService;
     private final Clock clock;
     private final Executor executor;
     private final AtomicBoolean inFlight = new AtomicBoolean(false);
@@ -35,7 +35,7 @@ public final class CurrentAcquisitionService {
             new AtomicReference<>(new Status("IDLE", null, "Current acquisition has not run", null));
 
     public CurrentAcquisitionService(
-            PbocDay2CollectionService collectionService,
+            ActiveCurrentCollectionService collectionService,
             Clock clock,
             Executor executor
     ) {
@@ -56,14 +56,14 @@ public final class CurrentAcquisitionService {
         if (!inFlight.compareAndSet(false, true)) {
             return status.get();
         }
-        status.set(new Status("RUNNING", null, "Fetching latest official PBOC rates", now()));
+        status.set(new Status("RUNNING", null, "正在处理启用的自动监测项", now()));
         try {
             executor.execute(this::runCycle);
         } catch (RuntimeException exception) {
             inFlight.set(false);
             status.set(new Status("FAILED", null,
-                    "Official PBOC rates are temporarily unavailable", now()));
-            LOGGER.warn("pboc_current_acquisition scheduling_failed failure={}",
+                    "当前采集未完成，请查看来源状态后重试", now()));
+            LOGGER.warn("current_acquisition scheduling_failed failure={}",
                     exception.getClass().getSimpleName());
         }
         return status.get();
@@ -71,15 +71,13 @@ public final class CurrentAcquisitionService {
 
     private void runCycle() {
         try {
-            Day2CycleResult result = collectionService.runImmediateCycle();
-            status.set(new Status("SUCCEEDED", result.businessDate(),
-                    "Latest official PBOC rates are available", now()));
-            LOGGER.info("pboc_current_acquisition outcome=SUCCESS businessDate={} payloadSha256={}",
-                    result.businessDate(), result.payloadSha256());
+            ActiveCurrentCollectionService.Result result = collectionService.runImmediateCycle();
+            status.set(new Status(result.state(), result.businessDate(), result.message(), now()));
+            LOGGER.info("current_acquisition outcome={}", result.state());
         } catch (RuntimeException exception) {
             status.set(new Status("FAILED", null,
-                    "Official PBOC rates are temporarily unavailable", now()));
-            LOGGER.warn("pboc_current_acquisition outcome=FAILED failure={}",
+                    "当前采集未完成，请查看来源状态后重试", now()));
+            LOGGER.warn("current_acquisition outcome=FAILED failure={}",
                     exception.getClass().getSimpleName());
         } finally {
             inFlight.set(false);

@@ -1,0 +1,13 @@
+-------------------------------------------------------------------------------
+Test set: com.supplymind.scheduling.BusinessLoopIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 11.91 s <<< FAILURE! -- in com.supplymind.scheduling.BusinessLoopIntegrationTest
+com.supplymind.scheduling.BusinessLoopIntegrationTest.scheduledDynamicTargetsProduceFormalWarningAcknowledgementAndAgentReport -- Time elapsed: 11.91 s <<< ERROR!
+com.supplymind.foundation.storage.StorageException: Unsupported dataRoot-relative reference: published/FX.GBP.CNY.PBOC_MID/2026-08-12.json
+	at com.supplymind.foundation.storage.DataPaths.requireLegalDataRef(DataPaths.java:187)
+	at com.supplymind.foundation.storage.DataRoot.resolveDataRef(DataRoot.java:56)
+	at com.supplymind.scheduling.BusinessLoopIntegrationTest.scheduledDynamicTargetsProduceFormalWarningAcknowledgementAndAgentReport(BusinessLoopIntegrationTest.java:129)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+

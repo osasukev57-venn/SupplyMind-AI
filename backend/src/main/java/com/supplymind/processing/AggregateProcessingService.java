@@ -41,8 +41,15 @@ public final class AggregateProcessingService {
     private final DataRoot dataRoot;
     private final AtomicFileStore fileStore;
     private final Clock clock;
+    private final java.util.function.Consumer<String> afterAggregation;
 
     public AggregateProcessingService(DataRoot dataRoot, AtomicFileStore fileStore, Clock clock) {
+        this(dataRoot, fileStore, clock, itemId -> {});
+    }
+
+    public AggregateProcessingService(DataRoot dataRoot, AtomicFileStore fileStore, Clock clock,
+            java.util.function.Consumer<String> afterAggregation) {
+        this.afterAggregation = Objects.requireNonNull(afterAggregation, "afterAggregation");
         this.dataRoot = Objects.requireNonNull(dataRoot, "dataRoot");
         this.fileStore = Objects.requireNonNull(fileStore, "fileStore");
         this.clock = Objects.requireNonNull(clock, "clock");
@@ -56,6 +63,7 @@ public final class AggregateProcessingService {
         for (AggregateGrain grain : grains) {
             writtenRefs.addAll(processGrain(itemId, grain, year));
         }
+        if (!writtenRefs.isEmpty()) afterAggregation.accept(itemId);
         return new AggregateYearResult(itemId, year, List.copyOf(writtenRefs));
     }
 

@@ -24,7 +24,7 @@ class CurrentAcquisitionServiceTest {
 
     @Test
     void successfulCyclePublishesBusinessDateWithoutBlockingCaller() {
-        PbocDay2CollectionService cycle = mock(PbocDay2CollectionService.class);
+        ActiveCurrentCollectionService cycle = mock(ActiveCurrentCollectionService.class);
         when(cycle.runImmediateCycle()).thenReturn(result());
         CurrentAcquisitionService service = new CurrentAcquisitionService(cycle, CLOCK, Runnable::run);
 
@@ -37,7 +37,7 @@ class CurrentAcquisitionServiceTest {
 
     @Test
     void sourceFailureIsControlledAndDoesNotExposeExceptionDetail() {
-        PbocDay2CollectionService cycle = mock(PbocDay2CollectionService.class);
+        ActiveCurrentCollectionService cycle = mock(ActiveCurrentCollectionService.class);
         when(cycle.runImmediateCycle()).thenThrow(new IllegalStateException("secret transport detail"));
         CurrentAcquisitionService service = new CurrentAcquisitionService(cycle, CLOCK, Runnable::run);
 
@@ -45,12 +45,12 @@ class CurrentAcquisitionServiceTest {
 
         assertEquals("FAILED", status.state());
         assertNull(status.businessDate());
-        assertEquals("Official PBOC rates are temporarily unavailable", status.message());
+        assertEquals("当前采集未完成，请查看来源状态后重试", status.message());
     }
 
     @Test
     void concurrentRefreshDoesNotStartASecondCycleAndControllerReturnsAccepted() {
-        PbocDay2CollectionService cycle = mock(PbocDay2CollectionService.class);
+        ActiveCurrentCollectionService cycle = mock(ActiveCurrentCollectionService.class);
         AtomicReference<Runnable> queued = new AtomicReference<>();
         Executor delayed = queued::set;
         CurrentAcquisitionService service = new CurrentAcquisitionService(cycle, CLOCK, delayed);
@@ -65,10 +65,7 @@ class CurrentAcquisitionServiceTest {
         assertEquals("SUCCEEDED", controller.status().state());
     }
 
-    private static Day2CycleResult result() {
-        return new Day2CycleResult(
-                "2026-08-20", "acq", "sha", "usd-run", "eur-run",
-                "usd-raw", "eur-raw", "6.7808", "7.8815",
-                "usd-daily", "eur-daily", List.of("usd-month"), List.of("eur-month"), 1, 1);
+    private static ActiveCurrentCollectionService.Result result() {
+        return new ActiveCurrentCollectionService.Result("SUCCEEDED", "2026-08-20", "completed");
     }
 }

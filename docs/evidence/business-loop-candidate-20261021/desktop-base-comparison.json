@@ -1,0 +1,12 @@
+[
+  {
+    "path": "desktop/src/port.js",
+    "baseSha256": "59dd7ef125b01bfc5989cd38799439def6e19d3592146b24a41a1f0ac3093149",
+    "workingSha256": "59dd7ef125b01bfc5989cd38799439def6e19d3592146b24a41a1f0ac3093149"
+  },
+  {
+    "path": "desktop/test/port.test.js",
+    "baseSha256": "596cb5dc7d91a4966bc1678ccf2cd50893f68c8f02b8a7ccf41563a79653bcd2",
+    "workingSha256": "596cb5dc7d91a4966bc1678ccf2cd50893f68c8f02b8a7ccf41563a79653bcd2"
+  }
+]

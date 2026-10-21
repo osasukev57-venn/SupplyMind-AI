@@ -60,9 +60,15 @@ public class Day2SchedulingConfiguration {
 
     @Bean
     AggregateProcessingService aggregateProcessingService(
-            DataRoot dataRoot, AtomicFileStore fileStore, Clock foundationClock
+            DataRoot dataRoot, AtomicFileStore fileStore, Clock foundationClock,
+            org.springframework.beans.factory.ObjectProvider<com.supplymind.warning.WarningRuleManagementService> warnings
     ) {
-        return new AggregateProcessingService(dataRoot, fileStore, foundationClock);
+        return new AggregateProcessingService(dataRoot, fileStore, foundationClock, itemId -> {
+            var service = warnings.getObject();
+            if (service.listRules().stream().anyMatch(rule -> rule.itemId().equals(itemId))) {
+                service.evaluateItem(itemId);
+            }
+        });
     }
 
     @Bean

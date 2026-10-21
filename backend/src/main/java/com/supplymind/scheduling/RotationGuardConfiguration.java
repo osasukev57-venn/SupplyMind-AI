@@ -26,11 +26,11 @@ public class RotationGuardConfiguration {
     @Bean
     RotationGuardedCollectionService rotationGuardedCollectionService(
             TimeRotationService timeRotationService,
-            PbocDay2CollectionService pbocDay2CollectionService
+            CurrentAcquisitionService currentAcquisitionService
     ) {
         return new RotationGuardedCollectionService(
                 timeRotationService,
-                () -> pbocDay2CollectionService.runImmediateCycle());
+                () -> currentAcquisitionService.trigger());
     }
 
     @Bean
@@ -54,7 +54,7 @@ public class RotationGuardConfiguration {
             this.guardedCollectionService = guardedCollectionService;
         }
 
-        @Scheduled(cron = "${supplymind.scheduler.cron:0 30 9 * * MON-FRI}")
+        @Scheduled(cron = "${supplymind.scheduler.cron:0 30 9 * * MON-FRI}", zone = "Asia/Shanghai")
         public void runGuardedCycle() {
             if (!enabled) {
                 return;

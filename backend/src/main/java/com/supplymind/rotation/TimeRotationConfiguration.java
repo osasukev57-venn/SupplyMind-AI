@@ -19,8 +19,8 @@ public class TimeRotationConfiguration {
     }
 
     @Bean
-    TimeRotationService timeRotationService(TimeStateStore timeStateStore) {
-        return new TimeRotationService(timeStateStore);
+    TimeRotationService timeRotationService(TimeStateStore timeStateStore, Clock foundationClock) {
+        return new TimeRotationService(timeStateStore, foundationClock);
     }
 
     @Bean

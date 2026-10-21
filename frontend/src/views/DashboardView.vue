@@ -67,21 +67,21 @@ onBeforeUnmount(() => {
 
     <div v-if="error" class="error-banner">{{ error }}</div>
     <div v-if="acquisition?.state === 'RUNNING'" class="acquisition-banner is-running">
-      <strong>正在获取中国人民银行最新公布汇率</strong>
-      <span>完成后将自动刷新美元与欧元数据，无需重启。</span>
+      <strong>正在更新启用的自动监测项</strong>
+      <span>完成后将自动刷新面板，无需重启。</span>
     </div>
-    <div v-else-if="acquisition?.state === 'FAILED'" class="acquisition-banner is-failed">
+    <div v-else-if="acquisition?.state === 'FAILED' || acquisition?.state === 'PARTIAL_SUCCESS'" class="acquisition-banner is-failed">
       <div>
-        <strong>暂时无法获取中国人民银行公开汇率</strong>
-        <span>已有历史数据仍可查看；网络恢复后可重新获取。</span>
+        <strong>部分或全部自动监测项未完成更新</strong>
+        <span>{{ acquisition.message }} 已有历史数据仍可查看。</span>
       </div>
       <button class="action-btn" :disabled="refreshPending" @click="requestCurrentRates">
-        {{ refreshPending ? '正在请求…' : '重新获取官方汇率' }}
+        {{ refreshPending ? '正在请求…' : '重新获取监测数据' }}
       </button>
     </div>
     <div v-else-if="acquisition?.state === 'SUCCEEDED'" class="acquisition-banner is-success">
-      <strong>官方汇率已更新</strong>
-      <span>业务日期 {{ acquisition.businessDate }}，数据来自中国人民银行官网。</span>
+      <strong>自动监测项已更新</strong>
+      <span>{{ acquisition.message }}</span>
     </div>
     <div v-if="data?.mode === 'DEMO'" class="demo-banner">
       当前为演示数据，仅用于功能体验，不用于正式业务判断

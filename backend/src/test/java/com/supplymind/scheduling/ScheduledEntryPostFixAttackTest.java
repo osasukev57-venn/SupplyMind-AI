@@ -82,11 +82,11 @@ class ScheduledEntryPostFixAttackTest {
 
             clock.set(at("2026-08-31T23:59:50+08:00"));
             invoke(entry, scheduler);
-            assertEquals(2, transport.calls(), "the actual scheduled bean must issue one real list/detail collection");
+            assertEquals(4, transport.calls(), "the actual scheduled bean must issue one real list/detail collection");
 
             clock.set(at("2026-09-01T00:00:10+08:00"));
             invoke(entry, scheduler);
-            assertEquals(4, transport.calls(), "first Sep1 scheduled trigger must execute exactly once");
+            assertEquals(8, transport.calls(), "first Sep1 scheduled trigger must execute exactly once");
             TimeStateV1 september = timeStates.read();
             assertEquals("2026-09", september.lastCompletedPeriod());
             assertEquals(java.time.LocalDate.parse("2026-09-01"), september.effectiveBusinessDate());
@@ -94,7 +94,7 @@ class ScheduledEntryPostFixAttackTest {
 
             clock.set(at("2026-08-31T12:00:00+08:00"));
             invoke(entry, scheduler);
-            assertEquals(4, transport.calls(), "rollback scheduled invocation must be SUPPRESSED before collection");
+            assertEquals(8, transport.calls(), "rollback scheduled invocation must be SUPPRESSED before collection");
             TimeStateV1 rollback = timeStates.read();
             assertEquals(september.effectiveHighWaterTime(), rollback.effectiveHighWaterTime());
             assertEquals(september.effectiveBusinessDate(), rollback.effectiveBusinessDate());
@@ -103,13 +103,13 @@ class ScheduledEntryPostFixAttackTest {
 
             clock.set(at("2026-09-01T10:00:00+08:00"));
             invoke(entry, scheduler);
-            assertEquals(6, transport.calls(), "recovery is a real scheduled collection attempt, not a second rotation");
+            assertEquals(12, transport.calls(), "recovery is a real scheduled collection attempt, not a second rotation");
             assertEquals("2026-09", timeStates.read().lastCompletedPeriod());
             assertBusinessSnapshot(afterSeptember, processingSnapshot(context.getBean(DataRoot.class)));
 
             clock.set(at("2026-09-02T10:00:00+08:00"));
             invoke(entry, scheduler);
-            assertEquals(8, transport.calls());
+            assertEquals(16, transport.calls());
             TimeStateV1 finalState = timeStates.read();
             assertEquals("2026-09", finalState.lastCompletedPeriod());
             assertEquals(java.time.LocalDate.parse("2026-09-02"), finalState.effectiveBusinessDate());
@@ -173,6 +173,19 @@ class ScheduledEntryPostFixAttackTest {
     @EnableScheduling
     @Import(RotationGuardConfiguration.class)
     static class AttackConfiguration {
+        // Use the new production current chain, with a direct executor for deterministic guard assertions.
+        @Bean CurrentAcquisitionService currentAcquisitionService(DataRoot root, AtomicFileStore files,
+                ConfigActivationStore configs, SettableClock clock, PbocOfficialWebDataProvider provider,
+                RawAcquisitionStore acquisitions, RawReceiptStore raws, TimelineStore timelines,
+                LifecycleValidationService validation, LifecyclePublishService publish,
+                DailyProcessingService daily, AggregateProcessingService aggregate) {
+            var registry = new com.supplymind.provider.DataProviderRegistry();
+            registry.register(provider);
+            var intake = new com.supplymind.backfill.BackfillOrchestrator(root,
+                    new com.supplymind.backfill.BackfillJobStore(root, files, clock), configs, registry,
+                    acquisitions, raws, timelines, validation, publish, daily, aggregate);
+            return new CurrentAcquisitionService(new ActiveCurrentCollectionService(configs, intake), clock, Runnable::run);
+        }
         @Bean SettableClock foundationClock() { return new SettableClock(at("2026-08-31T23:59:50+08:00")); }
         @Bean DataRoot dataRoot() {
             try {

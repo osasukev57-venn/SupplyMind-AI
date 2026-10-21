@@ -220,7 +220,8 @@ public final class PbocOfficialWebDataProvider implements DataProvider {
             OffsetDateTime receivedAt = OffsetDateTime.now(clock);
             byte[] entityBytes = detailResponse.entityBytes();
             String payloadSha256 = FileDigest.sha256(entityBytes);
-            String acquisitionId = acquisitionId(detailUri, payloadSha256);
+            String acquisitionId = acquisitionId(detailUri, payloadSha256)
+                    + (config.configVersion() > 1 ? "-c" + config.configVersion() : "");
 
             RawAcquisitionV1 acquisition = createAcquisition(config, acquisitionId, listResponse.responseUri(),
                     detailResponse, entityBytes, payloadSha256, receivedAt);

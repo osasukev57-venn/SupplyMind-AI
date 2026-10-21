@@ -228,7 +228,7 @@ public final class AgentOrchestrator {
                 degraded, degradeReason,
                 factSummaries, claims, List.of(), List.copyOf(limitations), OffsetDateTime.now());
         String reportRef = reportStore.store(report);
-        RiskProjectionV1 riskProjection = buildRiskProjection(evidenceSource, evidencePack, mode);
+        RiskProjectionV1 riskProjection = buildRiskProjection(evidenceSource, evidencePack, mode, evidenceVerifier);
         return new AgentResult(evidencePack, cloudResponse, reportRef, report, degraded, degradeReason,
                 riskProjection);
     }
@@ -241,12 +241,12 @@ public final class AgentOrchestrator {
      * risk view. Tool identity is the structured toolName equality - never string contains.
      */
     private static RiskProjectionV1 buildRiskProjection(
-            List<ToolResult> toolResults, EvidencePackV1 evidencePack, String mode
+            List<ToolResult> toolResults, EvidencePackV1 evidencePack, String mode, EvidenceRefVerifier evidenceVerifier
     ) {
         Set<String> modeAllowedRefs = evidencePack.evidenceRefs().stream()
                 .filter(entry -> entry.status() == EvidenceStatus.VERIFIED
                         && lineageCompleteFor(entry))
-                .filter(entry -> !("FORMAL".equals(mode) && isDemoOrSynthetic(entry)))
+                .filter(entry -> !("FORMAL".equals(mode) && isDemoOrSynthetic(entry, evidenceVerifier)))
                 .map(EvidencePackV1.EvidenceRefEntry::ref)
                 .collect(java.util.stream.Collectors.toSet());
         for (ToolResult result : toolResults) {
@@ -372,7 +372,7 @@ public final class AgentOrchestrator {
                         + (entry.reasonCode() == null ? "" : "/" + entry.reasonCode()) + ")");
                 continue;
             }
-            if ("FORMAL".equals(mode) && isDemoOrSynthetic(entry)) {
+            if ("FORMAL".equals(mode) && isDemoOrSynthetic(entry, evidenceVerifier)) {
                 limitations.add("FORMAL 模式排除 demo/synthetic 证据: " + entry.ref());
                 continue;
             }
@@ -427,8 +427,12 @@ public final class AgentOrchestrator {
         return true; // SOURCE and other types: no strict requirement beyond verification
     }
 
-    private static boolean isDemoOrSynthetic(EvidencePackV1.EvidenceRefEntry entry) {
-        return entry.ref().startsWith("warning/");
+    private static boolean isDemoOrSynthetic(EvidencePackV1.EvidenceRefEntry entry,
+            EvidenceRefVerifier verifier) {
+        if (entry.ref().startsWith("warning/")) {
+            return !verifier.isFormalWarningEvidence(entry.ref());
+        }
+        return entry.ref().startsWith("raw/demo/") || entry.ref().startsWith("raw/test/");
     }
 
     private static EvidencePackV1.Scope scopeOf(AgentQueryInput input) {
@@ -648,7 +652,9 @@ public final class AgentOrchestrator {
             if (fact == null || !selected.contains(factId)) {
                 return null;
             }
-            referenced.add(factId);
+            if (!referenced.add(factId)) {
+                return null;
+            }
             matcher.appendReplacement(rendered,
                     Matcher.quoteReplacement(renderStandardFactForAnswer(fact)));
         }

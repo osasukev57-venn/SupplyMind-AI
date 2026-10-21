@@ -103,7 +103,7 @@ public final class WarningExplainToolAdapter {
                     entry.put("ackRef", ackRef);
                     entry.put("evidenceRefs", List.of(evidenceRef, ackRef));
                     evidenceRefs.add(ackRef);
-                } else {
+                } else if (!"INVALID".equals(entry.get("ackVerificationStatus"))) {
                     entry.put("acknowledgedStatus", "PENDING");
                 }
                 // Row-scoped binding: one warning row may only support a projection through

@@ -1,0 +1,30 @@
+[
+  {
+    "path": "docs/learning-evidence/2026-10-15/backend-summary.json",
+    "sha256": "db80b781b959cb10c9f9f81ad2aa39e30c566b7f94161d4d22bf0584f9870c3a"
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/backend-tests.log",
+    "sha256": "ec2c97c776506e99fe6861fb755c4be5ff83be1df0388ccfcbf52c10b7da686e"
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/desktop-tests.tap",
+    "sha256": "8e69a0dec2020a5ed74337d45fcbeeac6271dc32242e5bb5b8f449a6c4ef050a"
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/frontend-tests.json",
+    "sha256": "feb2a6cd0abb94da9e61ae4fabda87cc066cf752591bf1907590a46390c95d30"
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/frontend-tests.log",
+    "sha256": "ab533f7e8ba2014bc09eda3aba617b925a5f268b8b6784b6fa5131a9355390a4"
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/run-summary.json",
+    "sha256": "429c4eb3f221ce74ba12f1bc7fc891bb62e45389e98a0875dccd6ae81dcaec9a"
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/TEST-com.supplymind.agent.AgentFactFirstPipelineTest.xml",
+    "sha256": "a7a18e1540f6da39b9f5f33e4d415c5a5daf62211c43fed21b191e4f3d84d238"
+  }
+]

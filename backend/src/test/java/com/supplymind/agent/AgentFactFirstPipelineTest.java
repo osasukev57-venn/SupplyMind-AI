@@ -99,7 +99,9 @@ class AgentFactFirstPipelineTest {
     @Test
     void templateCannotSmuggleAnUnbackedBusinessNumber() {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "template-number-attack");
+        AtomicInteger calls = new AtomicInteger();
         AgentOrchestrator orchestrator = fixture.orchestrator(request -> {
+            calls.incrementAndGet();
             LLMService.LlmFact latest = fact(request, "latest published value", null);
             return LLMService.LLMResponse.success("""
                     {"answerTemplate":"{{%s}}，并额外声称数值为 999999.999。",
@@ -108,9 +110,10 @@ class AgentFactFirstPipelineTest {
         }, new AgentResponseVerifier(List.of()));
 
         AgentOrchestrator.AgentResult result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
-                "说明最新值", Day6R2Fixture.ITEM, null, null, null,
+                "说明最新值", Day6R2Fixture.ITEM, "2026-08-10", "2026-08-10", null,
                 null, null, null, null, "FORMAL"));
 
+        assertEquals(1, calls.get(), "attack must reach the model");
         assertTrue(result.degraded());
         assertEquals("MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE", result.degradeReason());
         assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
@@ -147,7 +150,9 @@ class AgentFactFirstPipelineTest {
     @Test
     void templateShellCannotStateTrendOutsideJavaPlaceholder() {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "template-trend-attack");
+        AtomicInteger calls = new AtomicInteger();
         AgentOrchestrator orchestrator = fixture.orchestrator(request -> {
+            calls.incrementAndGet();
             LLMService.LlmFact latest = fact(request, "latest published value", null);
             return LLMService.LLMResponse.success("""
                     {"answerTemplate":"{{%s}}，整体呈下降趋势。",
@@ -156,9 +161,10 @@ class AgentFactFirstPipelineTest {
         }, new AgentResponseVerifier(List.of()));
 
         AgentOrchestrator.AgentResult result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
-                "说明最新值", Day6R2Fixture.ITEM, null, null, null,
+                "说明最新值", Day6R2Fixture.ITEM, "2026-08-10", "2026-08-10", null,
                 null, null, null, null, "FORMAL"));
 
+        assertEquals(1, calls.get(), "attack must reach the model");
         assertTrue(result.degraded());
         assertEquals("MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE", result.degradeReason());
         assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
@@ -167,7 +173,9 @@ class AgentFactFirstPipelineTest {
     @Test
     void templateFactSetMustExactlyMatchUsedFactIds() {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "template-ref-attack");
+        AtomicInteger calls = new AtomicInteger();
         AgentOrchestrator orchestrator = fixture.orchestrator(request -> {
+            calls.incrementAndGet();
             LLMService.LlmFact latest = fact(request, "latest published value", null);
             return LLMService.LLMResponse.success("""
                     {"answerTemplate":"{{%s}}。",
@@ -176,9 +184,10 @@ class AgentFactFirstPipelineTest {
         }, new AgentResponseVerifier(List.of()));
 
         AgentOrchestrator.AgentResult result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
-                "说明最新值", Day6R2Fixture.ITEM, null, null, null,
+                "说明最新值", Day6R2Fixture.ITEM, "2026-08-10", "2026-08-10", null,
                 null, null, null, null, "FORMAL"));
 
+        assertEquals(1, calls.get(), "attack must reach the model");
         assertTrue(result.degraded());
         assertEquals("MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE", result.degradeReason());
         assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
@@ -265,6 +274,21 @@ class AgentFactFirstPipelineTest {
                 "every cloud-visible fact must retain the required authoritative itemId");
         assertEquals(List.of(Day6R2Fixture.ITEM), result.evidencePack().scope().itemIds());
         assertFalse(result.degradeReason().startsWith("STANDARD_FACTS_NOT_READY:"));
+    }
+
+    @Test
+    void repeatedTemplateTokenIsRejectedAfterCloudWasCalled() {
+        var fixture = Day6R2Fixture.create(temp, "repeated-token");
+        AtomicInteger calls = new AtomicInteger();
+        var orchestrator = fixture.orchestrator(request -> {
+            calls.incrementAndGet();
+            var value = fact(request, "latest published value", null);
+            return LLMService.LLMResponse.success("{\"answerTemplate\":\"{{" + value.factId()
+                    + "}}。{{" + value.factId() + "}}\",\"usedFactIds\":[\"" + value.factId() + "\"]}");
+        }, new AgentResponseVerifier(List.of()), Day6R2Fixture.CLOCK);
+        var result = orchestrator.answer(fixture.formalHistoryQuery());
+        assertEquals(1, calls.get());
+        assertEquals("MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE", result.degradeReason());
     }
 
     private static LLMService.LlmFact fact(

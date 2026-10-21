@@ -95,7 +95,11 @@ class AgentApiTest {
         assertNotNull(body.answer(), "answer must be present (LLM or Java fallback)");
         assertTrue(body.degraded(), "no real LLM configured: fallback is expected and honest");
         assertNotNull(body.reportRef());
-        assertTrue(body.reportRef().startsWith("report/2026-08/"));
+        var storedReport = com.supplymind.foundation.codec.JsonV1Codec.decodeFile(
+                java.nio.file.Files.readAllBytes(harness.root().resolveDataRef(body.reportRef())),
+                com.supplymind.agent.report.AgentReportV1.class);
+        assertTrue(body.reportRef().startsWith("report/" + YearMonth.from(storedReport.createdAt()
+                .atZoneSameInstant(java.time.ZoneId.of("Asia/Shanghai"))) + "/"));
         assertFalse(body.toolTrace().isEmpty());
         assertTrue(body.toolTrace().stream().allMatch(trace -> trace.readOnly()));
         // D8-T03: report-level projection is present and sourced from the verified report.

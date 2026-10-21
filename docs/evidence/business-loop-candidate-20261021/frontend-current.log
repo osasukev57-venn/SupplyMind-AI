@@ -1,0 +1,42 @@
+
+> supplymind-dashboard@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 D:/Dev/Projects/SupplyMind AI/frontend
+
+ ✓ src/views/__tests__/agent.spec.ts (8 tests) 3650ms
+   ✓ AgentView (D8-T03) > renders the backend facts, tool timeline, claims and template label  995ms
+   ✓ AgentView (D8-T03) > renders recommendations and the calculation basis without computing anything  349ms
+   ✓ AgentView (D8-T03) > shows the honest fallback limitation  796ms
+   ✓ AgentView (D8-T03) > backend failure shows an error banner without white screen  359ms
+   ✓ AgentView (D8-T03) > shows the specific 90 second timeout message and restores the submit button  500ms
+ ✓ src/views/__tests__/warning.spec.ts (6 tests) 4334ms
+   ✓ WarningView formal rule closure > automatically evaluates and renders the usable system default without frontend calculation  1067ms
+   ✓ WarningView formal rule closure > saves a per-item percentage override and evaluates it immediately  1516ms
+   ✓ WarningView formal rule closure > restores the backend system default  912ms
+   ✓ WarningView formal rule closure > acknowledges a formal immutable warning with a separate disposition note  571ms
+ ✓ src/views/__tests__/config.spec.ts (8 tests) 4605ms
+   ✓ ConfigView (D8-T01) > renders the current items with backend status and summary strip  1440ms
+   ✓ ConfigView (D8-T01) > disable button calls setEnabled and refreshes the panel  390ms
+   ✓ ConfigView (D8-T01) > add form sends a CONTROLLED request and shows the product result  906ms
+   ✓ ConfigView (D8-T01) > maps a material LocalImport item to the frozen provider/access/route tuple  804ms
+   ✓ ConfigView (D8-T01) > replace requires the backfill range and shows the auto-chain job statuses  522ms
+ ✓ src/api/__tests__/agent.spec.ts (2 tests) 581ms
+   ✓ Agent API timeout contract > maps an axios timeout to the specific non-retry warning  324ms
+ ✓ src/views/__tests__/pages.spec.ts (14 tests) 4074ms
+   ✓ dashboard pages > dashboard renders the exact backend value string  862ms
+   ✓ dashboard pages > manual submit calls the backend and shows its structured response  515ms
+   ✓ dashboard pages > import xlsx shows the backend REJECTED status without local parsing  346ms
+   ✓ dashboard pages > synthetic demo entry calls the real provider endpoint  402ms
+   ✓ dashboard pages > aggregate years come from the user-selected range  534ms
+ ✓ src/views/__tests__/governance.spec.ts (3 tests) 3958ms
+   ✓ governance isolation (UI product copy) > dashboard, history, quality, sources, config, warning, agent pages contain no governance tokens  2664ms
+   ✓ governance isolation (UI product copy) > app shell and navigation contain no governance tokens  846ms
+   ✓ governance isolation (UI product copy) > internal enums are displayed through friendly labels, not raw wire values  435ms
+
+ Test Files  6 passed (6)
+      Tests  41 passed (41)
+   Start at  10:35:39
+   Duration  231.17s (transform 40.53s, setup 0ms, collect 120.11s, tests 21.20s, environment 976.02s, prepare 164.41s)
+
