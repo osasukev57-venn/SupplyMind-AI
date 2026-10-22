@@ -31,6 +31,10 @@ public final class RawAcquisitionStore {
         this.clock = Objects.requireNonNull(clock, "clock");
     }
 
+    public String storeFailure(com.supplymind.foundation.model.AcquisitionFailureEvidenceV1 failure) {
+        return new AcquisitionFailureStore(dataRoot, fileStore).store(failure);
+    }
+
     public StoredAcquisition store(RawAcquisitionV1 acquisition) {
         Objects.requireNonNull(acquisition, "acquisition");
         String ref = acquisition.acquisitionRef();

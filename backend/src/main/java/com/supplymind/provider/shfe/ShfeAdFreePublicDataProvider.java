@@ -136,7 +136,7 @@ public final class ShfeAdFreePublicDataProvider implements DataProvider {
                 ? fetchLastCompletedTradingDay(config)
                 : request.historyStartDate();
         URI dailyUri = dailyUri(date);
-        ShfeHttpResponse response = transport.get(dailyUri);
+        ShfeHttpResponse response = fetch(config, dailyUri);
         OffsetDateTime receivedAt = OffsetDateTime.now(clock);
         byte[] payload = response.entityBytes();
         String payloadSha = FileDigest.sha256(payload);
@@ -171,7 +171,7 @@ public final class ShfeAdFreePublicDataProvider implements DataProvider {
     }
 
     private LocalDate fetchLastCompletedTradingDay(MonitorSeriesConfigV1 config) {
-        ShfeHttpResponse response = transport.get(CURRENT_TRADING_DAY_URI);
+        ShfeHttpResponse response = fetch(config, CURRENT_TRADING_DAY_URI);
         String id = "shfe-calendar-" + FileDigest.sha256(response.entityBytes()) + "-c" + config.configVersion();
         retainResponse(config, response, id, OffsetDateTime.now(clock));
         requireJson(response);
@@ -181,13 +181,52 @@ public final class ShfeAdFreePublicDataProvider implements DataProvider {
     /** Preserve the exact HTTP response before content validation or business parsing. */
     private void retainResponse(MonitorSeriesConfigV1 config, ShfeHttpResponse response,
             String acquisitionId, OffsetDateTime receivedAt) {
-        acquisitions.store(new com.supplymind.foundation.model.RawAcquisitionV1(
-                SchemaV1.VERSION, DataPaths.acquisitionRef(acquisitionId), acquisitionId,
-                config.mode(), ProviderType.FREE_PUBLIC, AccessMethod.FREE_PUBLIC_WEB,
-                config.configVersion(), SOURCE_NAME, response.responseUri().toString(),
-                response.responseUri().toString(), response.statusCode(), response.contentType(),
-                receivedAt, "base64", Base64.getEncoder().encodeToString(response.entityBytes()),
-                FileDigest.sha256(response.entityBytes())));
+        String failure = !response.complete() ? "PARTIAL_RESPONSE"
+                : response.entityBytes().length == 0 ? "EMPTY_ENTITY"
+                : response.contentType() == null ? "MISSING_CONTENT_TYPE"
+                : response.contentType().isBlank() ? "EMPTY_CONTENT_TYPE"
+                : response.statusCode() < 200 || response.statusCode() >= 300 ? "HTTP_STATUS" : null;
+        boolean sourceCompatible = response.complete() && response.entityBytes().length > 0
+                && response.contentType() != null && !response.contentType().isBlank();
+        if (sourceCompatible) {
+            acquisitions.store(new com.supplymind.foundation.model.RawAcquisitionV1(
+                    SchemaV1.VERSION, DataPaths.acquisitionRef(acquisitionId), acquisitionId,
+                    config.mode(), ProviderType.FREE_PUBLIC, AccessMethod.FREE_PUBLIC_WEB,
+                    config.configVersion(), SOURCE_NAME, response.responseUri().toString(),
+                    response.responseUri().toString(), response.statusCode(), response.contentType(),
+                    receivedAt, "base64", Base64.getEncoder().encodeToString(response.entityBytes()),
+                    FileDigest.sha256(response.entityBytes())));
+        }
+        if (failure != null) {
+            saveFailure(response.responseUri(), response, failure, receivedAt,
+                    sourceCompatible ? DataPaths.acquisitionRef(acquisitionId) : null);
+            throw new StorageException("SHFE failed acquisition: " + failure);
+        }
+    }
+
+    private ShfeHttpResponse fetch(MonitorSeriesConfigV1 config, URI uri) {
+        OffsetDateTime started = OffsetDateTime.now(clock);
+        try { return transport.get(uri); }
+        catch (RuntimeException failure) {
+            saveFailure(uri, null, "TRANSPORT_FAILURE", started, null);
+            throw new StorageException("SHFE transport failed; diagnostic evidence retained");
+        }
+    }
+
+    private void saveFailure(URI uri, ShfeHttpResponse response, String code, OffsetDateTime started, String sourceRef) {
+        String id = "attempt-" + java.util.UUID.randomUUID();
+        byte[] bytes = response == null ? null : response.entityBytes();
+        try {
+            acquisitions.storeFailure(new com.supplymind.foundation.model.AcquisitionFailureEvidenceV1(
+                    "ACQUISITION-FAILURE-V1", id, uri.toString(), started, OffsetDateTime.now(clock),
+                    response == null ? "NONE" : response.complete() ? "COMPLETE" : "PARTIAL",
+                    response == null ? null : response.statusCode(), response == null ? null : response.contentType(),
+                    bytes == null ? null : Base64.getEncoder().encodeToString(bytes),
+                    bytes == null ? null : (long) bytes.length, bytes == null ? null : FileDigest.sha256(bytes), code, sourceRef));
+        } catch (RuntimeException storageFailure) {
+            org.slf4j.LoggerFactory.getLogger(getClass()).error("acquisition_failure_evidence_save_failed attempt={}", id);
+            throw new StorageException("ACQUISITION_FAILURE_EVIDENCE_SAVE_FAILED");
+        }
     }
 
     private static RawReceiptV1 raw(

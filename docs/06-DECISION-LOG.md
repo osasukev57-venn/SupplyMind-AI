@@ -155,3 +155,7 @@
 用户批准修复配置驱动采集、正式预警、确认与 Agent 链；聚合完成后使用既有规则自动评估。执行口径与验证见 [业务闭环升级](15-BUSINESS-LOOP-UPGRADE.md)。保留 DEC-061/064/065/066 的数值、确认和文件合同；v0.9.0 保留，新版本另行发布。
 
 DEC-067 自审补充（2026-10-21）：依据既有DEC-056补齐SHFE非空响应解析前留证，不改行情语义、算法或schema。空实体/缺Content-Type模型限制需确认合同方案，暂缓该部分，不伪造字节或放宽字段；桌面基线端口缺陷另行报告，见docs/16。
+
+## DEC-068：失败获取证据兼容合同（2026-10-22）
+
+用户批准独立 ACQUISITION-FAILURE-V1，持久化 diagnostic/acquisition/<attemptId>.json 与相邻manifest；不是RawReceipt，不拥有业务验证/发布状态，不进入统计或Agent事实。每次失败观察生成UUID attemptId，同一次保存相同字节幂等、不同字节或损坏既有证据失败关闭。COMPLETE/PARTIAL/NONE分别表示完整响应、仅捕获部分实体、未收到响应；NONE全部响应字段为null，空实体为真实0长度及空字节SHA，缺Content-Type为null、存在但为空保留空字符串。完整且能满足既有RawAcquisitionV1的响应先保存旧source证据，再以sourceEvidenceRef关联；其余仅保存独立诊断，均在业务解析前完成。保存失败必须可见且不得返回成功。新路径使用既有AtomicFileStore与manifest，无自动删除。旧RawAcquisitionV1/RawReceiptV1文件、schema、发布门禁不变。仅保留受控错误码及无凭证URL，不保存异常详情、完整headers或环境变量。本决议补充DEC-056/063异常响应留证形式，不改变数值规则。

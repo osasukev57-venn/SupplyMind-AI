@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /** Exact SHFE public HTTP response entity bytes; response headers are never persisted. */
-public record ShfeHttpResponse(URI responseUri, int statusCode, String contentType, byte[] entityBytes) {
+public record ShfeHttpResponse(URI responseUri, int statusCode, String contentType, byte[] entityBytes, boolean complete) {
+    public ShfeHttpResponse(URI uri, int status, String type, byte[] bytes) { this(uri, status, type, bytes, true); }
     public ShfeHttpResponse {
         Objects.requireNonNull(responseUri, "responseUri");
         entityBytes = entityBytes == null ? null : Arrays.copyOf(entityBytes, entityBytes.length);

@@ -85,7 +85,7 @@ final class ManifestDerivedFieldsVerifier {
     }
 
     private static boolean isJsonTarget(String dataRef) {
-        return dataRef.equals(DataPaths.configActiveRef())
+        return dataRef.startsWith("diagnostic/acquisition/") || dataRef.equals(DataPaths.configActiveRef())
                 || dataRef.startsWith("config/history/")
                 || dataRef.equals(DataPaths.warningRulesActiveRef())
                 || dataRef.startsWith("config/warning-rules/history/")
@@ -100,6 +100,11 @@ final class ManifestDerivedFieldsVerifier {
     }
 
     private static DerivedFields deriveJson(String dataRef, byte[] dataBytes) {
+        if (dataRef.startsWith("diagnostic/acquisition/")) {
+            var value = JsonV1Codec.decodeFile(dataBytes, com.supplymind.foundation.model.AcquisitionFailureEvidenceV1.class);
+            if (!value.evidenceRef().equals(dataRef)) throw new StorageException("Failure evidence identity mismatch");
+            return jsonFields(List.of(value.attemptId()));
+        }
         if (dataRef.equals(DataPaths.warningRulesActiveRef())
                 || dataRef.startsWith("config/warning-rules/history/")) {
             JsonV1Codec.decodeFile(dataBytes, com.supplymind.warning.WarningRuleSetV1.class);

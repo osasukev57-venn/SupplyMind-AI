@@ -36,15 +36,35 @@ final class JdkShfeHttpTransport implements ShfeHttpTransport {
                 .timeout(REQUEST_TIMEOUT)
                 .header("Accept", "application/json")
                 .build();
+        CapturedBody capture = new CapturedBody();
         try {
-            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            HttpResponse<byte[]> response = client.send(request, info -> { capture.info = info; return capture; });
             return new ShfeHttpResponse(response.uri(), response.statusCode(),
-                    response.headers().firstValue("Content-Type").orElse(""), response.body());
+                    response.headers().firstValue("Content-Type").orElse(null), response.body());
         } catch (IOException exception) {
+            if (capture.info != null) return capture.partial(uri);
             throw new IllegalStateException("SHFE public HTTPS request failed", exception);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
+            if (capture.info != null) return capture.partial(uri);
             throw new IllegalStateException("SHFE public HTTPS request was interrupted", exception);
+        }
+    }
+
+    static final class CapturedBody implements HttpResponse.BodySubscriber<byte[]> {
+        volatile HttpResponse.ResponseInfo info;
+        private final HttpResponse.BodySubscriber<byte[]> delegate = HttpResponse.BodySubscribers.ofByteArray();
+        private final java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        public java.util.concurrent.CompletionStage<byte[]> getBody() { return delegate.getBody(); }
+        public void onSubscribe(java.util.concurrent.Flow.Subscription subscription) { delegate.onSubscribe(subscription); }
+        public synchronized void onNext(java.util.List<java.nio.ByteBuffer> buffers) {
+            for (var buffer : buffers) { var copy = buffer.asReadOnlyBuffer(); byte[] part = new byte[copy.remaining()]; copy.get(part); bytes.writeBytes(part); }
+            delegate.onNext(buffers);
+        }
+        public void onError(Throwable error) { delegate.onError(error); }
+        public void onComplete() { delegate.onComplete(); }
+        synchronized ShfeHttpResponse partial(URI uri) {
+            return new ShfeHttpResponse(uri, info.statusCode(), info.headers().firstValue("Content-Type").orElse(null), bytes.toByteArray(), false);
         }
     }
 }

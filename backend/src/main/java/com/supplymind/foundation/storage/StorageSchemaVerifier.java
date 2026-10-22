@@ -15,6 +15,11 @@ final class StorageSchemaVerifier {
     }
 
     static void verifyData(String dataRef, byte[] bytes) {
+        if (dataRef.startsWith("diagnostic/acquisition/")) {
+            var value = JsonV1Codec.decodeFile(bytes, com.supplymind.foundation.model.AcquisitionFailureEvidenceV1.class);
+            if (!value.evidenceRef().equals(dataRef)) throw new StorageException("Failure evidence identity mismatch");
+            return;
+        }
         if (dataRef.equals(DataPaths.warningRulesActiveRef())
                 || dataRef.startsWith("config/warning-rules/history/")) {
             com.supplymind.warning.WarningRuleSetV1 rules = JsonV1Codec.decodeFile(
