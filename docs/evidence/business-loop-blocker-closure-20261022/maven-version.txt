@@ -1,0 +1,5 @@
+Apache Maven 3.9.11 (3e54c93a704957b63ee3494413a2b544fd3d825b)
+Maven home: D:\Dev\Maven\apache-maven
+Java version: 17.0.19, vendor: Microsoft, runtime: D:\Dev\SDK\Java\jdk-17
+Default locale: zh_CN, platform encoding: GBK
+OS name: "windows 10", version: "10.0", arch: "amd64", family: "windows"

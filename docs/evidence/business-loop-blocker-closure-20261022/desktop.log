@@ -1,0 +1,42 @@
+✔ assertLoopbackUrl accepts only http://127.0.0.1:<port> (1.7755ms)
+✔ assertLoopbackUrl rejects non-loopback hosts (0.9567ms)
+✔ assertLoopbackUrl rejects out-of-range ports (0.3547ms)
+✔ waitForBackend fails fast on a non-loopback URL before any request (0.5237ms)
+✔ waitForBackend resolves TIMEOUT and never hangs (110.377ms)
+✔ waitForBackend resolves READY when the backend answers UP (26.3015ms)
+✔ waitForBackend resolves TIMEOUT when the backend never becomes healthy (221.1581ms)
+✔ waitForBackend keeps polling while the backend returns non-UP bodies (51.7246ms)
+✔ first instance owns the lock and registers second-instance handling (2.4698ms)
+✔ second instance does not own the lock (0.3017ms)
+✔ second-instance event restores and focuses the existing window (10.2325ms)
+✔ second-instance event focuses without restore when the window is not minimized (0.4635ms)
+✔ second-instance event is a no-op when no window exists yet (0.5543ms)
+✔ waitForExit resolves immediately for an already-exited child (4.5073ms)
+✔ waitForExit resolves false on timeout and true on exit (67.0029ms)
+✔ forceKillTree runs taskkill with /T /F and resolves (475.0559ms)
+✔ portableRoot resolves explicit override (1.5686ms)
+✔ layout builds the frozen portable directory shape (0.6461ms)
+✔ backendArgs pins dynamic loopback port, data root and loopback address (1.6911ms)
+✔ backendArgs omits static-locations when no web dir is provided (2.9615ms)
+✔ preflight reports every missing or unwritable path (9.8156ms)
+✔ preflight fails when the JRE or JAR is missing (1.451ms)
+✔ preflight fails when index.html is missing from the web dir (5.1282ms)
+✔ preflight fails when data is a file instead of a directory (16.7817ms)
+✔ layout exposes licenses and webIndex paths (1.3499ms)
+✔ pickFreePort returns a valid free port on the loopback interface (34.8994ms)
+✔ pickFreePort never returns the fixed dev default 8080 (59.9903ms)
+✔ pickFreePort port can actually be bound on 127.0.0.1 (5.2296ms)
+✔ backendArgs rejects fixed/default ports (never 8080) (1.3267ms)
+✔ backendArgs always pins the loopback address (0.399ms)
+✔ backendArgs never contains localhost, LAN or wildcard bindings (0.4313ms)
+✔ selector closes forbidden allocations and uses the backend port contract (2.1121ms)
+✔ selector fails explicitly after ten forbidden allocations (0.8721ms)
+✔ selector propagates a real listen failure without unbounded retry (0.8276ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1170.2722

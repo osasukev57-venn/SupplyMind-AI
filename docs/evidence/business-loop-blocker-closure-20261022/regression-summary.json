@@ -1,0 +1,23 @@
+{
+  "base": "f4c1cc9a74b5bc4e53a6854939d543762ec6c946",
+  "branch": "codex/business-loop-fixes",
+  "backend": {
+    "total": 690,
+    "passed": 681,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 9,
+    "jdk": [
+      "17.0.19"
+    ]
+  },
+  "frontend": {
+    "passed": 41
+  },
+  "desktop": {
+    "total": 34,
+    "passed": 34,
+    "failed": 0
+  },
+  "finishedAt": "2026-10-22T14:20:45+08:00"
+}

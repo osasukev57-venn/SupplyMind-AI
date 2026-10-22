@@ -67,6 +67,7 @@ public class CloudLlmConfiguration {
                 .build();
         return OpenAiChatModel.builder()
                 .openAiApi(api)
+                .retryTemplate(org.springframework.retry.support.RetryTemplate.builder().maxAttempts(1).build())
                 .defaultOptions(options)
                 .build();
     }

@@ -1,0 +1,537 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< com.supplymind:supplymind-backend >------------------
+[INFO] Building SupplyMind AI Backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ supplymind-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ supplymind-backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 240 source files with javac [debug parameters release 17] to target\classes
+[INFO] /D:/Dev/Projects/SupplyMind AI/backend/src/main/java/com/supplymind/foundation/storage/DirtyMarkerCodec.java: ĳЩ�����ļ�ʹ�û򸲸����ѹ�ʱ�� API��
+[INFO] /D:/Dev/Projects/SupplyMind AI/backend/src/main/java/com/supplymind/foundation/storage/DirtyMarkerCodec.java: �й���ϸ��Ϣ, ��ʹ�� -Xlint:deprecation ���±��롣
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ supplymind-backend ---
+[INFO] Copying 71 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ supplymind-backend ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 139 source files with javac [debug parameters release 17] to target\test-classes
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/agent/AgentApiMvcContractTest.java:[37,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/config/ConfigApiMvcContractTest.java:[36,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/dashboard/DashboardMvcContractTest.java:[35,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[39,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[42,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[45,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[48,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ supplymind-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.supplymind.acceptance.AtSrc002AcceptanceTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.071 s -- in com.supplymind.acceptance.AtSrc002AcceptanceTest
+[INFO] Running com.supplymind.acceptance.MaterialDay3AcceptanceTest
+AT_SRC_008 sourceIdentitySeparation=PASS syntheticExcluded=PASS noDataNoAutoSynthetic=PASS
+AT_SRC_001_005 fourSequences=FALLBACK_MANUAL reasons=credentials_missing syntheticExcluded=true pbocExcluded=true freePublic=NO_APPROVED_SOURCE
+AT_SRC_007_DAY3 localImport csv=PENDING xlsx=PENDING gates=BLOCKED
+AT_SRC_007_DAY3 manual adc12=PARSED_PENDING az91d=PARSED_PENDING idempotent=true revision=true pendingGates=BLOCKED
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.248 s -- in com.supplymind.acceptance.MaterialDay3AcceptanceTest
+[INFO] Running com.supplymind.acceptance.MaterialRoutePlanProductionTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.15)
+
+2026-10-22T14:17:15.819+08:00  INFO 15104 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 17.0.19 with PID 15104 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-10-22T14:17:15.822+08:00  INFO 15104 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T14:17:20.059+08:00  INFO 15104 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 4.862 seconds (process running for 16.83)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.499 s -- in com.supplymind.acceptance.MaterialRoutePlanProductionTest
+[INFO] Running com.supplymind.agent.AgentApiMvcContractTest
+2026-10-22T14:17:20.664+08:00  INFO 15104 --- [supplymind-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.supplymind.agent.AgentApiMvcContractTest]: AgentApiMvcContractTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T14:17:20.824+08:00  INFO 15104 --- [supplymind-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.supplymind.SupplyMindApplication for test class com.supplymind.agent.AgentApiMvcContractTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.15)
+
+2026-10-22T14:17:20.979+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.agent.AgentApiMvcContractTest        : Starting AgentApiMvcContractTest using Java 17.0.19 with PID 15104 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-10-22T14:17:20.980+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.agent.AgentApiMvcContractTest        : No active profile set, falling back to 1 default profile: "default"
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-10-22T14:17:24.660+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:17:24.667+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:17:24.670+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-10-22T14:17:24.761+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.agent.AgentApiMvcContractTest        : Started AgentApiMvcContractTest in 3.851 seconds (process running for 21.532)
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.726 s -- in com.supplymind.agent.AgentApiMvcContractTest
+[INFO] Running com.supplymind.agent.AgentApiTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.118 s -- in com.supplymind.agent.AgentApiTest
+[INFO] Running com.supplymind.agent.AgentAttackTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.342 s -- in com.supplymind.agent.AgentAttackTest
+[INFO] Running com.supplymind.agent.AgentF2MissingReferenceGuardTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.456 s -- in com.supplymind.agent.AgentF2MissingReferenceGuardTest
+[INFO] Running com.supplymind.agent.AgentF3LifecycleVerificationTest
+2026-10-22T14:17:34.867+08:00  WARN 15104 --- [supplymind-backend] [           main] o.s.a.m.tool.DefaultToolCallingManager   : LLM may have adapted the tool name 'backfill.start', especially if the name was truncated due to length limits. If this is the case, you can customize the prefixing and processing logic using McpToolNamePrefixGenerator
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.602 s -- in com.supplymind.agent.AgentF3LifecycleVerificationTest
+[INFO] Running com.supplymind.agent.AgentFactFirstPipelineTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.258 s -- in com.supplymind.agent.AgentFactFirstPipelineTest
+[INFO] Running com.supplymind.agent.AgentFinalStageMajorFixAttackTest
+2026-10-22T14:17:39.879+08:00  WARN 15104 --- [supplymind-backend] [nt-cloud-budget] o.s.a.m.tool.DefaultToolCallingManager   : LLM may have adapted the tool name 'history.query', especially if the name was truncated due to length limits. If this is the case, you can customize the prefixing and processing logic using McpToolNamePrefixGenerator
+2026-10-22T14:17:40.549+08:00  WARN 15104 --- [supplymind-backend] [nt-cloud-budget] o.s.a.m.tool.DefaultToolCallingManager   : LLM may have adapted the tool name 'backfill.start', especially if the name was truncated due to length limits. If this is the case, you can customize the prefixing and processing logic using McpToolNamePrefixGenerator
+2026-10-22T14:17:40.756+08:00  WARN 15104 --- [supplymind-backend] [nt-cloud-budget] o.s.a.m.tool.DefaultToolCallingManager   : LLM may have adapted the tool name 'history.query', especially if the name was truncated due to length limits. If this is the case, you can customize the prefixing and processing logic using McpToolNamePrefixGenerator
+2026-10-22T14:17:41.011+08:00  WARN 15104 --- [supplymind-backend] [nt-cloud-budget] o.s.a.m.tool.DefaultToolCallingManager   : LLM may have adapted the tool name 'history.query', especially if the name was truncated due to length limits. If this is the case, you can customize the prefixing and processing logic using McpToolNamePrefixGenerator
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.356 s -- in com.supplymind.agent.AgentFinalStageMajorFixAttackTest
+[INFO] Running com.supplymind.agent.AgentPipelineIntegrationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.342 s -- in com.supplymind.agent.AgentPipelineIntegrationTest
+[INFO] Running com.supplymind.agent.AgentR2StageFixAttackTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.398 s -- in com.supplymind.agent.AgentR2StageFixAttackTest
+[INFO] Running com.supplymind.agent.AgentSpringAiToolCallingTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.387 s -- in com.supplymind.agent.AgentSpringAiToolCallingTest
+[INFO] Running com.supplymind.agent.AgentToolBoundaryTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.748 s -- in com.supplymind.agent.AgentToolBoundaryTest
+[INFO] Running com.supplymind.agent.Day6FinalStageAuthorityBindingAttackTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.753 s -- in com.supplymind.agent.Day6FinalStageAuthorityBindingAttackTest
+[INFO] Running com.supplymind.agent.Day6FinalStageClaimFieldGuardAttackTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.953 s -- in com.supplymind.agent.Day6FinalStageClaimFieldGuardAttackTest
+[INFO] Running com.supplymind.agent.Day6FinalStageFullBindingAttackTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.529 s -- in com.supplymind.agent.Day6FinalStageFullBindingAttackTest
+[INFO] Running com.supplymind.agent.Day6FinalStageMultiRowLineageAttackTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.382 s -- in com.supplymind.agent.Day6FinalStageMultiRowLineageAttackTest
+[INFO] Running com.supplymind.agent.Day6FinalStageRowToRefConfigTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.469 s -- in com.supplymind.agent.Day6FinalStageRowToRefConfigTest
+[INFO] Running com.supplymind.agent.Day6FinalStageStrictEnvelopeAttackTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.900 s -- in com.supplymind.agent.Day6FinalStageStrictEnvelopeAttackTest
+[INFO] Running com.supplymind.agent.Day6FinalStageStructuredClaimsAttackTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.981 s -- in com.supplymind.agent.Day6FinalStageStructuredClaimsAttackTest
+[INFO] Running com.supplymind.agent.Day6R2IndependentCostAttackTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.183 s -- in com.supplymind.agent.Day6R2IndependentCostAttackTest
+[INFO] Running com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.771 s -- in com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest
+[INFO] Running com.supplymind.agent.Day6R2IndependentGoldenEvidenceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.352 s -- in com.supplymind.agent.Day6R2IndependentGoldenEvidenceTest
+[INFO] Running com.supplymind.agent.Day6R2IndependentIsolationAttackTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.352 s -- in com.supplymind.agent.Day6R2IndependentIsolationAttackTest
+[INFO] Running com.supplymind.agent.Day6R2IndependentResponseAttackTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.027 s -- in com.supplymind.agent.Day6R2IndependentResponseAttackTest
+[INFO] Running com.supplymind.agent.Day6R2IndependentSpringAiAttackTest
+2026-10-22T14:18:05.772+08:00  WARN 15104 --- [supplymind-backend] [nt-cloud-budget] o.s.a.m.tool.DefaultToolCallingManager   : LLM may have adapted the tool name 'history.query', especially if the name was truncated due to length limits. If this is the case, you can customize the prefixing and processing logic using McpToolNamePrefixGenerator
+2026-10-22T14:18:06.020+08:00  WARN 15104 --- [supplymind-backend] [nt-cloud-budget] o.s.a.m.tool.DefaultToolCallingManager   : LLM may have adapted the tool name 'backfill.start', especially if the name was truncated due to length limits. If this is the case, you can customize the prefixing and processing logic using McpToolNamePrefixGenerator
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.056 s -- in com.supplymind.agent.Day6R2IndependentSpringAiAttackTest
+[INFO] Running com.supplymind.agent.infrastructure.springai.CloudLlmConfigurationTest
+2026-10-22T14:18:06.240+08:00  WARN 15104 --- [supplymind-backend] [           main] s.c.a.AnnotationConfigApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'supplyMindCloudChatModel' defined in com.supplymind.agent.infrastructure.springai.CloudLlmConfiguration: Failed to instantiate [org.springframework.ai.chat.model.ChatModel]: Factory method 'supplyMindCloudChatModel' threw exception with message: Cloud LLM API key is missing or invalid
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.145 s -- in com.supplymind.agent.infrastructure.springai.CloudLlmConfigurationTest
+[INFO] Running com.supplymind.agent.infrastructure.springai.CloudLlmRealApiAcceptanceTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.supplymind.agent.infrastructure.springai.CloudLlmRealApiAcceptanceTest
+[INFO] Running com.supplymind.agent.infrastructure.springai.SpringAiPromptContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.supplymind.agent.infrastructure.springai.SpringAiPromptContractTest
+[INFO] Running com.supplymind.agent.llm.RequestBudgetTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.605 s -- in com.supplymind.agent.llm.RequestBudgetTest
+[INFO] Running com.supplymind.backfill.BackfillHistoryRangeContractTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.762 s -- in com.supplymind.backfill.BackfillHistoryRangeContractTest
+[INFO] Running com.supplymind.backfill.BackfillOrchestratorTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.045 s -- in com.supplymind.backfill.BackfillOrchestratorTest
+[INFO] Running com.supplymind.backfill.BackfillRangeCompletionRuleTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.181 s -- in com.supplymind.backfill.BackfillRangeCompletionRuleTest
+[INFO] Running com.supplymind.backfill.Day5SecondHistoryRangeAttackTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.062 s -- in com.supplymind.backfill.Day5SecondHistoryRangeAttackTest
+[INFO] Running com.supplymind.config.ConfigApiMvcContractTest
+2026-10-22T14:18:22.916+08:00  INFO 15104 --- [supplymind-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.supplymind.config.ConfigApiMvcContractTest]: ConfigApiMvcContractTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T14:18:22.963+08:00  INFO 15104 --- [supplymind-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.supplymind.SupplyMindApplication for test class com.supplymind.config.ConfigApiMvcContractTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.15)
+
+2026-10-22T14:18:23.001+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.config.ConfigApiMvcContractTest      : Starting ConfigApiMvcContractTest using Java 17.0.19 with PID 15104 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-10-22T14:18:23.001+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.config.ConfigApiMvcContractTest      : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T14:18:23.691+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:23.692+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:23.692+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:23.701+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.config.ConfigApiMvcContractTest      : Started ConfigApiMvcContractTest in 0.734 seconds (process running for 80.472)
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.900 s -- in com.supplymind.config.ConfigApiMvcContractTest
+[INFO] Running com.supplymind.config.ConfigManagementServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.288 s -- in com.supplymind.config.ConfigManagementServiceTest
+[INFO] Running com.supplymind.config.CurrentIntakeAttackTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.612 s -- in com.supplymind.config.CurrentIntakeAttackTest
+[INFO] Running com.supplymind.config.DynamicConfigWorkflowServiceTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.503 s -- in com.supplymind.config.DynamicConfigWorkflowServiceTest
+[INFO] Running com.supplymind.dashboard.DashboardApiMockMvcTest
+2026-10-22T14:18:33.728+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:33.730+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:33.731+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-22T14:18:34.030+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:34.030+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:34.031+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:34.392+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:34.392+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:34.393+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:35.080+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:35.081+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:35.081+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:35.365+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:35.366+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:35.366+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:35.628+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:35.628+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:35.629+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:35.876+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:35.876+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:35.876+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:36.213+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:36.214+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:36.214+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:36.864+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:36.864+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:36.864+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:37.133+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:37.133+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:37.133+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:37.383+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:37.383+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:37.383+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:37.634+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:37.634+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:37.634+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:37.884+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:37.884+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:37.885+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-22T14:18:38.137+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:38.137+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:38.137+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:38.466+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:38.466+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:38.466+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:38.731+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:38.731+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:38.731+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.525 s -- in com.supplymind.dashboard.DashboardApiMockMvcTest
+[INFO] Running com.supplymind.dashboard.DashboardControllerTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.121 s -- in com.supplymind.dashboard.DashboardControllerTest
+[INFO] Running com.supplymind.dashboard.DashboardDtoContractTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.supplymind.dashboard.DashboardDtoContractTest
+[INFO] Running com.supplymind.dashboard.DashboardMvcContractTest
+2026-10-22T14:18:39.881+08:00  INFO 15104 --- [supplymind-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.supplymind.dashboard.DashboardMvcContractTest]: DashboardMvcContractTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T14:18:39.919+08:00  INFO 15104 --- [supplymind-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.supplymind.SupplyMindApplication for test class com.supplymind.dashboard.DashboardMvcContractTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.15)
+
+2026-10-22T14:18:39.951+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.dashboard.DashboardMvcContractTest   : Starting DashboardMvcContractTest using Java 17.0.19 with PID 15104 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-10-22T14:18:39.951+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.dashboard.DashboardMvcContractTest   : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T14:18:40.409+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:18:40.409+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:18:40.409+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:18:40.415+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.dashboard.DashboardMvcContractTest   : Started DashboardMvcContractTest in 0.494 seconds (process running for 97.185)
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.593 s -- in com.supplymind.dashboard.DashboardMvcContractTest
+[INFO] Running com.supplymind.dashboard.DashboardServiceTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.505 s -- in com.supplymind.dashboard.DashboardServiceTest
+[INFO] Running com.supplymind.day4.foundation.AtAggDay4ContractHarnessTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.supplymind.day4.foundation.AtAggDay4ContractHarnessTest
+[INFO] Running com.supplymind.day4.foundation.AtPrecDay4ContractHarnessTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.supplymind.day4.foundation.AtPrecDay4ContractHarnessTest
+[INFO] Running com.supplymind.day4.foundation.AtPubDay4ContractHarnessTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.supplymind.day4.foundation.AtPubDay4ContractHarnessTest
+[INFO] Running com.supplymind.day4.foundation.AtSrcDay4ReconciliationHarnessTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.supplymind.day4.foundation.AtSrcDay4ReconciliationHarnessTest
+[INFO] Running com.supplymind.day4.foundation.Day4DailyAggregateSchemaContractTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.supplymind.day4.foundation.Day4DailyAggregateSchemaContractTest
+[INFO] Running com.supplymind.day4.foundation.Day4GoldenFixtureManifestTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.102 s -- in com.supplymind.day4.foundation.Day4GoldenFixtureManifestTest
+[INFO] Running com.supplymind.day4.foundation.FutureMaterialDay4ContractTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.731 s -- in com.supplymind.day4.foundation.FutureMaterialDay4ContractTest
+[INFO] Running com.supplymind.day4.foundation.MaterialAggregateProcessingContractHarnessTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.supplymind.day4.foundation.MaterialAggregateProcessingContractHarnessTest
+[INFO] Running com.supplymind.day4.foundation.MaterialBasicValidationV2ContractHarnessTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.supplymind.day4.foundation.MaterialBasicValidationV2ContractHarnessTest
+[INFO] Running com.supplymind.day4.foundation.MaterialDailyProcessingContractHarnessTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.supplymind.day4.foundation.MaterialDailyProcessingContractHarnessTest
+[INFO] Running com.supplymind.day4.foundation.MaterialPublishNegativeMatrixHarnessTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.supplymind.day4.foundation.MaterialPublishNegativeMatrixHarnessTest
+[INFO] Running com.supplymind.day5.Day5ImplementationIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.440 s -- in com.supplymind.day5.Day5ImplementationIntegrationTest
+[INFO] Running com.supplymind.day5.foundation.Day5AlertContractHarnessTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.282 s -- in com.supplymind.day5.foundation.Day5AlertContractHarnessTest
+[INFO] Running com.supplymind.day5.foundation.Day5BackfillStateContractHarnessTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.supplymind.day5.foundation.Day5BackfillStateContractHarnessTest
+[INFO] Running com.supplymind.day5.foundation.Day5ConfigurationActivationContractHarnessTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.supplymind.day5.foundation.Day5ConfigurationActivationContractHarnessTest
+[INFO] Running com.supplymind.day5.foundation.Day5CrossYearHistoryContractHarnessTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.supplymind.day5.foundation.Day5CrossYearHistoryContractHarnessTest
+[INFO] Running com.supplymind.day5.foundation.Day5FutureAcceptanceIntegrationHarnessTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.846 s -- in com.supplymind.day5.foundation.Day5FutureAcceptanceIntegrationHarnessTest
+[INFO] Running com.supplymind.day5.foundation.Day5TimeContractHarnessTest
+[WARNING] Tests run: 4, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.004 s -- in com.supplymind.day5.foundation.Day5TimeContractHarnessTest
+[INFO] Running com.supplymind.day5.r2.Day5FinalProviderCapabilityDeclarationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in com.supplymind.day5.r2.Day5FinalProviderCapabilityDeclarationTest
+[INFO] Running com.supplymind.day5.r2.Day5R2BackfillAttackTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.264 s -- in com.supplymind.day5.r2.Day5R2BackfillAttackTest
+[INFO] Running com.supplymind.day5.r2.Day5R2RotationHistoryCapabilityAttackTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.962 s -- in com.supplymind.day5.r2.Day5R2RotationHistoryCapabilityAttackTest
+[INFO] Running com.supplymind.day5.r2.Day5R2WarningAttackTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.265 s -- in com.supplymind.day5.r2.Day5R2WarningAttackTest
+[INFO] Running com.supplymind.day5.r2.Day5SecondDefaultCapabilityAttackTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.193 s -- in com.supplymind.day5.r2.Day5SecondDefaultCapabilityAttackTest
+[INFO] Running com.supplymind.day5.r2.ProviderDefaultCapabilityFailClosedTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.467 s -- in com.supplymind.day5.r2.ProviderDefaultCapabilityFailClosedTest
+[INFO] Running com.supplymind.demo.DemoShowcaseServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.677 s -- in com.supplymind.demo.DemoShowcaseServiceTest
+[INFO] Running com.supplymind.desktop.ChildProcessWatchdogTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.263 s -- in com.supplymind.desktop.ChildProcessWatchdogTest
+[INFO] Running com.supplymind.desktop.HealthControllerTest
+2026-10-22T14:18:59.565+08:00  INFO 15104 --- [supplymind-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.supplymind.desktop.HealthControllerTest]: HealthControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-22T14:18:59.598+08:00  INFO 15104 --- [supplymind-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.supplymind.SupplyMindApplication for test class com.supplymind.desktop.HealthControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.15)
+
+2026-10-22T14:18:59.623+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.desktop.HealthControllerTest         : Starting HealthControllerTest using Java 17.0.19 with PID 15104 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-10-22T14:18:59.623+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.desktop.HealthControllerTest         : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T14:19:00.053+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:19:00.053+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:19:00.053+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:19:00.057+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.desktop.HealthControllerTest         : Started HealthControllerTest in 0.457 seconds (process running for 116.829)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.506 s -- in com.supplymind.desktop.HealthControllerTest
+[INFO] Running com.supplymind.desktop.PortableInitialConfigExporterTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.246 s -- in com.supplymind.desktop.PortableInitialConfigExporterTest
+[INFO] Running com.supplymind.foundation.acceptance.AtFile000ConfigAndRawWindowAcceptanceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.334 s -- in com.supplymind.foundation.acceptance.AtFile000ConfigAndRawWindowAcceptanceTest
+[INFO] Running com.supplymind.foundation.acceptance.AtFile000DualArtifactImmutabilityAcceptanceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.269 s -- in com.supplymind.foundation.acceptance.AtFile000DualArtifactImmutabilityAcceptanceTest
+[INFO] Running com.supplymind.foundation.acceptance.AtFile000RecoveryManifestRootAcceptanceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.161 s -- in com.supplymind.foundation.acceptance.AtFile000RecoveryManifestRootAcceptanceTest
+[INFO] Running com.supplymind.foundation.acceptance.D1T03AtFile000SupplementalAcceptanceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.123 s -- in com.supplymind.foundation.acceptance.D1T03AtFile000SupplementalAcceptanceTest
+[INFO] Running com.supplymind.foundation.acceptance.DirtyMarkerAndProcessedCodecAcceptanceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.069 s -- in com.supplymind.foundation.acceptance.DirtyMarkerAndProcessedCodecAcceptanceTest
+[INFO] Running com.supplymind.foundation.acceptance.DualCurrencyRawLifecycleAcceptanceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.570 s -- in com.supplymind.foundation.acceptance.DualCurrencyRawLifecycleAcceptanceTest
+[INFO] Running com.supplymind.foundation.acceptance.FoundationStartupAcceptanceTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.15)
+
+2026-10-22T14:19:02.867+08:00  INFO 15104 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 17.0.19 with PID 15104 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-10-22T14:19:02.868+08:00  INFO 15104 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T14:19:03.439+08:00  INFO 15104 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 0.589 seconds (process running for 120.209)
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.843 s -- in com.supplymind.foundation.acceptance.FoundationStartupAcceptanceTest
+[INFO] Running com.supplymind.foundation.acceptance.GoldenFixtureContractAcceptanceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.220 s -- in com.supplymind.foundation.acceptance.GoldenFixtureContractAcceptanceTest
+[INFO] Running com.supplymind.foundation.acceptance.IndependentFormatContractAcceptanceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.050 s -- in com.supplymind.foundation.acceptance.IndependentFormatContractAcceptanceTest
+[INFO] Running com.supplymind.foundation.boot.SupplyMindDataPropertiesTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.supplymind.foundation.boot.SupplyMindDataPropertiesTest
+[INFO] Running com.supplymind.foundation.codec.CsvV1CodecTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.supplymind.foundation.codec.CsvV1CodecTest
+[INFO] Running com.supplymind.foundation.codec.JsonV1CodecTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.supplymind.foundation.codec.JsonV1CodecTest
+[INFO] Running com.supplymind.foundation.model.ConfigAndManifestV1Test
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.supplymind.foundation.model.ConfigAndManifestV1Test
+[INFO] Running com.supplymind.foundation.model.QuarantineAndPrecisionV1Test
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.supplymind.foundation.model.QuarantineAndPrecisionV1Test
+[INFO] Running com.supplymind.foundation.model.RawReceiptAndTimelineV1Test
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.supplymind.foundation.model.RawReceiptAndTimelineV1Test
+[INFO] Running com.supplymind.foundation.storage.AtomicFileRecoveryTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.487 s -- in com.supplymind.foundation.storage.AtomicFileRecoveryTest
+[INFO] Running com.supplymind.foundation.storage.AtomicFileStoreWriteInvariantTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.135 s -- in com.supplymind.foundation.storage.AtomicFileStoreWriteInvariantTest
+[INFO] Running com.supplymind.foundation.storage.DataRootAndPathsTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.029 s -- in com.supplymind.foundation.storage.DataRootAndPathsTest
+[INFO] Running com.supplymind.foundation.storage.DirtyMarkerCodecTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.supplymind.foundation.storage.DirtyMarkerCodecTest
+[INFO] Running com.supplymind.foundation.storage.DirtyMarkerRecoveryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.143 s -- in com.supplymind.foundation.storage.DirtyMarkerRecoveryTest
+[INFO] Running com.supplymind.foundation.storage.ManifestDerivedFieldsVerifierTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.272 s -- in com.supplymind.foundation.storage.ManifestDerivedFieldsVerifierTest
+[INFO] Running com.supplymind.foundation.storage.RawAcquisitionLinkVerifierTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.960 s -- in com.supplymind.foundation.storage.RawAcquisitionLinkVerifierTest
+[INFO] Running com.supplymind.foundation.storage.RawAndConfigStoreTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.253 s -- in com.supplymind.foundation.storage.RawAndConfigStoreTest
+[INFO] Running com.supplymind.history.HistoryQueryServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.003 s -- in com.supplymind.history.HistoryQueryServiceTest
+[INFO] Running com.supplymind.localimport.LocalImportBatchProcessingServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.659 s -- in com.supplymind.localimport.LocalImportBatchProcessingServiceTest
+[INFO] Running com.supplymind.localimport.LocalImportIsolationTest
+[INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.568 s -- in com.supplymind.localimport.LocalImportIsolationTest
+[INFO] Running com.supplymind.localimport.SyntheticDemoIsolationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.390 s -- in com.supplymind.localimport.SyntheticDemoIsolationTest
+[INFO] Running com.supplymind.manual.ManualMaterialIntakeTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.117 s -- in com.supplymind.manual.ManualMaterialIntakeTest
+[INFO] Running com.supplymind.manual.ManualMaterialProcessingServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.758 s -- in com.supplymind.manual.ManualMaterialProcessingServiceTest
+[INFO] Running com.supplymind.processing.AggregateCalculatorTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s -- in com.supplymind.processing.AggregateCalculatorTest
+[INFO] Running com.supplymind.processing.AggregateProcessingServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.776 s -- in com.supplymind.processing.AggregateProcessingServiceTest
+[INFO] Running com.supplymind.processing.AggregateRealRawEvidenceTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.001 s -- in com.supplymind.processing.AggregateRealRawEvidenceTest
+[INFO] Running com.supplymind.processing.DailyProcessingServiceTest
+[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.36 s -- in com.supplymind.processing.DailyProcessingServiceTest
+[INFO] Running com.supplymind.processing.DailyRealRawEvidenceTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.supplymind.processing.DailyRealRawEvidenceTest
+[INFO] Running com.supplymind.processing.MaterialDailyAggregateTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.446 s -- in com.supplymind.processing.MaterialDailyAggregateTest
+[INFO] Running com.supplymind.provider.DataProviderRegistryTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.supplymind.provider.DataProviderRegistryTest
+[INFO] Running com.supplymind.provider.pboc.PbocDynamicTargetAttackTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.032 s -- in com.supplymind.provider.pboc.PbocDynamicTargetAttackTest
+[INFO] Running com.supplymind.provider.pboc.PbocOfficialWebDataProviderContractTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.382 s -- in com.supplymind.provider.pboc.PbocOfficialWebDataProviderContractTest
+[INFO] Running com.supplymind.provider.pboc.PbocOfficialWebRealNetworkAttemptTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.supplymind.provider.pboc.PbocOfficialWebRealNetworkAttemptTest
+[INFO] Running com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest
+D1T05_SMOKE_GATE disconnectedRetry outcome=EXTERNAL_ACCESS_BLOCKED stage=HTTP url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/index.html exception=ConnectException java=17.0.19 noRawCreated=true
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.161 s -- in com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest
+[INFO] Running com.supplymind.provider.pboc.PbocRawFirstContractTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.238 s -- in com.supplymind.provider.pboc.PbocRawFirstContractTest
+[INFO] Running com.supplymind.provider.shfe.ShfeAdFreePublicDataProviderTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.442 s -- in com.supplymind.provider.shfe.ShfeAdFreePublicDataProviderTest
+[INFO] Running com.supplymind.publish.MaterialPublishGateTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.400 s -- in com.supplymind.publish.MaterialPublishGateTest
+[INFO] Running com.supplymind.publish.PublishedQueryServiceTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.817 s -- in com.supplymind.publish.PublishedQueryServiceTest
+[INFO] Running com.supplymind.publish.PublishGateTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.075 s -- in com.supplymind.publish.PublishGateTest
+[INFO] Running com.supplymind.publish.PublishRealRawEvidenceTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.supplymind.publish.PublishRealRawEvidenceTest
+[INFO] Running com.supplymind.rotation.TimeRotationServiceTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.364 s -- in com.supplymind.rotation.TimeRotationServiceTest
+[INFO] Running com.supplymind.routing.MaterialRoutingTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.supplymind.routing.MaterialRoutingTest
+[INFO] Running com.supplymind.scheduling.ActiveCurrentCollectionServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.146 s -- in com.supplymind.scheduling.ActiveCurrentCollectionServiceTest
+[INFO] Running com.supplymind.scheduling.BusinessLoopIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.15)
+
+2026-10-22T14:20:01.512+08:00  INFO 15104 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 17.0.19 with PID 15104 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-10-22T14:20:01.512+08:00  INFO 15104 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T14:20:02.035+08:00  INFO 15104 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 0.549 seconds (process running for 178.806)
+2026-10-22T14:20:02.654+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-22T14:20:03.145+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-22T14:20:04.933+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-22T14:20:05.283+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-22T14:20:06.217+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-22T14:20:06.804+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-22T14:20:08.681+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-22T14:20:09.009+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-22T14:20:09.246+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-22T14:20:09.886+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-22T14:20:10.046+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=PERSISTENCE_FAILED stage=PERSISTENCE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=RawReceiptConflictException
+2026-10-22T14:20:10.108+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=PERSISTENCE_FAILED stage=PERSISTENCE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=RawReceiptConflictException
+2026-10-22T14:20:10.311+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+2026-10-22T14:20:10.725+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260812.html httpStatus=200 exception=NONE
+2026-10-22T14:20:11.241+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260812.html httpStatus=200 exception=NONE
+2026-10-22T14:20:13.138+08:00  INFO 15104 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+HISTORY_REPRO normal-append old-report=EVIDENCE_BINDING_MISMATCH
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.84 s -- in com.supplymind.scheduling.BusinessLoopIntegrationTest
+[INFO] Running com.supplymind.scheduling.CurrentAcquisitionServiceTest
+2026-10-22T14:20:13.386+08:00  WARN 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=FAILED failure=IllegalStateException
+2026-10-22T14:20:13.388+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-22T14:20:13.390+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-22T14:20:13.392+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.065 s -- in com.supplymind.scheduling.CurrentAcquisitionServiceTest
+[INFO] Running com.supplymind.scheduling.ScheduledEntryPostFixAttackTest
+2026-10-22T14:20:13.558+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.s.config.TaskSchedulerRouter         : No TaskScheduler/ScheduledExecutorService bean found for scheduled processing
+2026-10-22T14:20:14.870+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+2026-10-22T14:20:15.429+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+2026-10-22T14:20:16.095+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+2026-10-22T14:20:16.671+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.284 s -- in com.supplymind.scheduling.ScheduledEntryPostFixAttackTest
+[INFO] Running com.supplymind.scheduling.ScheduledGuardProductionPathTest
+2026-10-22T14:20:16.808+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.s.config.TaskSchedulerRouter         : No TaskScheduler/ScheduledExecutorService bean found for scheduled processing
+2026-10-22T14:20:17.492+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+2026-10-22T14:20:17.771+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+2026-10-22T14:20:18.060+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+2026-10-22T14:20:18.333+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.658 s -- in com.supplymind.scheduling.ScheduledGuardProductionPathTest
+[INFO] Running com.supplymind.survey.FreePublicSourceSurveyTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.supplymind.survey.FreePublicSourceSurveyTest
+[INFO] Running com.supplymind.validation.MaterialValidationPipelineTest
+[INFO] Tests run: 27, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.35 s -- in com.supplymind.validation.MaterialValidationPipelineTest
+[INFO] Running com.supplymind.validation.PbocValidationPipelineTest
+[INFO] Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.91 s -- in com.supplymind.validation.PbocValidationPipelineTest
+[INFO] Running com.supplymind.validation.PbocValidationRealRawEvidenceTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.001 s -- in com.supplymind.validation.PbocValidationRealRawEvidenceTest
+[INFO] Running com.supplymind.warning.FormalWarningEvaluationServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.274 s -- in com.supplymind.warning.FormalWarningEvaluationServiceTest
+[INFO] Running com.supplymind.warning.WarningAckStoreTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.157 s -- in com.supplymind.warning.WarningAckStoreTest
+[INFO] Running com.supplymind.warning.WarningApiMvcContractTest
+2026-10-22T14:20:43.073+08:00  INFO 15104 --- [supplymind-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.supplymind.SupplyMindApplication for test class com.supplymind.warning.WarningApiMvcContractTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.15)
+
+2026-10-22T14:20:43.095+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.warning.WarningApiMvcContractTest    : Starting WarningApiMvcContractTest using Java 17.0.19 with PID 15104 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-10-22T14:20:43.095+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.warning.WarningApiMvcContractTest    : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T14:20:43.568+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-22T14:20:43.568+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-22T14:20:43.569+08:00  INFO 15104 --- [supplymind-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-22T14:20:43.573+08:00  INFO 15104 --- [supplymind-backend] [           main] c.s.warning.WarningApiMvcContractTest    : Started WarningApiMvcContractTest in 0.497 seconds (process running for 220.344)
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.607 s -- in com.supplymind.warning.WarningApiMvcContractTest
+[INFO] Running com.supplymind.warning.WarningRuleManagementServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.324 s -- in com.supplymind.warning.WarningRuleManagementServiceTest
+[INFO] Running com.supplymind.warning.WarningServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.856 s -- in com.supplymind.warning.WarningServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 690, Failures: 0, Errors: 0, Skipped: 9
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  04:10 min
+[INFO] Finished at: 2026-10-22T14:20:45+08:00
+[INFO] ------------------------------------------------------------------------

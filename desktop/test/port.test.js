@@ -49,3 +49,38 @@ test('backendArgs never contains localhost, LAN or wildcard bindings', () => {
   assert.ok(!joined.includes('localhost'));
   assert.ok(!joined.includes('--server.address=*'));
 });
+
+function fakeNet(ports, failure) {
+  const state = { opened: 0, closed: 0 };
+  return { state, createServer() {
+    const index = state.opened++;
+    return {
+      unref() {}, on(event, handler) { if (event === 'error') this.onError = handler; },
+      listen(port, host, callback) {
+        assert.strictEqual(port, 0); assert.strictEqual(host, '127.0.0.1');
+        if (failure) this.onError(failure); else callback();
+      },
+      address() { return { port: ports[index % ports.length] }; },
+      close(callback) { state.closed++; callback(); }
+    };
+  }};
+}
+
+test('selector closes forbidden allocations and uses the backend port contract', async () => {
+  const net = fakeNet([8080, 80, 65536, 45678]);
+  assert.strictEqual(await pickFreePort(net), 45678);
+  assert.deepStrictEqual(net.state, { opened: 4, closed: 4 });
+});
+
+test('selector fails explicitly after ten forbidden allocations', async () => {
+  const net = fakeNet([8080]);
+  await assert.rejects(pickFreePort(net), /after 10 attempts/);
+  assert.deepStrictEqual(net.state, { opened: 10, closed: 10 });
+});
+
+test('selector propagates a real listen failure without unbounded retry', async () => {
+  const failure = new Error('EACCES');
+  const net = fakeNet([45678], failure);
+  await assert.rejects(pickFreePort(net), error => error === failure);
+  assert.strictEqual(net.state.opened, 1);
+});

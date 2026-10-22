@@ -44,7 +44,7 @@ public final class CurrentAcquisitionService {
         this.executor = Objects.requireNonNull(executor, "executor");
     }
 
-    public Status status() {
+    public synchronized Status status() {
         return status.get();
     }
 
@@ -52,7 +52,7 @@ public final class CurrentAcquisitionService {
      * Starts one cycle if none is running. The method always returns immediately, so an
      * unavailable public website can never block Spring Boot or the desktop window.
      */
-    public Status trigger() {
+    public synchronized Status trigger() {
         if (!inFlight.compareAndSet(false, true)) {
             return status.get();
         }
@@ -70,18 +70,21 @@ public final class CurrentAcquisitionService {
     }
 
     private void runCycle() {
+        Status completed = new Status("FAILED", null, "当前采集未完成，请查看来源状态后重试", now());
         try {
             ActiveCurrentCollectionService.Result result = collectionService.runImmediateCycle();
-            status.set(new Status(result.state(), result.businessDate(), result.message(), now()));
+            completed = new Status(result.state(), result.businessDate(), result.message(), now());
             LOGGER.info("current_acquisition outcome={}", result.state());
         } catch (RuntimeException exception) {
-            status.set(new Status("FAILED", null,
-                    "当前采集未完成，请查看来源状态后重试", now()));
-            LOGGER.warn("current_acquisition outcome=FAILED failure={}",
-                    exception.getClass().getSimpleName());
+            LOGGER.warn("current_acquisition outcome=FAILED failure={}", exception.getClass().getSimpleName());
         } finally {
-            inFlight.set(false);
+            complete(completed);
         }
+    }
+
+    private synchronized void complete(Status completed) {
+        inFlight.set(false);
+        status.set(completed);
     }
 
     private String now() {

@@ -38,6 +38,7 @@ class BusinessLoopIntegrationTest {
     @Test
     void scheduledDynamicTargetsProduceFormalWarningAcknowledgementAndAgentReport() throws Exception {
         DAY.set(10); CLOUD_CALLS.set(0); changedPayload = false; failWarning = false;
+        java.util.concurrent.ExecutorService worker = null;
         try (var context = new SpringApplicationBuilder(SupplyMindApplication.class, Ports.class)
                 .web(WebApplicationType.NONE).run(
                     "--supplymind.data-root=" + temp.toAbsolutePath(),
@@ -45,6 +46,7 @@ class BusinessLoopIntegrationTest {
                     "--supplymind.current-acquisition.on-startup-enabled=true",
                     "--supplymind.scheduler.guarded-enabled=false",
                     "--supplymind.agent.llm.enabled=false", "--supplymind.agent.llm.api-key=")) {
+            worker = context.getBean("currentAcquisitionExecutor", java.util.concurrent.ExecutorService.class);
             var root = context.getBean(DataRoot.class);
             var current = context.getBean(CurrentAcquisitionService.class);
             var configs = context.getBean(ConfigManagementService.class);
@@ -108,6 +110,17 @@ class BusinessLoopIntegrationTest {
             assertTrue(new ReportStore(root,context.getBean(AtomicFileStore.class)).read(result.reportRef()).ok());
             assertTrue(new WarningAckStore(root,context.getBean(AtomicFileStore.class),context.getBean(Clock.class))
                     .readVerified(warning).isPresent());
+            var historical = context.getBean(AgentOrchestrator.class).answer(new AgentOrchestrator.AgentQueryInput(
+                    "分析历史趋势", GBP, "2026-08-10", "2026-08-11", "month", "2026-08", "2026-08", null, null, "FORMAL"));
+            var reportStore = context.getBean(ReportStore.class);
+            assertTrue(reportStore.read(historical.reportRef()).ok(), "generation-time evidence must read successfully");
+            String dailyRef = DataPaths.dailyRef(GBP, YearMonth.of(2026, 8));
+            byte[] dailyBytes = Files.readAllBytes(root.resolveDataRef(dailyRef));
+            Files.writeString(root.resolveDataRef(dailyRef), "tampered temporary statistics");
+            assertFalse(reportStore.read(historical.reportRef()).ok(), "tampering must remain rejected");
+            Files.write(root.resolveDataRef(dailyRef), dailyBytes);
+            assertTrue(reportStore.read(historical.reportRef()).ok(), "restoring exact original evidence restores readability");
+            byte[] historicalBytes = Files.readAllBytes(root.resolveDataRef(historical.reportRef()));
             var stable = businessSnapshot(root);
             run(current);
             assertEquals("SUCCEEDED", current.status().state(), current.status().message());
@@ -135,12 +148,24 @@ class BusinessLoopIntegrationTest {
                     || publishedState.validationStatus() == ValidationStatus.VERIFIED_WITH_NOTICE);
             assertEquals(3, history.queryDaily(GBP, LocalDate.of(2026,8,10), LocalDate.of(2026,8,12)).rows().size());
             failWarning = false;
+            var afterAppend = reportStore.read(historical.reportRef());
+            assertFalse(afterAppend.ok(), "reproduction: normal mutable statistics update invalidates old report binding");
+            assertArrayEquals(historicalBytes, Files.readAllBytes(root.resolveDataRef(historical.reportRef())));
+            assertTrue(ManifestVerifier.matches(root, dailyRef, root.resolveDataRef(dailyRef),
+                    root.resolveDataRef(DataPaths.manifestRef(dailyRef))), "normal append has a valid current manifest");
+            System.out.println("HISTORY_REPRO normal-append old-report=" + afterAppend.failureCode());
             String ackRef=DataPaths.warningAckRef(warning.warningMonth(),warning.warningId());
             Files.writeString(root.resolveDataRef(ackRef),"corrupted test acknowledgement");
             assertFalse(context.getBean(ReportStore.class).read(result.reportRef()).ok());
             var invalid = context.getBean(AgentOrchestrator.class).answer(new AgentOrchestrator.AgentQueryInput(
                     "说明预警",GBP,null,null,null,null,null,"2026-08",null,"FORMAL"));
             assertTrue(invalid.evidencePack().facts().stream().noneMatch(f -> f.factType().equals("warning.acknowledged")));
+        } finally {
+            if (worker != null) {
+                worker.shutdownNow();
+                assertTrue(worker.awaitTermination(25, java.util.concurrent.TimeUnit.SECONDS),
+                        "test must not leave current acquisition running after context close");
+            }
         }
     }
     static Map<String,String> businessSnapshot(DataRoot root) throws Exception {

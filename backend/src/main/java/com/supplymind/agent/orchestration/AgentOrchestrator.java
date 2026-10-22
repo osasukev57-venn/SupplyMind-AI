@@ -89,6 +89,7 @@ public final class AgentOrchestrator {
 
     public AgentResult answer(AgentQueryInput input) {
         Objects.requireNonNull(input, "input");
+        var budget = new com.supplymind.agent.llm.RequestBudget();
         String requestId = "req-" + UUID.randomUUID().toString().substring(0, 12);
         String mode = requireMode(input.mode()); // M5: strict FORMAL/DEMO
         // M5: secret-scan the user input before it reaches EvidencePack, the LLM or persistence.
@@ -133,7 +134,7 @@ public final class AgentOrchestrator {
                     requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
         } else {
             // The sole cloud phase explains ONLY verified standard facts (no tool calling).
-            LLMService.LLMResponse phaseB = llm.analyze(new LLMService.LLMRequest(
+            LLMService.LLMResponse phaseB = budget.analyze(llm, new LLMService.LLMRequest(
                     requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs, false));
             cloudResponse = phaseB;
             if (phaseB.status() != LLMService.LLMStatus.SUCCESS) {
@@ -227,6 +228,7 @@ public final class AgentOrchestrator {
                 degraded ? null : llmProvider(), degraded ? null : llmModel(),
                 degraded, degradeReason,
                 factSummaries, claims, List.of(), List.copyOf(limitations), OffsetDateTime.now());
+        budget.requireRemaining();
         String reportRef = reportStore.store(report);
         RiskProjectionV1 riskProjection = buildRiskProjection(evidenceSource, evidencePack, mode, evidenceVerifier);
         return new AgentResult(evidencePack, cloudResponse, reportRef, report, degraded, degradeReason,

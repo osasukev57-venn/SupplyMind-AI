@@ -68,4 +68,15 @@ class CurrentAcquisitionServiceTest {
     private static ActiveCurrentCollectionService.Result result() {
         return new ActiveCurrentCollectionService.Result("SUCCEEDED", "2026-08-20", "completed");
     }
+
+    @Test
+    void completedCycleReleasesAdmissionAndFatalFailureDoesNotStickRunning() {
+        ActiveCurrentCollectionService cycle = mock(ActiveCurrentCollectionService.class);
+        when(cycle.runImmediateCycle()).thenThrow(new AssertionError("simulated fatal worker failure")).thenReturn(result());
+        CurrentAcquisitionService service = new CurrentAcquisitionService(cycle, CLOCK, Runnable::run);
+        org.junit.jupiter.api.Assertions.assertThrows(AssertionError.class, service::trigger);
+        assertEquals("FAILED", service.status().state());
+        assertEquals("SUCCEEDED", service.trigger().state());
+        org.mockito.Mockito.verify(cycle, org.mockito.Mockito.times(2)).runImmediateCycle();
+    }
 }

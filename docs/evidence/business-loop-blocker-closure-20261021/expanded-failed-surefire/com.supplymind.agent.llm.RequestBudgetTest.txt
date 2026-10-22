@@ -1,0 +1,17 @@
+-------------------------------------------------------------------------------
+Test set: com.supplymind.agent.llm.RequestBudgetTest
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 1.638 s <<< FAILURE! -- in com.supplymind.agent.llm.RequestBudgetTest
+com.supplymind.agent.llm.RequestBudgetTest.timedOutModelProducesOneHonestLocalReport -- Time elapsed: 1.295 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <REQUEST_BUDGET_EXHAUSTED> but was: <STANDARD_FACTS_NOT_READY:没有可引用的已验证标准事实>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at com.supplymind.agent.llm.RequestBudgetTest.timedOutModelProducesOneHonestLocalReport(RequestBudgetTest.java:51)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+

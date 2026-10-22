@@ -1,0 +1,110 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< com.supplymind:supplymind-backend >------------------
+[INFO] Building SupplyMind AI Backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ supplymind-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ supplymind-backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 240 source files with javac [debug parameters release 17] to target\classes
+[INFO] /D:/Dev/Projects/SupplyMind AI/backend/src/main/java/com/supplymind/foundation/storage/DirtyMarkerCodec.java: ĳЩ�����ļ�ʹ�û򸲸����ѹ�ʱ�� API��
+[INFO] /D:/Dev/Projects/SupplyMind AI/backend/src/main/java/com/supplymind/foundation/storage/DirtyMarkerCodec.java: �й���ϸ��Ϣ, ��ʹ�� -Xlint:deprecation ���±��롣
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ supplymind-backend ---
+[INFO] Copying 71 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ supplymind-backend ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 139 source files with javac [debug parameters release 17] to target\test-classes
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/agent/AgentApiMvcContractTest.java:[37,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/config/ConfigApiMvcContractTest.java:[36,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/dashboard/DashboardMvcContractTest.java:[35,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[39,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[42,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[45,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[48,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ supplymind-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.supplymind.agent.llm.RequestBudgetTest
+[ERROR] Tests run: 4, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 1.638 s <<< FAILURE! -- in com.supplymind.agent.llm.RequestBudgetTest
+[ERROR] com.supplymind.agent.llm.RequestBudgetTest.timedOutModelProducesOneHonestLocalReport -- Time elapsed: 1.295 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <REQUEST_BUDGET_EXHAUSTED> but was: <STANDARD_FACTS_NOT_READY:û�п����õ�����֤��׼��ʵ>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at com.supplymind.agent.llm.RequestBudgetTest.timedOutModelProducesOneHonestLocalReport(RequestBudgetTest.java:51)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+[INFO] Running com.supplymind.scheduling.BusinessLoopIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.15)
+
+2026-10-21T17:24:28.103+08:00  INFO 20980 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 17.0.19 with PID 20980 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-10-21T17:24:28.106+08:00  INFO 20980 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-10-21T17:24:33.614+08:00  INFO 20980 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 5.965 seconds (process running for 8.451)
+2026-10-21T17:24:34.379+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-21T17:24:35.010+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-21T17:24:36.608+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-21T17:24:36.941+08:00  INFO 20980 --- [supplymind-backend] [           main] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-21T17:24:37.739+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-21T17:24:38.209+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-21T17:24:39.654+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-21T17:24:40.046+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-21T17:24:40.271+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-21T17:24:40.801+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-21T17:24:40.957+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=PERSISTENCE_FAILED stage=PERSISTENCE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=RawReceiptConflictException
+2026-10-21T17:24:41.026+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=PERSISTENCE_FAILED stage=PERSISTENCE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=RawReceiptConflictException
+2026-10-21T17:24:41.299+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+2026-10-21T17:24:41.659+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260812.html httpStatus=200 exception=NONE
+2026-10-21T17:24:42.102+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260812.html httpStatus=200 exception=NONE
+2026-10-21T17:24:43.486+08:00  INFO 20980 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+HISTORY_REPRO normal-append old-report=EVIDENCE_BINDING_MISMATCH
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 16.29 s -- in com.supplymind.scheduling.BusinessLoopIntegrationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   RequestBudgetTest.timedOutModelProducesOneHonestLocalReport:51 expected: <REQUEST_BUDGET_EXHAUSTED> but was: <STANDARD_FACTS_NOT_READY:û�п����õ�����֤��׼��ʵ>
+[INFO] 
+[ERROR] Tests run: 5, Failures: 1, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  40.448 s
+[INFO] Finished at: 2026-10-21T17:24:44+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.6:test (default-test) on project supplymind-backend: There are test failures.
+[ERROR] 
+[ERROR] See D:\Dev\Projects\SupplyMind AI\backend\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

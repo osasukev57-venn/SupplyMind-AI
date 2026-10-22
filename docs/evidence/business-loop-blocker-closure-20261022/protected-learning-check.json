@@ -1,0 +1,30 @@
+[
+  {
+    "path": "docs/learning-evidence/2026-10-15/backend-summary.json",
+    "unchanged": true
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/backend-tests.log",
+    "unchanged": true
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/desktop-tests.tap",
+    "unchanged": true
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/frontend-tests.json",
+    "unchanged": true
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/frontend-tests.log",
+    "unchanged": true
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/run-summary.json",
+    "unchanged": true
+  },
+  {
+    "path": "docs/learning-evidence/2026-10-15/TEST-com.supplymind.agent.AgentFactFirstPipelineTest.xml",
+    "unchanged": true
+  }
+]

@@ -2,7 +2,7 @@ import axios from 'axios'
 import { http } from './client'
 import type { AgentQueryRequest, AgentQueryResponse } from '../types/agent'
 
-/** Agent performs two cloud phases plus read-only tools; ordinary APIs keep the global 15s timeout. */
+/** Backend cloud deadline is 75s from request start; 85s persistence admission, 90s client deadline. */
 export const AGENT_REQUEST_TIMEOUT_MS = 90_000
 
 /**

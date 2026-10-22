@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.supplymind.provider.pboc.PbocDynamicTargetAttackTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.032 s -- in com.supplymind.provider.pboc.PbocDynamicTargetAttackTest

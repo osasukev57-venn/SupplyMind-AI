@@ -1,0 +1,90 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< com.supplymind:supplymind-backend >------------------
+[INFO] Building SupplyMind AI Backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ supplymind-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ supplymind-backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 240 source files with javac [debug parameters release 17] to target\classes
+[INFO] /D:/Dev/Projects/SupplyMind AI/backend/src/main/java/com/supplymind/foundation/storage/DirtyMarkerCodec.java: ĳЩ�����ļ�ʹ�û򸲸����ѹ�ʱ�� API��
+[INFO] /D:/Dev/Projects/SupplyMind AI/backend/src/main/java/com/supplymind/foundation/storage/DirtyMarkerCodec.java: �й���ϸ��Ϣ, ��ʹ�� -Xlint:deprecation ���±��롣
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ supplymind-backend ---
+[INFO] Copying 71 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ supplymind-backend ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 139 source files with javac [debug parameters release 17] to target\test-classes
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/agent/AgentApiMvcContractTest.java:[37,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/config/ConfigApiMvcContractTest.java:[36,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/dashboard/DashboardMvcContractTest.java:[35,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[39,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[42,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[45,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/Dev/Projects/SupplyMind AI/backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java:[48,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.MockBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ supplymind-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.supplymind.agent.AgentFactFirstPipelineTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.914 s -- in com.supplymind.agent.AgentFactFirstPipelineTest
+[INFO] Running com.supplymind.agent.llm.RequestBudgetTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.156 s -- in com.supplymind.agent.llm.RequestBudgetTest
+[INFO] Running com.supplymind.scheduling.BusinessLoopIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.15)
+
+2026-10-21T17:22:10.253+08:00  INFO 18992 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 17.0.19 with PID 18992 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-10-21T17:22:10.256+08:00  INFO 18992 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-10-21T17:22:16.685+08:00  INFO 18992 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 6.859 seconds (process running for 11.633)
+2026-10-21T17:22:17.434+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-21T17:22:18.201+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-21T17:22:20.638+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-21T17:22:21.110+08:00  INFO 18992 --- [supplymind-backend] [           main] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-21T17:22:22.363+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-21T17:22:23.133+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-21T17:22:25.234+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-21T17:22:25.748+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-21T17:22:26.018+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-21T17:22:26.712+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-21T17:22:26.883+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=PERSISTENCE_FAILED stage=PERSISTENCE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=RawReceiptConflictException
+2026-10-21T17:22:26.955+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=PERSISTENCE_FAILED stage=PERSISTENCE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=RawReceiptConflictException
+2026-10-21T17:22:27.247+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+2026-10-21T17:22:27.701+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260812.html httpStatus=200 exception=NONE
+2026-10-21T17:22:28.338+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260812.html httpStatus=200 exception=NONE
+2026-10-21T17:22:30.215+08:00  INFO 18992 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+HISTORY_REPRO normal-append old-report=EVIDENCE_BINDING_MISMATCH
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 20.74 s -- in com.supplymind.scheduling.BusinessLoopIntegrationTest
+[INFO] Running com.supplymind.scheduling.CurrentAcquisitionServiceTest
+2026-10-21T17:22:30.482+08:00  WARN 18992 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=FAILED failure=IllegalStateException
+2026-10-21T17:22:30.488+08:00  INFO 18992 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-21T17:22:30.498+08:00  INFO 18992 --- [supplymind-backend] [           main] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.056 s -- in com.supplymind.scheduling.CurrentAcquisitionServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  42.829 s
+[INFO] Finished at: 2026-10-21T17:22:31+08:00
+[INFO] ------------------------------------------------------------------------
