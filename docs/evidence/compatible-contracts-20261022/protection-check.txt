@@ -1,0 +1,5 @@
+Branch: codex/business-loop-fixes
+Main: 14d1754156a6c9bab5703cb21afc75d8405c17cd
+v0.9.0 commit: 14d1754156a6c9bab5703cb21afc75d8405c17cd
+No post-test source digest changes.
+User docs/learning-evidence remains untracked and excluded.

@@ -1,0 +1,19 @@
+
+> supplymind-dashboard@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 D:/Dev/Projects/SupplyMind AI/frontend
+
+ ✓ src/api/__tests__/agent.spec.ts (3 tests) 12ms
+ ✓ src/views/__tests__/warning.spec.ts (6 tests) 249ms
+ ✓ src/views/__tests__/agent.spec.ts (8 tests) 235ms
+ ✓ src/views/__tests__/config.spec.ts (8 tests) 345ms
+ ✓ src/views/__tests__/pages.spec.ts (14 tests) 298ms
+ ✓ src/views/__tests__/governance.spec.ts (3 tests) 262ms
+
+ Test Files  6 passed (6)
+      Tests  42 passed (42)
+   Start at  15:26:20
+   Duration  3.81s (transform 1.52s, setup 0ms, collect 5.30s, tests 1.40s, environment 11.08s, prepare 1.22s)
+

@@ -1,0 +1,24 @@
+-------------------------------------------------------------------------------
+Test set: com.supplymind.agent.llm.RequestBudgetTest
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.533 s <<< FAILURE! -- in com.supplymind.agent.llm.RequestBudgetTest
+com.supplymind.agent.llm.RequestBudgetTest.timedOutModelProducesOneHonestLocalReport -- Time elapsed: 0.367 s <<< ERROR!
+com.supplymind.foundation.storage.StorageException: REPORT_SNAPSHOT_IO_FAILED
+	at com.supplymind.agent.report.ReportSnapshotStore.capture(ReportSnapshotStore.java:51)
+	at com.supplymind.agent.report.ReportStore.storeSnapshot(ReportStore.java:60)
+	at com.supplymind.agent.orchestration.AgentOrchestrator.answer(AgentOrchestrator.java:232)
+	at com.supplymind.agent.llm.RequestBudgetTest.timedOutModelProducesOneHonestLocalReport(RequestBudgetTest.java:50)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: java.nio.file.NoSuchFileException: D:\Dev\Temp\junit-18150996920176171105\budget-fallback\staging\d6r2run20260810.json
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3288)
+	at com.supplymind.agent.report.ReportSnapshotStore.capture(ReportSnapshotStore.java:24)
+	... 6 more
+

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.supplymind.day5.Day5ImplementationIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.324 s -- in com.supplymind.day5.Day5ImplementationIntegrationTest

@@ -1,0 +1,90 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< com.supplymind:supplymind-backend >------------------
+[INFO] Building SupplyMind AI Backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ supplymind-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ supplymind-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ supplymind-backend ---
+[INFO] Copying 71 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ supplymind-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ supplymind-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.supplymind.scheduling.ScheduledGuardProductionPathTest
+15:25:59.425 [main] INFO org.springframework.scheduling.config.TaskSchedulerRouter -- No TaskScheduler/ScheduledExecutorService bean found for scheduled processing
+15:26:00.592 [main] INFO com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=PARTIAL_SUCCESS
+15:26:01.104 [main] INFO com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=PARTIAL_SUCCESS
+15:26:01.527 [main] INFO com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=PARTIAL_SUCCESS
+15:26:01.963 [main] INFO com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=PARTIAL_SUCCESS
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.853 s -- in com.supplymind.scheduling.ScheduledGuardProductionPathTest
+[INFO] Running com.supplymind.scheduling.ScheduledEntryPostFixAttackTest
+15:26:02.171 [main] INFO org.springframework.scheduling.config.TaskSchedulerRouter -- No TaskScheduler/ScheduledExecutorService bean found for scheduled processing
+15:26:02.911 [main] INFO com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=PARTIAL_SUCCESS
+15:26:03.252 [main] INFO com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=PARTIAL_SUCCESS
+15:26:03.643 [main] INFO com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=PARTIAL_SUCCESS
+15:26:03.993 [main] INFO com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=PARTIAL_SUCCESS
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.003 s -- in com.supplymind.scheduling.ScheduledEntryPostFixAttackTest
+[INFO] Running com.supplymind.scheduling.CurrentAcquisitionServiceTest
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+15:26:04.936 [main] WARN com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=FAILED failure=IllegalStateException
+15:26:04.960 [main] INFO com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=SUCCEEDED
+15:26:04.982 [main] INFO com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=SUCCEEDED
+15:26:05.003 [main] INFO com.supplymind.scheduling.CurrentAcquisitionService -- current_acquisition outcome=SUCCEEDED
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.000 s -- in com.supplymind.scheduling.CurrentAcquisitionServiceTest
+[INFO] Running com.supplymind.scheduling.BusinessLoopIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.15)
+
+2026-10-22T15:26:05.614+08:00  INFO 17556 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 17.0.19 with PID 17556 (started by Administrator in D:\Dev\Projects\SupplyMind AI\backend)
+2026-10-22T15:26:05.616+08:00  INFO 17556 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-22T15:26:07.713+08:00  INFO 17556 --- [supplymind-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 2.625 seconds (process running for 10.284)
+2026-10-22T15:26:08.250+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-22T15:26:08.722+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-22T15:26:10.245+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-22T15:26:10.535+08:00  INFO 17556 --- [supplymind-backend] [           main] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260810.html httpStatus=200 exception=NONE
+2026-10-22T15:26:11.225+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-22T15:26:11.650+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-22T15:26:12.997+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-22T15:26:14.903+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-22T15:26:15.138+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=NONE
+2026-10-22T15:26:15.983+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=SUCCEEDED
+2026-10-22T15:26:16.153+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=PERSISTENCE_FAILED stage=PERSISTENCE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=RawReceiptConflictException
+2026-10-22T15:26:16.232+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=PERSISTENCE_FAILED stage=PERSISTENCE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260811.html httpStatus=200 exception=RawReceiptConflictException
+2026-10-22T15:26:16.501+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+2026-10-22T15:26:16.794+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260812.html httpStatus=200 exception=NONE
+2026-10-22T15:26:17.125+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.p.pboc.PbocOfficialWebConfiguration  : pboc_official_web outcome=SUCCESS stage=COMPLETE url=https://www.pbc.gov.cn/zhengcehuobisi/125207/125217/125925/fixture-announcement-20260812.html httpStatus=200 exception=NONE
+2026-10-22T15:26:18.574+08:00  INFO 17556 --- [supplymind-backend] [ent-acquisition] c.s.s.CurrentAcquisitionService          : current_acquisition outcome=PARTIAL_SUCCESS
+HISTORY_REPRO normal-append old-report=null
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 14.03 s -- in com.supplymind.scheduling.BusinessLoopIntegrationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  24.612 s
+[INFO] Finished at: 2026-10-22T15:26:19+08:00
+[INFO] ------------------------------------------------------------------------

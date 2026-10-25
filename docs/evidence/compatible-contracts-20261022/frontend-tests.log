@@ -1,0 +1,81 @@
+
+> supplymind-dashboard@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 D:/Dev/Projects/SupplyMind AI/frontend
+
+ ❯ src/api/__tests__/agent.spec.ts (2 tests | 1 failed) 21ms
+   × Agent API timeout contract > uses a request-local 90 second timeout without changing ordinary API defaults 17ms
+     → expected "spy" to be called with arguments: [ '/agent/query', …(2) ]
+
+Received: 
+
+  1st spy call:
+
+@@ -4,8 +4,12 @@
+      "itemId": "MAT.ADC12.SMM",
+      "mode": "FORMAL",
+      "question": "分析 ADC12",
+    },
+    {
++     "headers": {
++       "X-Agent-Request-Token": "11459710-001c-4ce2-9eef-fe91f2af7b37",
++     },
++     "signal": undefined,
+      "timeout": 90000,
+    },
+  ]
+
+
+Number of calls: 1
+
+   ✓ Agent API timeout contract > maps an axios timeout to the specific non-retry warning 2ms
+ ✓ src/views/__tests__/agent.spec.ts (8 tests) 328ms
+ ✓ src/views/__tests__/warning.spec.ts (6 tests) 380ms
+ ✓ src/views/__tests__/config.spec.ts (8 tests) 534ms
+ ✓ src/views/__tests__/pages.spec.ts (14 tests) 425ms
+ ✓ src/views/__tests__/governance.spec.ts (3 tests) 367ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/api/__tests__/agent.spec.ts > Agent API timeout contract > uses a request-local 90 second timeout without changing ordinary API defaults
+AssertionError: expected "spy" to be called with arguments: [ '/agent/query', …(2) ]
+
+Received: 
+
+  1st spy call:
+
+@@ -4,8 +4,12 @@
+      "itemId": "MAT.ADC12.SMM",
+      "mode": "FORMAL",
+      "question": "分析 ADC12",
+    },
+    {
++     "headers": {
++       "X-Agent-Request-Token": "11459710-001c-4ce2-9eef-fe91f2af7b37",
++     },
++     "signal": undefined,
+      "timeout": 90000,
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/api/__tests__/agent.spec.ts:26:23
+     24|     await expect(queryAgent(request)).resolves.toBe(response)
+     25|     expect(AGENT_REQUEST_TIMEOUT_MS).toBe(90_000)
+     26|     expect(http.post).toHaveBeenCalledWith('/agent/query', request, {
+       |                       ^
+     27|       timeout: 90_000
+     28|     })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  1 failed | 40 passed (41)
+   Start at  15:17:13
+   Duration  5.03s (transform 2.37s, setup 0ms, collect 6.28s, tests 2.06s, environment 14.01s, prepare 1.82s)
+

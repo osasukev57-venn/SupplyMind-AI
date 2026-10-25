@@ -1,0 +1,196 @@
+[
+  {
+    "directory": "backend-final-surefire",
+    "total": 711,
+    "passed": 702,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 9,
+    "jdk": [
+      "17.0.19"
+    ],
+    "skipReasons": [
+      {
+        "test": "com.supplymind.acceptance.AtSrc002AcceptanceTest#dualCurrencyRealChainIdempotencyAndOfflineRestart",
+        "reason": "System property [at-src-002.real] does not exist"
+      },
+      {
+        "test": "com.supplymind.agent.infrastructure.springai.CloudLlmRealApiAcceptanceTest#callsConfiguredCloudApiWithoutPersistingTheCredential",
+        "reason": "System property [supplymind.llm.real] does not exist"
+      },
+      {
+        "test": "com.supplymind.day5.foundation.Day5TimeContractHarnessTest#physicalWindowsClockForwardAndRollbackRemainPendingImplementation",
+        "reason": "PENDING_IMPLEMENTATION: AT-TIME-003/004 require a dedicated Windows/VM physical system-time run and final Electron package."
+      },
+      {
+        "test": "com.supplymind.processing.AggregateRealRawEvidenceTest#computesRealFourGrainAggregatesFromTheRealD1T05PbocRaw",
+        "reason": "System property [d2-t04.real-raw] does not exist"
+      },
+      {
+        "test": "com.supplymind.processing.DailyRealRawEvidenceTest#computesDailyCsvFromTheRealD1T05PbocRaw",
+        "reason": "System property [d2-t03.real-raw] does not exist"
+      },
+      {
+        "test": "com.supplymind.provider.pboc.PbocOfficialWebRealNetworkAttemptTest#performsOneRealJavaHttpsAttemptOrRecordsAnExternalAccessBlock",
+        "reason": "System property [pboc.real-network] does not exist"
+      },
+      {
+        "test": "com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest#realCollectionRepeatTriggerAndRestartReadSmokeGate",
+        "reason": "System property [pboc.real-network] does not exist"
+      },
+      {
+        "test": "com.supplymind.publish.PublishRealRawEvidenceTest#publishesTheRealD1T05PbocRawAndExposesItThroughTheBusinessEntry",
+        "reason": "System property [d2-t02.real-raw] does not exist"
+      },
+      {
+        "test": "com.supplymind.validation.PbocValidationRealRawEvidenceTest#standardizesAndValidatesTheRealD1T05PbocRawIntoVerifiedCandidates",
+        "reason": "System property [d2-t01.real-raw] does not exist"
+      }
+    ]
+  },
+  {
+    "directory": "backend-first-full-surefire",
+    "total": 710,
+    "passed": 698,
+    "failures": 0,
+    "errors": 3,
+    "skipped": 9,
+    "jdk": [
+      "17.0.19"
+    ],
+    "skipReasons": [
+      {
+        "test": "com.supplymind.acceptance.AtSrc002AcceptanceTest#dualCurrencyRealChainIdempotencyAndOfflineRestart",
+        "reason": "System property [at-src-002.real] does not exist"
+      },
+      {
+        "test": "com.supplymind.agent.infrastructure.springai.CloudLlmRealApiAcceptanceTest#callsConfiguredCloudApiWithoutPersistingTheCredential",
+        "reason": "System property [supplymind.llm.real] does not exist"
+      },
+      {
+        "test": "com.supplymind.day5.foundation.Day5TimeContractHarnessTest#physicalWindowsClockForwardAndRollbackRemainPendingImplementation",
+        "reason": "PENDING_IMPLEMENTATION: AT-TIME-003/004 require a dedicated Windows/VM physical system-time run and final Electron package."
+      },
+      {
+        "test": "com.supplymind.processing.AggregateRealRawEvidenceTest#computesRealFourGrainAggregatesFromTheRealD1T05PbocRaw",
+        "reason": "System property [d2-t04.real-raw] does not exist"
+      },
+      {
+        "test": "com.supplymind.processing.DailyRealRawEvidenceTest#computesDailyCsvFromTheRealD1T05PbocRaw",
+        "reason": "System property [d2-t03.real-raw] does not exist"
+      },
+      {
+        "test": "com.supplymind.provider.pboc.PbocOfficialWebRealNetworkAttemptTest#performsOneRealJavaHttpsAttemptOrRecordsAnExternalAccessBlock",
+        "reason": "System property [pboc.real-network] does not exist"
+      },
+      {
+        "test": "com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest#realCollectionRepeatTriggerAndRestartReadSmokeGate",
+        "reason": "System property [pboc.real-network] does not exist"
+      },
+      {
+        "test": "com.supplymind.publish.PublishRealRawEvidenceTest#publishesTheRealD1T05PbocRawAndExposesItThroughTheBusinessEntry",
+        "reason": "System property [d2-t02.real-raw] does not exist"
+      },
+      {
+        "test": "com.supplymind.validation.PbocValidationRealRawEvidenceTest#standardizesAndValidatesTheRealD1T05PbocRawIntoVerifiedCandidates",
+        "reason": "System property [d2-t01.real-raw] does not exist"
+      }
+    ]
+  },
+  {
+    "directory": "closure-fixture-failed",
+    "total": 40,
+    "passed": 38,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0,
+    "jdk": [
+      "17.0.19"
+    ],
+    "skipReasons": []
+  },
+  {
+    "directory": "closure-path-fixture-failed",
+    "total": 8,
+    "passed": 7,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "jdk": [
+      "17.0.19"
+    ],
+    "skipReasons": []
+  },
+  {
+    "directory": "failure-surefire",
+    "total": 12,
+    "passed": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "jdk": [
+      "17.0.19"
+    ],
+    "skipReasons": []
+  },
+  {
+    "directory": "snapshot-attack-fixture-failed",
+    "total": 7,
+    "passed": 1,
+    "failures": 0,
+    "errors": 6,
+    "skipped": 0,
+    "jdk": [
+      "17.0.19"
+    ],
+    "skipReasons": []
+  },
+  {
+    "directory": "snapshot-final-surefire",
+    "total": 8,
+    "passed": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "jdk": [
+      "17.0.19"
+    ],
+    "skipReasons": []
+  },
+  {
+    "directory": "snapshot-first-failed",
+    "total": 14,
+    "passed": 12,
+    "failures": 0,
+    "errors": 2,
+    "skipped": 0,
+    "jdk": [
+      "17.0.19"
+    ],
+    "skipReasons": []
+  },
+  {
+    "directory": "stability-1-surefire",
+    "total": 7,
+    "passed": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "jdk": [
+      "17.0.19"
+    ],
+    "skipReasons": []
+  },
+  {
+    "directory": "stability-2-surefire",
+    "total": 7,
+    "passed": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "jdk": [
+      "17.0.19"
+    ],
+    "skipReasons": []
+  }
+]

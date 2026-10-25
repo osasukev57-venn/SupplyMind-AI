@@ -1,0 +1,16 @@
+-------------------------------------------------------------------------------
+Test set: com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 2.414 s <<< FAILURE! -- in com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest
+com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest.missingInvalidAndUnsafeEvidenceNeverReachVerifiedLlmContext -- Time elapsed: 0.342 s <<< ERROR!
+com.supplymind.foundation.storage.StorageException: REPORT_CLAIM_UNVERIFIED
+	at com.supplymind.agent.report.ReportSnapshotStore.requireReportBinding(ReportSnapshotStore.java:99)
+	at com.supplymind.agent.report.ReportSnapshotStore.verify(ReportSnapshotStore.java:90)
+	at com.supplymind.agent.report.ReportSnapshotStore.capture(ReportSnapshotStore.java:41)
+	at com.supplymind.agent.report.ReportStore.storeSnapshot(ReportStore.java:60)
+	at com.supplymind.agent.orchestration.AgentOrchestrator.answer(AgentOrchestrator.java:234)
+	at com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest.missingInvalidAndUnsafeEvidenceNeverReachVerifiedLlmContext(Day6R2IndependentEvidenceReportAttackTest.java:96)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
