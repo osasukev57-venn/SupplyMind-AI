@@ -70,8 +70,8 @@ public class AgentConfiguration {
     }
 
     @Bean
-    WarningExplainToolAdapter warningExplainToolAdapter(DataRoot dataRoot, WarningAckStore warningAckStore) {
-        return new WarningExplainToolAdapter(dataRoot, warningAckStore);
+    WarningExplainToolAdapter warningExplainToolAdapter(DataRoot dataRoot, WarningAckStore warningAckStore, com.supplymind.warning.WarningRuleManagementService rules) {
+        return new WarningExplainToolAdapter(dataRoot, warningAckStore, rules);
     }
 
     @Bean

@@ -36,17 +36,15 @@ public final class TemplateFallbackService {
     }
 
     private static List<LLMService.LlmFact> summaryFacts(List<LLMService.LlmFact> facts) {
-        Map<String, LLMService.LlmFact> firstByType = new LinkedHashMap<>();
-        for (LLMService.LlmFact fact : facts) firstByType.putIfAbsent(fact.statement(), fact);
         List<String> priority = List.of(
-                "latest published value", "Java-computed trend direction",
-                "Java-computed start-to-end change", "persisted period average",
-                "Java-computed completeness percentage", "missing observation count",
-                "Java-evaluated warning risk level", "Java-evaluated warning threshold percentage",
-                "verified warning acknowledgement status");
-        List<LLMService.LlmFact> selected = priority.stream()
-                .map(firstByType::get).filter(java.util.Objects::nonNull).limit(6).toList();
-        return selected.isEmpty() ? facts.stream().limit(3).toList() : selected;
+            "latest published value", "Java-computed trend direction", "Java-computed start-to-end change",
+            "persisted period average", "immutable warning identifier", "verified warning rule version",
+            "verified warning current value", "verified warning baseline value", "Java-evaluated warning risk level",
+            "Java-evaluated warning threshold percentage", "verified warning acknowledgement status",
+            "verified warning acknowledgement time", "verified warning disposition note");
+        var selected=new java.util.ArrayList<LLMService.LlmFact>();
+        for(String type:priority)facts.stream().filter(f->type.equals(f.statement())).forEach(selected::add);
+        return selected.isEmpty()?facts.stream().limit(3).toList():List.copyOf(selected);
     }
 
     private static String render(LLMService.LlmFact fact) {
@@ -57,12 +55,18 @@ public final class TemplateFallbackService {
             case "latest published value" -> "最新值为" + value + period;
             case "Java-computed trend direction" -> "趋势为" + localize(fact.value()) + period;
             case "Java-computed start-to-end change" -> "首尾变化为" + value + period;
-            case "persisted period average" -> "已持久化平均值为" + value + period;
+            case "persisted period average" -> "已持久化平均值（"+fact.validationStatus()+"组）为" + value + period;
             case "Java-computed completeness percentage" -> "数据完整率为" + fact.value() + period;
             case "missing observation count" -> "缺失观测数为" + fact.value() + period;
-            case "Java-evaluated warning risk level" -> "当前预警风险为" + localize(fact.value());
+            case "Java-evaluated warning risk level" -> "适用预警风险为" + localize(fact.value())+period;
             case "Java-evaluated warning threshold percentage" -> "预警阈值为" + fact.value();
-            case "verified warning acknowledgement status" -> "预警处理状态为" + localize(fact.value());
+            case "verified warning acknowledgement status" -> "预警处理状态为" + localize(fact.value())+"（确认不代表风险消失）";
+            case "immutable warning identifier" -> "预警编号为"+fact.value()+period;
+            case "verified warning rule version" -> "预警规则版本为"+fact.value();
+            case "verified warning current value" -> "预警当前值为"+value;
+            case "verified warning baseline value" -> "预警基准值为"+value;
+            case "verified warning acknowledgement time" -> "确认时间为"+fact.value();
+            case "verified warning disposition note" -> "确认备注为"+fact.value();
             default -> fact.statement() + "为" + value + period;
         };
     }

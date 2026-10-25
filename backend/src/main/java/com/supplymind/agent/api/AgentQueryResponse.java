@@ -131,7 +131,9 @@ public record AgentQueryResponse(
             String baselineValue,
             String threshold,
             String dataStatus,
-            boolean demoRule
+            boolean demoRule,
+            String warningId, String ruleId, String ruleVersion, String periodStart, String periodEnd,
+            String acknowledgedStatus, String acknowledgedAt
     ) {
     }
 
@@ -251,7 +253,8 @@ public record AgentQueryResponse(
                     projection.baselineValue(),
                     projection.threshold(),
                     projection.dataStatus(),
-                    projection.demoRule());
+                    projection.demoRule(), projection.warningId(), projection.ruleId(), projection.ruleVersion(),
+                    projection.periodStart(), projection.periodEnd(), projection.acknowledgedStatus(), projection.acknowledgedAt());
         }
         return new AgentQueryResponse(
                 pack.requestId(),

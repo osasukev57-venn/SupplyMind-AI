@@ -23,7 +23,8 @@ public record RiskProjectionV1(
         String threshold,
         String dataStatus,
         boolean demoRule,
-        List<String> evidenceRefs
+        List<String> evidenceRefs,
+        String ruleId, String ruleVersion, String acknowledgedStatus, String acknowledgedAt
 ) {
     public RiskProjectionV1 {
         Objects.requireNonNull(warningId, "warningId");

@@ -242,4 +242,22 @@ describe('AgentView (D8-T03)', () => {
     expect(wrapper.text()).toContain('\u8bf7\u8f93\u5165\u95ee\u9898')
     wrapper.unmount()
   })
+  it('shows resolved range, current rule acknowledgement and not-applicable warning validation', async () => {
+    vi.mocked(queryAgent).mockResolvedValue({ ...response,
+      scope: { itemIds: ['MAT.AZ91D.SIMULATION'], businessDate: null, periodStart: '2026-10-13', periodEnd: '2026-10-22', timezone: 'Asia/Shanghai' },
+      risk: { riskLevel: 'HIGH', currentValue: '25500', baselineValue: '23250', threshold: '0.05', dataStatus: 'PUBLISHED_VERIFIED', demoRule: false,
+        warningId: '2e973b219109dd627e241d9973c9ffe1', ruleId: 'custom-warning-MAT.AZ91D.SIMULATION', ruleVersion: 'warning-relative-change-v1-custom-r4',
+        periodStart: '2026-10-15', periodEnd: '2026-10-22', acknowledgedStatus: 'ACKNOWLEDGED', acknowledgedAt: '2026-10-25T17:06:15+08:00' },
+      facts: [{ factId: 'w1', statement: 'warning.riskLevel', value: 'HIGH', businessDate: '2026-10-22', period: '2026-10-15', validationStatus: null }]
+    })
+    const wrapper = mountWithRouter()
+    await fillRequiredFields(wrapper, '说明月度均值和预警确认')
+    await wrapper.find('button.btn-primary').trigger('click')
+    await flushPromises()
+    for (const text of ['2026-10-13', '2026-10-22', 'custom-r4', '2e973b219109dd627e241d9973c9ffe1', '已确认', '确认不代表风险消失', '不适用（预警证据单独核验）']) expect(wrapper.text()).toContain(text)
+    expect(wrapper.text()).not.toContain('未知校验状态')
+    expect(wrapper.text()).not.toContain('{"points":[]}')
+    wrapper.unmount()
+  })
+
 })

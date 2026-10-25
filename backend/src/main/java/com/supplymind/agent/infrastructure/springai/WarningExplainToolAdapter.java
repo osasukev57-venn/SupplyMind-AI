@@ -37,14 +37,17 @@ public final class WarningExplainToolAdapter {
 
     private final DataRoot dataRoot;
     private final WarningAckStore ackStore;
+    private final com.supplymind.warning.WarningRuleManagementService rules;
 
     public WarningExplainToolAdapter(DataRoot dataRoot) {
         this(dataRoot, null);
     }
 
     public WarningExplainToolAdapter(DataRoot dataRoot, WarningAckStore ackStore) {
-        this.dataRoot = dataRoot;
-        this.ackStore = ackStore;
+        this(dataRoot,ackStore,null);
+    }
+    public WarningExplainToolAdapter(DataRoot dataRoot,WarningAckStore ackStore,com.supplymind.warning.WarningRuleManagementService rules) {
+        this.dataRoot=dataRoot;this.ackStore=ackStore;this.rules=rules;
     }
 
     @Tool(name = TOOL_NAME, description = "Explain persisted warning evidence for a series, optionally filtered by warning month (yyyy-MM).")
@@ -74,6 +77,8 @@ public final class WarningExplainToolAdapter {
                 entry.put("warningId", warning.warningId());
                 entry.put("itemId", warning.itemId());
                 entry.put("ruleId", warning.ruleId());
+                entry.put("ruleVersion", warning.ruleVersion());
+                entry.put("evaluatedAt", warning.evaluatedAt().toString());
                 entry.put("ruleDescription", warning.ruleDescription());
                 entry.put("grain", warning.grain());
                 entry.put("periodStart", warning.periodStart());
@@ -115,6 +120,11 @@ public final class WarningExplainToolAdapter {
                 evidenceRefs.add(evidenceRef);
             }
             Map<String, Object> body = new LinkedHashMap<>();
+            if(rules!=null) {
+                var active=rules.listRules().stream().filter(r->r.itemId().equals(safeItem)).findFirst();
+                body.put("activeRuleKnown",true);
+                active.filter(r->r.rule().enabled()).ifPresent(r->{body.put("activeRuleId",r.rule().ruleId());body.put("activeRuleVersion",r.rule().ruleVersion());});
+            }
             body.put("warnings", rows);
             body.put("warningCount", rows.size());
             body.put("note", "ruleVersion and demoRule identify DEC-064 formal versus legacy demo warnings");

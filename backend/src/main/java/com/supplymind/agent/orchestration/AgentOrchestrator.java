@@ -102,6 +102,7 @@ public final class AgentOrchestrator {
         List<ToolResult> evidenceSource = budget.readOnly(() -> toolExecutor.execute(toolInput, requestId));
         budget.requireRemaining();
         effectiveInput = withResolvedItemId(effectiveInput, evidenceSource);
+        evidenceSource = WarningSummarySelector.select(evidenceSource, effectiveInput);
 
 
         boolean toolChainClean = evidenceSource.stream()
@@ -156,17 +157,22 @@ public final class AgentOrchestrator {
                 } else {
                     ModelDraftV1 draft = parsed.draft();
                     if (parsed.factTemplate()) {
-                        String rendered = renderFactTemplate(
+                        TemplateRender rendered = renderFactTemplate(
                                 draft.rawText(), draft.usedFactIds(), facts);
-                        if (rendered == null) {
+                        if(rendered.text()!=null && asksMonthlyAverage(input.question()) && input.question().contains("区分")
+                                && facts.stream().filter(f->"period.metrics.avg".equals(f.factType())).anyMatch(f->!parsed.draft().usedFactIds().contains(f.factId())))
+                            rendered=new TemplateRender(null,"MISSING_REQUIRED_MONTHLY_GROUP");
+                        if (rendered.text() == null) {
                             degraded = true;
                             degradeReason = "MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE";
+                            limitations.add("FACT_TEMPLATE_REJECTED:"+rendered.reason());
+                            org.slf4j.LoggerFactory.getLogger(getClass()).warn("fact_template_rejected requestId={} reason={}",requestId,rendered.reason());
                             explanation = fallback.explain(new LLMService.LLMRequest(
                                     requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
                             draft = null;
                         } else {
                             draft = new ModelDraftV1(
-                                    requestId, rendered, draft.usedFactIds(), List.of());
+                                    requestId, rendered.text(), draft.usedFactIds(), List.of());
                         }
                     }
                     if (draft != null) {
@@ -193,6 +199,10 @@ public final class AgentOrchestrator {
         if (explanation.isBlank()) {
             explanation = fallback.explain(new LLMService.LLMRequest(
                     requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
+        }
+
+        if (facts.stream().anyMatch(f -> f.actualSourceName()!=null && f.actualSourceName().contains("模拟"))) {
+            explanation += " 该监测项为模拟数据，不代表真实市场风险。";
         }
 
         List<AgentReportV1.FactSummary> factSummaries = facts.stream()
@@ -268,7 +278,7 @@ public final class AgentOrchestrator {
                 list = rowsList;
             } else {
                 // M3: warning.explain rows live under the structured "warnings" key.
-                Object warningRows = result.result().get("warnings");
+                Object warningRows = result.result().getOrDefault("summaryWarnings", result.result().get("warnings"));
                 if (!(warningRows instanceof List<?> warningList)) {
                     continue;
                 }
@@ -301,11 +311,14 @@ public final class AgentOrchestrator {
                         row.get("threshold") == null ? null : String.valueOf(row.get("threshold")),
                         row.get("dataStatus") == null ? null : String.valueOf(row.get("dataStatus")),
                         Boolean.TRUE.equals(row.get("demoRule")),
-                        rowRefs);
+                        rowRefs, textOf(row,"ruleId"), textOf(row,"ruleVersion"),
+                        textOf(row,"acknowledgedStatus"), textOf(row,"acknowledgedAt"));
             }
         }
         return null;
     }
+
+    private static String textOf(Map<?,?> row,String key){return row.get(key)==null?null:String.valueOf(row.get(key));}
 
     private static List<String> warningRowRefs(Map<?, ?> row, Set<String> modeAllowedRefs) {
         Object value = row.get("evidenceRefs");
@@ -444,7 +457,12 @@ public final class AgentOrchestrator {
     private static EvidencePackV1.Scope scopeOf(AgentQueryInput input) {
         return new EvidencePackV1.Scope(
                 input.itemId() == null ? List.of() : List.of(input.itemId()),
-                input.businessDate(), input.periodStart(), input.periodEnd(), "Asia/Shanghai");
+                input.businessDate(), input.startDate()==null?input.periodStart():input.startDate(),
+                input.endDate()==null?input.periodEnd():input.endDate(), "Asia/Shanghai");
+    }
+    private static boolean asksMonthlyAverage(String question) {
+        String text=question==null?"":question.toLowerCase(java.util.Locale.ROOT);
+        return text.contains("月均") || text.contains("月度均值") || text.contains("月度平均") || text.contains("monthly average");
     }
     private AgentQueryInput deterministicInput(AgentQueryInput input) {
         String startDate = input.startDate();
@@ -478,8 +496,7 @@ public final class AgentOrchestrator {
         String periodEnd = input.periodEnd();
         String month = input.month();
         String question = input.question().toLowerCase(java.util.Locale.ROOT);
-        boolean asksMonthly = question.contains("月均") || question.contains("月度平均")
-                || question.contains("monthly average");
+        boolean asksMonthly = asksMonthlyAverage(question);
         if (asksMonthly && startDate != null) {
             try {
                 java.time.YearMonth target = java.time.YearMonth.from(
@@ -539,8 +556,7 @@ public final class AgentOrchestrator {
                 && facts.stream().noneMatch(fact -> "history.latest".equals(fact.factType()))) {
             return new FactReadiness(false, "缺少最新已发布值事实");
         }
-        if ((question.contains("月均") || question.contains("月度平均")
-                || question.contains("monthly average"))
+        if (asksMonthlyAverage(question)
                 && facts.stream().noneMatch(fact -> "period.metrics.avg".equals(fact.factType()))) {
             return new FactReadiness(false, "缺少持久化月度平均事实");
         }
@@ -578,6 +594,7 @@ public final class AgentOrchestrator {
             case "warning.acknowledged" -> "verified warning acknowledgement status";
             case "warning.acknowledgedAt" -> "verified warning acknowledgement time";
             case "warning.disposition" -> "verified warning disposition note";
+            case "warning.ruleVersion" -> "verified warning rule version";
             case "history.trend.direction" -> "Java-computed trend direction";
             case "history.trend.change" -> "Java-computed start-to-end change";
             default -> fact.factType();
@@ -638,45 +655,31 @@ public final class AgentOrchestrator {
      * Renders only exact, selected placeholders. Unknown, missing, duplicated or dangling tokens
      * fail closed. The cloud never gets to author a business number, date, source or status.
      */
-    private static String renderFactTemplate(
-            String template, List<String> usedFactIds, List<EvidencePackV1.Fact> facts
-    ) {
-        LinkedHashSet<String> selected = new LinkedHashSet<>(usedFactIds);
-        if (selected.size() != usedFactIds.size()) {
-            return null;
-        }
-        Map<String, EvidencePackV1.Fact> byId = new java.util.LinkedHashMap<>();
-        for (EvidencePackV1.Fact fact : facts) {
-            byId.put(fact.factId(), fact);
-        }
-        Matcher matcher = FACT_TEMPLATE_TOKEN.matcher(template);
-        LinkedHashSet<String> referenced = new LinkedHashSet<>();
-        StringBuffer rendered = new StringBuffer();
-        while (matcher.find()) {
-            String factId = matcher.group(1);
-            EvidencePackV1.Fact fact = byId.get(factId);
-            if (fact == null || !selected.contains(factId)) {
-                return null;
-            }
-            if (!referenced.add(factId)) {
-                return null;
-            }
-            matcher.appendReplacement(rendered,
-                    Matcher.quoteReplacement(renderStandardFactForAnswer(fact)));
+    private record TemplateRender(String text,String reason) {}
+
+    private static TemplateRender renderFactTemplate(String template,List<String> usedFactIds,List<EvidencePackV1.Fact> facts) {
+        var selected=new LinkedHashSet<>(usedFactIds);
+        if(selected.size()!=usedFactIds.size())return new TemplateRender(null,"DUPLICATE_SELECTED_FACT_ID");
+        Map<String,EvidencePackV1.Fact> byId=new java.util.LinkedHashMap<>();facts.forEach(f->byId.put(f.factId(),f));
+        for(String id:selected)if(!byId.containsKey(id))return new TemplateRender(null,"UNKNOWN_SELECTED_FACT_ID");
+        var matcher=FACT_TEMPLATE_TOKEN.matcher(template);var referenced=new LinkedHashSet<String>();var rendered=new StringBuffer();
+        while(matcher.find()) {
+            String id=matcher.group(1);var fact=byId.get(id);
+            if(fact==null)return new TemplateRender(null,"UNKNOWN_TOKEN");
+            if(!selected.contains(id))return new TemplateRender(null,"TOKEN_NOT_SELECTED");
+            if(!referenced.add(id))return new TemplateRender(null,"DUPLICATE_TOKEN");
+            matcher.appendReplacement(rendered,Matcher.quoteReplacement(renderStandardFactForAnswer(fact)));
         }
         matcher.appendTail(rendered);
-        if (!referenced.equals(selected)
-                || rendered.indexOf("{{") >= 0 || rendered.indexOf("}}") >= 0) {
-            return null;
+        if(rendered.indexOf("{{")>=0||rendered.indexOf("}}")>=0)return new TemplateRender(null,"DANGLING_TOKEN");
+        if(!referenced.equals(selected))return new TemplateRender(null,"FACT_ID_SET_MISMATCH");
+        var selectedFacts=selected.stream().map(byId::get).toList();
+        if(!factTemplateShellIsSafe(template,selectedFacts)) {
+            String shell=FACT_TEMPLATE_TOKEN.matcher(template).replaceAll("");
+            return new TemplateRender(null,shell.chars().anyMatch(Character::isDigit)?"SHELL_NUMBER":
+                !controlledShellSemanticsSupported(shell,selectedFacts)?"UNSUPPORTED_SHELL_SEMANTICS":"SHELL_BUSINESS_LITERAL");
         }
-        List<EvidencePackV1.Fact> selectedFacts = selected.stream()
-                .map(byId::get)
-                .filter(Objects::nonNull)
-                .toList();
-        if (!factTemplateShellIsSafe(template, selectedFacts)) {
-            return null;
-        }
-        return rendered.toString().trim();
+        return new TemplateRender(rendered.toString().trim(),"ACCEPTED");
     }
 
     /**
@@ -714,6 +717,8 @@ public final class AgentOrchestrator {
     private static boolean controlledShellSemanticsSupported(
             String shell, List<EvidencePackV1.Fact> selectedFacts
     ) {
+        String riskShell=shell.replace("不代表风险消失", "").replace("不表示风险消失", "");
+        if(java.util.regex.Pattern.compile("风险.{0,6}(消失|解除|为零|不存在)|没有风险|无风险").matcher(riskShell).find())return false;
         if (containsAny(shell, "上升", "上涨", "走高")
                 && !hasFact(selectedFacts, "history.trend.direction", "UPWARD")) return false;
         if (containsAny(shell, "下降", "下跌", "走低")
@@ -758,7 +763,7 @@ public final class AgentOrchestrator {
                     + "，校验状态为" + fact.validationStatus() + source;
             case "history.latest" -> "截至" + fact.businessDate() + "，最新已发布值为"
                     + valueWithUnit + source;
-            case "period.metrics.avg" -> period + "的已发布平均值为" + valueWithUnit;
+            case "period.metrics.avg" -> period + "的已发布平均值（"+fact.validationStatus()+"组）为" + valueWithUnit;
             case "quality.rowCount" -> period + "共有" + fact.value() + "条已发布记录";
             case "quality.expectedCount" -> period + "的预期观测数为" + fact.value();
             case "quality.missingCount" -> period + "的缺失观测数为" + fact.value();
@@ -776,6 +781,7 @@ public final class AgentOrchestrator {
             case "warning.acknowledged" -> "预警处理状态为" + localizedEnum(fact.value());
             case "warning.acknowledgedAt" -> "预警确认时间为" + fact.value();
             case "warning.disposition" -> "预警处置记录为" + fact.value();
+            case "warning.ruleVersion" -> "预警规则版本为" + fact.value();
             default -> standardStatement(fact) + "为" + valueWithUnit;
         };
     }
@@ -830,7 +836,7 @@ public final class AgentOrchestrator {
             }
             Object rows = result.result().get("rows");
             if (!(rows instanceof List<?>)) {
-                rows = result.result().get("warnings");
+                rows = result.result().getOrDefault("summaryWarnings", result.result().get("warnings"));
             }
             if (rows instanceof List<?> list) {
                 for (Object entry : list) {
@@ -861,7 +867,8 @@ public final class AgentOrchestrator {
                             }
                         }
                         String businessDate = row.get("businessDate") == null
-                                ? periodOrNull(row) : String.valueOf(row.get("businessDate"));
+                                ? WarningExplainToolAdapter.TOOL_NAME.equals(result.toolName()) ? textOf(row,"periodEnd") : periodOrNull(row)
+                                : String.valueOf(row.get("businessDate"));
                         // M2 R4: each fact uses ONLY the refs of the row it really came from
                         // (row-level evidenceRefs when the tool provides them, never the whole
                         // ToolResult set) - raw-A must never back a fact that only raw-B produced.
@@ -925,6 +932,7 @@ public final class AgentOrchestrator {
                                     row.get("acknowledgedStatus"), "status", warningFact);
                             addDerivedFact(facts, "fact-" + (factId++), "warning.acknowledgedAt",
                                     row.get("acknowledgedAt"), "datetime", warningFact);
+                            addDerivedFact(facts, "fact-" + (factId++), "warning.ruleVersion", row.get("ruleVersion"), "version", warningFact);
                             addDerivedFact(facts, "fact-" + (factId++), "warning.disposition",
                                     row.get("dispositionNote"), "text", warningFact);
                         }

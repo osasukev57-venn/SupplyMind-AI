@@ -139,11 +139,12 @@ const visibleClaims = computed(() => {
         </p>
         <p class="muted" v-if="result.scope">
           范围：{{ result.scope.itemIds.join('、') || '—' }} /
-          {{ result.scope.periodStart ?? result.scope.businessDate ?? '—' }} ~ {{ result.scope.periodEnd ?? '—' }}
+          {{ result.scope.periodStart ?? result.scope.businessDate ?? '—' }} ~ {{ result.scope.periodEnd ?? result.scope.businessDate ?? '—' }}
         </p>
       </div>
 
       <div class="section-body flat" v-if="result.risk">
+        <p class="muted">适用预警：{{ result.risk.warningId ?? '—' }}；规则 {{ result.risk.ruleId ?? '—' }} / {{ result.risk.ruleVersion ?? '—' }}；比较日期 {{ result.risk.periodStart ?? '—' }} 至 {{ result.risk.periodEnd ?? '—' }}；处理状态 {{ result.risk.acknowledgedStatus === 'ACKNOWLEDGED' ? '已确认（确认不代表风险消失）' : result.risk.acknowledgedStatus === 'PENDING' ? '待处理' : '确认状态不可验证' }}</p>
         <div v-if="result.risk.demoRule" class="demo-banner">
           当前风险结果来自演示规则，仅用于验证分析流程，不代表正式业务阈值。
         </div>
@@ -186,7 +187,7 @@ const visibleClaims = computed(() => {
                 <td>{{ fact.statement }}</td>
                 <td class="num">{{ fact.value }}</td>
                 <td class="num">{{ fact.businessDate ?? '—' }}</td>
-                <td><StatusBadge :status="fact.validationStatus ?? 'UNKNOWN'" /></td>
+                <td><span v-if="fact.validationStatus == null && fact.statement.startsWith('warning.')">不适用（预警证据单独核验）</span><StatusBadge v-else :status="fact.validationStatus ?? 'UNKNOWN'" /></td>
               </tr>
             </tbody>
           </table>

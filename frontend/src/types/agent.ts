@@ -62,6 +62,13 @@ export interface RiskView {
   threshold: string | null
   dataStatus: string | null
   demoRule: boolean
+  warningId?: string | null
+  ruleId?: string | null
+  ruleVersion?: string | null
+  periodStart?: string | null
+  periodEnd?: string | null
+  acknowledgedStatus?: string | null
+  acknowledgedAt?: string | null
 }
 
 export interface AgentQueryResponse {
