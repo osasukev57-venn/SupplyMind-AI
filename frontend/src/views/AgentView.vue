@@ -128,7 +128,7 @@ const visibleClaims = computed(() => {
         <div v-else class="fact-banner">Java 标准事实校验通过，云端模型仅负责组织以下分析表达。</div>
         <p class="answer-text">{{ result.answer }}</p>
         <p class="muted">
-          报告来源：{{ sourceLabel() }}
+          报告来源：{{ sourceLabel() }} · 生成时事实（不是实时数据）
           <template v-if="result.model">（{{ result.model }}）</template>
           ；数据截至：{{ result.dataThrough ?? '—' }}；请求号：{{ result.requestId }}
         </p>

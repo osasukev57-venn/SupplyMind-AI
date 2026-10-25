@@ -13,6 +13,7 @@ import java.util.Objects;
 public final class DataRoot {
 
     private final Path absoluteNormalizedPath;
+    private java.util.Map<String, String> evidenceBindings;
 
     private DataRoot(Path absoluteNormalizedPath) {
         this.absoluteNormalizedPath = absoluteNormalizedPath;
@@ -35,6 +36,18 @@ public final class DataRoot {
         return new DataRoot(temporaryDirectory.toAbsolutePath().normalize());
     }
 
+    /** Read-only resolver used only by report verification; never falls back to current mutable files. */
+    public DataRoot evidenceView(java.util.Map<String, String> bindings) {
+        for (var entry : bindings.entrySet()) {
+            DataPaths.requireLegalDataRef(entry.getKey()); DataPaths.requireLegalDataRef(entry.getValue());
+            if (!entry.getValue().startsWith("report-evidence/") && !entry.getKey().equals(entry.getValue()))
+                throw new StorageException("Invalid evidence mapping");
+        }
+        DataRoot view = new DataRoot(absoluteNormalizedPath);
+        view.evidenceBindings = java.util.Map.copyOf(bindings);
+        return view;
+    }
+
     public Path path() {
         return absoluteNormalizedPath;
     }
@@ -54,6 +67,11 @@ public final class DataRoot {
 
     public Path resolveDataRef(String dataRef) {
         DataPaths.requireLegalDataRef(dataRef);
+        if (evidenceBindings != null) {
+            String bound = evidenceBindings.get(dataRef);
+            if (bound == null) throw new StorageException("Evidence is outside the frozen closure: " + dataRef);
+            dataRef = bound;
+        }
         Path resolved = absoluteNormalizedPath.resolve(dataRef.replace('/', java.io.File.separatorChar)).normalize();
         if (!resolved.startsWith(absoluteNormalizedPath)) {
             throw new StorageException("Data reference escapes dataRoot: " + dataRef);

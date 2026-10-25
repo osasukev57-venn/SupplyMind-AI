@@ -72,6 +72,10 @@ final class ManifestDerivedFieldsVerifier {
     private DerivedFields deriveFields(String dataRef, byte[] dataBytes) {
         Objects.requireNonNull(dataRef, "dataRef");
         Objects.requireNonNull(dataBytes, "dataBytes");
+        if (dataRef.startsWith("report-evidence/")) {
+            if (!dataRef.split("/")[1].equals(FileDigest.sha256(dataBytes))) throw new StorageException("Snapshot content address mismatch");
+            return jsonFields(List.of());
+        }
         if (isJsonTarget(dataRef)) {
             return deriveJson(dataRef, dataBytes);
         }
@@ -166,7 +170,7 @@ final class ManifestDerivedFieldsVerifier {
         if (dataRef.startsWith("report/")) {
             // D6-T04 Agent reports: manifest carries no source run ids (embedded EvidencePack is
             // the lineage), but the report must decode as an AGENT-REPORT-V1 document.
-            JsonV1Codec.decodeFile(dataBytes, com.supplymind.agent.report.AgentReportV1.class);
+            com.supplymind.agent.report.ReportSnapshotV2.decodeReport(dataBytes);
             return jsonFields(List.of());
         }
         throw new StorageException("No JSON manifest derivation rule is registered for " + dataRef);

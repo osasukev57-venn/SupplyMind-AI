@@ -111,6 +111,13 @@ public final class Day6R2Fixture {
         ConfigActivationStore configs = new ConfigActivationStore(root, files, CLOCK);
         configs.activate(new MonitorSeriesConfigV1("1.0", 1, Mode.FORMAL, AT, List.of(item())));
         String rawRef = writeRaw(root, files);
+        var timelines = new com.supplymind.foundation.storage.TimelineStore(root, files, CLOCK);
+        timelines.createInitial(RUN_ID, rawRef, AT);
+        var candidate = new com.supplymind.foundation.model.CandidateV1(ITEM,"2026-08-10","123.45678901","CNY","CNY/1 USD",
+                ProviderType.OFFICIAL_WEB,SOURCE,AccessMethod.PUBLIC_OFFICIAL_HTML,"fixture-normalization-v1");
+        timelines.append(RUN_ID,new com.supplymind.foundation.model.LifecycleSnapshotV1(2,ProcessingStage.PARSED,ValidationStatus.PENDING,candidate,null,null,null,null,null,AT));
+        timelines.append(RUN_ID,new com.supplymind.foundation.model.LifecycleSnapshotV1(3,ProcessingStage.VALIDATED,ValidationStatus.VERIFIED,candidate,null,"pboc-basic-validation-v1",AT,null,null,AT));
+        timelines.append(RUN_ID,new com.supplymind.foundation.model.LifecycleSnapshotV1(4,ProcessingStage.PUBLISHED,ValidationStatus.VERIFIED,candidate,null,"pboc-basic-validation-v1",AT,AT,DataPaths.stagingRef(RUN_ID)+"#recordVersion=4",AT));
         String dailyRef = writeDaily(root, files, rawRef);
         String aggregateRef = writeAggregate(root, files, dailyRef);
         HistoryQueryService history = new HistoryQueryService(root);

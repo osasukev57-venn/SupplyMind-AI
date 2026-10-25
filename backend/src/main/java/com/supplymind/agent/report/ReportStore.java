@@ -56,6 +56,17 @@ public final class ReportStore {
         return ref;
     }
 
+    public String storeSnapshot(AgentReportV1 report, Runnable checkpoint) {
+        var snapshot = new ReportSnapshotStore(dataRoot, fileStore).capture(report, checkpoint);
+        String ref = DataPaths.reportRef(YearMonth.from(report.createdAt().atZoneSameInstant(SHANGHAI)), report.reportId());
+        byte[] bytes = JsonV1Codec.encodeFile(snapshot);
+        checkpoint.run(); // After admission, let AtomicFileStore finish or recover; never force-kill the commit.
+        fileStore.commit("agent-report-" + report.reportId(), DirtyTransactionType.SINGLE_FILE, report.createdAt(),
+                List.of(new FileTransactionTarget(DirtyTargetRole.BUSINESS_FILE, ref, bytes,
+                        JsonV1Codec.encodeFile(ManifestFactory.json(ref, bytes, List.of(), report.createdAt())), true)));
+        return ref;
+    }
+
     public boolean exists(String ref) {
         Objects.requireNonNull(ref, "ref");
         try {
@@ -101,9 +112,14 @@ public final class ReportStore {
                         failure = "MANIFEST_MISMATCH";
                     } else {
                         AgentReportV1 report;
+                        ReportSnapshotV2 snapshot = null;
                         try {
-                            report = JsonV1Codec.decodeFile(
-                                    java.nio.file.Files.readAllBytes(dataPath), AgentReportV1.class);
+                            byte[] bytes = java.nio.file.Files.readAllBytes(dataPath);
+                            report = ReportSnapshotV2.decodeReport(bytes);
+                            if ("AGENT-REPORT-V2".equals(JsonV1Codec.mapper().readTree(bytes).path("schemaVersion").asText())) {
+                                snapshot = JsonV1Codec.decodeFile(bytes, ReportSnapshotV2.class);
+                                new ReportSnapshotStore(dataRoot, fileStore).verify(snapshot);
+                            }
                         } catch (java.io.IOException | RuntimeException exception) {
                             return new ReadResult(null, "REPORT_UNREADABLE");
                         }
@@ -115,6 +131,7 @@ public final class ReportStore {
                                 || !report.requestId().equals(report.evidencePack().requestId())) {
                             failure = "REQUEST_IDENTITY_MISMATCH";
                         } else {
+                            if (snapshot != null) return new ReadResult(report, null);
                             // M4: re-verify the embedded evidence refs against the CURRENT files,
                             // recovering authoritative lineage by DECODING the real evidence files
                             // (never the report's self-reported lineage). Every frozen identity
@@ -158,7 +175,7 @@ public final class ReportStore {
      * as EVIDENCE_UNAVAILABLE; here we only detect drift between two VERIFIED states and
      * status/reasonCode drift that is not an availability change.
      */
-    private static String bindingMismatch(
+    static String bindingMismatch(
             List<com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry> frozen,
             List<com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry> reverified
     ) {

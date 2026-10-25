@@ -95,9 +95,8 @@ class AgentApiTest {
         assertNotNull(body.answer(), "answer must be present (LLM or Java fallback)");
         assertTrue(body.degraded(), "no real LLM configured: fallback is expected and honest");
         assertNotNull(body.reportRef());
-        var storedReport = com.supplymind.foundation.codec.JsonV1Codec.decodeFile(
-                java.nio.file.Files.readAllBytes(harness.root().resolveDataRef(body.reportRef())),
-                com.supplymind.agent.report.AgentReportV1.class);
+        var storedReport = com.supplymind.agent.report.ReportSnapshotV2.decodeReport(
+                java.nio.file.Files.readAllBytes(harness.root().resolveDataRef(body.reportRef())));
         assertTrue(body.reportRef().startsWith("report/" + YearMonth.from(storedReport.createdAt()
                 .atZoneSameInstant(java.time.ZoneId.of("Asia/Shanghai"))) + "/"));
         assertFalse(body.toolTrace().isEmpty());
@@ -217,7 +216,7 @@ class AgentApiTest {
                 "1.0", warningId, "demo-price-change-x", "demo-v1", FX_ITEM, "month",
                 "2026-08-01", "2026-08-31", null, "0.05", "0.087", "0.052",
                 com.supplymind.warning.WarningRecordV1.RiskLevel.HIGH,
-                List.of("processed/aggregate/FX.USD.CNY.PBOC_MID/month/2026.csv"),
+                List.of(DataPaths.rawRef("formal", "official_web", FX_ITEM, AT, "fx-run-20260810")),
                 "PUBLISHED_VERIFIED", AT, "a".repeat(64), true,
                 "TEST/DEMO threshold - not a final business threshold (EXT-07 open)");
         byte[] data = com.supplymind.foundation.codec.JsonV1Codec.encodeFile(warning);

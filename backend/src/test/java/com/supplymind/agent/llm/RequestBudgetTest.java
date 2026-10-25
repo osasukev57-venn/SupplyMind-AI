@@ -56,7 +56,7 @@ class RequestBudgetTest {
         assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
         assertTrue(interrupted.await(2, TimeUnit.SECONDS));
         try(var paths = java.nio.file.Files.walk(temp)) {
-            assertEquals(1, paths.filter(p -> p.toString().contains("report") && p.toString().endsWith(".json")
+            assertEquals(1, paths.filter(p -> p.toString().replace('\\', '/').contains("/report/") && p.toString().endsWith(".json")
                     && !p.toString().endsWith(".manifest.json")).count());
         }
     }

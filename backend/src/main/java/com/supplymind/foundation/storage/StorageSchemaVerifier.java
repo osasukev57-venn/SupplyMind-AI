@@ -15,6 +15,10 @@ final class StorageSchemaVerifier {
     }
 
     static void verifyData(String dataRef, byte[] bytes) {
+        if (dataRef.startsWith("report-evidence/")) {
+            if (!dataRef.split("/")[1].equals(FileDigest.sha256(bytes))) throw new StorageException("Snapshot content address mismatch");
+            return;
+        }
         if (dataRef.startsWith("diagnostic/acquisition/")) {
             var value = JsonV1Codec.decodeFile(bytes, com.supplymind.foundation.model.AcquisitionFailureEvidenceV1.class);
             if (!value.evidenceRef().equals(dataRef)) throw new StorageException("Failure evidence identity mismatch");
@@ -109,8 +113,7 @@ final class StorageSchemaVerifier {
         } else if (dataRef.startsWith("report/")) {
             // D6-T04 Agent reports (AGENT-EVIDENCE-SCHEMA-V1): re-read the report JSON so a
             // structurally invalid report can never become visible as atomic business evidence.
-            com.supplymind.agent.report.AgentReportV1 report = JsonV1Codec.decodeFile(
-                    bytes, com.supplymind.agent.report.AgentReportV1.class);
+            com.supplymind.agent.report.AgentReportV1 report = com.supplymind.agent.report.ReportSnapshotV2.decodeReport(bytes);
             if (report.reportId() == null || report.reportId().isBlank()) {
                 throw new StorageException("AgentReportV1.reportId must be present for report targets: " + dataRef);
             }

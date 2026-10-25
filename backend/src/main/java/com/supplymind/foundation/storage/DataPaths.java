@@ -226,6 +226,7 @@ public final class DataPaths {
 
     private static boolean isBusinessDataRef(String ref) {
         String[] segments = ref.split("/");
+        if (ref.matches("report-evidence/[a-f0-9]{64}/[A-Za-z0-9._-]+")) return true;
         if (ref.matches("diagnostic/acquisition/[A-Za-z0-9._-]+\\.json")) return true;
         if (ref.equals("config/monitor-series.json")) {
             return true;

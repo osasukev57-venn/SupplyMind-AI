@@ -114,10 +114,17 @@ class BusinessLoopIntegrationTest {
                     "分析历史趋势", GBP, "2026-08-10", "2026-08-11", "month", "2026-08", "2026-08", null, null, "FORMAL"));
             var reportStore = context.getBean(ReportStore.class);
             assertTrue(reportStore.read(historical.reportRef()).ok(), "generation-time evidence must read successfully");
+            var oldProjection = com.supplymind.foundation.codec.JsonV1Codec.mapper().valueToTree(historical.report());
+            ((com.fasterxml.jackson.databind.node.ObjectNode) oldProjection).put("reportId", "legacy-history-report");
+            String legacyRef = reportStore.store(com.supplymind.foundation.codec.JsonV1Codec.mapper().treeToValue(oldProjection,com.supplymind.agent.report.AgentReportV1.class));
+            assertTrue(reportStore.read(legacyRef).ok());
+            var snapshot = com.supplymind.foundation.codec.JsonV1Codec.decodeFile(Files.readAllBytes(root.resolveDataRef(historical.reportRef())),com.supplymind.agent.report.ReportSnapshotV2.class);
+            assertEquals("AGENT-REPORT-V2",snapshot.schemaVersion());
             String dailyRef = DataPaths.dailyRef(GBP, YearMonth.of(2026, 8));
             byte[] dailyBytes = Files.readAllBytes(root.resolveDataRef(dailyRef));
             Files.writeString(root.resolveDataRef(dailyRef), "tampered temporary statistics");
-            assertFalse(reportStore.read(historical.reportRef()).ok(), "tampering must remain rejected");
+            assertFalse(reportStore.read(legacyRef).ok(), "V1 must still reject current evidence tampering");
+            assertTrue(reportStore.read(historical.reportRef()).ok(), "V2 reads original snapshot, not mutated current file");
             Files.write(root.resolveDataRef(dailyRef), dailyBytes);
             assertTrue(reportStore.read(historical.reportRef()).ok(), "restoring exact original evidence restores readability");
             byte[] historicalBytes = Files.readAllBytes(root.resolveDataRef(historical.reportRef()));
@@ -149,14 +156,15 @@ class BusinessLoopIntegrationTest {
             assertEquals(3, history.queryDaily(GBP, LocalDate.of(2026,8,10), LocalDate.of(2026,8,12)).rows().size());
             failWarning = false;
             var afterAppend = reportStore.read(historical.reportRef());
-            assertFalse(afterAppend.ok(), "reproduction: normal mutable statistics update invalidates old report binding");
+            assertTrue(afterAppend.ok(), "V2 generation-time snapshot survives normal append");
+            assertFalse(reportStore.read(legacyRef).ok(), "V1 must retain strict drift rejection");
             assertArrayEquals(historicalBytes, Files.readAllBytes(root.resolveDataRef(historical.reportRef())));
             assertTrue(ManifestVerifier.matches(root, dailyRef, root.resolveDataRef(dailyRef),
                     root.resolveDataRef(DataPaths.manifestRef(dailyRef))), "normal append has a valid current manifest");
             System.out.println("HISTORY_REPRO normal-append old-report=" + afterAppend.failureCode());
             String ackRef=DataPaths.warningAckRef(warning.warningMonth(),warning.warningId());
             Files.writeString(root.resolveDataRef(ackRef),"corrupted test acknowledgement");
-            assertFalse(context.getBean(ReportStore.class).read(result.reportRef()).ok());
+            assertTrue(context.getBean(ReportStore.class).read(result.reportRef()).ok(), "later ack damage cannot rewrite a captured historical fact");
             var invalid = context.getBean(AgentOrchestrator.class).answer(new AgentOrchestrator.AgentQueryInput(
                     "说明预警",GBP,null,null,null,null,null,"2026-08",null,"FORMAL"));
             assertTrue(invalid.evidencePack().facts().stream().noneMatch(f -> f.factType().equals("warning.acknowledged")));

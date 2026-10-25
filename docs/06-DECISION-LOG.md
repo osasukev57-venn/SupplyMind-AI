@@ -159,3 +159,10 @@ DEC-067 自审补充（2026-10-21）：依据既有DEC-056补齐SHFE非空响应
 ## DEC-068：失败获取证据兼容合同（2026-10-22）
 
 用户批准独立 ACQUISITION-FAILURE-V1，持久化 diagnostic/acquisition/<attemptId>.json 与相邻manifest；不是RawReceipt，不拥有业务验证/发布状态，不进入统计或Agent事实。每次失败观察生成UUID attemptId，同一次保存相同字节幂等、不同字节或损坏既有证据失败关闭。COMPLETE/PARTIAL/NONE分别表示完整响应、仅捕获部分实体、未收到响应；NONE全部响应字段为null，空实体为真实0长度及空字节SHA，缺Content-Type为null、存在但为空保留空字符串。完整且能满足既有RawAcquisitionV1的响应先保存旧source证据，再以sourceEvidenceRef关联；其余仅保存独立诊断，均在业务解析前完成。保存失败必须可见且不得返回成功。新路径使用既有AtomicFileStore与manifest，无自动删除。旧RawAcquisitionV1/RawReceiptV1文件、schema、发布门禁不变。仅保留受控错误码及无凭证URL，不保存异常详情、完整headers或环境变量。本决议补充DEC-056/063异常响应留证形式，不改变数值规则。
+
+
+## DEC-069：报告生成时证据快照（2026-10-22）
+
+来源：本轮用户明确批准。新持久化报告使用 AGENT-REPORT-V2 外层合同，内含原 V1 展示投影和 originalRef/SHA/manifestSHA/快照引用映射。只捕获 VERIFIED 引用的必要依赖闭包；可变日线、聚合、timeline、配置历史、预警及确认保存准确原字节和原 manifest，不可变 raw/source/raw receipt 仍使用原引用与双摘要。report-evidence/<SHA>/<原文件名> 内容寻址，保留每个 originalRef 身份；同字节同文件名复用，metadata 单独内容寻址。重新按原身份验证 schema、manifest、lineage、聚合输入摘要和发布绑定；快照解析无当前文件回退。捕获前后摘要复核发现并发漂移即拒绝，不静默替换依据。
+
+先完成快照与校验，最后原子提交 report 作为可见入口。每次闭包最多512个证据文件、32MiB原字节及原manifest；失败可能留下孤立快照，但不产生成功报告。本批不做自动回收。旧 V1 保持当前证据的严格验证，版本丢失明确不可验证，不迁移或重写。UI标明生成时事实。存储增量为被实际引用的可变文件版本及manifest，不复制仓库。批准范围不改变业务数值与计算合同；回归覆盖正常追加、V1不可验证、快照/映射/manifest/绑定/闭包篡改及提交前中断。

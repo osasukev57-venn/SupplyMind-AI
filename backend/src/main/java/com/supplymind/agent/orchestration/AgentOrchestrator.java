@@ -199,9 +199,8 @@ public final class AgentOrchestrator {
                         fact.periodStart() == null ? fact.businessDate() : fact.periodStart(),
                         fact.validationStatus()))
                 .toList();
-        // M4: claims must never carry empty evidenceRefs; the JAVA_TEMPLATE fallback claim still
-        // references the top-level EvidencePack refs (auditable paths) so it stays traceable even
-        // when no verified fact value is available.
+        // Claims cite verified references only. Unavailable-data explanations are limitations,
+        // never business claims backed by missing or invalid files.
         List<AgentReportV1.Claim> claims = new ArrayList<>();
         if (!draftUsedFactIds.isEmpty() && !degraded) {
             // The cloud supplies language + selected factIds only. Java resolves every evidence
@@ -216,10 +215,13 @@ public final class AgentOrchestrator {
                     .distinct().toList();
             if (claimRefs.isEmpty()) {
                 claimRefs = evidencePack.evidenceRefs().stream()
+                        .filter(entry -> entry.status() == EvidenceStatus.VERIFIED)
                         .map(EvidencePackV1.EvidenceRefEntry::ref).distinct().toList();
             }
             if (!claimRefs.isEmpty()) {
                 claims.add(new AgentReportV1.Claim("claim-1", explanation, claimRefs));
+            } else {
+                limitations.add(explanation);
             }
         }
         AgentReportV1 report = new AgentReportV1(
@@ -229,7 +231,7 @@ public final class AgentOrchestrator {
                 degraded, degradeReason,
                 factSummaries, claims, List.of(), List.copyOf(limitations), OffsetDateTime.now());
         budget.requireRemaining();
-        String reportRef = reportStore.store(report);
+        String reportRef = reportStore.storeSnapshot(report, budget::requireRemaining);
         RiskProjectionV1 riskProjection = buildRiskProjection(evidenceSource, evidencePack, mode, evidenceVerifier);
         return new AgentResult(evidencePack, cloudResponse, reportRef, report, degraded, degradeReason,
                 riskProjection);
