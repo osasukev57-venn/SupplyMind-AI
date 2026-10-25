@@ -42,6 +42,12 @@ class AcquisitionFailureEvidenceTest {
         assertFalse(Files.exists(temp.resolve("raw/formal"))); assertFalse(Files.exists(temp.resolve("processed")));
         var store=new AcquisitionFailureStore(root,files); byte[] before=Files.readAllBytes(path);
         assertEquals(evidence.evidenceRef(),store.store(evidence)); assertArrayEquals(before,Files.readAllBytes(path));
+        var conflict=new AcquisitionFailureEvidenceV1(evidence.schemaVersion(), evidence.attemptId(), evidence.requestUrl(),
+                evidence.startedAt(), evidence.failedAt().plusSeconds(1), evidence.responseState(), evidence.httpStatus(),
+                evidence.contentType(), evidence.payloadBase64(), evidence.capturedLength(), evidence.capturedSha256(),
+                evidence.failureCode(), evidence.sourceEvidenceRef());
+        assertThrows(StorageException.class,()->store.store(conflict));
+        assertArrayEquals(before,Files.readAllBytes(path));
         Files.writeString(path,"damaged");
         assertFalse(ManifestVerifier.matches(root,evidence.evidenceRef(),path,root.resolveDataRef(DataPaths.manifestRef(evidence.evidenceRef()))));
         assertThrows(StorageException.class,()->store.store(evidence));

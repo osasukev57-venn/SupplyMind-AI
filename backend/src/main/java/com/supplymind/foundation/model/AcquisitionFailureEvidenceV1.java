@@ -28,6 +28,8 @@ public record AcquisitionFailureEvidenceV1(String schemaVersion, String attemptI
             if (httpStatus == null || httpStatus < 100 || httpStatus > 599) throw new IllegalArgumentException("status");
             byte[] bytes = Base64.getDecoder().decode(Objects.requireNonNull(payloadBase64));
             if (capturedLength == null || capturedLength != bytes.length || !FileDigest.sha256(bytes).equals(capturedSha256)) throw new IllegalArgumentException("captured payload mismatch");
+            if (responseState.equals("COMPLETE") && (failureCode.equals("PARTIAL_RESPONSE") || failureCode.equals("TRANSPORT_FAILURE"))) throw new IllegalArgumentException("complete response failure code");
+            if (failureCode.equals("HTTP_STATUS") && httpStatus >= 200 && httpStatus < 300) throw new IllegalArgumentException("successful status");
             if (responseState.equals("PARTIAL") && (!failureCode.equals("PARTIAL_RESPONSE") || sourceEvidenceRef != null)) throw new IllegalArgumentException("partial entity is not source raw");
             if (responseState.equals("COMPLETE") && failureCode.equals("EMPTY_ENTITY") && bytes.length != 0) throw new IllegalArgumentException("not empty");
             if (failureCode.equals("MISSING_CONTENT_TYPE") && contentType != null) throw new IllegalArgumentException("type present");
