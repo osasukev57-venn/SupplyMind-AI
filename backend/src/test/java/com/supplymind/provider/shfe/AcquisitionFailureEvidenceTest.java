@@ -19,17 +19,22 @@ class AcquisitionFailureEvidenceTest {
     void failuresRetainTruthAndNeverProduceBusinessReceipts(String kind) throws Exception {
         var root=DataRoot.forTest(temp); AtomicMoveSupport.probeOrFail(root);
         var files=new AtomicFileStore(root,new DirtyMarkerCodec()); var configs=new ConfigActivationStore(root,files,CLOCK); configs.ensureInitialDefault();
+        var instant=new java.util.concurrent.atomic.AtomicReference<>(CLOCK.instant());
+        Clock requestClock=new Clock(){public ZoneId getZone(){return ZoneOffset.UTC;} public Clock withZone(ZoneId zone){return this;} public Instant instant(){return instant.get();}};
         ShfeHttpTransport transport=uri->{
+            instant.set(CLOCK.instant().plusSeconds(7));
             if(kind.equals("none")) throw new IllegalStateException("secret-transport-token");
             return new ShfeHttpResponse(uri, kind.equals("status")?503:200,
                 kind.equals("missing")?null:kind.equals("blank")?"":"application/json",
                 kind.equals("empty")?new byte[0]:"partial-or-invalid".getBytes(java.nio.charset.StandardCharsets.UTF_8), !kind.equals("partial"));
         };
-        var provider=new ShfeAdFreePublicDataProvider(configs,new RawReceiptStore(root,files,CLOCK),new RawAcquisitionStore(root,files,CLOCK),CLOCK,transport,new ShfeDailyMarketParser());
+        var provider=new ShfeAdFreePublicDataProvider(configs,new RawReceiptStore(root,files,CLOCK),new RawAcquisitionStore(root,files,CLOCK),requestClock,transport,new ShfeDailyMarketParser());
         assertThrows(RuntimeException.class,()->provider.collect(ProviderCollectRequest.current(List.of(MonitorSeriesDefaults.ADC12_SMM_ITEM_ID))));
         Path path;
         try(var paths=Files.list(temp.resolve("diagnostic/acquisition"))){path=paths.filter(p->!p.toString().endsWith(".manifest.json")).findFirst().orElseThrow();}
         var evidence=JsonV1Codec.decodeFile(Files.readAllBytes(path),AcquisitionFailureEvidenceV1.class);
+        assertEquals(CLOCK.instant(),evidence.startedAt().toInstant());
+        assertEquals(CLOCK.instant().plusSeconds(7),evidence.failedAt().toInstant());
         assertEquals(kind.equals("none")?"NONE":kind.equals("partial")?"PARTIAL":"COMPLETE",evidence.responseState());
         assertTrue(ManifestVerifier.matches(root,evidence.evidenceRef(),path,root.resolveDataRef(DataPaths.manifestRef(evidence.evidenceRef()))));
         if(kind.equals("none")){assertNull(evidence.httpStatus());assertNull(evidence.capturedLength());assertNull(evidence.payloadBase64());}

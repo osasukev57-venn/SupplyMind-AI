@@ -136,7 +136,8 @@ public final class ShfeAdFreePublicDataProvider implements DataProvider {
                 ? fetchLastCompletedTradingDay(config)
                 : request.historyStartDate();
         URI dailyUri = dailyUri(date);
-        ShfeHttpResponse response = fetch(config, dailyUri);
+        FetchResult fetched = fetch(dailyUri);
+        ShfeHttpResponse response = fetched.response();
         OffsetDateTime receivedAt = OffsetDateTime.now(clock);
         byte[] payload = response.entityBytes();
         String payloadSha = FileDigest.sha256(payload);
@@ -145,7 +146,7 @@ public final class ShfeAdFreePublicDataProvider implements DataProvider {
         String acquisitionId = "shfe-ad-acq-" + date.format(BASIC_DATE) + "-"
                 + payloadSha.substring(0, 16) + "-" + targetSetSha.substring(0, 16)
                 + (config.configVersion() > 1 ? "-c" + config.configVersion() : "");
-        retainResponse(config, response, acquisitionId, receivedAt);
+        retainResponse(config, response, acquisitionId, receivedAt, fetched.startedAt());
         requireJson(response);
         ShfeDailyMarketParser.AdSettlement settlement =
                 parser.parseAdMainSettlement(date, response.entityBytes());
@@ -171,16 +172,17 @@ public final class ShfeAdFreePublicDataProvider implements DataProvider {
     }
 
     private LocalDate fetchLastCompletedTradingDay(MonitorSeriesConfigV1 config) {
-        ShfeHttpResponse response = fetch(config, CURRENT_TRADING_DAY_URI);
+        FetchResult fetched = fetch(CURRENT_TRADING_DAY_URI);
+        ShfeHttpResponse response = fetched.response();
         String id = "shfe-calendar-" + FileDigest.sha256(response.entityBytes()) + "-c" + config.configVersion();
-        retainResponse(config, response, id, OffsetDateTime.now(clock));
+        retainResponse(config, response, id, OffsetDateTime.now(clock), fetched.startedAt());
         requireJson(response);
         return parser.lastCompletedTradingDay(response.entityBytes());
     }
 
     /** Preserve the exact HTTP response before content validation or business parsing. */
     private void retainResponse(MonitorSeriesConfigV1 config, ShfeHttpResponse response,
-            String acquisitionId, OffsetDateTime receivedAt) {
+            String acquisitionId, OffsetDateTime receivedAt, OffsetDateTime startedAt) {
         String failure = !response.complete() ? "PARTIAL_RESPONSE"
                 : response.entityBytes().length == 0 ? "EMPTY_ENTITY"
                 : response.contentType() == null ? "MISSING_CONTENT_TYPE"
@@ -198,15 +200,17 @@ public final class ShfeAdFreePublicDataProvider implements DataProvider {
                     FileDigest.sha256(response.entityBytes())));
         }
         if (failure != null) {
-            saveFailure(response.responseUri(), response, failure, receivedAt,
+            saveFailure(response.responseUri(), response, failure, startedAt,
                     sourceCompatible ? DataPaths.acquisitionRef(acquisitionId) : null);
             throw new StorageException("SHFE failed acquisition: " + failure);
         }
     }
 
-    private ShfeHttpResponse fetch(MonitorSeriesConfigV1 config, URI uri) {
+    private record FetchResult(ShfeHttpResponse response, OffsetDateTime startedAt) {}
+
+    private FetchResult fetch(URI uri) {
         OffsetDateTime started = OffsetDateTime.now(clock);
-        try { return transport.get(uri); }
+        try { return new FetchResult(transport.get(uri), started); }
         catch (RuntimeException failure) {
             saveFailure(uri, null, "TRANSPORT_FAILURE", started, null);
             throw new StorageException("SHFE transport failed; diagnostic evidence retained");

@@ -135,8 +135,8 @@ Set-Content -LiteralPath (Join-Path $licDir 'THIRD-PARTY-NOTICES.txt') -Encoding
     '=============================',
     '',
     'Bundled runtime (runtime/jre):',
-    '  Eclipse Temurin Java 17 runtime (GPLv2 with the Classpath Exception).',
-    '  License: https://adoptium.net/temurin/legal/',
+    '  Bundled Java 17 runtime (GPLv2 with the Classpath Exception); vendor details: runtime/jre/release.',
+    '  Bundled license texts: runtime/jre/legal/.',
     '',
     'Desktop shell (SupplyMindAI.exe):',
     '  Electron 33 (MIT) - https://github.com/electron/electron/blob/main/LICENSE',
@@ -165,14 +165,7 @@ $electronSrc = Join-Path $PSScriptRoot '..\src'
 foreach ($file in @('main.js', 'preload.js', 'paths.js', 'port.js', 'health.js', 'backend.js', 'instance.js', 'lifecycle.js')) {
     Copy-Item -LiteralPath (Join-Path $electronSrc $file) -Destination $resourcesApp -Force
 }
-@'
-{
-  "name": "supplymind-shell",
-  "version": "0.9.0",
-  "main": "main.js",
-  "private": true
-}
-'@ | Set-Content -LiteralPath (Join-Path $resourcesApp 'package.json') -Encoding UTF8
+@{ name='supplymind-shell'; version=$Version; main='main.js'; private=$true } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $resourcesApp 'package.json') -Encoding UTF8
 
 $electronDist = Join-Path $PSScriptRoot '..\node_modules\electron\dist'
 Get-ChildItem -LiteralPath $electronDist -File | ForEach-Object {
@@ -194,7 +187,7 @@ $outDir = Join-Path $RepoRoot 'release'
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 $zipName = "SupplyMindAI-$Version-win32-x64.zip"
 $zipPath = Join-Path $outDir $zipName
-if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
+if (Test-Path -LiteralPath $zipPath) { throw "Refusing to overwrite existing package: $zipPath" }
 
 New-DeterministicZip -SourceDir $root -ZipPath $zipPath -RootEntryName 'SupplyMindAI'
 $zipHash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash
@@ -210,8 +203,8 @@ $assetHashes = $assets | ForEach-Object {
 
 $manifest = [ordered]@{
     schemaVersion = '1.0'
-    candidateCommit = (git -C $RepoRoot rev-parse --short HEAD 2>$null)
-    builtAt = $seedInstant
+    candidateCommit = (git -C $RepoRoot rev-parse HEAD 2>$null)
+    builtAt = (Get-Date -Format 'yyyy-MM-ddTHH:mm:sszzz')
     windowsVersion = [System.Environment]::OSVersion.VersionString
     version = $Version
     inputs = [ordered]@{
