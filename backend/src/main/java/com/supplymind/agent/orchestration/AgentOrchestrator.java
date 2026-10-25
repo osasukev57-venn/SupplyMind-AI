@@ -98,7 +98,9 @@ public final class AgentOrchestrator {
         // Java resolves explicit ISO dates and requested grain before any cloud interaction.
         // The cloud model is never responsible for selecting authoritative data tools.
         AgentQueryInput effectiveInput = deterministicInput(input);
-        List<ToolResult> evidenceSource = toolExecutor.execute(effectiveInput, requestId);
+        AgentQueryInput toolInput = effectiveInput;
+        List<ToolResult> evidenceSource = budget.readOnly(() -> toolExecutor.execute(toolInput, requestId));
+        budget.requireRemaining();
         effectiveInput = withResolvedItemId(effectiveInput, evidenceSource);
 
 

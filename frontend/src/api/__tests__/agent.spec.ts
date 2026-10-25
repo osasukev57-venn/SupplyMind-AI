@@ -24,8 +24,30 @@ describe('Agent API timeout contract', () => {
     await expect(queryAgent(request)).resolves.toBe(response)
     expect(AGENT_REQUEST_TIMEOUT_MS).toBe(90_000)
     expect(http.post).toHaveBeenCalledWith('/agent/query', request, {
-      timeout: 90_000
+      timeout: 90_000,
+      signal: undefined,
+      headers: { 'X-Agent-Request-Token': expect.stringMatching(/^[a-f0-9-]{36}$/) }
     })
+  })
+
+  it('propagates cancellation and requests backend stop without claiming persistence', async () => {
+    const controller = new AbortController()
+    let rejectQuery!: (error: unknown) => void
+    vi.mocked(http.post).mockImplementation((url) => url === '/agent/query'
+      ? new Promise((_resolve, reject) => { rejectQuery = reject })
+      : Promise.resolve({ data: {} }))
+    const pending = queryAgent(request, controller.signal)
+    const rejection = expect(pending).rejects.toThrow('请求已取消；已进入安全保存阶段的提交可能完成，请勿重复提交')
+    controller.abort()
+    rejectQuery(new Error('cancelled'))
+    await rejection
+    const options = vi.mocked(http.post).mock.calls[0][2]!
+    expect(options.signal).toBe(controller.signal)
+    expect(options.timeout).toBe(90_000)
+    expect(http.post).toHaveBeenCalledWith('/agent/cancel', {
+      token: (options.headers as Record<string, string>)['X-Agent-Request-Token']
+    })
+    expect(http.post).toHaveBeenCalledTimes(2)
   })
 
   it('maps an axios timeout to the specific non-retry warning', async () => {

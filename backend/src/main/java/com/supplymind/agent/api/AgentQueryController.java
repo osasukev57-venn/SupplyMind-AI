@@ -27,7 +27,21 @@ public class AgentQueryController {
     }
 
     @PostMapping("/query")
-    public ResponseEntity<?> query(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> queryHttp(@RequestBody Map<String,String> body,
+            @org.springframework.web.bind.annotation.RequestHeader(value="X-Agent-Request-Token", required=false) String token) {
+        if(token==null)return query(body);
+        try {
+            com.supplymind.agent.llm.AgentCancellation.begin(token);
+            try { return query(body); } finally { com.supplymind.agent.llm.AgentCancellation.end(token); }
+        } catch(IllegalArgumentException ex) { return ResponseEntity.badRequest().body(Map.of("status","REJECTED","message","请求标识无效或正在使用")); }
+    }
+    @PostMapping("/cancel")
+    public ResponseEntity<?> cancel(@RequestBody Map<String,String> body) {
+        try { com.supplymind.agent.llm.AgentCancellation.cancel(body.get("token"));
+            return ResponseEntity.accepted().body(Map.of("status","CANCELLATION_REQUESTED"));
+        }catch(IllegalArgumentException ex){return ResponseEntity.badRequest().body(Map.of("status","REJECTED"));}
+    }
+    public ResponseEntity<?> query(Map<String, String> body) {
         if (body == null || body.get("question") == null || body.get("question").isBlank()) {
             return ResponseEntity.badRequest().body(Map.of(
                     "status", "REJECTED",
@@ -52,6 +66,9 @@ public class AgentQueryController {
         try {
             AgentOrchestrator.AgentResult result = orchestrator.answer(input);
             return ResponseEntity.ok(AgentQueryResponse.of(result));
+        } catch (com.supplymind.agent.llm.RequestBudget.Exhausted exception) {
+            return ResponseEntity.status(504).body(Map.of("status", "TIMEOUT", "reason", exception.getMessage(),
+                    "message", "分析已取消或超过处理预算，本次未保存报告；请缩小查询范围后重试"));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(Map.of(
                     "status", "REJECTED",

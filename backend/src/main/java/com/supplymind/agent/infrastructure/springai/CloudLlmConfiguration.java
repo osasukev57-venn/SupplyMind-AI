@@ -51,8 +51,11 @@ public class CloudLlmConfiguration {
         HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(safeTimeout)
                 .build();
-        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
-        requestFactory.setReadTimeout(safeTimeout);
+        org.springframework.http.client.ClientHttpRequestFactory requestFactory = (uri, method) -> {
+            var perRequest = new JdkClientHttpRequestFactory(httpClient);
+            perRequest.setReadTimeout(com.supplymind.agent.llm.RequestBudget.cloudHttpTimeout(safeTimeout));
+            return perRequest.createRequest(uri, method);
+        };
         RestClient.Builder restClientBuilder = RestClient.builder().requestFactory(requestFactory);
 
         OpenAiApi api = OpenAiApi.builder()

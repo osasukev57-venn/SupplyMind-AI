@@ -10,18 +10,27 @@ export const AGENT_REQUEST_TIMEOUT_MS = 90_000
  * (D6-T04 fields + D8-T03 report projection). The frontend renders backend facts only and
  * never computes risk, recommendations or results.
  */
-export async function queryAgent(request: AgentQueryRequest): Promise<AgentQueryResponse | null> {
+export async function queryAgent(request: AgentQueryRequest, signal?: AbortSignal): Promise<AgentQueryResponse | null> {
+  const token = crypto.randomUUID()
+  const cancel = () => { void http.post('/agent/cancel', { token }).catch(() => undefined) }
+  signal?.addEventListener('abort', cancel, { once: true })
   try {
     const response = await http.post<AgentQueryResponse>('/agent/query', request, {
-      timeout: AGENT_REQUEST_TIMEOUT_MS
+      timeout: AGENT_REQUEST_TIMEOUT_MS,
+      signal,
+      headers: { 'X-Agent-Request-Token': token }
     })
     return response.data
   } catch (error) {
+    if (signal?.aborted) {
+      throw new Error('请求已取消；已进入安全保存阶段的提交可能完成，请勿重复提交')
+    }
     if (axios.isAxiosError(error)) {
       const timedOut = error.code === 'ECONNABORTED'
         || error.code === 'ETIMEDOUT'
         || error.message.toLowerCase().includes('timeout')
       if (timedOut) {
+        cancel()
         throw new Error('智能分析处理超过 90 秒，后端可能仍在生成报告，请勿重复提交')
       }
       const apiMessage = typeof error.response?.data === 'object'
@@ -35,5 +44,7 @@ export async function queryAgent(request: AgentQueryRequest): Promise<AgentQuery
       }
     }
     throw new Error('无法连接本地分析服务，请确认应用仍在运行')
+  } finally {
+    signal?.removeEventListener('abort', cancel)
   }
 }

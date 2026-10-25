@@ -171,5 +171,12 @@ class AgentApiMvcContractTest {
                 .andExpect(jsonPath("$.calculationBasis").doesNotExist())
                 .andExpect(jsonPath("$.degraded").value(true));
     }
-}
 
+    @Test void exhaustedRequestReturnsExplicitTimeoutWithoutSavedReport() throws Exception {
+        when(orchestrator.answer(any())).thenThrow(new com.supplymind.agent.llm.RequestBudget.Exhausted("LOCAL_FACTS_TIMEOUT"));
+        mockMvc.perform(post("/api/agent/query").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"itemId\":\"FX.USD.CNY.PBOC_MID\",\"question\":\"slow tool\"}"))
+                .andExpect(status().isGatewayTimeout()).andExpect(jsonPath("$.status").value("TIMEOUT"))
+                .andExpect(jsonPath("$.reportRef").doesNotExist());
+    }
+}

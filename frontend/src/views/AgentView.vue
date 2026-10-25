@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import { queryAgent } from '../api/agent'
 import type { AgentQueryResponse, EvidenceLinkView } from '../types/agent'
@@ -10,6 +10,9 @@ import StatusBadge from '../components/StatusBadge.vue'
  * evidence-backed reports. The page only renders what the backend returns - it never
  * computes risk, thresholds, recommendations or values (DEC-008 preserved).
  */
+
+let pendingRequest: AbortController | undefined
+onBeforeUnmount(() => pendingRequest?.abort())
 
 const question = ref('')
 const itemId = ref('')
@@ -28,6 +31,7 @@ async function ask() {
     errorMessage.value = '请选择或填写监测项编号'
     return
   }
+  pendingRequest = new AbortController()
   loading.value = true
   errorMessage.value = null
   result.value = null
@@ -36,7 +40,7 @@ async function ask() {
       question: question.value.trim(),
       itemId: itemId.value.trim(),
       mode: mode.value
-    })
+    }, pendingRequest.signal)
     if (!response) {
       errorMessage.value = '服务暂时不可用，请稍后重试'
       return
@@ -47,6 +51,7 @@ async function ask() {
       ? error.message
       : '服务暂时不可用，请稍后重试'
   } finally {
+    pendingRequest = undefined
     loading.value = false
   }
 }
