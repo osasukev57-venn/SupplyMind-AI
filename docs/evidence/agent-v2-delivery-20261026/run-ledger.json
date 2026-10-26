@@ -1,0 +1,135 @@
+{
+  "note": "Terminal Maven totals; only backend-full-final follows clean on final frozen sources. Historical runs are not final-candidate results. Compile failures without test execution remain in their raw logs.",
+  "runs": [
+    {
+      "log": "agent-regression-first.log",
+      "total": 170,
+      "passed": 125,
+      "failures": 38,
+      "errors": 7,
+      "skipped": 0,
+      "result": "FAILURE_OR_INCOMPLETE",
+      "finishedAt": "2026-10-26T09:35:54+08:00"
+    },
+    {
+      "log": "agent-regression-fourth.log",
+      "total": 175,
+      "passed": 175,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "result": "SUCCESS",
+      "finishedAt": "2026-10-26T09:51:28+08:00"
+    },
+    {
+      "log": "agent-regression-third.log",
+      "total": 171,
+      "passed": 167,
+      "failures": 4,
+      "errors": 0,
+      "skipped": 0,
+      "result": "FAILURE_OR_INCOMPLETE",
+      "finishedAt": "2026-10-26T09:43:10+08:00"
+    },
+    {
+      "log": "backend-full-final.log",
+      "total": 739,
+      "passed": 730,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9,
+      "result": "SUCCESS",
+      "finishedAt": "2026-10-26T14:26:13+08:00"
+    },
+    {
+      "log": "backend-full-first.log",
+      "total": 729,
+      "passed": 714,
+      "failures": 6,
+      "errors": 0,
+      "skipped": 9,
+      "result": "FAILURE_OR_INCOMPLETE",
+      "finishedAt": "2026-10-26T10:27:39+08:00"
+    },
+    {
+      "log": "business-loop-fixture-verified.log",
+      "total": 1,
+      "passed": 0,
+      "failures": 0,
+      "errors": 1,
+      "skipped": 0,
+      "result": "FAILURE_OR_INCOMPLETE",
+      "finishedAt": "2026-10-26T11:25:46+08:00"
+    },
+    {
+      "log": "diagnostic-focused-once.log",
+      "total": 43,
+      "passed": 42,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "result": "FAILURE_OR_INCOMPLETE",
+      "finishedAt": "2026-10-26T10:59:09+08:00"
+    },
+    {
+      "log": "final-focused.log",
+      "total": 26,
+      "passed": 12,
+      "failures": 1,
+      "errors": 13,
+      "skipped": 0,
+      "result": "FAILURE_OR_INCOMPLETE",
+      "finishedAt": "2026-10-26T10:43:14+08:00"
+    },
+    {
+      "log": "first-integration.log",
+      "total": 2,
+      "passed": 0,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "result": "FAILURE_OR_INCOMPLETE",
+      "finishedAt": "2026-10-26T09:27:52+08:00"
+    },
+    {
+      "log": "fixture-preactivated-focused.log",
+      "total": 17,
+      "passed": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "result": "SUCCESS",
+      "finishedAt": "2026-10-26T14:17:26+08:00"
+    },
+    {
+      "log": "focused-current.log",
+      "total": 37,
+      "passed": 34,
+      "failures": 3,
+      "errors": 0,
+      "skipped": 0,
+      "result": "FAILURE_OR_INCOMPLETE",
+      "finishedAt": "2026-10-26T11:44:29+08:00"
+    },
+    {
+      "log": "post-format-cross-config.log",
+      "total": 1,
+      "passed": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "result": "SUCCESS",
+      "finishedAt": "2026-10-26T14:33:04+08:00"
+    },
+    {
+      "log": "second-integration.log",
+      "total": 2,
+      "passed": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "result": "SUCCESS",
+      "finishedAt": "2026-10-26T09:31:53+08:00"
+    }
+  ]
+}

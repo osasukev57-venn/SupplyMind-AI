@@ -1,0 +1,2182 @@
+{
+  "at": "2026-10-26T14:17:48.072778+08:00",
+  "files": [
+    {
+      "file": ".gitattributes",
+      "sha256": "e7f63be7733edd08ce813697ead1052041a7cc71cda035c7a6fde3800d26470e"
+    },
+    {
+      "file": "backend/pom.xml",
+      "sha256": "c1e8907ef510f7121a28dd633e70aa3fe96306b92470243e5284ae3a593a94ba"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/AgentConfiguration.java",
+      "sha256": "9dd9f6feda43879b90a9b7b61a5b10c78c3091d75dece13016f271acdf2bdf69"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/api/AgentQueryController.java",
+      "sha256": "072aafa06467e72425e38849033a000322b1a3ab835fe7d5ea718f57b9c2f7d2"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/api/AgentQueryResponse.java",
+      "sha256": "81eb02a4740e635fedb39814e7163a1bd2ce612c01b72c1ed9f9cdd709bbb9e9"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/api/AgentReportController.java",
+      "sha256": "b4f52ae853dafc3ef0bdd8b5387d5082ccdd1aeae3d132d96d12b09cb80bea57"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/application/AgentResponseVerifier.java",
+      "sha256": "752cae4bb1594f5bf49c4bcf8a7016e4747be087a1eda10cd3995163ad56f95e"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/application/ModelClaimV1.java",
+      "sha256": "ad526bca24644ade8533e2d1b03121511233671b813d53192c30caf9418aef40"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/application/ModelDraftV1.java",
+      "sha256": "b90c4144d73848aef12bc51598602574aa03efe846f52b3ace1d0f820f274365"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/evidence/AggregateRowEvidenceV1.java",
+      "sha256": "a8f42ef41fdff4b6241180df2c5beb5b9c3e94b9c26c4d16cadef7f372f9c8c7"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/evidence/EvidencePackV1.java",
+      "sha256": "e1d0f9de0b3305aa1db2027ccc909e5442eaf1a73f0266490638cdf8a7b9fbd7"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/evidence/EvidenceRefVerifier.java",
+      "sha256": "e5f29570fdbd524879f7456ce55feddc1059fd3a51b2ae3810d26a1b63337b27"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/evidence/EvidenceStatus.java",
+      "sha256": "f3b0046d87e303ce68ace33de550fda9ad8d25cdd4c401d4c80e57cb360ad4b4"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/evidence/RiskProjectionV1.java",
+      "sha256": "5c9be81a21bfcb8c1398968ee64c61c42ad3800b5dcc09a430821d6c9a040184"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/fallback/TemplateFallbackService.java",
+      "sha256": "b6f925e369ac810107c8b11d1d56fd1b0e4c08d6c7ca0e0d24de2c29ee4ea348"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/infrastructure/springai/CloudLlmConfiguration.java",
+      "sha256": "323f526979de330028b20106cc7f8c650a48f919f53715dfaf93113c846bfc35"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/infrastructure/springai/CostImpactToolAdapter.java",
+      "sha256": "88616986fb085e398d00ef94b0b6c5a30599f2f5f6e865487d31eb05ebd4befc"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/infrastructure/springai/HistoryQueryToolAdapter.java",
+      "sha256": "e23feedfe0eef0bfbe1de2a9c919a5c524274c87b67c3a2eafeecbdd8751ca95"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/infrastructure/springai/PeriodMetricsToolAdapter.java",
+      "sha256": "7bd85a5e282e40378b3ed1b08cf0a0a7288397bed3dce7c17344410951b6a21f"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/infrastructure/springai/ProvenanceTraceToolAdapter.java",
+      "sha256": "a17de5f3de97afb0631f3bdd5c1e1d58aa1ab9d489cb730654ddf3bf811ab3ca"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/infrastructure/springai/QualityInspectToolAdapter.java",
+      "sha256": "5fb34458bf2ccdbb6d894562be8710a4920f82a1118f9ba3b10e75fe4df87b8d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/infrastructure/springai/SeriesResolveToolAdapter.java",
+      "sha256": "245dc456e712353379e37b9197d20613cb675b37b2c74327554d994cd94377bf"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/infrastructure/springai/SpringAiLlmService.java",
+      "sha256": "94defdd323f3698ccc9faca01b9ef30eb21baefec8593505b419796655e384b3"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/infrastructure/springai/SupplyMindToolCallbackProvider.java",
+      "sha256": "728acf1035f55a22acd10af8798bdb833f763f16fef189dc27d2c4792dde161e"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/infrastructure/springai/ToolExecutionLedger.java",
+      "sha256": "52a3a61bb163e1d8153cdc867ff2e40ba61b6973ed9f062bd36e45b66ed52091"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/infrastructure/springai/WarningExplainToolAdapter.java",
+      "sha256": "922fcd68185f4ed057f25262166018aa5e085bbe76e3c24d4cc8c773bf98ac22"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/llm/AgentCancellation.java",
+      "sha256": "f71717c52e338245f18dce845d6dd55775910f72c18a2d4de948b44acd262780"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/llm/LLMService.java",
+      "sha256": "a5e3eed2acf084281e71fdf979d82d4f3d625446255c05129ee7c3da77e033a7"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/llm/RequestBudget.java",
+      "sha256": "b48d4a091a60f2b85a29a60c71b8ba017203c49cb7045b49db2f08318addfa20"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/narrative/AnalysisContextAssembler.java",
+      "sha256": "92ccc6e95925de1fba9b236abd7b815a978c08ec50de4560ab4bcd38f9171a29"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/narrative/AnalysisDraft.java",
+      "sha256": "4537aab731edb4fd80948a799348707cd9f2e2e2f73014b421e8cae13473cfea"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/narrative/NarrativeResult.java",
+      "sha256": "fdd090bd674b589431e51ae707a6b549b000295226e37c582bcad8699513f481"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/narrative/NarrativeValidator.java",
+      "sha256": "756865225b3c8ac1af0ed0856741422034f4a2140ac483d9b98eada843a69083"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/orchestration/AgentOrchestrator.java",
+      "sha256": "232a5c2ed8fa363dfa3e38ec7034c190b477c00953817000db7c592a2451fcba"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/orchestration/QueryPlanner.java",
+      "sha256": "9de73200a12bb12ae415e60877048095775d571878d733bb7719cb186748f2ef"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/orchestration/ToolExecutor.java",
+      "sha256": "31bb451e51b4386c3306bc7c4060f77b64a5a124203ce7d3ff45586ef71e463c"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/orchestration/WarningSummarySelector.java",
+      "sha256": "495f1024205b05952b20fb7f283069f566407046033f9e47537438f0b718d322"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/report/AgentReportV1.java",
+      "sha256": "020ceabc05ecdb5d3b9b4106921159bdb8323b93321d6b471be53decbcedbe5b"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/report/ReportSnapshotStore.java",
+      "sha256": "f545d387bea184a6263da90564d360aa59384daf8c9bddef8593c5954c892940"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/report/ReportSnapshotV2.java",
+      "sha256": "0a6fa6b061c46f755e796ed48768d72ce71aaa4eab522f738dc9bb10105dab77"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/report/ReportSnapshotV3.java",
+      "sha256": "040fbccbfb355a2b520b7fa7b31c95764c7ce4a1c53956f98fb1435cb66896ae"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/report/ReportStore.java",
+      "sha256": "ec3060d34bdf8018161ffdf1e21b0d15d54570b12098090c612656e387ce4e0c"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/tool/ToolArguments.java",
+      "sha256": "3a430461969976c481335f4b6a26432edac6af2a0f478ea7736c788c6843542d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/tool/ToolInputException.java",
+      "sha256": "c35aa720d2b2d3774f338be2e7dfe37559798677a7c64ac4b632b7dade657077"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/tool/ToolResult.java",
+      "sha256": "f8ea51635d64ff8c71a2a5c01d683f9eedd8b5b92a408f1fa41d966b7069da16"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/agent/tool/ToolStatus.java",
+      "sha256": "3ebb1425f4b1c342b4776488b8589e91311071c42216ea10d50a2538a302606d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/backfill/api/BackfillController.java",
+      "sha256": "c1a8612298848c0bf9e2f5259e3a99b19cfe39f507b937b5af8556811d1e32bf"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/backfill/BackfillJobQueryService.java",
+      "sha256": "65c2b74f44520ca6925e391b05d4158fab474a89ee335faafec651e87611c479"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/backfill/BackfillJobStateV1.java",
+      "sha256": "5429ae43d4c07b42fd6750f60860704fa4c381b20abb44a05bf690ed5d4ba02a"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/backfill/BackfillJobStore.java",
+      "sha256": "433deb8d6a0413f034a485bfc3d3f593b578a834cd2e99fca6e3425bdf090c46"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/backfill/BackfillOrchestrator.java",
+      "sha256": "ded200702a3ea989baade0a43818cd5631262eee30dfbf10ab6ea9f172425085"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/config/api/ConfigApiAdvice.java",
+      "sha256": "378ce3037df2ee5a33e915895663923a89f2cdf9b33e550ce1eea01c1a6111cd"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/config/api/ConfigController.java",
+      "sha256": "adb51314e160239ffe393ab097e10908d75ddd421d9f6d96302cbb44ab0387cc"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/config/api/ConfigV1.java",
+      "sha256": "bf26fe586a4f15799ddbd1d8cada24dba5c3c9ee498138e6a5723a2e195eb15a"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/config/ConfigHistoryQueryService.java",
+      "sha256": "9680d8a8c5d7d4331f3b996ebb77b197391f207519456986ca723226c058e98f"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/config/ConfigManagementConfiguration.java",
+      "sha256": "c73e4163437f9ccfdba674f4bb706b01210e5478294649cab6354ef8dbde4785"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/config/ConfigManagementService.java",
+      "sha256": "77c100cecb5af921be5848dec8f8e4cbdfd29d75710f4614be341dd537c2c771"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/config/DynamicConfigConfiguration.java",
+      "sha256": "ddde08c5cbd30eff95e5178bafabfb338c48cd4f881526c8c3e468234d4c6b23"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/config/DynamicConfigWorkflowService.java",
+      "sha256": "750bfcfccc4e023187fd3655c7c18a8074d475f1d0af49932b96fe9e34cad22f"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/dashboard/api/DashboardApiAdvice.java",
+      "sha256": "61f0cccd54a6cbe275e7ddf58c8b141b7332d4d8308f98bf0da04555fefbf7ad"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/dashboard/api/DashboardController.java",
+      "sha256": "0b0564b5fd151402c32ba27949cb907015bb4630e09b37610431810fac40475c"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/dashboard/api/DashboardV1.java",
+      "sha256": "64f7d62c187c1609cc8f185f95d87ba49c72e89885d8f28f9ff692015af340fb"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/dashboard/DashboardConfiguration.java",
+      "sha256": "f6a768c09b365f119359d8d9c96b0960ae0f204ea5166c2be3d407a8e3c4b9d6"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/dashboard/DashboardService.java",
+      "sha256": "1a96549d74738bd48a32201ef7b81be3d21e5ed67e262329ba337fe2b2b66ccc"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/demo/DemoShowcaseConfiguration.java",
+      "sha256": "1820966f54ae330bbea92a04297c4454a6c13d7567c7530eadce7b7d22266c5c"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/demo/DemoShowcaseRunV1.java",
+      "sha256": "a8a37609f155335866ef027c753441485038017ecf048041e5efe081053d6276"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/demo/DemoShowcaseService.java",
+      "sha256": "9a376afceed9576422d9ca489a451853e20fc366576b63e7701182774260c5f1"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/desktop/ChildProcessWatchdog.java",
+      "sha256": "c7656f460e276420806a97919ac9f90e9dd8d93830a8d17ed2486d70c79095d5"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/desktop/DesktopWatchdogConfiguration.java",
+      "sha256": "456c47a244529f96eb771ca268bcffa64f8b508fc7c619d3aa9e7fb1e326449f"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/desktop/HealthController.java",
+      "sha256": "a6df5bb2bff2c761ba49065d458734d578fb0fd3313720cd93fa16b026418160"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/desktop/PortableInitialConfigExporter.java",
+      "sha256": "e43ec9464e78d4f201dc3a77faeaa83851d3ff7bbc24c3e888086d6e7eef9358"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/boot/FoundationStorageConfiguration.java",
+      "sha256": "b10d78c7da1f851b053e0528cd7ea590ac69c1b8391d8891f6514b5371dbe3ea"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/boot/SupplyMindDataProperties.java",
+      "sha256": "cc856c2cb297f71aeaa1386c32293d3e820375d7b0895665f726740f73a0194f"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/codec/CsvV1Codec.java",
+      "sha256": "142cdd7bc6dc7d23d56e3600bf693f8cf09c74c957031c1868cca40b2c2f8219"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/codec/JsonV1Codec.java",
+      "sha256": "9a2242f52e2fe2f0aa65c0341a36d0f84e349ee684e53605096c1bd931874bb8"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/AccessMethod.java",
+      "sha256": "6febf5675d012cc506e34fe40dd49cf71e02837a06fc89363ffaf9a342c62829"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/AcquisitionFailureEvidenceV1.java",
+      "sha256": "21acc367722d4cd232ed4bd480b827fad6da865b78c952c69c87b658066ce341"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/AggregateGrain.java",
+      "sha256": "55c9118d03ce3c1665596c3ad5471e6d48b4eccd43485bb101e9cf58b1c7c9a8"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/AggregateInputRefV1.java",
+      "sha256": "6475a9e0282086fe5a149d2f30b1652e60630c331245c5cd471381c3364c94a3"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/AggregateRecordV1.java",
+      "sha256": "5fa8303230eae86a2511031d84abd08c3cdaf0357330e6724270daaf9481e649"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/CandidateV1.java",
+      "sha256": "9a6dd07fdc434bdecdad801e3cd9e8fa0fa3a97b22e8b4366b96ee3069f0e069"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/CanonicalJsonV1.java",
+      "sha256": "97440e2cc0740af3e36c165c413fa2d57ea7200a70bfe367ccd102d93c34a717"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/DailyInputRefV1.java",
+      "sha256": "dd8dd10a41b6c431f7c6f1f6c3b317208864691e28520baa35468f342c1e26c6"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/DailyRecordV1.java",
+      "sha256": "7528f7ef76cebc69662f82f478855d963024f44806120945b0a977d8f9b057fa"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/DecimalText.java",
+      "sha256": "addae98acfe08462f08a5b056229843f1fa479f5f8c973ceb3e974ee497ec2d3"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/LifecycleSnapshotV1.java",
+      "sha256": "6691f52e6c75f91aa4731c74a62be89a1089d87b4ed019fb22f5f90012e60707"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/LifecycleTimelineV1.java",
+      "sha256": "5fd3a2751de842be0c9250361ad3359113502d84d6c5ea200c36384f46d85e41"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/ManifestV1.java",
+      "sha256": "4b05e514d5a71a8901764af78f662ae7bbbe6ca2d3942ec0eb3f3618676cadce"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/MaterialValidationConfigV1.java",
+      "sha256": "ce99b808af8cbc839a363bf5b573100b5a3dba4ab907c24747cf7c48ac9d3efe"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/Mode.java",
+      "sha256": "bc70da975b00cbfb3d21eed278caea9e9792bb9be4f82992b3f45e9441303000"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/ModelRules.java",
+      "sha256": "6c3781ab4452c6230bb9abea6214288cc8c20a23ad183dcde35483630ab1cbca"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/MonitorSeriesConfigV1.java",
+      "sha256": "9ae5a5671cf8aa4bcbce1b03bbff0c9aba784ed6554e08784d97976461e7eb70"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/MonitorSeriesDefaults.java",
+      "sha256": "288c4eda85efb6d2d531ff24ed91f399f0ab681884714a33e81560cc9b1a5345"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/MonitorSeriesItemV1.java",
+      "sha256": "0b3a3c331b9b58c9f33cfd0e6584820bd0de204e7229c9da0011a79051cc131c"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/ProcessingStage.java",
+      "sha256": "6f102a33c36e3ec3a143d9e71b5fa8c017b7449c0c8b6f14e79b84a4af10f7b7"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/ProviderType.java",
+      "sha256": "2f1152d2daa7c2f0d99307e2e8973d6d6535a7d759bf73005203708eb8b95e1b"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/QualityStatus.java",
+      "sha256": "4f53470d4c20602a65db948aabc9d7cf344659ae215681cd5f9f71679f3ce4d0"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/QuarantineProjectionV1.java",
+      "sha256": "0da2042cd7279e379d871f25083b42dd3228198dbe966bc2307bf6bfa51cdcaf"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/RawAcquisitionV1.java",
+      "sha256": "30c9856a6b9cca5154ccb7496b7851f09295c17eb112593a088fd9dd45e27650"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/RawReceiptV1.java",
+      "sha256": "129417147b1d7fc367a35860f5b7ce0e3ba29798c74d9ef17c8a75f27e1a87c9"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/RouteDecision.java",
+      "sha256": "52ebf2e8fc106e0eb38acf6c280444f43d9f765cb11caa10b895413ede3907e4"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/SchemaV1.java",
+      "sha256": "f16b50f8dbbdfb0679dd5f966fd5ec841fa3cb30b0b05b49235ae71f9b597ea4"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/SchemaValidationException.java",
+      "sha256": "d3871efd856a16a120a7f45992f41cfca6ea795e08ae016912968fe2c1cc19d3"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/TimeStateV1.java",
+      "sha256": "b5df57e1be87b20ccfdfb5cda103f00f1e3eb5de8b89e618f1374c2cd1b59e3b"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/model/ValidationStatus.java",
+      "sha256": "003f043bb6b9f063abd989bffd0f66f3ce5de1439d7177efc920cebe54551137"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/AcquisitionFailureStore.java",
+      "sha256": "768bff5ebef79c46306f1584eab68eedb65311eb4b37a2e5973ce0935c2d293e"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/AtomicFileRecovery.java",
+      "sha256": "bc4a1a3fa9aff36fdc67c62c892e06249398539191b82993866a0b53a5d627ce"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/AtomicFileStore.java",
+      "sha256": "19924d132ee7cac0afb54c82f4ddbe0d4646b48b512180a7845027b375d4d3ea"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/AtomicMoveSupport.java",
+      "sha256": "9288bac7477244afb2adf166eb09f1384a4252e062157fe0fc12fd0805cb484b"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/ConfigActivationStore.java",
+      "sha256": "bac9c961b12b0cb12248498ad9585a134649d45440ccb372e9bd7d1e72fbd79f"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/DataPaths.java",
+      "sha256": "8b82ce008cf11b4477bb4acb20a618a7c84a52dc1dbdc81ba06b5e388f87c511"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/DataRoot.java",
+      "sha256": "1383018daa9a5feca4647109130658697e0067b7a25c9d8efe1c6ccd930cb968"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/DirtyMarkerCodec.java",
+      "sha256": "3c26d56d997bf7907ce28131a7858f6d304d0b5d6c13055a57fdd6cf3e7b497c"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/DirtyMarkerRecovery.java",
+      "sha256": "beb625ed392bc070501fc022e850833ac1a9d1f62ab8f418b0b64c12f2f90be6"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/DirtyMarkerV1.java",
+      "sha256": "9ab9a4ebe338f104ea402c38c0d135a3f9c5d40de6d2d31c5b63e5dafe105cd7"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/DirtyTargetPhase.java",
+      "sha256": "147a1249168abe98b1684944e517f03fa6f06dc787da0a6fff29eecdb20df99a"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/DirtyTargetRole.java",
+      "sha256": "f81f816fe69362b311695c5e1e8b8bc5e582a286811c28f6f990e0d71a2c1234"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/DirtyTargetV1.java",
+      "sha256": "6be9526a5f81b0fa69b3d68cc4c3c4ecf09bfbbd73614f1960e35a2eebe4d97a"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/DirtyTransactionPhase.java",
+      "sha256": "b85c3fa5aa6245f4c827be731284586f34f10baa8fb507df2315de8f1be08479"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/DirtyTransactionType.java",
+      "sha256": "020147a79455cd1103a6b964bc49ca858bd6ae8c96d28a0b8e33a1870857e2b7"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/FileDigest.java",
+      "sha256": "f33291b16b99d737ff159cd17b1b2e7f6493ce6bf671e009e2193e54ac6975be"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/FileTransactionTarget.java",
+      "sha256": "4e33d65579474311691152271ca0396bcbcc7667e1613a46ac5475e8c906194a"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/ImmutableFileConflictException.java",
+      "sha256": "a68bb966049bd515e8b8e5ac2a88ad79a82f40016d33cf95a7ff2ec2d71098d5"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/ManifestDerivedFieldsVerifier.java",
+      "sha256": "732774d0c42eb822ed158a83e6db822faa3df65e52c84cbe9e1df8bd2af5b921"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/ManifestFactory.java",
+      "sha256": "174e65469df8b157f46ce36fa4ebcc6b2ef1a10d9a33c648285ef3dde9143166"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/ManifestVerifier.java",
+      "sha256": "ab7e181924e764eb50207bf5ec1a49553310bf5856db4ffca290f1c1376c1ce8"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/QuarantineStore.java",
+      "sha256": "e63d5494f6ef60d1f0fce56158ea82768d9ff46b669898db57ac061948a75738"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/RawAcquisitionLinkVerifier.java",
+      "sha256": "7c1d85df01ea51bcb430958c820e103260921f16b312f38c175e36ddda97e5f3"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/RawAcquisitionStore.java",
+      "sha256": "1c31fdfb1ecd5c54ccce4ddad23f87dad5c187969b02d8a0ccc9c5acf0f25aeb"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/RawConflictEvidenceV1.java",
+      "sha256": "e361be2e78a4c77bd58a4426fdd3eb73be3fd3f7a3d1bba923cfc6f029f6a907"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/RawReceiptConflictException.java",
+      "sha256": "52be7059816a27e619e1c5d4bb20634a0da8026fc888da5daad6e2e311080b81"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/RawReceiptStore.java",
+      "sha256": "b59df1d1a7f192ddbf322d3d9192d525e77ecbdeb06080d97ceaac5eb4f72da1"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/SingleWriterGuard.java",
+      "sha256": "62e9116c89c731ebf146f8a4ac4291bc6557294ef09e549d40ee9b34a0ecab69"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/StorageException.java",
+      "sha256": "b9e63a6f0b2479f56f727325f1195ff7e57409fdb3c02a8d6bcb3dd59dbf31f2"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/StorageSchemaVerifier.java",
+      "sha256": "597465593d03e2cd346c3401a17e125026e8a4cbe6ea0a1a2fc0c794783380ed"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/TimelineStore.java",
+      "sha256": "98d719ce4abf8bc3a77e1240cb81ee7c24c153038cdbaacbdc08eab4dad66976"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/foundation/storage/TimeStateStore.java",
+      "sha256": "c8992f25d196824266e1a64d3add7eaa551a5b8e2f3f07625bd85cecc9d74316"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/history/HistoryQueryService.java",
+      "sha256": "b80fe6ab743ca3e9f799b1ec52b926083c3a1f4490a63f44ef62fac1ff20784e"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/localimport/LocalImportBatchProcessingService.java",
+      "sha256": "7329612eab6bf9055e3ac265e1e6edaba5454e4c913fd3359a722a9783ec1f41"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/localimport/LocalImportConfiguration.java",
+      "sha256": "1e0ba174bb59d80b02e0b47df019f3784db5921c16f60c994a78f8f617dc024b"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/localimport/LocalImportCsvParser.java",
+      "sha256": "8bf2f5be6c139533f575fa9c79cb1856b1a29586133e46d3e234f199d6d00f48"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/localimport/LocalImportDataProvider.java",
+      "sha256": "926360369b2c7d81872677d2aba2d0bdc1ff0ccf5d34fbdf1295f9f058e4e28d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/localimport/LocalImportFileStore.java",
+      "sha256": "62f8982ec0d050c45e0b86429f81dc16845a9c836834a45a2a1382ecaf2c31aa"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/localimport/LocalImportReceiptV1.java",
+      "sha256": "80193627fa92c22570975cd5faa6015399d39345c3b20193a4f47b1a9e50d4e6"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/localimport/LocalImportResult.java",
+      "sha256": "f9916bd3d7b12df68129c7fbfd6b965b564864604ed9f647d8eb61b266ecf3cf"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/localimport/LocalImportRow.java",
+      "sha256": "12bd3ab72d21d911f31854f1add46c1f66a488125684842d6d7bd199bd6b9bb6"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/localimport/LocalImportService.java",
+      "sha256": "2d8594c8cc633b63245c26241c8d3a3f635f885ececfa12c1e380b749cf674e3"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/localimport/SyntheticDemoDataProvider.java",
+      "sha256": "40f568e816fadac9539e1a7cca0713afe12a8f1b91d26a2fd1c113a6bc3376cd"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/manual/api/ManualMaterialProcessingController.java",
+      "sha256": "840f6c7133a119991a2c896b36dda8725f36905c02882fbfb876901077205344"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/manual/ManualDataProvider.java",
+      "sha256": "874f613bf261c49e779f0d5162c0cdf0e49013992159f0729c16db06094ba509"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/manual/ManualIntakeConfiguration.java",
+      "sha256": "2697190dac98e4871b3a8a945a814a02ebf35a29c647249804e697cc2531a997"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/manual/ManualIntakeOutcome.java",
+      "sha256": "5f4773547d3281564a205d87f473deddde4815cc0b9de100935a550d5f2dbf59"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/manual/ManualMaterialIntakeService.java",
+      "sha256": "b56e84a19b2f5b853342349b7125f25ff2ba41be718e94b572aa65980f174cdb"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/manual/ManualMaterialNormalizer.java",
+      "sha256": "c8c61996a3adeefbbd63f49d397e1d22eb8d1fb886ff31d2ab5fc99b45ca8620"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/manual/ManualMaterialProcessingService.java",
+      "sha256": "c1909f3ebf485d503d624c7701186aa3a5a853194cd3953077d0fee61fedc836"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/manual/ManualMaterialSubmission.java",
+      "sha256": "16ea9ba784f4c6cac7f9f3c7af82b5e37c51cd2d1a0ffb63f8199478e5b25150"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/manual/ManualNormalizationOutcome.java",
+      "sha256": "9fbe0f22653d975a5df652f1e0cf227060e590e53bcfe89027494d0728fd0ef6"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/manual/OperatorContext.java",
+      "sha256": "fc82ea16fae91a6ad9d08ae950eadb7a8cdf3618c8b710f2e78f57b0fdcec9df"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/processing/AggregateCalculator.java",
+      "sha256": "26cad94c0bf7440b42ec0f6974bf7ff3c75eb0ac50df06c4878abe0f1463b538"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/processing/AggregateInput.java",
+      "sha256": "45a0cd1e6f9b78396921e5c396a701eb8a55d9d072e4043e8867600cb35a1f8b"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/processing/AggregateProcessingService.java",
+      "sha256": "367001f06efb22ca7a8ae2ea61efc239451c90b4a0fbe1c39160ad2e4208efba"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/processing/AggregateReadService.java",
+      "sha256": "e58783e8e955bfd6ccf1534f6d71d0a95935a515054f7252003726a0795dc77b"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/processing/CostImpactCalculator.java",
+      "sha256": "9a56551411b3bab0db30dbc0a411a87dcba379f8a958680f72fa5b38d4156bdd"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/processing/DailyInput.java",
+      "sha256": "9ab52949a5664b22ac60480f53ad301d8edfbb6f68db0920a68b3334f4f4e20d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/processing/DailyMeanCalculator.java",
+      "sha256": "516e1f9c389191c4710b797f844bb8d92acee7173ca7162dfc80bfad3f61eb5a"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/processing/DailyProcessingService.java",
+      "sha256": "c906157242b809d6a1c91942b7561df496b630b8b99886d88060d7f15ca00906"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/processing/DailyResult.java",
+      "sha256": "4cba6353b3227b9dc3967ac8ddaa2fa68298576b9a4c48d18eeb9d3de5a11880"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/processing/ExpectedBusinessDayCounter.java",
+      "sha256": "34604f321fae866e417548d9c055725c6af95a92c3a33283625e2a10700ff5ff"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/processing/PeriodBoundaries.java",
+      "sha256": "20428278aa18b1bf315e83f8eee2e4afe93c5e8e3e548aa3f99ecf0e52d6a263"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/CollectionMode.java",
+      "sha256": "326f37070ed343a960e7ca0f8634b1c04ee47455e98cd625c9c531f2f25ceee1"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/DataProvider.java",
+      "sha256": "4f48de52960c396839798355b3bb1301679325ffabd0d89c65df56e359414899"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/DataProviderRegistry.java",
+      "sha256": "97da98446c82cac880cd07b41d18a177421bfb36bf98ca2794eac09de9e3468d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/MaterialSourceConfiguration.java",
+      "sha256": "e747a79efffdd0c2bfb68834a4eccdf1e45724878bd854ba1f4120f732ceb220"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/pboc/JdkPbocHttpTransport.java",
+      "sha256": "4feb4e93886d24f67cfe7f8c2d6cab4aa6cf92bc345fa88bc0481ed8856cdccf"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/pboc/PbocAnnouncement.java",
+      "sha256": "960b47df24353a6e0fe2918eb8d0fd5b57f8d9a399903676cc6e297f92721ec2"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/pboc/PbocAnnouncementParser.java",
+      "sha256": "4e1d5cc694bb479561576b3cf52262857729dc3b10207e65e813e992bc737d3d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/pboc/PbocCollectionException.java",
+      "sha256": "9bf794e149463ae3fdaf1a00b6a6cb87a4dc30fb158c9ee0fad06304936b463b"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/pboc/PbocCollectionFailureKind.java",
+      "sha256": "3a069059e9802542465ee8d1631352dc72e9b09820d31c188d7a720c06da4025"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/pboc/PbocCollectionResult.java",
+      "sha256": "cf8840589460dd55115376a8d7aae5771a9fb55b16a6c13a6bdc2eaf974e232e"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/pboc/PbocDiagnosticEvent.java",
+      "sha256": "f9ba59a827d4820bdfa917c3a8c3fb5c68b0f3fe38b6c7260d84e7d2b00b9c65"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/pboc/PbocHttpResponse.java",
+      "sha256": "0efdf803c2d562ddc877a760bae229d37c6fbffeaff74256a8f3a7007ad00f42"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/pboc/PbocHttpTransport.java",
+      "sha256": "ddb91a85efd1dea072b1b0e8cfe50e44ab13cd800939dec8e878625148fa1477"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/pboc/PbocOfficialWebConfiguration.java",
+      "sha256": "1a597a8449b68d326ff0cb2a545f8b25fda0f727ab9113c2d8f6441f7655f28f"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/pboc/PbocOfficialWebDataProvider.java",
+      "sha256": "62a981d6d869bb21c537462417b312d038f92ba900e853adcff93a4fc8c1a299"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/ProviderCollectOutcome.java",
+      "sha256": "9513bbfdd561a78a65dbe46d31874dfa9633ec590363b63959fd79e52409f063"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/ProviderCollectRequest.java",
+      "sha256": "32fcec87dbb9b4494c4f8f4666fb4b2de4f0cf36ff3ce3fc1f6a665c425b68a1"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/ProviderModelChecks.java",
+      "sha256": "465bd8f1ba0948064dd63c47b8e6f5548ff7cf8a8c0331f6dd724847001096d2"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/ProviderRegistryConfiguration.java",
+      "sha256": "d7d337f4df89730026e758807befafa1ebc8ef2c6d687b9928c07e39bc7da8ed"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/ProviderRegistryException.java",
+      "sha256": "9a1041e89f966ea09d04646ca27739515cd394a62d429a0885086530b5267377"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/ProviderSourceProfile.java",
+      "sha256": "3de668e5728d7a11e5b9ec273915e79f4822c21e9486a4c30ed400fb60e6db39"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/shfe/FreePublicCurrentAcquisitionService.java",
+      "sha256": "3386f709a94f53853d01ba035aedd36dafa22e4ff2dc1bcdb423e420d73cfb50"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/shfe/JdkShfeHttpTransport.java",
+      "sha256": "947572e50f287950fe1caccc65ce892197424c8fd361ff4a46aca574c53c5529"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/shfe/ShfeAdFreePublicDataProvider.java",
+      "sha256": "23496f01e3c917e158d9c00417b5edbb80b32f2a842115570b227450d541dc23"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/shfe/ShfeDailyMarketParser.java",
+      "sha256": "f0d06ca7b30d6e5a38ba791a791a0fb44cb78c0832495d129f7bad6ec572d523"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/shfe/ShfeFreePublicConfiguration.java",
+      "sha256": "a49b7a94a88d2dcad6b03f69b53d1480f6116049d4451cfda11b6ceefd3c7ba5"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/shfe/ShfeHttpResponse.java",
+      "sha256": "f87f882ab2dd9b2bdd9845080bc309e3dedba4a76dbb56c2beecbb3ae94ad71d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/provider/shfe/ShfeHttpTransport.java",
+      "sha256": "4eed5911229fe13dada9e3d4342a1316ab41665ce30742d372cd53325db16e64"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/publish/LifecyclePublishService.java",
+      "sha256": "93098d5897b062276e55039e89035c1216ea0134b6431a4b4f1baccaff65d73f"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/publish/PublishedQueryService.java",
+      "sha256": "49a67af20a721de7ff4f3033382e67438819feaab45bc663078817c6a4416fef"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/publish/PublishedRecord.java",
+      "sha256": "b4095bebb9f8e60e5fb6d20437d1f76b83a0004d5470f90fd3e0f83984dba74a"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/publish/PublishOutcome.java",
+      "sha256": "04c70e60ba27d05e1738be8450cd2ff548497e2bc7ef2b762465c52de633c2c3"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/rotation/TimeRotationConfiguration.java",
+      "sha256": "9fae37bb80ff2a0e05a29d12db69306772721e00f93fadb80d28fd8e7b57bfea"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/rotation/TimeRotationService.java",
+      "sha256": "087ab95da7289034ca37ae443983c4bb30da32ad5a92af445197637a51d7e718"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/routing/ApiAuthorizationProbe.java",
+      "sha256": "f103fa7dc29d911e9d69f9bff69d80103b536ac48d060136752083fbc2b8668c"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/routing/CandidateUnavailability.java",
+      "sha256": "dadaf7e97a868595b39453fc278b0f48abb29eb3351beaf5e186067ad9fba2c2"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/routing/DataKind.java",
+      "sha256": "7153530af33e85c5c593512ef3e362824b1cf418641422e3a713292cf0a6c764"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/routing/MaterialRouteConfigV1.java",
+      "sha256": "6effc964da5d787b4e8d9fc3d4a78e8e08645485d787684640756384d0bd9a07"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/routing/MaterialRouteDecision.java",
+      "sha256": "704c15c845072466d90a92e1fad7bfe9a3a3d0694d2f913de7dd7ebfdb03bdef"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/routing/MaterialRoutePlanService.java",
+      "sha256": "71a5fa5b9aedbfa638af647e37b9d093169832448a212f0c30460de09b880129"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/routing/MaterialRouteResolver.java",
+      "sha256": "70ba2acd1b18d7d26e156da31c4f2bdfb5bc51aae30101f678318edc0ec92f58"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/routing/MaterialRoutingConfiguration.java",
+      "sha256": "10df7095901475f243094d1d85f7d42c40a68fa79dacea3a1a880b4ee145ba0f"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/routing/ProviderRouteException.java",
+      "sha256": "db67085ca593658c556e693641f727eec3f97ef787e7fcb80fb3758b3fa4a082"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/routing/RouteAcceptance.java",
+      "sha256": "fd7af279c562ae6afb5fab12bfc97740f5a303cf76ca374ce3919f97eac172f8"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/routing/RouteTier.java",
+      "sha256": "67be6cbd264e19239ccd987e97fc6acaed34f6f36af74db3e40ad656a95fbf6e"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/scheduling/ActiveCurrentCollectionService.java",
+      "sha256": "d0298867e0f2198b444d252b381c7105ba35c015c7458514bb72197b4133241d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/scheduling/api/CurrentAcquisitionController.java",
+      "sha256": "fb10919b13d1e1e88f7a5eca9f4e70d0c5b55d6d39acf50d759a69ebbb345d77"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/scheduling/CurrentAcquisitionConfiguration.java",
+      "sha256": "75a2351d7f236ec71c6c7b089010e9d0dc3442f0804ed8c28d815e4242c50260"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/scheduling/CurrentAcquisitionService.java",
+      "sha256": "d18131dce129480eb063c5e313ac83488acdee5fcc5c5a0014ecbf2354a66ee4"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/scheduling/Day2CycleResult.java",
+      "sha256": "b2a326e81e43e7c35d992ce0d17c6d484f59e432e019dbf5c5b45c1206120a6d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/scheduling/Day2SchedulingConfiguration.java",
+      "sha256": "259b0636a1a25d3895f9223fadd633663e5f3dc4c64f7a69dffa9689a18be4cd"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/scheduling/PbocDay2CollectionService.java",
+      "sha256": "d4d7229126d690cf1fad144e949e0750eb08ec8b7e029efa9b38a4450e2db6fa"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/scheduling/PbocDay2Scheduler.java",
+      "sha256": "2d39fa72ef7f21143b29f56cde3f687de8a4406596e5b812274292e8882c2755"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/scheduling/RotationGuardConfiguration.java",
+      "sha256": "76ec121ef7088920bde4ba96397821c8a96bcc2f614ff6fb510496253dea6b73"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/scheduling/RotationGuardedCollectionService.java",
+      "sha256": "a65002b3142a05a86ad6667b1030e6265ef8dae210c00be68e77c58a4d416d32"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/SupplyMindApplication.java",
+      "sha256": "b416cddce4dd61e8530b834042907d9d3c31cd0c4bc53ef8a0017d7c72a295ac"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/survey/FreePublicSourceSurvey.java",
+      "sha256": "447764d229d8cff97e94dd4e324d1f10e8ba62e52d66612c4cf4492dce087253"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/survey/FreePublicSurveyReport.java",
+      "sha256": "e5a6fa915a778a9bead1ddc57aaf5a1967ba39e1ddf7b0f857932dbbef4b53a2"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/survey/SourceVerdict.java",
+      "sha256": "61780786698899d3d1a52ce382f26f186ce46b5f971811da372299c85680d8d7"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/validation/LifecycleValidationService.java",
+      "sha256": "ee9ad533dddeab30da861c0d2da27b5e2edc3f2a1677b61c73614480e75f4ab2"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/validation/MaterialCandidateStandardizer.java",
+      "sha256": "8057edd0acadb010ca304ac9e6b8e0be8eb2938deca9be07fda35f53e0546792"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/validation/MaterialCandidateValidator.java",
+      "sha256": "ebebe3c131e93fe3fd49070e288348c089b90cd690ddf1af94d2560b518d96b9"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/validation/MaterialCandidateValidatorV2.java",
+      "sha256": "72c5eeb79285d8fac0f2585f69d14eaea06f68f470fc1b2565b15f2404307d72"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/validation/PbocBasicValidator.java",
+      "sha256": "282c122d316fb967bea869a06ec0b9ccb0d233e3fb3db2f2e7c3d78ab0a88c51"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/validation/PbocCandidateStandardizer.java",
+      "sha256": "14210f383d3afff90e620423e28153497a5a606c3791c1c81d1412f7a6a4e555"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/validation/StandardizationResult.java",
+      "sha256": "c6e5b0c0078a631202433a9d5ea9774ad75621f93aca83285649746eac8612d8"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/validation/ValidationOutcome.java",
+      "sha256": "d69424b4795af618382b55424638b8e05b0469aa64188e193e11a6049888fcd2"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/validation/ValidationReasonCodes.java",
+      "sha256": "3678da9bb8a9d30f7c7e335a6d93731c5dbf766a16bd3e9eb2024d1a173de9d0"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/validation/ValidationVerdict.java",
+      "sha256": "9a56e76eecc0350ba71d8512852aaa913159b3b62cdd20c1854909004fa15f11"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/validation/VersionedConfigReader.java",
+      "sha256": "7b1e04f448eddd52808811696be1c8ce0c4b9eb921cac9dc9d0fccc13407a434"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/api/WarningApiAdvice.java",
+      "sha256": "dd45d0d2b421226f1ae56dfa50dfc2177c1ce817c255086abe5630dd9d97ad1b"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/api/WarningController.java",
+      "sha256": "f3bf78e3b5aa818b0ff35c71cc120521c090eae4e8bdfe40ad2cdf7cc9fea26e"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/api/WarningV1.java",
+      "sha256": "22663e939c688df7e937b3e73a3a907aa63b6a285b052ab0c336214078f049d6"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/FormalWarningEvaluationService.java",
+      "sha256": "89154cd8b4cf963a660eca59005eb66100bfa8b0da85dbfdc46721fc9ab9b80d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningAcknowledgementV1.java",
+      "sha256": "d927baa680c5684f7c54c2fdd205324d0a9389402d04352157560e4e35e687f0"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningAckStore.java",
+      "sha256": "160f07430c579e0882cad8db7e7da64343db0e3b3d07a0008ac3d593cb6a88d0"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningApiConfiguration.java",
+      "sha256": "f3942fdd9f2f542cc61c2522243498960a18d0586ef7a9312942f6f468896861"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningEvaluationV1.java",
+      "sha256": "783e950136f526701b08cdb530ee34addc9c6b24896bbc307cbc792dd866f226"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningQueryService.java",
+      "sha256": "f98191d61538c33e833fcc6824aca3f0a4d51fe06ce4b4a55e2f22315ffc50fc"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningRecordV1.java",
+      "sha256": "3acd93a12d11c53c4ad6e635095a92aa0aed8dfc048942ddb7274e108a4150e7"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningRuleConfigV1.java",
+      "sha256": "78c72a665aa11f9a5956655115ec7432ce19f75e3b857e67c51d58367d8bd0a7"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningRuleManagementService.java",
+      "sha256": "1dd1718e650312d907bca69c7a195295615a2f1441ec0c8673a30e32a6348103"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningRuleSetV1.java",
+      "sha256": "420a680c48a47d8c0ed89f91ec0cdbe60c8c48e374ce38fb33294f3b7ce5dd8d"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningRuleStore.java",
+      "sha256": "c644b3f1d4ee23e347d5b086ee68c0e27cc2ebe6cc4745b8996ebd9adb61a5f9"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningRuleV1.java",
+      "sha256": "efb1170a348852c30780c6f7704cf861694392caf62a1e734d92f4723102278c"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningService.java",
+      "sha256": "0c67af10ebe9f99457b9cd7653d5272694bf0d0a93c66b5880255323c9d80601"
+    },
+    {
+      "file": "backend/src/main/java/com/supplymind/warning/WarningStore.java",
+      "sha256": "8d85ca1da6e7863b4c57b9efbd22151e6a199d1afd95d025498fb1df59728d7d"
+    },
+    {
+      "file": "backend/src/main/resources/application.yml",
+      "sha256": "a4af3a4a6b6cc859cced306e2956176aaecbf5da5ae1e1a24e1876236a4fefba"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/acceptance/AtSrc002AcceptanceTest.java",
+      "sha256": "41167dab978412b73554a42cc05e9f4481ff823a65d19a6c2737272965a00a29"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/acceptance/MaterialDay3AcceptanceTest.java",
+      "sha256": "381849ecfab7a38b47cbbeb8ae80a338ac3ee3532d1d867f53bb3a1cc0f057bd"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/acceptance/MaterialRoutePlanProductionTest.java",
+      "sha256": "e86b634172f74cc48bd8b694bd0e5d3522b2c8a652e5469402fe039edec9525b"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentApiMvcContractTest.java",
+      "sha256": "8189948123f8e4e52310846106065edf800cd861b365015e066390cb7d68c7a2"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentApiTest.java",
+      "sha256": "3cdcb224506639977362a21266a4e734b9c5a759cf04702724c1cb443caeb1f2"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentAttackTest.java",
+      "sha256": "7be20f159a37bf79e646d1d28221baf3e0f9de15f5de23fa39be48090fd0017e"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentCrossConfigReproductionTest.java",
+      "sha256": "c1f8bd3476c28fde29974f682b9bc952093ec14f90bb40e47d663f6145c9c6fc"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentDemoAcceptanceFixTest.java",
+      "sha256": "136d4e04e95906e235b8c8a736f8cf70c6aa0bf00cf1ba85b185809dbae38ee1"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentF2MissingReferenceGuardTest.java",
+      "sha256": "03b0f8e52342c8217aa20d966b689bcadfd19f61b2b466866c1900fc0d116cdf"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentF3LifecycleVerificationTest.java",
+      "sha256": "463266373c24464168ef345abcc58eed17f9f2df085af507251c3f850b6d5453"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentFactFirstPipelineTest.java",
+      "sha256": "f54eaa86be82e38981af440db2ec290d41eb3e3bdcffb0d1023a52049009afe5"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentFinalStageMajorFixAttackTest.java",
+      "sha256": "458afec17c3731cb01edd1bf7682601231f7193216c347cf18a6bdf8632faaba"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentPipelineIntegrationTest.java",
+      "sha256": "c2b59bd123f4600368d7e0ae026451050877086497dcb6b33a3a1bab39cb53e7"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentR2StageFixAttackTest.java",
+      "sha256": "c77a38ade2ee4d58745a2b362a7bc53dd3a56913ff7ac4745e09ea2b86e0e4ca"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentReportReadTest.java",
+      "sha256": "276b03138f2a9aee97fa1ef4c998cda74c81d433e2594c48cfc29e2f44e77c2b"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentSpringAiToolCallingTest.java",
+      "sha256": "d5e4631dcea1df0d24b3adc8c0855324bb505d069a553af16b2a8c695a74f0e8"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AgentToolBoundaryTest.java",
+      "sha256": "634af1e1ce47a6ca066604b12944e67031a02573477f43a2ba5ea5edf1e13469"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/AggregateRowEvidenceGoldenTest.java",
+      "sha256": "4433b6ea251ee03ef8cd28cd80e4b555a5be95f9186516f4b55e8cf6b58fecfe"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6FinalStageAuthorityBindingAttackTest.java",
+      "sha256": "36c3d7e1bd4867c57074a95826b06a272c7660e44b651fad9a474fec8a9ecee5"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6FinalStageClaimFieldGuardAttackTest.java",
+      "sha256": "cdcda78016b5f23b56dce059a3bbca5f718c53178e370c341c8baafc1006cac3"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6FinalStageFullBindingAttackTest.java",
+      "sha256": "37b8eaf257c91c11bb13c56b2c11baa385dbaa023ce2a9e9b703fe47a79e0489"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6FinalStageMultiRowLineageAttackTest.java",
+      "sha256": "47f9c19e68a281c19d1013515d6a7d8da314f425a3496fb2b9e036a72faf77bb"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6FinalStageRowToRefConfigTest.java",
+      "sha256": "eb24ed773df5cbd5bc8a5fe7286c07e20720e5c3271d5e2114b882349296496d"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6FinalStageStrictEnvelopeAttackTest.java",
+      "sha256": "1bfaddac5e0787596788677f5cdb09a5128d645220733fa7eb1c83df891c5172"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6FinalStageStructuredClaimsAttackTest.java",
+      "sha256": "fedd25e19cc74fde53bb0fe4e976b6d64bc10b8f0143647bcde0c852a9cd1da2"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6R2IndependentCostAttackTest.java",
+      "sha256": "301206335abec7533d7e01ebf5a635c2b8350424ab57e6429691d41c80ce8928"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6R2IndependentEvidenceReportAttackTest.java",
+      "sha256": "a2aa2c63896417796280ca29b38098b03d74f90d738bea63f2d5c600ca8bb75f"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6R2IndependentGoldenEvidenceTest.java",
+      "sha256": "671e8ccda48cd78bda1f1f0807d125344c0cb4659cbd2524e239e56f06910510"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6R2IndependentIsolationAttackTest.java",
+      "sha256": "16393284978e36c183cfe46db2f45c4fd19972c6c629fe2db58cc9209ce0d92b"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6R2IndependentResponseAttackTest.java",
+      "sha256": "b4f5109b379a710faac05282e482ddf798caf797a3b3f8b9446d767e24e8459f"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/Day6R2IndependentSpringAiAttackTest.java",
+      "sha256": "2a3d342c0d4aadcb71c2e1e1e714d97a8092e0355f2858d219ea21cf4242c2c9"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/infrastructure/springai/CloudLlmConfigurationTest.java",
+      "sha256": "915c575f21423a727e1616f790b66f8e4b427b8b23886dc8f9f5fe18a130ab44"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/infrastructure/springai/CloudLlmRealApiAcceptanceTest.java",
+      "sha256": "5a684cbca012af9bc9d88c07faf85dcaf9b5b44b52f50a4440547c8aaa66e51c"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/infrastructure/springai/SpringAiPromptContractTest.java",
+      "sha256": "7aab550c8293ad7efd6e759606dd3d2a8fd4c3d7f40d88a5f71fb261ddd10552"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/llm/RequestBudgetTest.java",
+      "sha256": "cfac41f7e60d3ca089f48a6116b26d1a7b8dd7853107245f7bef33aafb9a820a"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/QueryPlannerTest.java",
+      "sha256": "a859ac8f611dd22197e9564a6112e8fe32333f96a26be9588f7af1955ec479c5"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/report/AggregateRowBindingV3Test.java",
+      "sha256": "535f82feaffeb91157e01cdd3f9b70152af82ac941f7c07d1a9badcf6459eecb"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/report/ReportSnapshotStoreTest.java",
+      "sha256": "198081cabf7b7c867bf35ab40afbf5991487e38c9d094253f470a085498254ec"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/support/Day6R2Fixture.java",
+      "sha256": "7d44cdad43c65d156e8f589b94e5d834b2de61ffc4601c7524c7ad00f6b7fd7d"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/agent/support/NarrativeAttackCases.java",
+      "sha256": "d883d5d585ac12d4c35fd2fc3e7eba8f6cc4d805ab694f4f3ed01d2db3032c2f"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/backfill/BackfillHistoryRangeContractTest.java",
+      "sha256": "a92203a935d165fadb8110e95c45f28ea52d8a06a31952983e8dbd8d8dd26f6b"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/backfill/BackfillOrchestratorTest.java",
+      "sha256": "e6549384f29fefb1390ebbe938bb49d7a8e721465e90bcb328fb27f044a1383d"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/backfill/BackfillRangeCompletionRuleTest.java",
+      "sha256": "6f82f0ba92f5dd1184b32ca58f4ca7c17a84c5b3564f34c165d0001f7b4f2e73"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/backfill/Day5SecondHistoryRangeAttackTest.java",
+      "sha256": "b9eeb0992ce39f3c33ffb3f2e6fa5c16e16d73d22aad797ecfee212b03e2e62f"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/config/ConfigApiMvcContractTest.java",
+      "sha256": "1d1d5e71b7c295d7a6b83631b722c9818953fb3c6469b248d0ed8992b9808dd5"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/config/ConfigManagementServiceTest.java",
+      "sha256": "84b05c20385ee29dbab71813f5001eb9ad1de5694386fad3b7500ce6ea5eedae"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/config/CurrentIntakeAttackTest.java",
+      "sha256": "e90b08a4a2fcab7ad4518a50f6852925eabba52561963abaaf1386e2a4202c5a"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/config/DynamicConfigWorkflowServiceTest.java",
+      "sha256": "f324ca9fa88bcb56518868101c9398372df21a09c31e1ba7e5980d90bc35ba4c"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/dashboard/DashboardApiMockMvcTest.java",
+      "sha256": "b1b439d48f2da12386944f996f9d184ad35dbc1d80f2b7a53f7ac5d1cf0a39df"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/dashboard/DashboardControllerTest.java",
+      "sha256": "d17c9fabbb6c01b94537852a6747aa5c59d81cacd978bda5ea2b8e0e64c9c089"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/dashboard/DashboardDtoContractTest.java",
+      "sha256": "c5751b4c5dd7112be75a908b704bb652e3bd476a75da317064213e27eb6af026"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/dashboard/DashboardMvcContractTest.java",
+      "sha256": "26b1756bf6415455a367f401c815f5e3ec992b4615b3284ff1d73eb2ef19bb2d"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/dashboard/DashboardServiceTest.java",
+      "sha256": "a23071b59b0765cc04fb56c99751a4c5b549539be5153b23392ddbfe0129320e"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/dashboard/support/DashboardTestProviders.java",
+      "sha256": "f1c8e3b79f8e003b8dff898dde1508337be63be56a983f366dc176af25b534c1"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/AtAggDay4ContractHarnessTest.java",
+      "sha256": "b25df411cf3ef39da490707c37f32931e094dea5968fb3e859260ef009019eb1"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/AtPrecDay4ContractHarnessTest.java",
+      "sha256": "19c039b1ad94895ef8a94d204fbd387e712b65be26b1c67014cb333e40e94ac9"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/AtPubDay4ContractHarnessTest.java",
+      "sha256": "c436513253c0501de149edf496a05f32ab328798f182eb52357543d7cb971185"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/AtSrcDay4ReconciliationHarnessTest.java",
+      "sha256": "8e0eaa43bfe6996d549a181b9c5170516a1fb4a4616bf1f156f3d07a48515b90"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/Day4DailyAggregateSchemaContractTest.java",
+      "sha256": "fe103226d4a1345bbb0887838bc586be8192bb72ee6169695ace01b43bcbcb8c"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/Day4GoldenFixtureManifestTest.java",
+      "sha256": "6c48a3fde31c3356cf77825fc3eb4f513b39038f1cf200c22ad37bcd5f0741dc"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/FutureMaterialDay4ContractTest.java",
+      "sha256": "2807ac5d55ee6e5d1e9bc4738a2fa12800ce71154e4158ffb2ba7ce8e2fedf84"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/GoldenArithmeticHarness.java",
+      "sha256": "649dc2a70a1c61d2d5d6b1363ee6493483e2da927572a621cc0fcb5b964073a7"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/MaterialAggregateProcessingContractHarnessTest.java",
+      "sha256": "1bb5a3cfa56e696ca331a1758fbc5761ab3b639e765541157ee226bdbe527814"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/MaterialBasicValidationV2ContractHarnessTest.java",
+      "sha256": "908e8c6cc64eeb933fd705252b5a0ae28431eeb27ae111c63b557853a977d1b9"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/MaterialDailyProcessingContractHarnessTest.java",
+      "sha256": "09824b5d763205e220fae50db64fec6c3141758bd55c26313600c9580d455d7e"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day4/foundation/MaterialPublishNegativeMatrixHarnessTest.java",
+      "sha256": "d48da649ce2db29e1d69837abdb6d20a0690255fcb609a49d03cfd724df1649e"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/Day5ImplementationIntegrationTest.java",
+      "sha256": "348c25801d5dd6793de2dd9162dde262c8ae71e1ee753ebf96120c28b36218c8"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/foundation/Day5AlertContractHarnessTest.java",
+      "sha256": "e4c8659410de975e3459b0e833ac78258d6bb1e34848ff024c53d71367b518ce"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/foundation/Day5BackfillStateContractHarnessTest.java",
+      "sha256": "f646f1457ce9089238edd15618218bef997d64a1065dfe9cba17b8eddc516f53"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/foundation/Day5ConfigurationActivationContractHarnessTest.java",
+      "sha256": "4c9e2c93dedf237bc89873a34ae96671307a2ac8d5cf700cb8e79c68cd4c2094"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/foundation/Day5CrossYearHistoryContractHarnessTest.java",
+      "sha256": "5022b62a378bc4071722ecc8b435cd43409da6ca6181a02094ba1c009fcbaa5e"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/foundation/Day5FutureAcceptanceIntegrationHarnessTest.java",
+      "sha256": "b712b3f224f464bdfb848af7979f746a671b26e9258ae9bee4b9b500240414e1"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/foundation/Day5TimeContractHarnessTest.java",
+      "sha256": "5788b33b7fa4f6806fa6b1a3b8c7ac9646c529a35fe59335251492f187079333"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/r2/Day5FinalProviderCapabilityDeclarationTest.java",
+      "sha256": "d5a6855a8ec75aaeb9538ef3dfe284369148e3a1329a1d963eca06488e815b1e"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/r2/Day5R2BackfillAttackTest.java",
+      "sha256": "6e32c7ed2867762eac27648ddb35a6d0334c196909fc67291e560fadfcd0676b"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/r2/Day5R2RotationHistoryCapabilityAttackTest.java",
+      "sha256": "220b006286e0c08f6e69fcf8425bba6f7eb916b58d8ec5f38e9c5802b00734eb"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/r2/Day5R2WarningAttackTest.java",
+      "sha256": "90a54ca8ab65bc710eb37505f0e843d112391d810180496a5473fd75800b5efd"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/r2/Day5SecondDefaultCapabilityAttackTest.java",
+      "sha256": "5f15af211a337617c86b8b799bdd3b18ed197493dea38b4de37a34b3b573bd6e"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/day5/r2/ProviderDefaultCapabilityFailClosedTest.java",
+      "sha256": "51f6491e35ec2d19b11a77a12dc46feb8dff9f35b3c89021c5f122ddd1dc6262"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/demo/DemoShowcaseServiceTest.java",
+      "sha256": "52dee8ad4accac38c9f743768c948a8916bb7f193ff68a7264460e2c9bf6520f"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/desktop/ChildProcessWatchdogTest.java",
+      "sha256": "5af77bf1667f50404c204b9006448fe089346d3c717115eb05c36feb770a8518"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/desktop/HealthControllerTest.java",
+      "sha256": "5676a50f9796cabb1cdf5b690f63a6fa8889347494a466378f9576ccc7de39c1"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/desktop/PortableInitialConfigExporterTest.java",
+      "sha256": "4c947a5ad6739d61d6d75087156b8491dfcba4cd4194e507ba53d810785c5d3a"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/acceptance/AtFile000ConfigAndRawWindowAcceptanceTest.java",
+      "sha256": "97235ee0dc2fc64967df95d162854525ebdb77a642e77d662891feccab07a301"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/acceptance/AtFile000DualArtifactImmutabilityAcceptanceTest.java",
+      "sha256": "4342988d17ba2c58cd5e48d6c1973fb81a4cb588591dfbbd75d751c5c182447b"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/acceptance/AtFile000RecoveryManifestRootAcceptanceTest.java",
+      "sha256": "1326d4dd444ae2807381f28abe211aeda3d6a2c1ea063876c40cbd8917a07b98"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/acceptance/D1T03AtFile000SupplementalAcceptanceTest.java",
+      "sha256": "d3d2d60310f7cc6dbbe751baad5a43e1e1570bcbe662a7dd1ba359d0070d23a4"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/acceptance/DirtyMarkerAndProcessedCodecAcceptanceTest.java",
+      "sha256": "0abe0ae92f4a857b5e2afa77eadcb5493e073766ede31b0d171dda460b0fa0ef"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/acceptance/DualCurrencyRawLifecycleAcceptanceTest.java",
+      "sha256": "f02f90315a58d90be6fc466e6ecf88086edb45c4aae0205201d14ed84be978e7"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/acceptance/FoundationStartupAcceptanceTest.java",
+      "sha256": "de81f7271a095eaea1c0fe62fdac148c1311dfaa6f26b6922c475ea7e86ee759"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/acceptance/GoldenFixtureContractAcceptanceTest.java",
+      "sha256": "4aed7b290c5153230933300c207a682d51b00ddd46fa8e113c404918952235bf"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/acceptance/IndependentFormatContractAcceptanceTest.java",
+      "sha256": "fadb04303e8f23a84d660ab9c57372dd3003790a260df038f6dce040585b4afc"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/boot/SupplyMindDataPropertiesTest.java",
+      "sha256": "a0644d8c2cb564d84b81fad55d466b178a7bf8d37229d15a1025c0e0505a65c8"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/codec/CsvV1CodecTest.java",
+      "sha256": "2879805aafc70a13e0ab5341002335ea5352aaf1326c4c391f53e6dc4172dcf8"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/codec/JsonV1CodecTest.java",
+      "sha256": "855fd2fd868b78e9485153075cab9250fc153dd2745a292dfedcf1bcdae6daa4"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/model/ConfigAndManifestV1Test.java",
+      "sha256": "c376be771eae2a0b296c12244fa33b036109c946d32c6f63bce7b9dee95ef7dc"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/model/DomainFixtures.java",
+      "sha256": "bebbed48c4e95c8a2ce3b1850217daf029a10530c92bfec3fb1748fdd7aaced9"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/model/QuarantineAndPrecisionV1Test.java",
+      "sha256": "74bd16c407ffe5579ae916f15c95960f1daef7be52dc170ef6cde0da139ce31b"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/model/RawReceiptAndTimelineV1Test.java",
+      "sha256": "1a8558155e1781cefa76ddb3905b177dbe22e2ecf848b1bcdc5ebbf136bd89d5"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/storage/AtomicFileRecoveryTest.java",
+      "sha256": "9e3b80427886727a93f4d28e22b8583f9b1b5d0f05c611411ac0505319fc143f"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/storage/AtomicFileStoreWriteInvariantTest.java",
+      "sha256": "4402e153859a40278c77dcddb60472c39440b6ec5236c366b483ff578b0549bc"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/storage/DataRootAndPathsTest.java",
+      "sha256": "a013c35bc8eef2cf23153518e3794d361c1e03a837dcde9588752c061b7eb672"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/storage/DirtyMarkerCodecTest.java",
+      "sha256": "e0df6ca85a6c7512a0950ce80ff0e3787fe4f364b5aabfec3a1477c3d23571bd"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/storage/DirtyMarkerRecoveryTest.java",
+      "sha256": "479630270be83edcc12aef365312dc1336df986c82ff57b31e326e1c56d48ee1"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/storage/ManifestDerivedFieldsVerifierTest.java",
+      "sha256": "9b8133e7d24368b22c4144543d644803e2a39ebb697ba166ea7060e73393a8a6"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/storage/RawAcquisitionLinkVerifierTest.java",
+      "sha256": "07fc97247ab25fb06b29711f31fd85f379edcfd5e751516268dfd85a5812b031"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/foundation/storage/RawAndConfigStoreTest.java",
+      "sha256": "133299c60889e5f53cdd62ed5ce4264dd1d04aeac5a8118bcc98a66b843574a9"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/history/HistoryQueryServiceTest.java",
+      "sha256": "fe94b8fe6dd8f2b108897fa558e5e3f9f1271eb5831da3c1ae81cac3267fc379"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/localimport/LocalImportBatchProcessingServiceTest.java",
+      "sha256": "271eacf416a689f229e8f9c93aeacae8c1a743ab9be20aa649e0fd4825899f68"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/localimport/LocalImportIsolationTest.java",
+      "sha256": "9fbbe3382ff7633e53fd75e21a220ed192dcd556ef20bb6ecaac8e9fdc65b4bd"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/localimport/SyntheticDemoIsolationTest.java",
+      "sha256": "85ecdd60094f6e12f52b264c4c8c16fe8ef85c83460aae9ae221dc312ac6f67a"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/manual/ManualMaterialIntakeTest.java",
+      "sha256": "f6e75dcbd68db44aa9ad736a11ff9e590b2f5dbb3b5e2a2ba4381afbd8095e1e"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/manual/ManualMaterialProcessingServiceTest.java",
+      "sha256": "f003f21b399e2f503bcfebc8d1483f6553e768aad9858e31fa2e9c2a69a0149c"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/processing/AggregateCalculatorTest.java",
+      "sha256": "47fb64fc7c683a05816cd3764b43e57ee7b3d22c81c8fe0060875f25686c6bf6"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/processing/AggregateProcessingServiceTest.java",
+      "sha256": "2e9cf511b816d58c5698e3c2963d15482f80549a67290a78930ef631769fa461"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/processing/AggregateRealRawEvidenceTest.java",
+      "sha256": "13dc46c741cc730a05a087241de797826937853370bc314071904b29a85b3538"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/processing/DailyProcessingServiceTest.java",
+      "sha256": "d6ff188f2d037d9021f0cb0a38cbbe26f7964852870dcf2645c24f91abc0c66a"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/processing/DailyRealRawEvidenceTest.java",
+      "sha256": "c0f8dd17f75a93e6e8f7b7c36422fbee9fd7a39902e438fdc70f71628f4f09a0"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/processing/MaterialDailyAggregateTest.java",
+      "sha256": "0234b99d157fadc57eaed505824921987e5fe5896612383cd4977df9759963e7"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/provider/DataProviderRegistryTest.java",
+      "sha256": "8d06fb8fa21ae5c98ba7121388a9453999be9ac7b3c962596e49be761bc3fc95"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/provider/pboc/PbocDynamicTargetAttackTest.java",
+      "sha256": "a6b3e281051f0877adc143ff75f95624b36082a9bcbf71e8fce176c320a026fb"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/provider/pboc/PbocOfficialWebDataProviderContractTest.java",
+      "sha256": "987395987edfe2468895ec14f4b2dc5b7e32b327a3a616bec2c0caea67d08005"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/provider/pboc/PbocOfficialWebRealNetworkAttemptTest.java",
+      "sha256": "3233fe2e5b72515ff2ab5a284dee8a695c4848da9177b13e578a2338e60897b0"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/provider/pboc/PbocRawClosedLoopSmokeGateTest.java",
+      "sha256": "e04251be6a171e8df274e996701564fd63a05ad53aaf9ce4d5705a71dd368009"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/provider/pboc/PbocRawFirstContractTest.java",
+      "sha256": "34d16bf1913b712a34758c0a4ac159122c1acb644555b8da61546351f5c7d4d8"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/provider/shfe/AcquisitionFailureEvidenceTest.java",
+      "sha256": "c2aa42ba7b7846c978d1c8d818827695c45cae6da8b0b0c93ddaa51766a1b756"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/provider/shfe/ShfeAdFreePublicDataProviderTest.java",
+      "sha256": "75213fffbc952c0da53fbb65ad836c5e5352339503fa7d2887f44dbeaf145b5e"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/publish/MaterialPublishGateTest.java",
+      "sha256": "353335939c4992e276926370bde1824886a53657f49f7e8cf2142b5b4dbbe151"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/publish/PublishedQueryServiceTest.java",
+      "sha256": "436b38dfd32cb36f03f4eca88983fad57fbf29d3a660deee8288b2bd1a4c5b8b"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/publish/PublishGateTest.java",
+      "sha256": "c81ed45862130df79c7b3c2442c581f4c81ff3b38356c7da76d05209a2b78e41"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/publish/PublishRealRawEvidenceTest.java",
+      "sha256": "ddd3e1db7cae34c362c96a8344bdc86774644ff5bfec87abb06caef96d209700"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/rotation/TimeRotationServiceTest.java",
+      "sha256": "d2f19466590755641343963b9ca354c49313004bfe64a51e103bcb48f0dcf22c"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/routing/MaterialRoutingTest.java",
+      "sha256": "2c2ab9431b951b6798ec6dc707f989051fca43781510fd68e8cc7659149c169b"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/scheduling/ActiveCurrentCollectionServiceTest.java",
+      "sha256": "8998c4e68c953b0ec72a55871d984f2dffb0c12248ba2cda8d2f487a144bdee5"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/scheduling/BusinessLoopIntegrationTest.java",
+      "sha256": "3f4139d361ad5f06d7315e87c63b09ca66d6ab898a943b4cce13248e93a407c2"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/scheduling/CurrentAcquisitionServiceTest.java",
+      "sha256": "c6ee6f5121682cfd8afc614ded9428b4fe87fe39b33f7282256df073c2ca4971"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/scheduling/ScheduledEntryPostFixAttackTest.java",
+      "sha256": "3cc24e4bd088351125cb216f6ad278d969813f175da53c6c939d7fa32d1a02d3"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/scheduling/ScheduledGuardProductionPathTest.java",
+      "sha256": "39a81cbd42fd3242ac5b2c01d7c29f10446ae5acf5fb953fc0cdc09e954177b5"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/support/TestFreePublicProvider.java",
+      "sha256": "1a793ba4cfbc90c19c5a2fe98929e7c1108f0262ec90991fecedabef30a2bc43"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/survey/FreePublicSourceSurveyTest.java",
+      "sha256": "55ed83e0fb49bdf8e86bc2c0ddb77b9034c495c7508e75a0e129ad8b8468b314"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/validation/MaterialValidationPipelineTest.java",
+      "sha256": "28cd5583b9e5c554c926ea3966bedf17571223abb79762c32bb6b33519e99d2f"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/validation/PbocValidationPipelineTest.java",
+      "sha256": "99e4de593b998478dbfa38ad5629a20f969a5260e077766c9760e1706616428d"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/validation/PbocValidationRealRawEvidenceTest.java",
+      "sha256": "72d759b1e9f5c2a0d4b077fcd3f726adaa314e8b1dfa1a64e71d61b52f7e6594"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/warning/FormalWarningEvaluationServiceTest.java",
+      "sha256": "5e9a6cc2852fa0a04cd12ed9ab50e7b6a23a3d3c66acb7cf628dc57228f85410"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/warning/WarningAckStoreTest.java",
+      "sha256": "e9fe182472a799e9de8ca0a7d204004b36b7548491da60f6e3d462b5b593fa11"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/warning/WarningApiMvcContractTest.java",
+      "sha256": "e61fd89aa8c7011a73ca1b9e99e593dd0faba9081ef30cd5bd35f7cd27662b4c"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/warning/WarningRuleManagementServiceTest.java",
+      "sha256": "c2c0c4b9fc2d424036be86a8f2cdff67ce5f69dab3785c70a36131f8204c8c2d"
+    },
+    {
+      "file": "backend/src/test/java/com/supplymind/warning/WarningServiceTest.java",
+      "sha256": "9e96e5cd48e30725abe3587421f6b6a08d7ef20c74804b3033cc5cd1695bb7d1"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/agent-v2/aggregate-row-evidence.csv",
+      "sha256": "1e0d24cd2cc396949fa35d186f0d261c3f39623362c094d932badea73cd0eb92"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/agent-v2/aggregate-row-evidence.expected.json",
+      "sha256": "d9197661a46eeb13fd45a33df9c098810748f817816ca4884376605dadec0c0a"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/d1-t04-pboc/announcement-detail-changed-values.html",
+      "sha256": "3a284fe70044d6b282e58bdac8e2b0798bea355ef7a8af53785b559e8ec04dee"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/d1-t04-pboc/announcement-detail-missing-eur.html",
+      "sha256": "c6df8563d8aca05f0246f9e0d18f1c527d5704144a3ddecd66dc2f0235945d06"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/d1-t04-pboc/announcement-detail-missing-usd.html",
+      "sha256": "2322f2ba70f08b6c5bfabd046ee788f873fe40a86f81ea622b9a280a581e5e69"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/d1-t04-pboc/announcement-detail-no-gbp.html",
+      "sha256": "ee1d358f65e15432cd19c2d6589d2992860e1a4ab530fc24eda484e757e3f266"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/d1-t04-pboc/announcement-detail-normal-with-gbp.html",
+      "sha256": "e9fc7841be904db020ab22148f23a697d420b8f2622547ed12c3fbd668126759"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/d1-t04-pboc/announcement-detail-normal.html",
+      "sha256": "8bb7941ccfeab54fe2f3ae6bc527cf35205a5d62e027b76a3978442a21c490ab"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/d1-t04-pboc/announcement-detail-structure-changed.html",
+      "sha256": "d46acf13844d1afe73e1bc12dfe99d1a1c3b1326ddd812fe259e3f63aee391de"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/d1-t04-pboc/announcement-list-normal.html",
+      "sha256": "aa8309b9d2b4062fa05ba6efe2a0ce8a421ca812e4a52af5f52b07b2dc72ef2b"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/d1-t04-pboc/README.md",
+      "sha256": "3202f3a4de302192ff81c014cf333eebbfb86f24acd8b47dc5f8f612986af4a8"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/d6-r2/evidence-pack-golden.json",
+      "sha256": "5f18e2b7b63d20fae8fd4d6ad8ec4c259b1f678548ecc6d113f7fa3310d0e5df"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/day4/golden/GD-01.json",
+      "sha256": "a5366545cc46d5067ee476e8fcb48de924c4e30243b18480fcb530d866bb6e5d"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/day4/golden/GD-02.json",
+      "sha256": "a9a2e4659525f26f3c57aef2897e1c5fa2c9f2c3346b4b28b83b41b5488a4447"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/day4/golden/GD-03.json",
+      "sha256": "71faed41065486836bc296628f53ee4dd7ded0ba32e297754dd4451670fd1dd4"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/day4/golden/GD-04.json",
+      "sha256": "1a00e8e82a38b449b4799992fd43a9838b1f875ceec6c8f1cea9e19e0a46a622"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/day4/golden/GD-05.json",
+      "sha256": "e19904a49f9aebe0f95f1848ef2fef16c686a88fe5f551070903b4c2eb6b48e9"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/day4/golden/GD-06.json",
+      "sha256": "4f0f166a5fb167f69c781d2aac9419871f8e4cd3d34be74add254422942b017c"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/day4/golden/GD-07.json",
+      "sha256": "6a4249199b94b0333f07535ed230c5e6267342e224773684dbe46b2e257b2527"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/day4/golden/README.md",
+      "sha256": "dafb47e0e43764f1ebb46b8d7f6dd14092b87a96e88ede5881664220a8be6221"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/day4/golden/SHA256SUMS",
+      "sha256": "3ee463b220c197e60d7a4e57f35bd02635524215ce4779ab58fe1bb41c058105"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/day5/README.md",
+      "sha256": "830a5739fb90dcc6754ad964eb175068f622e43ae0f2fca02c6426e67799fbab"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/aggregate-quality-mismatch.csv",
+      "sha256": "46e52db5fa852e95fbbbeeb1d24c31eef19e5f98fe3a688aa5ba131a35daa2db"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/daily-inputref-version-3.csv",
+      "sha256": "99d04a85cf75c5106a1cc63755271cd69bc7db4e5b70387241423117d46b7f91"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/dirty-marker-revision-zero.json",
+      "sha256": "fc2d77207a7d4307b7de6dbc4fe26c958900a31baab083484f0566c26a1994bd"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/lifecycle-illegal-published-pending.json",
+      "sha256": "6145c419d5e33433a749c34e22fd5f1db33480747283010b05db8299204b49ed"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/lifecycle-noncontiguous-version.json",
+      "sha256": "e1668e9386c81723c533fcd4f8a2b867519fb820f8122d13c73ca15df286fb29"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/lifecycle-parsed-published-skip.json",
+      "sha256": "fe584761c431cfd5825025ae7570e835c7cd6bf5f0197b67dec86f5fd1c2e251"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/lifecycle-received-validated-skip.json",
+      "sha256": "a47597d4c1d26ed73b92d6d1cdc3729027424bb11161224f2d203b91e6dff1df"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/manifest-nonhex.json",
+      "sha256": "5897ca71a7e887638d2962143e92ae7386f0116865ebf69157583c701585e889"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/monitor-series-quote-currency.json",
+      "sha256": "d7b4c9d8cd19108d16494f7b690a6144e99540448ddf5270082ad35f83513806"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/quarantine-published.json",
+      "sha256": "1b72fb09133db7ecccf63808c8b1eefcc53b1710d738dd23d2a5e8067deb85d5"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/raw-receipt-missing-payload-sha.json",
+      "sha256": "d793fdacfc32692ccd09c4f632b3557443370e0e38fcf3dc685e6bb7ad9d6a01"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/raw-receipt-path-traversal.json",
+      "sha256": "d1e89e1ef6f8786584ef30841f8dcb1238c018e4d470bf6831b2a7570f558943"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/invalid/README.md",
+      "sha256": "d1c407bd988f47e7b4c1ba85597976e2c4eaeddad6b8835614dcab8054772ea2"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/README.md",
+      "sha256": "12a43866cbec300259ffc66f96c9349d0ec3569e775af7d935244ded527ecd1c"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/review-fix/aggregate-fixed-bytes-v1.csv",
+      "sha256": "ea6de076114fd4b15b5e889556fcbb8fe463cc26dd3d2309170c5e648b3cf14e"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/review-fix/daily-fixed-bytes-v1.csv",
+      "sha256": "2077d1d2ba45bf21c7e21e648b4a8bc7077c3e107006bcff971bc4d66f29305f"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/review-fix/dirty-marker-fixed-bytes-v1.json",
+      "sha256": "10d88510ac2ab92586bcbbf795577fb6d42e0743bd8500d55c8ecb358861f8dc"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/review-fix/raw-receipt-fixed-bytes-v1.json",
+      "sha256": "8795276a367bf0f8834d10c9f171bb2837b18f3a0ddb14f9b17b8208b6725838"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/review-fix/README.md",
+      "sha256": "d668948e22a5ebd5334638883176057717bc0659682e3656aebf33b3febd9c36"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/aggregate-daily-input-2026-01.csv",
+      "sha256": "aa8370fdd0cc90cf5da50c587294734c24d15ae4516281a3be8486db84ac0728"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/aggregate-daily-input-2026-01.csv.manifest.json",
+      "sha256": "20576b8f2503cb70ff60606cf77e4881f3d1663d8fd165b64497a65bcd586972"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/aggregate-daily-input-2026-02.csv",
+      "sha256": "d8bfaf97a9493cfb3b4ad6692eb1f154cdab51cf630365568f0c6d1a6478b3a1"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/aggregate-daily-input-2026-02.csv.manifest.json",
+      "sha256": "45706f0ed9e8a3f09d093bf641c2312a46ea82a545743099a6300cb81c33b921"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/aggregate-daily-input-2026-08.csv.manifest.json",
+      "sha256": "2853e930c66e2b5d21e66699a1807fed8f2910e6719a78317ea116ed3939b656"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/aggregate-month-pboc-2026-08.csv",
+      "sha256": "4e9aa8ca77186b6cb178edc293127bef9d27fdae6ed88b88a1872dea6ce18995"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/aggregate-v1.csv",
+      "sha256": "44bbe09d70904babcd082e880bc405d067a6defa5c5a9a6fd5e74f0d0967c929"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/daily-pboc-v1.csv",
+      "sha256": "068ec92099d232fbd58fd0ea6f518d351467dda58bbfb685bae118308cda25ad"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/daily-v1.csv",
+      "sha256": "0f7ac83b27abb125fbee81ce7804f5e2e7f23393dd4c1202525517605d865c26"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/dirty-marker-config-activation-v1.json",
+      "sha256": "681b6f7d6132044d141197e5d3dbf7766b204c9d0bb432066f1faf44ae03d51f"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/dual-currency-response-entity.txt",
+      "sha256": "3f42e7ed771bce1fbbbcc35fc66bd3a1014ae3f0b709cb6c89e49c448fc4f34c"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/lifecycle-published-dual-eur-v1.json",
+      "sha256": "bd3e9e313ee80fb3771698f0d4ede458a2b1e62a1c303cdc07efd465496bcaf1"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/lifecycle-published-dual-usd-v1.json",
+      "sha256": "238058a1d8b56ad644739482d4e287decd4d1be7b7911c9b90e84e78a7066fc1"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/lifecycle-published-pboc-v1.json",
+      "sha256": "0c85ffa9f463b90bb32c230c73b4ebf29dc58da74b44dd19cac7d8f78c3b27de"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/lifecycle-published-v1.json",
+      "sha256": "67eb13500ade6905814a250c9855c9ebaac0c53eec8b7dfd421c131abf5b170e"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/lifecycle-received-rejected-standardization-pboc-v1.json",
+      "sha256": "7aada5621b1f9deb7a0a2549698bae01b9b4bf504d5b7be0bc678497bda011b8"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/lifecycle-rejected-v1.json",
+      "sha256": "b362ac2570144dd2450b316e8d92ba366a3d9c7e70e42b5aabebdb8acd710064"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/lifecycle-validated-rejected-unit-mismatch-pboc-v1.json",
+      "sha256": "4392ec8e1acc689bf2525d204af60b53924778a0f051e17ef2b5c8fa49f089e0"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/lifecycle-validated-verified-pboc-v1.json",
+      "sha256": "147e45f2040bc886f385a1f1500e1bde5f08a5ff846ead0c305fcf7bc8074101"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/manifest-daily-v1.json",
+      "sha256": "b707526de8a2a4ca93c6e7e4ad8be216a8fc2968aaf10926cc5b757dceff9835"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/manifest-raw-receipt-v1.json",
+      "sha256": "353653134457bfddcd3d7fb93a8a7f6afc46b56b4f7ab343fa7e602fbb30f79d"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/monitor-series-contract-fixture-history-v2.json",
+      "sha256": "ee433c90710981324fdf0e0953df6eaea905d65c302c5423dd2e7013520f7775"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/monitor-series-contract-fixture-v2.json",
+      "sha256": "ee433c90710981324fdf0e0953df6eaea905d65c302c5423dd2e7013520f7775"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/monitor-series-history-1.json",
+      "sha256": "365885741b168dec36c8603de7d12112652c3e8ff4b21c32e6701d2df0b43677"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/monitor-series-v1.json",
+      "sha256": "365885741b168dec36c8603de7d12112652c3e8ff4b21c32e6701d2df0b43677"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/pboc-dual-currency-response-test-fixture.html",
+      "sha256": "e35372b09be2e56db3b9fb8f841fb965b2034a0462122d94cd1150cd637fd0ad"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/quarantine-received-rejected-v1.json",
+      "sha256": "1bfb8effb1b68f93d050ab15f516362983ebf1304dcf755a03bc24418c95ff75"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/raw-receipt-dual-eur-v1.json",
+      "sha256": "c3f2b81661058176631663bff30b423eb8aaa7b75f53dddcbb2961c6d6844a60"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/raw-receipt-dual-usd-v1.json",
+      "sha256": "5f22f2f119291630c6710d958786eb81d073c0437bf136326e4b35cd80f47d36"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/raw-receipt-rejected-v1.json",
+      "sha256": "ff4bbfe3cf4fcc542ebb5509a190b662b0053b19b1d80c294cf80a20f74efcbf"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/raw-receipt-v1.json",
+      "sha256": "98f4a7cf87e6020d82450a826208311e417c26058086b32817951d15e9cb9551"
+    },
+    {
+      "file": "backend/src/test/resources/contracts/v1/valid/README.md",
+      "sha256": "b84e8f9fac8c1d597bfbe89a4fafc0b846f35884d3525ac64c537c2d247ddc9d"
+    },
+    {
+      "file": "desktop/package.json",
+      "sha256": "95eacfebd909bbc4f1de681bcda0dece38333d9e0e0416c26247e2fad07aaec4"
+    },
+    {
+      "file": "desktop/scripts/build-jre.ps1",
+      "sha256": "91f02d0b9c8edd530ae115999780b57f8655e6b9e8491883464546b2a9c28dde"
+    },
+    {
+      "file": "desktop/scripts/final-smoke.ps1",
+      "sha256": "5d11871eeda57dad35d034bd18b4c3011b8b983cf0f783f4e44fa2c8c1cb291f"
+    },
+    {
+      "file": "desktop/scripts/health-timeout-smoke.ps1",
+      "sha256": "5e236d1a0d434ae3e248979dd665931f9bd9e76cfe588a963e4a96afbd7203d9"
+    },
+    {
+      "file": "desktop/scripts/keyed-cloud-gate.ps1",
+      "sha256": "e0b783096fcaf24c1b8f7f2babe3d6e3317adf4ff530c9286f0c6b51cd9f3d4e"
+    },
+    {
+      "file": "desktop/scripts/lib-zip.ps1",
+      "sha256": "1612ba1e4d6e84330ebbd70c0aeb6f147edb64dfb04705e121f121cc478b8599"
+    },
+    {
+      "file": "desktop/scripts/lifecycle-attack.ps1",
+      "sha256": "554bc32a429385ba3fff743cc95fa59d20076873ab5e144414ca03069bf66ba2"
+    },
+    {
+      "file": "desktop/scripts/lifecycle-smoke.ps1",
+      "sha256": "435225535a2164a14951e5c2dea8ae0aa0f216eb22d13aa44508fc61c892c21b"
+    },
+    {
+      "file": "desktop/scripts/package-clean.ps1",
+      "sha256": "e022787530c8e2b61e2ab59d01411e8fe0296e678e04253a72e595f99b34346b"
+    },
+    {
+      "file": "desktop/scripts/package-final.ps1",
+      "sha256": "765f2dbff066d02e01a4104a7382647360615255a4ddf2f06220717b3ba5d1bb"
+    },
+    {
+      "file": "desktop/scripts/package-portable.ps1",
+      "sha256": "d9f5bf17e8034ceec75da31998294215a4502952eb23e92af6d6b1deee09fcc4"
+    },
+    {
+      "file": "desktop/scripts/persistence-attack.ps1",
+      "sha256": "c0a907edb463fb7da945e3ff488f64b6d1f4f818434f5902c09ec7139c82ba8f"
+    },
+    {
+      "file": "desktop/scripts/portable-boundary.ps1",
+      "sha256": "d35cdd29268efa48680c0324ebd8cbbbc8f93133ab67f55019c4b1a771d13177"
+    },
+    {
+      "file": "desktop/scripts/portable-smoke.ps1",
+      "sha256": "6cd60c4ef557a485fff11f3ca453d1de86321ca56b5b044be54e4242b1703fd7"
+    },
+    {
+      "file": "desktop/scripts/second-instance-attack.ps1",
+      "sha256": "63a6c1e7002922097123e45f4872881369b756d91638a374d0fdd3fa7acd4c41"
+    },
+    {
+      "file": "desktop/scripts/smoke.ps1",
+      "sha256": "dc64e7d86507de16bd30466c5803d75ee5f6281045e0ba34048851318f67d3b9"
+    },
+    {
+      "file": "desktop/scripts/verify-jre.ps1",
+      "sha256": "efa11632203d0a38336b7f3a6aba978234522d2bb1c638d40400b3a243ff21b2"
+    },
+    {
+      "file": "desktop/scripts/verify-package.ps1",
+      "sha256": "d940ef52a6f107a84e6687f73df8ef8c7441a68cc2a45f29cfe6a1efe2dce6ed"
+    },
+    {
+      "file": "desktop/scripts/write-readme.ps1",
+      "sha256": "ca1b31a311f67b7a631409a6b51eca10501755b56ae6d96126b7c3a1d94576ae"
+    },
+    {
+      "file": "desktop/src/backend.js",
+      "sha256": "603edf4179781acff5144e02b23dc1dc647702655a32a62a24058adae5eeaff4"
+    },
+    {
+      "file": "desktop/src/health.js",
+      "sha256": "d5c9bd82920f923ff6de5f5a26650835de4ab9dcb2c245777d510e25876dd83e"
+    },
+    {
+      "file": "desktop/src/instance.js",
+      "sha256": "0382cbc4936e9293984088fbf560cc0acd070250ce98cc24778ffafe4d31b558"
+    },
+    {
+      "file": "desktop/src/lifecycle.js",
+      "sha256": "244ade1792a20947b7e446886c55a780b9b6bf35b6db2ea1624a160f1433740b"
+    },
+    {
+      "file": "desktop/src/main.js",
+      "sha256": "04cb8292f990d563fe1c0642efe67d44332a8d71beec902eaaf1272806c6bcff"
+    },
+    {
+      "file": "desktop/src/paths.js",
+      "sha256": "70688be8dfc6d0e867874ed8bc87dfbd53cb267e8f11161d28e017fb4d389e35"
+    },
+    {
+      "file": "desktop/src/port.js",
+      "sha256": "422ac1ef46656390652e4e5f35db2c3d9f0af45af23a3d34947255f77f43135e"
+    },
+    {
+      "file": "desktop/src/preload.js",
+      "sha256": "597923eb9aaede379b3dbd4889a93e4f82e59be3f29ab4e53afa5914d0abb49d"
+    },
+    {
+      "file": "desktop/test/health-security.test.js",
+      "sha256": "ae4f81aead3f190cc6df143f0de67f7a128e3e6952e0bf39427b954d9395a1f3"
+    },
+    {
+      "file": "desktop/test/health.test.js",
+      "sha256": "8286e2b856666f60c4ea3f0e0502736e97b8f649f6e093af874d97b702aa16f9"
+    },
+    {
+      "file": "desktop/test/instance.test.js",
+      "sha256": "15f9608b6675dba7851e79762d72063bd91c92a518636ffb75313c1756092131"
+    },
+    {
+      "file": "desktop/test/lifecycle.test.js",
+      "sha256": "512001d8dec1655ca27b759f4f08c594d59a1438ab35d2980100678e5776e14f"
+    },
+    {
+      "file": "desktop/test/paths.test.js",
+      "sha256": "0878d7b01d8adeb94115d06e337a77162a65d8e76d2e2c296e9590986ad6bfbf"
+    },
+    {
+      "file": "desktop/test/port.test.js",
+      "sha256": "a8d7619402d913ac35ecbf70683fd7afedb358b60b7f30ba7cea9f434d84b03a"
+    },
+    {
+      "file": "frontend/package-lock.json",
+      "sha256": "5e9585124b59e62e707ce865dcfe9e25fb3d96198d27e8a867f15235be01545c"
+    },
+    {
+      "file": "frontend/package.json",
+      "sha256": "1ebee57b122026beaf24889f8ea9d2ecde369fa181e58da1a3bf1394b9c71625"
+    },
+    {
+      "file": "frontend/src/api/__tests__/agent.spec.ts",
+      "sha256": "4f841f1bc729553ccb75b550dda1a2bc882feb8c5fa5ea217cff028d55acd1af"
+    },
+    {
+      "file": "frontend/src/api/agent.ts",
+      "sha256": "5fd1af59bfcd28ee7b499f77b4faa38eae5208fab6aabed718c1d73eed7f7c85"
+    },
+    {
+      "file": "frontend/src/api/client.ts",
+      "sha256": "2526c11bc7160580ed55af33328203008eecaeef43316d6f9697cadc306aa940"
+    },
+    {
+      "file": "frontend/src/api/config.ts",
+      "sha256": "e3cb29a865012268683c032402e42eb78bfb1b6b471ccc4a41055cf1716d240e"
+    },
+    {
+      "file": "frontend/src/api/dashboard.ts",
+      "sha256": "fe3ed977bf76675b4c803479f95c5655e0a17aaea48d8e65444b19b6efdf3caf"
+    },
+    {
+      "file": "frontend/src/api/warning.ts",
+      "sha256": "af4ddb90ed6dd84d8a69e8ab116982c014eb0ec4238178956c4f82778c5f449e"
+    },
+    {
+      "file": "frontend/src/App.vue",
+      "sha256": "78708969ca3f8a159b271b8ba02486e3fe412beaadb6875ddd1348257eec98cb"
+    },
+    {
+      "file": "frontend/src/components/StatusBadge.vue",
+      "sha256": "13f9a884e6182b21b27332bbc930296d13a718f6990374762860491454fcacb4"
+    },
+    {
+      "file": "frontend/src/components/TrendChart.vue",
+      "sha256": "6aacecd2ce911c57f588dd075dc86afb100ff459e52595103f59ba6c66821901"
+    },
+    {
+      "file": "frontend/src/components/ValueCard.vue",
+      "sha256": "73b2da0d991ca1e49e95625e2aeb9d2807755e9807f96d076d9554204f52888d"
+    },
+    {
+      "file": "frontend/src/lib/labels.ts",
+      "sha256": "d397ccc282ef4d568fce5115dc64d75fcc69bf255b143226a254a0ed55de9a50"
+    },
+    {
+      "file": "frontend/src/main.ts",
+      "sha256": "feb49193c17121a8846112f16b544bfeb0b80dd864c924accc9127a5dc78181b"
+    },
+    {
+      "file": "frontend/src/router/index.ts",
+      "sha256": "29f6997ed7d8bf1d397ef0502c044c1ea539d7f9acc2b448b2b1b86f53f2d7e1"
+    },
+    {
+      "file": "frontend/src/types/agent.ts",
+      "sha256": "f4cbe19fc2051799553d281e2c48beb4d944d06683cb4c4795ccc782f1e4eda7"
+    },
+    {
+      "file": "frontend/src/types/config.ts",
+      "sha256": "4f958d608a13df6aec8ea5cf66e64ab9ea168e71d28b8223d64d4b959537710d"
+    },
+    {
+      "file": "frontend/src/types/dashboard.ts",
+      "sha256": "16878bcdaf8c32162c0f051ace92d0db709b151fe556fcd2638c99c64e9cac10"
+    },
+    {
+      "file": "frontend/src/types/warning.ts",
+      "sha256": "9b4430da4e4123b09d22b947ec1566ad92e1ed7c87d21026e2b79fc1c62d34e0"
+    },
+    {
+      "file": "frontend/src/views/__tests__/agent.spec.ts",
+      "sha256": "eca5dbdee55e290f47ef08c21e35734ead8ba52a5eaa908a9ef68513e8eb8b2e"
+    },
+    {
+      "file": "frontend/src/views/__tests__/config.spec.ts",
+      "sha256": "0679998d7213b23a80e3b2a0bfcc078091b0a7b93923d104fd7214c288aa7a85"
+    },
+    {
+      "file": "frontend/src/views/__tests__/governance.spec.ts",
+      "sha256": "d45c52edbfe8fa4bafbc6fd2c469d044ffced958340071347bcb2974f44eed33"
+    },
+    {
+      "file": "frontend/src/views/__tests__/pages.spec.ts",
+      "sha256": "4fa6a98f2b19245e6ac5bd3da09463bd24fea5cbdb95b21c3504eaac9c1a8744"
+    },
+    {
+      "file": "frontend/src/views/__tests__/warning.spec.ts",
+      "sha256": "ae877d888f29de2c6eedce3bb6a1f4e0338b573fc99af2b4a8262bee5dbbb5de"
+    },
+    {
+      "file": "frontend/src/views/AgentView.vue",
+      "sha256": "1c200018e3759fb66b6b155ca2db7cedc6e87bd2b506e117966264e922198521"
+    },
+    {
+      "file": "frontend/src/views/ConfigView.vue",
+      "sha256": "ee71a4f8ff4a967d249c009aa90a08e61c4e7783349af446abe8aa53f6e930fb"
+    },
+    {
+      "file": "frontend/src/views/DashboardView.vue",
+      "sha256": "8f879d09ffe80ecb0915bc2a592cfd6b1b1b073c1b78b28b2dde3a048240baa1"
+    },
+    {
+      "file": "frontend/src/views/HistoryView.vue",
+      "sha256": "b41a497c6c308ac3e3625510ae9c09eabca9f6397377fc0178116a3758b14f66"
+    },
+    {
+      "file": "frontend/src/views/QualityView.vue",
+      "sha256": "0a6dff9fc331a578a091d0bb15a01200ad03a6a8d13a8a53d3cc489ff93d543c"
+    },
+    {
+      "file": "frontend/src/views/SourcesView.vue",
+      "sha256": "9c899a9cc6389e8d185dfea3bdc3efaf1f1d8149c3c0907055aae049be5e7126"
+    },
+    {
+      "file": "frontend/src/views/WarningView.vue",
+      "sha256": "f4c7a04029c15d97ee6f897ed977f3fc2815bb869e5178a74ac7a2129ee5c78b"
+    },
+    {
+      "file": "frontend/tsconfig.json",
+      "sha256": "49e5751451c2d97463c6cb73fee674c1592af1fe9174a17f3704b78e43c689b8"
+    },
+    {
+      "file": "frontend/vite.config.ts",
+      "sha256": "ac353cb01813b4d0d69a4166501d924ac6ec9613fb4391a4037059de20243045"
+    }
+  ],
+  "count": 544
+}

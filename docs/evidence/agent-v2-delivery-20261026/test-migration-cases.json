@@ -1,0 +1,198 @@
+[
+  {
+    "class": "Day6FinalStageClaimFieldGuardAttackTest",
+    "method": "secretInAnswerRejectsWithZeroPersistence",
+    "attack": "secret",
+    "adoption": "NONE",
+    "requiredBranch": "SECRET_INJECTION"
+  },
+  {
+    "class": "Day6FinalStageClaimFieldGuardAttackTest",
+    "method": "secretInFactIdsRejects",
+    "attack": "secretId",
+    "adoption": "NONE",
+    "requiredBranch": "SECRET_INJECTION"
+  },
+  {
+    "class": "Day6FinalStageClaimFieldGuardAttackTest",
+    "method": "standaloneNumberNextToSupportedDateMustBeFactBacked",
+    "attack": "dateFragmentNumber",
+    "adoption": "NONE",
+    "requiredBranch": "UNSUPPORTED_NUMBER"
+  },
+  {
+    "class": "Day6FinalStageClaimFieldGuardAttackTest",
+    "method": "dateTokenFragmentsAreNotBusinessNumbers",
+    "attack": "validDate",
+    "adoption": "FULL",
+    "requiredBranch": null
+  },
+  {
+    "class": "Day6FinalStageClaimFieldGuardAttackTest",
+    "method": "fabricatedSourceDeclarationRejects",
+    "attack": "source",
+    "adoption": "NONE",
+    "requiredBranch": "UNSUPPORTED_SOURCE"
+  },
+  {
+    "class": "Day6FinalStageClaimFieldGuardAttackTest",
+    "method": "fabricatedEnglishSourceDeclarationRejects",
+    "attack": "sourceEnglish",
+    "adoption": "NONE",
+    "requiredBranch": "UNSUPPORTED_SOURCE"
+  },
+  {
+    "class": "Day6FinalStageClaimFieldGuardAttackTest",
+    "method": "authoritativeSourcePrefixCannotValidateExtendedFakeSource",
+    "attack": "sourcePrefix",
+    "adoption": "NONE",
+    "requiredBranch": "UNSUPPORTED_SOURCE"
+  },
+  {
+    "class": "Day6FinalStageClaimFieldGuardAttackTest",
+    "method": "realSourceDeclarationBackedBySelectedFactPasses",
+    "attack": "validSource",
+    "adoption": "FULL",
+    "requiredBranch": null
+  },
+  {
+    "class": "Day6FinalStageStructuredClaimsAttackTest",
+    "method": "structuredSectionsAreAdoptedSeparatelyFromJavaClaims",
+    "attack": "valid",
+    "adoption": "FULL",
+    "requiredBranch": null
+  },
+  {
+    "class": "Day6FinalStageStructuredClaimsAttackTest",
+    "method": "phaseBReceivesExactFactIdentityAndBusinessMetadata",
+    "attack": "metadata",
+    "adoption": "FULL",
+    "requiredBranch": null
+  },
+  {
+    "class": "Day6FinalStageStructuredClaimsAttackTest",
+    "method": "fabricatedNumberInsideValidEnvelopeReachesNumericGuard",
+    "attack": "number",
+    "adoption": "NONE",
+    "requiredBranch": "UNSUPPORTED_NUMBER"
+  },
+  {
+    "class": "Day6FinalStageStructuredClaimsAttackTest",
+    "method": "unrelatedFactCannotSupportLatestRole",
+    "attack": "crossRole",
+    "adoption": "NONE",
+    "requiredBranch": "WRONG_FACT_ROLE"
+  },
+  {
+    "class": "Day6FinalStageStructuredClaimsAttackTest",
+    "method": "unknownFactReferenceRejected",
+    "attack": "unknown",
+    "adoption": "NONE",
+    "requiredBranch": "UNKNOWN_FACT_ID"
+  },
+  {
+    "class": "Day6FinalStageStructuredClaimsAttackTest",
+    "method": "percentageIsNeverEquatedToPlainNumber",
+    "attack": "percent",
+    "adoption": "NONE",
+    "requiredBranch": "UNSUPPORTED_NUMBER"
+  },
+  {
+    "class": "Day6FinalStageStructuredClaimsAttackTest",
+    "method": "dateMustBeSupportedBySelectedRole",
+    "attack": "wrongDate",
+    "adoption": "NONE",
+    "requiredBranch": "WRONG_DATE"
+  },
+  {
+    "class": "Day6FinalStageStructuredClaimsAttackTest",
+    "method": "plainFreeTextCannotBecomeNarrative",
+    "attack": "plain",
+    "adoption": "NONE",
+    "requiredBranch": "MALFORMED_STRUCTURE"
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "plainFreeTextEvenWithValuesIsMalformed",
+    "attack": "plain",
+    "adoption": "NONE",
+    "requiredBranch": "MALFORMED_STRUCTURE"
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "malformedJsonIsRejectedWithoutStringSalvage",
+    "attack": "malformed",
+    "adoption": "NONE",
+    "requiredBranch": "MALFORMED_STRUCTURE"
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "emptyFactIdsRejectedInValidJson",
+    "attack": "emptyIds",
+    "adoption": "NONE",
+    "requiredBranch": "MALFORMED_SECTION"
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "oneBadSectionPreservesIndependentGoodSection",
+    "attack": "partial",
+    "adoption": "PARTIAL",
+    "requiredBranch": "UNSUPPORTED_NUMBER"
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "twoValuesReferencingOnlyOneFactRejected",
+    "attack": "twoValuesOneRef",
+    "adoption": "NONE",
+    "requiredBranch": "UNSUPPORTED_NUMBER"
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "globalFactsCannotSupportUnreferencedNumber",
+    "attack": "unrelatedFact",
+    "adoption": "NONE",
+    "requiredBranch": "UNSUPPORTED_NUMBER"
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "oppositeTrendNotAdopted",
+    "attack": "trend",
+    "adoption": "NONE",
+    "requiredBranch": "UNSUPPORTED_TREND"
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "twoRolesWithTheirOwnFactsPass",
+    "attack": "twoRoles",
+    "adoption": "FULL",
+    "requiredBranch": null
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "wrongValueInsideOtherwiseValidJsonRejected",
+    "attack": "number",
+    "adoption": "NONE",
+    "requiredBranch": "UNSUPPORTED_NUMBER"
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "unknownSourceInsideValidSectionRejected",
+    "attack": "source",
+    "adoption": "NONE",
+    "requiredBranch": "UNSUPPORTED_SOURCE"
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "unsupportedBusinessDateRejected",
+    "attack": "wrongDate",
+    "adoption": "NONE",
+    "requiredBranch": "WRONG_DATE"
+  },
+  {
+    "class": "Day6FinalStageStrictEnvelopeAttackTest",
+    "method": "retiredTemplateNotASecondProductionProtocol",
+    "attack": "retiredTemplate",
+    "adoption": "NONE",
+    "requiredBranch": "UNSAFE_CONTENT"
+  }
+]
