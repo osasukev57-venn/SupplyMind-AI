@@ -42,7 +42,7 @@ public final class NarrativeValidator {
             String code=section==null?"MALFORMED_SECTION":check(section.kind()==null?null:section.kind().name(),section.text(),section.factIds(),facts,false,pack);
             if(code==null&&!scope.kinds().contains(section.kind().name()))code="OUT_OF_REQUEST_SCOPE";
             if(code==null&&section.factIds().stream().map(facts::get).anyMatch(f->!scope.allowsFactType(f.factType())))code="OUT_OF_REQUEST_SCOPE";
-            if(code==null)accepted.add(adopt(id,section.kind().name(),section.text(),section.factIds(),facts));else errors.add(new NarrativeResult.Diagnostic(id,code));
+            if(code==null)accepted.add(adopt(id,section.kind().name(),section.text(),section.factIds(),facts));else diagnostic(errors,id,code);
         }
         var acceptedIds=new HashSet<String>();accepted.forEach(s->acceptedIds.addAll(s.factIds()));
         i=0;
@@ -51,13 +51,18 @@ public final class NarrativeValidator {
             String code=r==null?"MALFORMED_SECTION":check("RECOMMENDATION",r.text(),r.factIds(),facts,true,pack);
             if(code==null&&recs.size()>=scope.maxRecommendations())code="OUT_OF_REQUEST_SCOPE";
             if(code==null&&!acceptedIds.containsAll(r.factIds()))code="DEPENDENCY_NOT_ADOPTED";
-            if(code==null)recs.add(adopt(id,"RECOMMENDATION",r.text(),r.factIds(),facts));else errors.add(new NarrativeResult.Diagnostic(id,code));
+            if(code==null)recs.add(adopt(id,"RECOMMENDATION",r.text(),r.factIds(),facts));else diagnostic(errors,id,code);
         }
         if(accepted.isEmpty())return new NarrativeResult("ANALYSIS-NARRATIVE-V1","NONE","CONTENT_REJECTED",List.of(),List.of(),errors,1,"关键主张受控检查，不等于任意语义证明");
         return new NarrativeResult("ANALYSIS-NARRATIVE-V1",errors.isEmpty()?"FULL":"PARTIAL","SUCCESS",accepted,recs,errors,1,"结构、引用、分组、日期、单位、来源、关键数值及受控语义；不证明任意自然语言绝对正确");
     }
     private NarrativeResult.Section adopt(String id,String kind,String text,List<String> ids,Map<String,EvidencePackV1.Fact> facts) {
         return new NarrativeResult.Section(id,kind,text,ids,ids.stream().flatMap(f->facts.get(f).evidenceRefs().stream()).distinct().toList());
+    }
+    private static void diagnostic(List<NarrativeResult.Diagnostic> errors,String id,String code) {
+        // Preserve the public category and add only a bounded reason enum, never source/model text.
+        if(code.startsWith("SOURCE_"))errors.add(new NarrativeResult.Diagnostic(id,"UNSUPPORTED_SOURCE"));
+        errors.add(new NarrativeResult.Diagnostic(id,code));
     }
     private String check(String kind,String text,List<String> ids,Map<String,EvidencePackV1.Fact> all,boolean recommendation,EvidencePackV1 pack) {
         if(kind==null||text==null||text.isBlank()||text.length()>1000||ids==null||ids.isEmpty()||ids.size()>8||new HashSet<>(ids).size()!=ids.size())return "MALFORMED_SECTION";
@@ -94,12 +99,8 @@ public final class NarrativeValidator {
         if(recommendation) {
             if(NUMBER.matcher(text).find()||!any(text,"建议","可","可以","观察","关注","核对"))return "UNSUPPORTED_RECOMMENDATION";
         }
-        if(any(text,"来源","来自","source:","source：","Source:")) {
-            var source=selected.stream().map(EvidencePackV1.Fact::actualSourceName).filter(Objects::nonNull).distinct().toList();
-            if(source.size()!=1||!text.contains(source.get(0)))return "UNSUPPORTED_SOURCE";
-            String rest=text.replace(source.get(0),"");
-            if(Pattern.compile("(?:来自|来源[为是：:]?|source[:：]\\s*)[^，。；;：:]*[\\p{IsHan}A-Za-z]").matcher(rest).find())return "UNSUPPORTED_SOURCE";
-        }
+        String sourceClaim=SourceAssertionCheck.check(text,selected);
+        if(sourceClaim!=null)return sourceClaim;
         var dates=DATE.matcher(text);Set<String> allowedDates=new HashSet<>();
         selected.forEach(f->{allowedDates.add(f.businessDate());allowedDates.add(f.periodStart());allowedDates.add(f.periodEnd());});
         while(dates.find())if(!allowedDates.contains(dates.group()))return "WRONG_DATE";

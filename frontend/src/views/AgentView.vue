@@ -202,7 +202,7 @@ const visibleClaims = computed(() => {
           <p class="muted">依据：<a v-for="id in section.factIds" :key="id" :href="'#' + id">{{ id }} </a></p>
         </article>
         <div v-if="result.narrative.recommendations.length"><h3>观察建议（模型建议）</h3><p v-for="r in result.narrative.recommendations" :key="r.sectionId">{{ r.text }}</p></div>
-        <details><summary>云端检查状态</summary><p>{{ result.narrative.checkScope }}</p><ul><li v-for="d in result.narrative.diagnostics" :key="d.sectionId">{{ d.sectionId }}：{{ d.code }}</li></ul></details>
+        <details><summary>云端检查状态</summary><p>{{ result.narrative.checkScope }}</p><ul><li v-for="d in result.narrative.diagnostics" :key="`${d.sectionId}:${d.code}`">{{ d.sectionId }}：{{ d.code }}</li></ul></details>
       </div>
       <p v-if="!result.risk && result.currentWarningStatus" class="section-body muted">当前范围和有效规则暂无可验证的适用预警记录，不代表风险为零。</p>
       <div class="section-body flat" v-if="result.risk">

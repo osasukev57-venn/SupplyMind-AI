@@ -1,0 +1,92 @@
+{
+  "base": "5a160e531450d3a2153f83724dd4e6dbd900607e",
+  "runs": [
+    {
+      "run": "red",
+      "suites": 1,
+      "tests": 19,
+      "passed": 9,
+      "failures": 10,
+      "errors": 0,
+      "skipped": 0,
+      "summary": "red-summary.json",
+      "rawDirectory": "red-surefire"
+    },
+    {
+      "run": "focused-first",
+      "suites": 4,
+      "tests": 67,
+      "passed": 67,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "summary": "focused-first-summary.json",
+      "rawDirectory": "focused-first-surefire"
+    },
+    {
+      "run": "focused-final",
+      "suites": 6,
+      "tests": 76,
+      "passed": 76,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "summary": "focused-final-summary.json",
+      "rawDirectory": "focused-final-surefire"
+    },
+    {
+      "run": "backend-full-final",
+      "suites": 144,
+      "tests": 789,
+      "passed": 780,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9,
+      "summary": "backend-full-final-summary.json",
+      "rawDirectory": "backend-full-final-surefire"
+    },
+    {
+      "run": "focused-boundary",
+      "suites": 3,
+      "tests": 60,
+      "passed": 60,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "summary": "focused-boundary-summary.json",
+      "rawDirectory": "focused-boundary-surefire"
+    },
+    {
+      "run": "final-full",
+      "suites": 144,
+      "tests": 798,
+      "passed": 789,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9,
+      "summary": "final-full-summary.json",
+      "rawDirectory": "final-full-surefire"
+    },
+    {
+      "run": "fixture-lf-validation",
+      "suites": 1,
+      "tests": 34,
+      "passed": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "summary": "fixture-lf-validation-summary.json",
+      "rawDirectory": "fixture-lf-validation-surefire"
+    }
+  ],
+  "finalRun": "final-full",
+  "frontendPassed": 48,
+  "desktopPassed": 36,
+  "realCloudUsedBefore": 2,
+  "realCloudThisRun": 0,
+  "cumulative": 2,
+  "limit": 6,
+  "remaining": 4,
+  "finalProductionFullRun": "final-full",
+  "postFullFormatting": "New fixture LF only; 34 affected tests passed"
+}

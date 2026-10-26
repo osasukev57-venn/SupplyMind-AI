@@ -275,6 +275,20 @@ describe('AgentView (D8-T03)', () => {
     expect(wrapper.text()).not.toContain('全部采用')
     wrapper.unmount()
   })
+  it('shows bounded source reasons alongside the category without exposing rejected prose', async () => {
+    vi.mocked(queryAgent).mockResolvedValue({ ...response,
+      narrative: { schemaVersion:'ANALYSIS-NARRATIVE-V1',adoption:'NONE',cloudStatus:'CONTENT_REJECTED',attempts:1,
+        sections:[],recommendations:[],diagnostics:[{sectionId:'section-1',code:'UNSUPPORTED_SOURCE'},{sectionId:'section-1',code:'SOURCE_CONFLICT'}],checkScope:'来源断言受控检查' } })
+    const wrapper=mountWithRouter()
+    await fillRequiredFields(wrapper,'说明最新值和来源')
+    await wrapper.find('button.btn-primary').trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain('UNSUPPORTED_SOURCE')
+    expect(wrapper.text()).toContain('SOURCE_CONFLICT')
+    expect(wrapper.text()).not.toContain('"diagnostics":')
+    wrapper.unmount()
+  })
+
   it('sends explicit dates and theme unchanged, and offers configured item selection', async () => {
     vi.mocked(queryAgent).mockResolvedValue(response)
     const wrapper = mountWithRouter()
