@@ -67,6 +67,25 @@ public final class ReportStore {
         return ref;
     }
 
+    public String storeV3(AgentReportV1 report,com.supplymind.agent.narrative.NarrativeResult narrative,Runnable checkpoint) {
+        var snapshot=new ReportSnapshotStore(dataRoot,fileStore).captureV3(report,narrative,checkpoint);
+        String ref=DataPaths.reportRef(YearMonth.from(report.createdAt().atZoneSameInstant(SHANGHAI)),report.reportId());
+        byte[] bytes=JsonV1Codec.encodeFile(snapshot);checkpoint.run();
+        fileStore.commit("agent-report-"+report.reportId(),DirtyTransactionType.SINGLE_FILE,report.createdAt(),
+                List.of(new FileTransactionTarget(DirtyTargetRole.BUSINESS_FILE,ref,bytes,JsonV1Codec.encodeFile(ManifestFactory.json(ref,bytes,List.of(),report.createdAt())),true)));
+        return ref;
+    }
+
+    private static void verifyStoredNarrative(ReportSnapshotV3 snapshot) {
+        var n=snapshot.narrative();if(n.adoption().equals("NONE"))return;
+        var sections=n.sections().stream().map(s->new com.supplymind.agent.narrative.AnalysisDraft.Section(com.supplymind.agent.narrative.AnalysisDraft.Kind.valueOf(s.kind()),s.text(),s.factIds())).toList();
+        var recs=n.recommendations().stream().map(s->new com.supplymind.agent.narrative.AnalysisDraft.Recommendation(s.text(),s.factIds())).toList();
+        var checked=new com.supplymind.agent.narrative.NarrativeValidator(new com.supplymind.agent.application.AgentResponseVerifier(List.of())).validate(JsonV1Codec.encodeCompact(new com.supplymind.agent.narrative.AnalysisDraft(sections,recs)),snapshot.report().evidencePack());
+        if(!checked.adoption().equals("FULL")||checked.sections().size()!=n.sections().size()||checked.recommendations().size()!=n.recommendations().size())throw new IllegalArgumentException("STORED_NARRATIVE_REJECTED");
+        for(int i=0;i<n.sections().size();i++)if(!n.sections().get(i).evidenceRefs().equals(checked.sections().get(i).evidenceRefs()))throw new IllegalArgumentException("STORED_NARRATIVE_REF_MISMATCH");
+        for(int i=0;i<n.recommendations().size();i++)if(!n.recommendations().get(i).evidenceRefs().equals(checked.recommendations().get(i).evidenceRefs()))throw new IllegalArgumentException("STORED_RECOMMENDATION_REF_MISMATCH");
+    }
+
     public boolean exists(String ref) {
         Objects.requireNonNull(ref, "ref");
         try {
@@ -115,6 +134,16 @@ public final class ReportStore {
                         ReportSnapshotV2 snapshot = null;
                         try {
                             byte[] bytes = java.nio.file.Files.readAllBytes(dataPath);
+                            String version=JsonV1Codec.mapper().readTree(bytes).path("schemaVersion").asText();
+                            if("AGENT-REPORT-V3".equals(version)) {
+                                var v3=JsonV1Codec.decodeFile(bytes,ReportSnapshotV3.class);
+                                new ReportSnapshotStore(dataRoot,fileStore).verifyV3(v3);
+                                var candidate=v3.report();
+                                if(!candidate.reportId().equals(reportId)||!candidate.requestId().equals(candidate.evidencePack().requestId())||!YearMonth.from(candidate.createdAt().atZoneSameInstant(SHANGHAI)).equals(month))return new ReadResult(null,"IDENTITY_MISMATCH");
+                                verifyStoredNarrative(v3);
+                                return new ReadResult(candidate,null,v3.narrative());
+                            }
+                            if(!List.of("AGENT-REPORT-V1","AGENT-REPORT-V2").contains(version))return new ReadResult(null,"UNSUPPORTED_REPORT_VERSION");
                             report = ReportSnapshotV2.decodeReport(bytes);
                             if ("AGENT-REPORT-V2".equals(JsonV1Codec.mapper().readTree(bytes).path("schemaVersion").asText())) {
                                 snapshot = JsonV1Codec.decodeFile(bytes, ReportSnapshotV2.class);
@@ -123,6 +152,7 @@ public final class ReportStore {
                         } catch (java.io.IOException | RuntimeException exception) {
                             return new ReadResult(null, "REPORT_UNREADABLE");
                         }
+                        if(!"AGENT-EVIDENCE-SCHEMA-V1".equals(report.evidencePack().schemaVersion()))return new ReadResult(null,"LEGACY_EVIDENCE_VERSION_REQUIRED");
                         if (report.reportId() == null || !report.reportId().equals(reportId)) {
                             failure = "IDENTITY_MISMATCH";
                         } else if (!YearMonth.from(report.createdAt().atZoneSameInstant(SHANGHAI)).equals(month)) {
@@ -231,6 +261,7 @@ public final class ReportStore {
             com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry frozen,
             com.supplymind.agent.evidence.EvidencePackV1.EvidenceRefEntry current
     ) {
+        if(!Objects.equals(frozen.rowEvidence(),current.rowEvidence()))return "EVIDENCE_ROW_BINDING_MISMATCH";
         switch (current.refType()) {
             case "RAW":
                 return mismatch(frozen.runId(), current.runId(),
@@ -299,7 +330,8 @@ public final class ReportStore {
         return first != null ? first : mismatch(frozenF, currentF);
     }
 
-    public record ReadResult(AgentReportV1 report, String failureCode) {
+    public record ReadResult(AgentReportV1 report, String failureCode,com.supplymind.agent.narrative.NarrativeResult narrative) {
+        public ReadResult(AgentReportV1 report,String failureCode){this(report,failureCode,null);}
         public boolean ok() {
             return report != null && failureCode == null;
         }

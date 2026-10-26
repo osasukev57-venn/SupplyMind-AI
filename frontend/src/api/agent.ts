@@ -48,3 +48,9 @@ export async function queryAgent(request: AgentQueryRequest, signal?: AbortSigna
     signal?.removeEventListener('abort', cancel)
   }
 }
+
+/** Persisted report reader. No cloud call or recomputation. */
+export async function readSavedReport(ref: string): Promise<import('../types/agent').SavedReportView> {
+  try { return (await http.get<import('../types/agent').SavedReportView>('/agent/reports/read', {params:{ref}})).data }
+  catch { throw new Error('报告或生成时证据不可验证，未使用最新数据替换') }
+}

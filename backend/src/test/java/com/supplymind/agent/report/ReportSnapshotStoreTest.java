@@ -16,9 +16,9 @@ class ReportSnapshotStoreTest {
  @ParameterizedTest @ValueSource(strings={"data","metadata","blob-manifest","mapping","binding","closure"})
  void snapshotTamperingFailsClosedEvenWhenOuterManifestIsRecomputed(String attack) throws Exception {
     var fixture=Day6R2Fixture.create(temp,"snapshot");
-    var answer=fixture.orchestrator(r->LLMService.LLMResponse.failure(LLMService.LLMStatus.UNAVAILABLE,"test"),new AgentResponseVerifier(List.of()),Day6R2Fixture.CLOCK).answer(new com.supplymind.agent.orchestration.AgentOrchestrator.AgentQueryInput("请根据 2026-08-10 至 2026-08-10 的数据说明最新值和月均值",Day6R2Fixture.ITEM,null,null,null,null,null,null,null,"FORMAL"));
-    var root=fixture.root();var store=fixture.reportStore();var reportPath=root.resolveDataRef(answer.reportRef());
-    assertTrue(store.read(answer.reportRef()).ok());
+    var report=snapshotReport(fixture,"legacy-snapshot-"+attack);
+    var root=fixture.root();var store=fixture.reportStore();String reportRef=store.storeSnapshot(report,()->{});var reportPath=root.resolveDataRef(reportRef);
+    assertTrue(store.read(reportRef).ok());
     var envelope=JsonV1Codec.decodeFile(Files.readAllBytes(reportPath),ReportSnapshotV2.class);
     var daily=envelope.evidenceBindings().stream().filter(b->b.originalRef().startsWith("processed/daily/")).findFirst().orElseThrow();
     assertTrue(envelope.evidenceBindings().stream().filter(b->b.originalRef().startsWith("raw/")).allMatch(b->b.snapshotRef()==null));
@@ -32,9 +32,9 @@ class ReportSnapshotStoreTest {
       if(attack.equals("closure")){for(int i=0;i<bindings.size();i++)if(bindings.get(i).get("originalRef").asText().startsWith("staging/")){bindings.remove(i);break;}}
       if(attack.equals("binding"))((com.fasterxml.jackson.databind.node.ObjectNode)tree.get("report").get("evidencePack").get("evidenceRefs").get(0)).put("sha256","0".repeat(64));
       byte[] bytes=JsonV1Codec.encodeFile(tree);Files.write(reportPath,bytes);
-      Files.write(root.resolveDataRef(DataPaths.manifestRef(answer.reportRef())),JsonV1Codec.encodeFile(ManifestFactory.json(answer.reportRef(),bytes,List.of(),answer.report().createdAt())));
+      Files.write(root.resolveDataRef(DataPaths.manifestRef(reportRef)),JsonV1Codec.encodeFile(ManifestFactory.json(reportRef,bytes,List.of(),report.createdAt())));
     }
-    assertFalse(store.read(answer.reportRef()).ok(),attack);
+    assertFalse(store.read(reportRef).ok(),attack);
  }
  private AgentReportV1 snapshotReport(Day6R2Fixture fixture,String id) throws Exception {
     var entries=new com.supplymind.agent.evidence.EvidenceRefVerifier(fixture.root()).verifyAllWithAuthoritativeLineage(List.of(fixture.dailyRef(),fixture.aggregateRef()));

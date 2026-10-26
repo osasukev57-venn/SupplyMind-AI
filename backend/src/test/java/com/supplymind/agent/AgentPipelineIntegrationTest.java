@@ -85,7 +85,7 @@ class AgentPipelineIntegrationTest {
         Harness harness = harness("pipeline-llm");
         // Fact-first contract: the cloud returns language plus selected Java factIds only.
         AgentOrchestrator orchestrator = orchestrator(harness, new FixedAnswerChatModel(
-                "{\"answer\":\"FX.USD.CNY.PBOC_MID 已有可用的正式数据。\",\"usedFactIds\":[\"fact-0\"]}"));
+                "{\"sections\":[{\"kind\":\"OVERVIEW\",\"text\":\"已有可用的正式数据。\",\"factIds\":[\"fact-0\"]}],\"recommendations\":[]}"));
         AgentOrchestrator.AgentQueryInput input = new AgentOrchestrator.AgentQueryInput(
                 "请分析 2026-08-01 至 2026-08-10 的美元/人民币趋势", FX_ITEM,
                 "2026-08-01", "2026-08-10", null, null, null, null, null, "FORMAL");
@@ -96,7 +96,7 @@ class AgentPipelineIntegrationTest {
                 "degradeReason=" + result.degradeReason());
         assertFalse(result.report().degraded());
         assertEquals("LLM", result.report().generatedBy());
-        assertEquals("AGENT-EVIDENCE-SCHEMA-V1", result.evidencePack().schemaVersion());
+        assertEquals("AGENT-EVIDENCE-SCHEMA-V2", result.evidencePack().schemaVersion());
         assertNotNull(result.evidencePack().evidencePackId());
         assertTrue(result.evidencePack().toolExecutions().size() >= 3,
                 "series.resolve + history.query + quality.inspect must have run");

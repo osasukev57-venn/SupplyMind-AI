@@ -51,9 +51,19 @@ public final class PeriodMetricsToolAdapter {
             List<Map<String, Object>> rows = new ArrayList<>();
             for (AggregateRecordV1 row : result.rows()) {
                 Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("businessDate",row.inputRefs().stream().map(r->r.businessDate()).max(String::compareTo).orElse(null));
                 entry.put("periodStart", row.periodStart());
                 entry.put("periodEnd", row.periodEnd());
                 entry.put("grain", row.grain().wireValue());
+                entry.put("itemId",row.itemId());
+                entry.put("evidenceRefs",List.of(DataPaths.aggregateRef(row.itemId(),row.grain().wireValue(),Integer.parseInt(row.periodStart().substring(0,4)))));
+                entry.put("rowEvidenceId",com.supplymind.agent.evidence.AggregateRowEvidenceV1.rowId(row));
+                entry.put("calculationVersion",row.calculationVersion());
+                entry.put("calendarVersion",row.calendarVersion());
+                entry.put("configVersions",row.configVersions().stream().map(String::valueOf).toList());
+                entry.put("actualSourceName",row.actualSourceName());
+                entry.put("sourceFingerprint",row.sourceFingerprint());
+                entry.put("canonicalSpecCode",row.canonicalSpecCode());
                 entry.put("avg", row.avg());
                 entry.put("min", row.min());
                 entry.put("max", row.max());

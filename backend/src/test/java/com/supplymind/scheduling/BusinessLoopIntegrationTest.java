@@ -31,13 +31,24 @@ class BusinessLoopIntegrationTest {
     static final String GBP = "FX.GBP.CNY.PBOC_MID";
     static final AtomicInteger DAY = new AtomicInteger(10);
     static final AtomicInteger CLOUD_CALLS = new AtomicInteger();
+    static final AtomicInteger SHFE_CALLS = new AtomicInteger();
     static boolean changedPayload;
     static boolean failWarning;
     @TempDir Path temp;
 
     @Test
     void scheduledDynamicTargetsProduceFormalWarningAcknowledgementAndAgentReport() throws Exception {
-        DAY.set(10); CLOUD_CALLS.set(0); changedPayload = false; failWarning = false;
+        DAY.set(10); CLOUD_CALLS.set(0); SHFE_CALLS.set(0); changedPayload = false; failWarning = false;
+        // Establish the TEMP fixture before Spring starts; do not race ready-event listeners.
+        var fixtureRoot=DataRoot.forTest(temp);
+        fixtureRoot.createIfAbsentAndRequireWritable();
+        var fixtureClock=Clock.fixed(Instant.parse("2026-08-10T04:00:00Z"),ZoneOffset.ofHours(8));
+        var initial=(com.fasterxml.jackson.databind.node.ObjectNode)com.supplymind.foundation.codec.JsonV1Codec.mapper()
+                .valueToTree(MonitorSeriesDefaults.initialDay3(OffsetDateTime.now(fixtureClock)));
+        for(var item:initial.path("items"))if(item.path("itemId").asText().equals(MonitorSeriesDefaults.ADC12_SMM_ITEM_ID))
+            ((com.fasterxml.jackson.databind.node.ObjectNode)item).put("enabled",false);
+        new ConfigActivationStore(fixtureRoot,new AtomicFileStore(fixtureRoot,new DirtyMarkerCodec()),fixtureClock)
+                .activate(com.supplymind.foundation.codec.JsonV1Codec.mapper().treeToValue(initial,MonitorSeriesConfigV1.class));
         java.util.concurrent.ExecutorService worker = null;
         try (var context = new SpringApplicationBuilder(SupplyMindApplication.class, Ports.class)
                 .web(WebApplicationType.NONE).run(
@@ -50,10 +61,12 @@ class BusinessLoopIntegrationTest {
             var root = context.getBean(DataRoot.class);
             var current = context.getBean(CurrentAcquisitionService.class);
             var configs = context.getBean(ConfigManagementService.class);
+            assertFalse(configs.active().items().stream().filter(i->i.itemId().equals(MonitorSeriesDefaults.ADC12_SMM_ITEM_ID)).findFirst().orElseThrow().enabled());
             await(current); // ApplicationReady must trigger the real startup acquisition.
             assertEquals("SUCCEEDED", current.status().state(), current.status().message());
             String euroRef = DataPaths.dailyRef(MonitorSeriesDefaults.EUR_CNY_ITEM_ID, YearMonth.of(2026,8));
             byte[] euroBefore = Files.readAllBytes(root.resolveDataRef(euroRef));
+            runShfeScheduledPhase(context,configs,current);
             configs.setEnabled(MonitorSeriesDefaults.EUR_CNY_ITEM_ID, false);
             var added = context.getBean(DynamicConfigWorkflowService.class).addItem(new ConfigV1.AddItemRequest(
                     GBP, "英镑", "PBOC", ProviderType.OFFICIAL_WEB.wireValue(),
@@ -64,12 +77,15 @@ class BusinessLoopIntegrationTest {
                     null,null,null));
             assertEquals("SUCCEEDED", added.currentIntake().status(), added.currentIntake().toString());
             DAY.set(11);
+            configs.setEnabled(MonitorSeriesDefaults.ADC12_SMM_ITEM_ID,false);
+            // Keep each first-publish fixture phase within the unchanged 25s assertion; no fake executor or shortened chain.
             // Invoke the exact production scheduled bean, enabling just this instance without wall-clock waits.
             var guarded = context.getBean(RotationGuardedCollectionService.class);
             new RotationGuardConfiguration.RotationGuardedScheduler(true, context.getBean(Clock.class), guarded)
                     .runGuardedCycle();
             await(current);
             assertEquals("SUCCEEDED", current.status().state(), current.status().message());
+            runShfeScheduledPhase(context,configs,current);
             assertArrayEquals(euroBefore, Files.readAllBytes(root.resolveDataRef(euroRef)));
             var history = context.getBean(HistoryQueryService.class);
             assertEquals(2, history.queryDaily(GBP, LocalDate.of(2026,8,10), LocalDate.of(2026,8,11)).rows().size());
@@ -114,12 +130,22 @@ class BusinessLoopIntegrationTest {
                     "分析历史趋势", GBP, "2026-08-10", "2026-08-11", "month", "2026-08", "2026-08", null, null, "FORMAL"));
             var reportStore = context.getBean(ReportStore.class);
             assertTrue(reportStore.read(historical.reportRef()).ok(), "generation-time evidence must read successfully");
-            var oldProjection = com.supplymind.foundation.codec.JsonV1Codec.mapper().valueToTree(historical.report());
-            ((com.fasterxml.jackson.databind.node.ObjectNode) oldProjection).put("reportId", "legacy-history-report");
-            String legacyRef = reportStore.store(com.supplymind.foundation.codec.JsonV1Codec.mapper().treeToValue(oldProjection,com.supplymind.agent.report.AgentReportV1.class));
+            var oldProjection = (com.fasterxml.jackson.databind.node.ObjectNode)com.supplymind.foundation.codec.JsonV1Codec.mapper().valueToTree(historical.report());
+            oldProjection.put("reportId", "legacy-history-report");
+            var legacyPack=(com.fasterxml.jackson.databind.node.ObjectNode)oldProjection.get("evidencePack");
+            legacyPack.put("schemaVersion","AGENT-EVIDENCE-SCHEMA-V1");
+            for(var fact:legacyPack.get("facts"))((com.fasterxml.jackson.databind.node.ObjectNode)fact).remove("rowEvidenceId");
+            var strictEntries=new com.supplymind.agent.evidence.EvidenceRefVerifier(root).verifyAllWithAuthoritativeLineage(historical.evidencePack().evidenceRefs().stream().map(e->e.ref()).toList());
+            assertTrue(strictEntries.stream().allMatch(e->e.status()==com.supplymind.agent.evidence.EvidenceStatus.VERIFIED),"V1 compatibility fixture requires genuinely scalar-verifiable files");
+            legacyPack.set("evidenceRefs",com.supplymind.foundation.codec.JsonV1Codec.mapper().valueToTree(strictEntries));
+            var legacyReport=com.supplymind.foundation.codec.JsonV1Codec.mapper().treeToValue(oldProjection,com.supplymind.agent.report.AgentReportV1.class);
+            String legacyRef = reportStore.store(legacyReport);
             assertTrue(reportStore.read(legacyRef).ok());
-            var snapshot = com.supplymind.foundation.codec.JsonV1Codec.decodeFile(Files.readAllBytes(root.resolveDataRef(historical.reportRef())),com.supplymind.agent.report.ReportSnapshotV2.class);
-            assertEquals("AGENT-REPORT-V2",snapshot.schemaVersion());
+            oldProjection.put("reportId","legacy-v2-history-report");
+            String v2Ref=reportStore.storeSnapshot(com.supplymind.foundation.codec.JsonV1Codec.mapper().treeToValue(oldProjection,com.supplymind.agent.report.AgentReportV1.class),()->{});
+            assertTrue(reportStore.read(v2Ref).ok());
+            var snapshot = com.supplymind.foundation.codec.JsonV1Codec.decodeFile(Files.readAllBytes(root.resolveDataRef(historical.reportRef())),com.supplymind.agent.report.ReportSnapshotV3.class);
+            assertEquals("AGENT-REPORT-V3",snapshot.schemaVersion());
             String dailyRef = DataPaths.dailyRef(GBP, YearMonth.of(2026, 8));
             byte[] dailyBytes = Files.readAllBytes(root.resolveDataRef(dailyRef));
             Files.writeString(root.resolveDataRef(dailyRef), "tampered temporary statistics");
@@ -133,9 +159,11 @@ class BusinessLoopIntegrationTest {
             assertEquals("SUCCEEDED", current.status().state(), current.status().message());
             assertEquals(stable, businessSnapshot(root), "same payload replay preserves raw, history and warning identity");
             changedPayload = true;
+            int shfeBeforeConflict=SHFE_CALLS.get();
             run(current);
             assertEquals("PARTIAL_SUCCESS", current.status().state(), "PBOC conflict must not be reported as success; SHFE proceeds");
             assertTrue(current.status().message().contains(GBP));
+            assertTrue(SHFE_CALLS.get()>shfeBeforeConflict,"SHFE is actually attempted after independent PBOC conflict");
             assertEquals(stable, businessSnapshot(root), "conflict cannot alter existing business files");
             try (var paths = Files.walk(root.resolveInternalRelative("runtime/conflicts/raw"))) {
                 assertTrue(paths.anyMatch(Files::isRegularFile));
@@ -143,6 +171,7 @@ class BusinessLoopIntegrationTest {
             changedPayload = false;
             failWarning = true;
             DAY.set(12);
+            configs.setEnabled(MonitorSeriesDefaults.ADC12_SMM_ITEM_ID,false);
             run(current);
             assertEquals("PARTIAL_SUCCESS", current.status().state(), "warning failure must be visible in the acquisition result");
             assertTrue(current.status().message().contains("未完成：" + GBP));
@@ -156,7 +185,8 @@ class BusinessLoopIntegrationTest {
             assertEquals(3, history.queryDaily(GBP, LocalDate.of(2026,8,10), LocalDate.of(2026,8,12)).rows().size());
             failWarning = false;
             var afterAppend = reportStore.read(historical.reportRef());
-            assertTrue(afterAppend.ok(), "V2 generation-time snapshot survives normal append");
+            assertTrue(afterAppend.ok(), "V3 generation-time snapshot survives normal append");
+            assertTrue(reportStore.read(v2Ref).ok(),"Old V2 also retains its generation-time snapshot");
             assertFalse(reportStore.read(legacyRef).ok(), "V1 must retain strict drift rejection");
             assertArrayEquals(historicalBytes, Files.readAllBytes(root.resolveDataRef(historical.reportRef())));
             assertTrue(ManifestVerifier.matches(root, dailyRef, root.resolveDataRef(dailyRef),
@@ -176,6 +206,16 @@ class BusinessLoopIntegrationTest {
             }
         }
     }
+    static void runShfeScheduledPhase(org.springframework.context.ConfigurableApplicationContext context,ConfigManagementService configs,CurrentAcquisitionService current) throws Exception {
+        var saved=configs.active().items().stream().filter(i->i.providerType()==ProviderType.OFFICIAL_WEB).toList();
+        for(var item:saved)if(item.enabled())configs.setEnabled(item.itemId(),false);
+        configs.setEnabled(MonitorSeriesDefaults.ADC12_SMM_ITEM_ID,true);
+        int before=SHFE_CALLS.get();
+        new RotationGuardConfiguration.RotationGuardedScheduler(true,context.getBean(Clock.class),context.getBean(RotationGuardedCollectionService.class)).runGuardedCycle();
+        await(current);assertEquals("SUCCEEDED",current.status().state(),current.status().message());
+        assertTrue(SHFE_CALLS.get()>before,"real scheduled SHFE transport must execute");
+        for(var item:saved)if(item.enabled())configs.setEnabled(item.itemId(),true);
+    }
     static Map<String,String> businessSnapshot(DataRoot root) throws Exception {
         Map<String,String> result = new TreeMap<>();
         for(String dir : List.of("raw/formal", "staging", "published", "processed", "warning")) {
@@ -191,6 +231,12 @@ class BusinessLoopIntegrationTest {
     static void await(CurrentAcquisitionService service) throws Exception {
         long deadline=System.nanoTime()+Duration.ofSeconds(25).toNanos();
         while(service.status().state().equals("RUNNING") && System.nanoTime()<deadline) Thread.sleep(20);
+        if(service.status().state().equals("RUNNING")) {
+            Thread.getAllStackTraces().forEach((thread,stack)->{if(thread.getName().contains("current-acquisition")){
+                System.err.println("CYCLE_TIMEOUT_DIAGNOSTIC thread="+thread.getName()+" state="+thread.getState());
+                for(var frame:stack)System.err.println("  at "+frame);
+            }});
+        }
         assertNotEquals("RUNNING",service.status().state(),"cycle must finish");
     }
     static String resource(String name) {
@@ -230,6 +276,7 @@ class BusinessLoopIntegrationTest {
         }
         @Bean @Primary ShfeHttpTransport testShfeTransport() {
             return uri -> {
+                SHFE_CALLS.incrementAndGet();
                 String body=uri.equals(ShfeAdFreePublicDataProvider.CURRENT_TRADING_DAY_URI)
                     ? "{\"currentTradingday\":\"20260812\",\"lastTradingday\":\"202608"+DAY.get()+"\"}"
                     : "{\"o_curinstrument\":[{\"PRODUCTID\":\"ad_f\",\"DELIVERYMONTH\":\"2609\",\"SETTLEMENTPRICE\":\"22970\",\"VOLUME\":\"100\"}]}";
@@ -239,11 +286,16 @@ class BusinessLoopIntegrationTest {
         @Bean @Primary LLMService.Port testLlm() {
             return request -> {
                 CLOUD_CALLS.incrementAndGet();
-                var selected=request.facts().stream().filter(f -> f.statement().equals("immutable warning identifier")
-                        || f.statement().equals("verified warning acknowledgement status")).toList();
-                String template=selected.stream().map(f -> "{{"+f.factId()+"}}").collect(java.util.stream.Collectors.joining("。"));
-                String ids=selected.stream().map(f -> "\""+f.factId()+"\"").collect(java.util.stream.Collectors.joining(","));
-                return LLMService.LLMResponse.success("{\"answerTemplate\":\""+template+"\",\"usedFactIds\":["+ids+"]}");
+                var ack=request.facts().stream().filter(f->f.statement().equals("verified warning acknowledgement status")).findFirst();
+                var id=request.facts().stream().filter(f->f.statement().equals("immutable warning identifier")).findFirst();
+                var latest=request.facts().stream().filter(f->f.statement().equals("latest published value")).findFirst();
+                String kind;String text;List<String> ids;
+                if(ack.isPresent()){kind="WARNING";text=ack.get().value().equals("ACKNOWLEDGED")?"正式预警已确认，确认不代表风险消失。":"正式预警待处理。";ids=List.of(ack.get().factId());}
+                else if(latest.isPresent()){kind="OVERVIEW";text="已有可追溯的已发布数据。";ids=List.of(latest.get().factId());}
+                else if(id.isPresent()){kind="WARNING";text="预警记录可追溯，确认信息尚不可验证。";ids=List.of(id.get().factId());}
+                else return LLMService.LLMResponse.failure(LLMService.LLMStatus.UNAVAILABLE,"no_fixture_facts");
+                return LLMService.LLMResponse.success(com.supplymind.foundation.codec.JsonV1Codec.encodeCompact(Map.of("sections",List.of(Map.of("kind",kind,"text",text,"factIds",ids)),"recommendations",List.of())));
+
             };
         }
     }

@@ -62,7 +62,7 @@ public class AgentQueryController {
                 body.get("periodEnd"),
                 body.get("month"),
                 body.get("businessDate"),
-                body.getOrDefault("mode", "FORMAL"));
+                body.getOrDefault("mode", "FORMAL"),body.get("theme"));
         try {
             AgentOrchestrator.AgentResult result = orchestrator.answer(input);
             return ResponseEntity.ok(AgentQueryResponse.of(result));

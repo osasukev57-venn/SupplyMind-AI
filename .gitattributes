@@ -16,6 +16,8 @@ mvnw text eol=lf
 
 # Byte-sensitive contract fixtures: preserve exact bytes
 backend/src/test/resources/contracts/** -text
+# These new golden files retain original CRLF bytes; still check actual spaces/tabs.
+backend/src/test/resources/contracts/agent-v2/* whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 
 # Evidence may contain hash-bound/raw evidence: preserve exact bytes
 docs/evidence/** -text

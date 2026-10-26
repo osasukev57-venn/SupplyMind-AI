@@ -46,8 +46,6 @@ import java.util.regex.Pattern;
  */
 public final class AgentOrchestrator {
 
-    private static final Pattern FACT_TEMPLATE_TOKEN =
-            Pattern.compile("\\{\\{(fact-[A-Za-z0-9._-]+)}}");
 
     private final ToolExecutor toolExecutor;
     private final LLMService.Port llm;
@@ -97,7 +95,7 @@ public final class AgentOrchestrator {
 
         // Java resolves explicit ISO dates and requested grain before any cloud interaction.
         // The cloud model is never responsible for selecting authoritative data tools.
-        AgentQueryInput effectiveInput = deterministicInput(input);
+        AgentQueryInput effectiveInput = budget.readOnly(()->QueryPlanner.plan(input,clock,()->toolExecutor.latestBusinessDate(input.itemId(),clock)));
         AgentQueryInput toolInput = effectiveInput;
         List<ToolResult> evidenceSource = budget.readOnly(() -> toolExecutor.execute(toolInput, requestId));
         budget.requireRemaining();
@@ -118,88 +116,32 @@ public final class AgentOrchestrator {
         List<EvidencePackV1.Fact> facts = build.facts();
         List<String> llmEvidenceRefs = build.llmEvidenceRefs();
         List<String> limitations = new ArrayList<>(build.limitations());
-        FactReadiness readiness = factReadiness(input.question(), facts);
+        FactReadiness readiness = factReadiness(input, facts);
         if (!toolChainClean) {
             limitations.add("部分只读工具未成功；云端仅可使用已验证标准事实");
         }
 
-        boolean degraded = true;
-        String degradeReason = "MODEL_RESPONSE_REJECTED:UNHANDLED_PIPELINE_STATE";
-        String explanation = "";
-        List<String> draftUsedFactIds = List.of();
-        LLMService.LLMResponse cloudResponse = LLMService.LLMResponse.failure(
-                LLMService.LLMStatus.REJECTED, "STANDARD_FACTS_NOT_READY");
-        if (!readiness.ready()) {
-            degraded = true;
-            degradeReason = "STANDARD_FACTS_NOT_READY:" + readiness.reason();
-            limitations.add("云端分析未调用：" + readiness.reason());
-            explanation = fallback.explain(new LLMService.LLMRequest(
-                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
-        } else {
-            // The sole cloud phase explains ONLY verified standard facts (no tool calling).
-            LLMService.LLMResponse phaseB = budget.analyze(llm, new LLMService.LLMRequest(
-                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs, false));
-            cloudResponse = phaseB;
-            if (phaseB.status() != LLMService.LLMStatus.SUCCESS) {
-                degraded = true;
-                degradeReason = phaseB.failureKind();
-                explanation = fallback.explain(new LLMService.LLMRequest(
-                        requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
-            } else {
-                // The cloud arranges Java-owned fact placeholders. Java renders every placeholder
-                // from StandardFactPack, verifies the final prose, and then re-attaches evidence.
-                ParsedCloudDraft parsed = parseStructuredDraft(requestId, phaseB.explanation());
-                if (parsed == null) {
-                    degraded = true;
-                    degradeReason = "MODEL_RESPONSE_REJECTED:MALFORMED_STRUCTURED_RESPONSE";
-                    explanation = fallback.explain(new LLMService.LLMRequest(
-                            requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
-                } else {
-                    ModelDraftV1 draft = parsed.draft();
-                    if (parsed.factTemplate()) {
-                        TemplateRender rendered = renderFactTemplate(
-                                draft.rawText(), draft.usedFactIds(), facts);
-                        if(rendered.text()!=null && asksMonthlyAverage(input.question()) && input.question().contains("区分")
-                                && facts.stream().filter(f->"period.metrics.avg".equals(f.factType())).anyMatch(f->!parsed.draft().usedFactIds().contains(f.factId())))
-                            rendered=new TemplateRender(null,"MISSING_REQUIRED_MONTHLY_GROUP");
-                        if (rendered.text() == null) {
-                            degraded = true;
-                            degradeReason = "MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE";
-                            limitations.add("FACT_TEMPLATE_REJECTED:"+rendered.reason());
-                            org.slf4j.LoggerFactory.getLogger(getClass()).warn("fact_template_rejected requestId={} reason={}",requestId,rendered.reason());
-                            explanation = fallback.explain(new LLMService.LLMRequest(
-                                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
-                            draft = null;
-                        } else {
-                            draft = new ModelDraftV1(
-                                    requestId, rendered.text(), draft.usedFactIds(), List.of());
-                        }
-                    }
-                    if (draft != null) {
-                        draftUsedFactIds = draft.usedFactIds();
-                        AgentResponseVerifier.Verification verification = parsed.factTemplate()
-                                ? responseVerifier.verifyJavaRenderedFactTemplate(draft, evidencePack)
-                                : responseVerifier.verify(draft, evidencePack);
-                        if (!verification.verified()) {
-                            degraded = true;
-                            degradeReason = "MODEL_RESPONSE_REJECTED:" + verification.reason();
-                            explanation = fallback.explain(new LLMService.LLMRequest(
-                                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
-                        } else {
-                            degraded = false;
-                            degradeReason = null;
-                            // Safe only after Java rendered and verified the selected facts.
-                            explanation = draft.rawText();
-                        }
-                    }
-                }
-            }
+        var narrative=com.supplymind.agent.narrative.NarrativeResult.none("STANDARD_FACTS_NOT_READY",0);
+        LLMService.LLMResponse cloudResponse=LLMService.LLMResponse.failure(LLMService.LLMStatus.REJECTED,"STANDARD_FACTS_NOT_READY");
+        var cloudInput=new LLMService.LLMRequest(requestId,input.question(),mode,toLlmFacts(facts,evidencePack),llmEvidenceRefs,false);
+        boolean contextAllowed=com.supplymind.agent.narrative.AnalysisContextAssembler.withinLimits(cloudInput);
+        if(readiness.ready()&&!contextAllowed) {
+            cloudResponse=LLMService.LLMResponse.failure(LLMService.LLMStatus.REJECTED,"ANALYSIS_CONTEXT_LIMIT");
+            narrative=com.supplymind.agent.narrative.NarrativeResult.none("ANALYSIS_CONTEXT_LIMIT",0);
         }
-
-        if (explanation.isBlank()) {
-            explanation = fallback.explain(new LLMService.LLMRequest(
-                    requestId, input.question(), mode, toLlmFacts(facts), llmEvidenceRefs), evidencePack);
+        if(readiness.ready()&&contextAllowed) {
+            cloudResponse=budget.analyze(llm,cloudInput);
+            narrative=cloudResponse.status()==LLMService.LLMStatus.SUCCESS
+                    ? new com.supplymind.agent.narrative.NarrativeValidator(responseVerifier).validate(cloudResponse.explanation(),evidencePack)
+                    : com.supplymind.agent.narrative.NarrativeResult.none(cloudResponse.failureKind()==null?cloudResponse.status().name():cloudResponse.failureKind(),1);
         }
+        boolean degraded=!"FULL".equals(narrative.adoption());
+        String degradeReason=!readiness.ready()?"STANDARD_FACTS_NOT_READY:"+readiness.reason():
+                cloudResponse.status()!=LLMService.LLMStatus.SUCCESS?cloudResponse.failureKind():
+                degraded?("PARTIAL".equals(narrative.adoption())?"NARRATIVE_PARTIAL:":"MODEL_RESPONSE_REJECTED:")+narrative.diagnostics().stream().findFirst().map(d->d.code()).orElse(narrative.cloudStatus()):null;
+        if(degraded)limitations.add("云端采用状态："+narrative.adoption()+"；"+narrative.cloudStatus());
+        // Claims are ALWAYS Java fact statements; adopted cloud prose is separate in V3.
+        String explanation=fallback.explain(new LLMService.LLMRequest(requestId,input.question(),mode,toLlmFacts(facts,evidencePack),llmEvidenceRefs),evidencePack);
 
         if (facts.stream().anyMatch(f -> f.actualSourceName()!=null && f.actualSourceName().contains("模拟"))) {
             explanation += " 该监测项为模拟数据，不代表真实市场风险。";
@@ -214,14 +156,6 @@ public final class AgentOrchestrator {
         // Claims cite verified references only. Unavailable-data explanations are limitations,
         // never business claims backed by missing or invalid files.
         List<AgentReportV1.Claim> claims = new ArrayList<>();
-        if (!draftUsedFactIds.isEmpty() && !degraded) {
-            // The cloud supplies language + selected factIds only. Java resolves every evidence
-            // reference from the selected StandardFactPack entries and persists one verified claim.
-            List<String> refs = claimRefsOf(draftUsedFactIds, facts);
-            if (!refs.isEmpty()) {
-                claims.add(new AgentReportV1.Claim("claim-1", explanation, refs));
-            }
-        }
         if (claims.isEmpty()) {
             List<String> claimRefs = facts.stream().flatMap(fact -> fact.evidenceRefs().stream())
                     .distinct().toList();
@@ -238,15 +172,15 @@ public final class AgentOrchestrator {
         }
         AgentReportV1 report = new AgentReportV1(
                 "AGENT-REPORT-V1", "report-" + requestId, requestId, evidencePack,
-                degraded ? "JAVA_TEMPLATE" : "LLM",
-                degraded ? null : llmProvider(), degraded ? null : llmModel(),
+                "NONE".equals(narrative.adoption()) ? "JAVA_TEMPLATE" : "PARTIAL".equals(narrative.adoption()) ? "LLM_PARTIAL" : "LLM",
+                readiness.ready() ? llmProvider() : null, readiness.ready() ? llmModel() : null,
                 degraded, degradeReason,
                 factSummaries, claims, List.of(), List.copyOf(limitations), OffsetDateTime.now());
         budget.requireRemaining();
-        String reportRef = reportStore.storeSnapshot(report, budget::requireRemaining);
+        String reportRef = reportStore.storeV3(report, narrative, budget::requireRemaining);
         RiskProjectionV1 riskProjection = buildRiskProjection(evidenceSource, evidencePack, mode, evidenceVerifier);
         return new AgentResult(evidencePack, cloudResponse, reportRef, report, degraded, degradeReason,
-                riskProjection);
+                riskProjection,narrative);
     }
 
     /**
@@ -354,7 +288,7 @@ public final class AgentOrchestrator {
                 ToolResult.Lineage lineage = result.evidenceLineageByRef().containsKey(ref)
                         ? result.evidenceLineageByRef().get(ref)
                         : result.lineage();
-                allEntries.add(evidenceVerifier.verifyMerged(ref, lineage));
+                allEntries.add(ref.startsWith("processed/aggregate/") ? evidenceVerifier.verifyAggregateRows(ref) : evidenceVerifier.verifyMerged(ref, lineage));
             }
             notices.addAll(result.notices());
             if (result.status() == ToolStatus.NO_DATA || result.status() == ToolStatus.REJECTED) {
@@ -411,9 +345,10 @@ public final class AgentOrchestrator {
                 .map(EvidencePackV1.EvidenceRefEntry::ref).toList();
         // M2: the EvidencePack carries the FULL four-state structured list.
         EvidencePackV1 evidencePack = new EvidencePackV1(
-                "AGENT-EVIDENCE-SCHEMA-V1", "pack-" + requestId, requestId, mode,
+                "AGENT-EVIDENCE-SCHEMA-V2", "pack-" + requestId, requestId, mode,
                 input.question(), OffsetDateTime.now(), scopeOf(input),
                 executions, facts, fourStateRefs, List.of(), notices, limitations);
+        evidenceVerifier.requireFactRowBindings(evidencePack);
         return new EvidenceBuild(evidencePack, facts, llmEvidenceRefs, limitations);
     }
 
@@ -432,6 +367,7 @@ public final class AgentOrchestrator {
                     && entry.calculationVersion() != null && entry.calendarVersion() != null
                     && !entry.configVersions().isEmpty();
         }
+        if ("AGGREGATE_ROWS_V1".equals(type))return !entry.rowEvidence().isEmpty();
         if ("AGGREGATE".equals(type)) {
             return entry.periodStart() != null && entry.periodEnd() != null
                     && entry.validationVersion() != null && entry.calculationVersion() != null
@@ -448,6 +384,7 @@ public final class AgentOrchestrator {
 
     private static boolean isDemoOrSynthetic(EvidencePackV1.EvidenceRefEntry entry,
             EvidenceRefVerifier verifier) {
+        if("AGGREGATE_ROWS_V1".equals(entry.refType()))return !verifier.isFormalAggregateEvidence(entry);
         if (entry.ref().startsWith("warning/")) {
             return !verifier.isFormalWarningEvidence(entry.ref());
         }
@@ -460,69 +397,6 @@ public final class AgentOrchestrator {
                 input.businessDate(), input.startDate()==null?input.periodStart():input.startDate(),
                 input.endDate()==null?input.periodEnd():input.endDate(), "Asia/Shanghai");
     }
-    private static boolean asksMonthlyAverage(String question) {
-        String text=question==null?"":question.toLowerCase(java.util.Locale.ROOT);
-        return text.contains("月均") || text.contains("月度均值") || text.contains("月度平均") || text.contains("monthly average");
-    }
-    private AgentQueryInput deterministicInput(AgentQueryInput input) {
-        String startDate = input.startDate();
-        String endDate = input.endDate();
-        List<String> dates = new ArrayList<>();
-        java.util.regex.Matcher matcher = java.util.regex.Pattern
-                .compile("\\d{4}-\\d{2}-\\d{2}")
-                .matcher(input.question());
-        while (matcher.find()) {
-            dates.add(matcher.group());
-        }
-        if ((startDate == null || startDate.isBlank()) && !dates.isEmpty()) {
-            startDate = dates.get(0);
-        }
-        if ((endDate == null || endDate.isBlank()) && !dates.isEmpty()) {
-            endDate = dates.size() > 1 ? dates.get(1) : dates.get(0);
-        }
-        if ((startDate == null || startDate.isBlank())
-                && (endDate == null || endDate.isBlank())
-                && (input.periodStart() == null || input.periodStart().isBlank())
-                && (input.month() == null || input.month().isBlank())
-                && (input.businessDate() == null || input.businessDate().isBlank())) {
-            java.time.LocalDate today = java.time.LocalDate.now(
-                    clock.withZone(ZoneId.of("Asia/Shanghai")));
-            startDate = java.time.YearMonth.from(today).atDay(1).toString();
-            endDate = today.toString();
-        }
-
-        String grain = input.grain();
-        String periodStart = input.periodStart();
-        String periodEnd = input.periodEnd();
-        String month = input.month();
-        String question = input.question().toLowerCase(java.util.Locale.ROOT);
-        boolean asksMonthly = asksMonthlyAverage(question);
-        if (asksMonthly && startDate != null) {
-            try {
-                java.time.YearMonth target = java.time.YearMonth.from(
-                        java.time.LocalDate.parse(startDate));
-                if (grain == null || grain.isBlank()) {
-                    grain = "month";
-                }
-                if (periodStart == null || periodStart.isBlank()) {
-                    periodStart = target.atDay(1).toString();
-                }
-                if (periodEnd == null || periodEnd.isBlank()) {
-                    periodEnd = target.atEndOfMonth().toString();
-                }
-            } catch (java.time.DateTimeException ignored) {
-                // ToolArguments performs the authoritative fail-closed validation later.
-            }
-        }
-        if ((month == null || month.isBlank()) && question.contains("预警")
-                && startDate != null && startDate.length() >= 7) {
-            month = startDate.substring(0, 7);
-        }
-        return new AgentQueryInput(
-                input.question(), input.itemId(), startDate, endDate, grain,
-                periodStart, periodEnd, month, input.businessDate(), input.mode());
-    }
-
     private static AgentQueryInput withResolvedItemId(
             AgentQueryInput input, List<ToolResult> toolResults
     ) {
@@ -541,22 +415,21 @@ public final class AgentOrchestrator {
         }
         return new AgentQueryInput(
                 input.question(), resolved, input.startDate(), input.endDate(), input.grain(),
-                input.periodStart(), input.periodEnd(), input.month(), input.businessDate(), input.mode());
+                input.periodStart(), input.periodEnd(), input.month(), input.businessDate(), input.mode(),input.theme());
     }
 
     private static FactReadiness factReadiness(
-            String questionText, List<EvidencePackV1.Fact> facts
+            AgentQueryInput input, List<EvidencePackV1.Fact> facts
     ) {
         if (facts.isEmpty()) {
             return new FactReadiness(false, "没有可引用的已验证标准事实");
         }
-        String question = questionText == null
-                ? "" : questionText.toLowerCase(java.util.Locale.ROOT);
+        String question = input.question().toLowerCase(java.util.Locale.ROOT);
         if ((question.contains("最新") || question.contains("latest"))
                 && facts.stream().noneMatch(fact -> "history.latest".equals(fact.factType()))) {
             return new FactReadiness(false, "缺少最新已发布值事实");
         }
-        if (asksMonthlyAverage(question)
+        if (QueryPlanner.requiresMonthly(input)
                 && facts.stream().noneMatch(fact -> "period.metrics.avg".equals(fact.factType()))) {
             return new FactReadiness(false, "缺少持久化月度平均事实");
         }
@@ -600,229 +473,24 @@ public final class AgentOrchestrator {
             default -> fact.factType();
         };
     }
-    private static List<LLMService.LlmFact> toLlmFacts(List<EvidencePackV1.Fact> facts) {
+    private static List<LLMService.LlmFact> toLlmFacts(List<EvidencePackV1.Fact> facts,EvidencePackV1 pack) {
         return facts.stream()
                 .map(fact -> new LLMService.LlmFact(
                         fact.factId(), standardStatement(fact), fact.itemId(), fact.value(), fact.unit(), fact.currency(),
                         fact.businessDate(),
                         fact.periodStart() == null ? fact.businessDate() : fact.periodStart() + "~" + fact.periodEnd(),
                         fact.validationStatus(), fact.actualSourceName(),
-                        fact.evidenceRefs().isEmpty() ? null : fact.evidenceRefs().get(0)))
+                        fact.evidenceRefs().isEmpty() ? null : fact.evidenceRefs().get(0),groupOf(fact,pack)))
                 .toList();
     }
 
-    /**
-     * Production cloud contract:
-     * {"answerTemplate":"...{{fact-...}}...","usedFactIds":["fact-..."]}.
-     * The model arranges opaque fact placeholders; Java renders all business literals from the
-     * StandardFactPack. The legacy answer field remains accepted for frozen attack tests only.
-     */
-    private static ParsedCloudDraft parseStructuredDraft(String requestId, String explanation) {
-        String trimmed = explanation == null ? "" : explanation.trim();
-        if (!trimmed.startsWith("{")) {
-            return null;
-        }
-        try {
-            com.fasterxml.jackson.databind.JsonNode root =
-                    new com.fasterxml.jackson.databind.ObjectMapper().readTree(trimmed);
-            if (!root.isObject() || root.has("claims") || root.has("evidenceRefs")) {
-                return null;
-            }
-            com.fasterxml.jackson.databind.JsonNode answerTemplate = root.get("answerTemplate");
-            com.fasterxml.jackson.databind.JsonNode answer = root.get("answer");
-            if (answerTemplate != null && answer != null) {
-                return null;
-            }
-            boolean factTemplate = answerTemplate != null;
-            com.fasterxml.jackson.databind.JsonNode content = factTemplate ? answerTemplate : answer;
-            List<String> usedFactIds = stringList(root.get("usedFactIds"));
-            if (content == null || !content.isTextual() || content.asText().isBlank()
-                    || usedFactIds.isEmpty()) {
-                return null;
-            }
-            return new ParsedCloudDraft(
-                    new ModelDraftV1(requestId, content.asText(), usedFactIds, List.of()),
-                    factTemplate);
-        } catch (com.fasterxml.jackson.core.JsonProcessingException | IllegalArgumentException malformed) {
-            return null;
-        }
-    }
-
-    private record ParsedCloudDraft(ModelDraftV1 draft, boolean factTemplate) {
-    }
-
-    /**
-     * Renders only exact, selected placeholders. Unknown, missing, duplicated or dangling tokens
-     * fail closed. The cloud never gets to author a business number, date, source or status.
-     */
-    private record TemplateRender(String text,String reason) {}
-
-    private static TemplateRender renderFactTemplate(String template,List<String> usedFactIds,List<EvidencePackV1.Fact> facts) {
-        var selected=new LinkedHashSet<>(usedFactIds);
-        if(selected.size()!=usedFactIds.size())return new TemplateRender(null,"DUPLICATE_SELECTED_FACT_ID");
-        Map<String,EvidencePackV1.Fact> byId=new java.util.LinkedHashMap<>();facts.forEach(f->byId.put(f.factId(),f));
-        for(String id:selected)if(!byId.containsKey(id))return new TemplateRender(null,"UNKNOWN_SELECTED_FACT_ID");
-        var matcher=FACT_TEMPLATE_TOKEN.matcher(template);var referenced=new LinkedHashSet<String>();var rendered=new StringBuffer();
-        while(matcher.find()) {
-            String id=matcher.group(1);var fact=byId.get(id);
-            if(fact==null)return new TemplateRender(null,"UNKNOWN_TOKEN");
-            if(!selected.contains(id))return new TemplateRender(null,"TOKEN_NOT_SELECTED");
-            if(!referenced.add(id))return new TemplateRender(null,"DUPLICATE_TOKEN");
-            matcher.appendReplacement(rendered,Matcher.quoteReplacement(renderStandardFactForAnswer(fact)));
-        }
-        matcher.appendTail(rendered);
-        if(rendered.indexOf("{{")>=0||rendered.indexOf("}}")>=0)return new TemplateRender(null,"DANGLING_TOKEN");
-        if(!referenced.equals(selected))return new TemplateRender(null,"FACT_ID_SET_MISMATCH");
-        var selectedFacts=selected.stream().map(byId::get).toList();
-        if(!factTemplateShellIsSafe(template,selectedFacts)) {
-            String shell=FACT_TEMPLATE_TOKEN.matcher(template).replaceAll("");
-            return new TemplateRender(null,shell.chars().anyMatch(Character::isDigit)?"SHELL_NUMBER":
-                !controlledShellSemanticsSupported(shell,selectedFacts)?"UNSUPPORTED_SHELL_SEMANTICS":"SHELL_BUSINESS_LITERAL");
-        }
-        return new TemplateRender(rendered.toString().trim(),"ACCEPTED");
-    }
-
-    /**
-     * The cloud-authored shell may contain connective prose only. Business literals must arrive
-     * through placeholders and are inserted by Java. This check happens before rendering so the
-     * dedicated post-render verifier never has to guess which literals came from the model.
-     */
-    private static boolean factTemplateShellIsSafe(
-            String template, List<EvidencePackV1.Fact> facts
-    ) {
-        String shell = FACT_TEMPLATE_TOKEN.matcher(template).replaceAll("");
-        if (shell.chars().anyMatch(Character::isDigit)
-                || shell.contains("{{") || shell.contains("}}")) {
-            return false;
-        }
-
-        for (EvidencePackV1.Fact fact : facts) {
-            for (String literal : new String[]{
-                    fact.value(), fact.itemId(), fact.unit(), fact.currency(), fact.businessDate(),
-                    fact.periodStart(), fact.periodEnd(), fact.validationStatus(),
-                    fact.actualSourceName()}) {
-                if (literal != null && !literal.isBlank() && shell.contains(literal)) {
-                    return false;
-                }
-            }
-        }
-        return controlledShellSemanticsSupported(shell, facts);
-    }
-
-    /**
-     * The model may restate a controlled conclusion in natural Chinese only when the exact
-     * selected StandardFactPack already contains it. Matching prose is accepted; unsupported or
-     * contradictory trend/risk/acknowledgement wording remains fail-closed.
-     */
-    private static boolean controlledShellSemanticsSupported(
-            String shell, List<EvidencePackV1.Fact> selectedFacts
-    ) {
-        String riskShell=shell.replace("不代表风险消失", "").replace("不表示风险消失", "");
-        if(java.util.regex.Pattern.compile("风险.{0,6}(消失|解除|为零|不存在)|没有风险|无风险").matcher(riskShell).find())return false;
-        if (containsAny(shell, "上升", "上涨", "走高")
-                && !hasFact(selectedFacts, "history.trend.direction", "UPWARD")) return false;
-        if (containsAny(shell, "下降", "下跌", "走低")
-                && !hasFact(selectedFacts, "history.trend.direction", "DOWNWARD")) return false;
-        if (containsAny(shell, "持平", "平稳")
-                && !hasFact(selectedFacts, "history.trend.direction", "FLAT")) return false;
-        if (containsAny(shell, "高风险", "高等级", "严重")
-                && !hasFact(selectedFacts, "warning.riskLevel", "HIGH")) return false;
-        if (containsAny(shell, "中风险", "中等风险")
-                && !hasFact(selectedFacts, "warning.riskLevel", "MEDIUM")) return false;
-        if (containsAny(shell, "低风险", "较低风险")
-                && !hasFact(selectedFacts, "warning.riskLevel", "LOW")) return false;
-        if (containsAny(shell, "已确认", "已处理")
-                && !hasFact(selectedFacts, "warning.acknowledged", "ACKNOWLEDGED")) return false;
-        if (containsAny(shell, "待处理", "未确认")
-                && !hasFact(selectedFacts, "warning.acknowledged", "PENDING")) return false;
-        return true;
-    }
-
-    private static boolean containsAny(String text, String... candidates) {
-        for (String candidate : candidates) {
-            if (text.contains(candidate)) return true;
-        }
-        return false;
-    }
-    private static boolean hasFact(
-            List<EvidencePackV1.Fact> facts, String factType, String value
-    ) {
-        return facts.stream().anyMatch(fact -> factType.equals(fact.factType())
-                && value.equalsIgnoreCase(fact.value()));
-    }
-
-    private static String renderStandardFactForAnswer(EvidencePackV1.Fact fact) {
-        String valueWithUnit = fact.value() + (fact.unit() == null || fact.unit().isBlank()
-                ? "" : " " + fact.unit());
-        String period = fact.periodStart() == null || fact.periodEnd() == null
-                ? fact.businessDate() : fact.periodStart() + " 至 " + fact.periodEnd();
-        String source = fact.actualSourceName() == null || fact.actualSourceName().isBlank()
-                ? "" : "，实际来源为" + fact.actualSourceName();
-        return switch (fact.factType()) {
-            case "history.query" -> fact.businessDate() + "的已发布值为" + valueWithUnit
-                    + "，校验状态为" + fact.validationStatus() + source;
-            case "history.latest" -> "截至" + fact.businessDate() + "，最新已发布值为"
-                    + valueWithUnit + source;
-            case "period.metrics.avg" -> period + "的已发布平均值（"+fact.validationStatus()+"组）为" + valueWithUnit;
-            case "quality.rowCount" -> period + "共有" + fact.value() + "条已发布记录";
-            case "quality.expectedCount" -> period + "的预期观测数为" + fact.value();
-            case "quality.missingCount" -> period + "的缺失观测数为" + fact.value();
-            case "quality.completeRowCount" -> period + "的完整记录数为" + fact.value();
-            case "quality.completeness" -> period + "的数据完整率为" + fact.value();
-            case "history.trend.direction" -> period + "的已发布数据趋势为"
-                    + localizedEnum(fact.value());
-            case "history.trend.change" -> period + "的首尾变化为" + valueWithUnit;
-            case "warning.explain" -> "预警当前值为" + valueWithUnit;
-            case "warning.baselineValue" -> "预警基准值为" + valueWithUnit;
-            case "warning.thresholdPercent" -> "预警阈值为" + fact.value();
-            case "warning.riskLevel" -> "系统按已发布数据判定风险等级为"
-                    + localizedEnum(fact.value());
-            case "warning.id" -> "预警编号为" + fact.value();
-            case "warning.acknowledged" -> "预警处理状态为" + localizedEnum(fact.value());
-            case "warning.acknowledgedAt" -> "预警确认时间为" + fact.value();
-            case "warning.disposition" -> "预警处置记录为" + fact.value();
-            case "warning.ruleVersion" -> "预警规则版本为" + fact.value();
-            default -> standardStatement(fact) + "为" + valueWithUnit;
-        };
-    }
-
-    private static String localizedEnum(String value) {
-        if (value == null) {
-            return "未知";
-        }
-        return switch (value.toUpperCase(java.util.Locale.ROOT)) {
-            case "UPWARD" -> "上升";
-            case "DOWNWARD" -> "下降";
-            case "FLAT" -> "持平";
-            case "HIGH" -> "高风险";
-            case "MEDIUM" -> "中风险";
-            case "LOW" -> "低风险";
-            case "ACKNOWLEDGED" -> "已确认";
-            case "PENDING" -> "待处理";
-            default -> value;
-        };
-    }
-    private static List<String> stringList(com.fasterxml.jackson.databind.JsonNode node) {
-        if (node == null || !node.isArray()) {
-            return List.of();
-        }
-        List<String> values = new ArrayList<>();
-        for (com.fasterxml.jackson.databind.JsonNode element : node) {
-            if (!element.isTextual()) {
-                throw new IllegalArgumentException("usedFactIds must be a string array");
-            }
-            values.add(element.asText());
-        }
-        return values;
-    }
-
-    /** Java resolves evidence refs exclusively from the selected factIds. */
-    private static List<String> claimRefsOf(
-            List<String> usedFactIds, List<EvidencePackV1.Fact> facts
-    ) {
-        Set<String> selected = new LinkedHashSet<>(usedFactIds);
-        return facts.stream().filter(fact -> selected.contains(fact.factId()))
-                .flatMap(fact -> fact.evidenceRefs().stream()).distinct().toList();
+    private static Map<String,Object> groupOf(EvidencePackV1.Fact fact,EvidencePackV1 pack) {
+        var binding=pack.evidenceRefs().stream().flatMap(e->e.rowEvidence().stream()).filter(r->r.rowEvidenceId().equals(fact.rowEvidenceId())).findFirst();
+        if(binding.isEmpty())return Map.of();
+        var row=binding.get().row();var group=new java.util.LinkedHashMap<String,Object>();
+        group.put("source",row.actualSourceName());group.put("providerType",row.providerType().wireValue());group.put("accessMethod",row.accessMethod().wireValue());
+        group.put("spec",row.canonicalSpecCode());group.put("grain",row.grain().wireValue());group.put("configVersions",row.configVersions());
+        group.put("calculationVersion",row.calculationVersion());group.put("calendarVersion",row.calendarVersion());group.put("validationVersion",row.validationVersion());group.put("complete",row.complete());return group;
     }
 
     private static List<EvidencePackV1.Fact> buildFacts(
@@ -917,7 +585,7 @@ public final class AgentOrchestrator {
                                 validationVersion,
                                 calculationVersion, calendarVersion, configVersions,
                                 actualSourceName, sourceFingerprint,
-                                rowRefs));
+                                rowRefs, textOf(row,"rowEvidenceId")));
                         if (WarningExplainToolAdapter.TOOL_NAME.equals(result.toolName())) {
                             EvidencePackV1.Fact warningFact = facts.get(facts.size() - 1);
                             addDerivedFact(facts, "fact-" + (factId++), "warning.baselineValue",
@@ -1161,8 +829,10 @@ public final class AgentOrchestrator {
             String periodEnd,
             String month,
             String businessDate,
-            String mode
+            String mode,
+            String theme
     ) {
+        public AgentQueryInput(String question,String itemId,String startDate,String endDate,String grain,String periodStart,String periodEnd,String month,String businessDate,String mode){this(question,itemId,startDate,endDate,grain,periodStart,periodEnd,month,businessDate,mode,null);}
         public AgentQueryInput {
             if (question == null || question.isBlank()) {
                 throw new IllegalArgumentException("question is required");
@@ -1178,8 +848,10 @@ public final class AgentOrchestrator {
             boolean degraded,
             String degradeReason,
             // M3: structured risk projection from the real warning.explain ToolResult rows.
-            RiskProjectionV1 riskProjection
+            RiskProjectionV1 riskProjection,
+            com.supplymind.agent.narrative.NarrativeResult narrative
     ) {
+        public AgentResult(EvidencePackV1 evidencePack,LLMService.LLMResponse llmResponse,String reportRef,AgentReportV1 report,boolean degraded,String degradeReason,RiskProjectionV1 riskProjection){this(evidencePack,llmResponse,reportRef,report,degraded,degradeReason,riskProjection,null);}
         /** Backward-compatible constructor without the risk projection. */
         public AgentResult(
                 EvidencePackV1 evidencePack,

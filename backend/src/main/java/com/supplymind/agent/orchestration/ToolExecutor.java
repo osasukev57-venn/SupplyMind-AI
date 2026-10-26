@@ -48,6 +48,15 @@ public final class ToolExecutor {
         this.provenanceTrace = Objects.requireNonNull(provenanceTrace, "provenanceTrace");
     }
 
+    public java.time.LocalDate latestBusinessDate(String itemId,java.time.Clock clock) {
+        if(itemId==null||itemId.isBlank())return null;
+        var today=java.time.LocalDate.now(clock.withZone(java.time.ZoneId.of("Asia/Shanghai")));
+        var result=historyQuery.historyQuery(itemId,today.minusYears(10).plusDays(1).toString(),today.toString(),"scope-discovery");
+        Object rows=result.result().get("rows");
+        if(rows instanceof List<?> list)return list.stream().filter(r->r instanceof java.util.Map<?,?>).map(r->((java.util.Map<?,?>)r).get("businessDate")).filter(Objects::nonNull).map(String::valueOf).max(String::compareTo).map(java.time.LocalDate::parse).orElse(null);
+        return null;
+    }
+
     public List<ToolResult> execute(AgentOrchestrator.AgentQueryInput input, String requestId) {
         List<ToolResult> results = new ArrayList<>();
         ToolResult resolved = input.itemId() == null || input.itemId().isBlank()
@@ -73,13 +82,26 @@ public final class ToolExecutor {
         }
         if (hasPeriod && hasGrain) {
             int year = java.time.YearMonth.parse(input.periodStart().substring(0, 7)).getYear();
-            results.add(periodMetrics.periodMetrics(
-                    effectiveItemId, input.grain(), String.valueOf(year), String.valueOf(year), requestId));
+            var metrics=periodMetrics.periodMetrics(
+                    effectiveItemId, input.grain(), String.valueOf(year), input.periodEnd()==null?String.valueOf(year):input.periodEnd().substring(0,4), requestId);
+            if(metrics.status()==ToolStatus.SUCCESS && metrics.result().get("rows") instanceof List<?> rows) {
+                String scopedStart=input.periodStart().length()==7?java.time.YearMonth.parse(input.periodStart()).atDay(1).toString():input.periodStart();
+                String scopedEnd=input.periodEnd()==null?null:input.periodEnd().length()==7?java.time.YearMonth.parse(input.periodEnd()).atEndOfMonth().toString():input.periodEnd();
+                var scoped=rows.stream().filter(r->r instanceof java.util.Map<?,?>).map(r->(java.util.Map<?,?>)r)
+                        .filter(r->String.valueOf(r.get("periodEnd")).compareTo(scopedStart)>=0)
+                        .filter(r->scopedEnd==null||String.valueOf(r.get("periodStart")).compareTo(scopedEnd)<=0).toList();
+                var body=new java.util.LinkedHashMap<>(metrics.result());body.put("rows",scoped);body.put("rowCount",scoped.size());
+                metrics=new ToolResult(metrics.toolName(),metrics.toolVersion(),metrics.requestId(),scoped.isEmpty()?ToolStatus.NO_DATA:ToolStatus.SUCCESS,metrics.inputSummary(),body,metrics.notices(),metrics.evidenceRefs(),metrics.lineage(),metrics.evidenceLineageByRef());
+            }
+            results.add(metrics);
             results.add(costImpact.costImpact(
                     effectiveItemId, input.grain(), input.periodStart(), requestId));
         }
         if (hasMonth) {
-            results.add(warningExplain.warningExplain(effectiveItemId, input.month(), requestId));
+            var first=java.time.YearMonth.parse(input.month());
+            var last=input.endDate()==null?first:java.time.YearMonth.parse(input.endDate().substring(0,7));
+            if(java.time.temporal.ChronoUnit.MONTHS.between(first,last)>120)throw new IllegalArgumentException("预警范围超过十年");
+            for(var cursor=first;!cursor.isAfter(last);cursor=cursor.plusMonths(1))results.add(warningExplain.warningExplain(effectiveItemId,cursor.toString(),requestId));
         }
         return List.copyOf(results);
     }

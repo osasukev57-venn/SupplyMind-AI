@@ -14,6 +14,13 @@ final class ReportSnapshotStore {
     private final AtomicFileStore files;
     ReportSnapshotStore(DataRoot root, AtomicFileStore files) { this.root=root; this.files=files; }
     ReportSnapshotV2 capture(AgentReportV1 report, Runnable checkpoint) {
+        return capture(report,checkpoint,false);
+    }
+    ReportSnapshotV3 captureV3(AgentReportV1 report,com.supplymind.agent.narrative.NarrativeResult narrative,Runnable checkpoint) {
+        var captured=capture(report,checkpoint,true);
+        return new ReportSnapshotV3("AGENT-REPORT-V3",report,captured.evidenceBindings(),narrative);
+    }
+    private ReportSnapshotV2 capture(AgentReportV1 report,Runnable checkpoint,boolean rows) {
         Map<String, byte[]> captured=new TreeMap<>(), manifests=new TreeMap<>();
         var pending=new ArrayDeque<String>();
         report.evidencePack().evidenceRefs().stream().filter(e->e.status()==EvidenceStatus.VERIFIED).forEach(e->pending.add(e.ref()));
@@ -38,7 +45,7 @@ final class ReportSnapshotStore {
                 bindings.add(new ReportSnapshotV2.Binding(ref,FileDigest.sha256(bytes),FileDigest.sha256(metadata),snapshot,metaSnapshot));
             }
             var envelope=new ReportSnapshotV2("AGENT-REPORT-V2",report,bindings);
-            DataRoot view=verify(envelope);
+            DataRoot view=verify(envelope,rows);
             // Two observations plus dependency SHA checks reject a mixed generation; no silent retry/rebase.
             for(var binding:bindings) {
                 checkpoint.run();
@@ -46,7 +53,7 @@ final class ReportSnapshotStore {
                     || !FileDigest.sha256(root.resolveDataRef(DataPaths.manifestRef(binding.originalRef()))).equals(binding.manifestSha256()))
                     throw new StorageException("REPORT_EVIDENCE_CHANGED_DURING_CAPTURE");
             }
-            requireReportBinding(envelope,view);
+            requireReportBinding(envelope,view,rows);
             checkpoint.run(); return envelope;
         } catch(java.io.IOException ex) { throw new StorageException("REPORT_SNAPSHOT_IO_FAILED",ex); }
     }
@@ -71,6 +78,11 @@ final class ReportSnapshotStore {
         return ref;
     }
     DataRoot verify(ReportSnapshotV2 envelope) {
+        return verify(envelope,false);
+    }
+    DataRoot verifyV3(ReportSnapshotV3 envelope){return verify(envelope.snapshot(),true);}
+    private DataRoot verify(ReportSnapshotV2 envelope,boolean rows) {
+        if(!rows && !"AGENT-EVIDENCE-SCHEMA-V1".equals(envelope.report().evidencePack().schemaVersion()))throw new StorageException("LEGACY_EVIDENCE_VERSION_REQUIRED");
         Map<String,String> mapping=new HashMap<>();
         Set<String> identities=new HashSet<>();
         for(var binding:envelope.evidenceBindings()) {
@@ -95,13 +107,17 @@ final class ReportSnapshotStore {
                     if(!raw.runId().equals(input.runId())||!timeline.rawRef().equals(input.rawRef())||!timeline.isPublishedForDailyInput())throw new StorageException("REPORT_SNAPSHOT_PUBLISH_BINDING_INVALID");
                 }
             }
-            requireReportBinding(envelope,view);
+            requireReportBinding(envelope,view,rows);
             return view;
         }catch(java.io.IOException ex){throw new StorageException("REPORT_SNAPSHOT_UNREADABLE",ex);}
     }
-    private static void requireReportBinding(ReportSnapshotV2 envelope,DataRoot view) {
+    private static void requireReportBinding(ReportSnapshotV2 envelope,DataRoot view,boolean rows) {
         var verified=envelope.report().evidencePack().evidenceRefs().stream().filter(e->e.status()==EvidenceStatus.VERIFIED).toList();
-        var actual=new EvidenceRefVerifier(view).verifyAllWithAuthoritativeLineage(verified.stream().map(EvidencePackV1.EvidenceRefEntry::ref).toList());
+        var verifier=new EvidenceRefVerifier(view);
+        if(rows && "FORMAL".equals(envelope.report().evidencePack().mode()) && verified.stream().anyMatch(e->"AGGREGATE_ROWS_V1".equals(e.refType())&&envelope.report().evidencePack().facts().stream().anyMatch(f->f.evidenceRefs().contains(e.ref()))&&!verifier.isFormalAggregateEvidence(e)))throw new StorageException("REPORT_FORMAL_AGGREGATE_INPUT_REQUIRED");
+        var actual=rows ? verified.stream().map(e->e.ref().startsWith("processed/aggregate/")?verifier.verifyAggregateRows(e.ref()):verifier.verifyWithAuthoritativeLineage(e.ref())).toList()
+                : verifier.verifyAllWithAuthoritativeLineage(verified.stream().map(EvidencePackV1.EvidenceRefEntry::ref).toList());
+        if(rows)verifier.requireFactRowBindings(envelope.report().evidencePack());
         if(ReportStore.bindingMismatch(verified,actual)!=null || actual.stream().anyMatch(e->e.status()!=EvidenceStatus.VERIFIED))throw new StorageException("REPORT_SNAPSHOT_REPORT_BINDING_INVALID");
         Set<String> refs=new HashSet<>();verified.forEach(e->refs.add(e.ref()));
         for(var claim:envelope.report().claims())if(claim.evidenceRefs().isEmpty()||!refs.containsAll(claim.evidenceRefs()))throw new StorageException("REPORT_CLAIM_UNVERIFIED");

@@ -136,6 +136,76 @@ public final class EvidenceRefVerifier {
         return entry != null && entry.status() == EvidenceStatus.VERIFIED;
     }
 
+    /** V2 evidence only: integrity of the full file PLUS authoritative identities of every row. */
+    public EvidencePackV1.EvidenceRefEntry verifyAggregateRows(String ref) {
+        var file=verify(ref);
+        if(!ref.startsWith("processed/aggregate/") || file.status()!=EvidenceStatus.VERIFIED)return file;
+        try {
+            byte[] bytes=Files.readAllBytes(dataRoot.resolveDataRef(ref));
+            var rows=CsvV1Codec.decodeAggregate(bytes);
+            if(rows.isEmpty())throw new IllegalArgumentException("empty aggregate");
+            var bindings=new ArrayList<AggregateRowEvidenceV1>();
+            var identities=new java.util.HashSet<String>();
+            String manifestSha=com.supplymind.foundation.storage.FileDigest.sha256(dataRoot.resolveDataRef(DataPaths.manifestRef(ref)));
+            for(var row:rows) {
+                String expected=DataPaths.aggregateRef(row.itemId(),row.grain().wireValue(),Integer.parseInt(row.periodStart().substring(0,4)));
+                String id=AggregateRowEvidenceV1.rowId(row);
+                if(!ref.equals(expected)||!identities.add(id))throw new IllegalArgumentException("aggregate identity mismatch/duplicate");
+                bindings.add(new AggregateRowEvidenceV1("AGGREGATE-ROW-EVIDENCE-V1",id,ref,file.sha256(),manifestSha,AggregateRowEvidenceV1.digest(row),row));
+            }
+            bindings.sort(java.util.Comparator.comparing(AggregateRowEvidenceV1::rowEvidenceId));
+            if(!com.supplymind.foundation.storage.FileDigest.sha256(bytes).equals(file.sha256())
+                    || !ManifestVerifier.matches(dataRoot,ref,dataRoot.resolveDataRef(ref),dataRoot.resolveDataRef(DataPaths.manifestRef(ref))))throw new IllegalArgumentException("aggregate changed");
+            return new EvidencePackV1.EvidenceRefEntry(file.evidenceRefId(),"AGGREGATE_ROWS_V1",ref,file.sha256(),EvidenceStatus.VERIFIED,null,
+                    null,null,null,null,null,null,null,null,null,List.of(),bindings);
+        }catch(IOException|RuntimeException ex) {
+            return entry(file.evidenceRefId(),ref,"AGGREGATE_ROWS_V1",EvidenceStatus.INVALID,"AGGREGATE_ROW_BINDING_INVALID",file.sha256());
+        }
+    }
+
+    public void requireFactRowBindings(EvidencePackV1 pack) {
+        for(var fact:pack.facts()) {
+            if(!"period.metrics.avg".equals(fact.factType()))continue;
+            if(fact.rowEvidenceId()==null)throw new IllegalArgumentException("AGGREGATE_FACT_ROW_REQUIRED");
+            var candidates=pack.evidenceRefs().stream().filter(e->e.status()==EvidenceStatus.VERIFIED && fact.evidenceRefs().contains(e.ref()))
+                    .flatMap(e->e.rowEvidence().stream()).filter(r->r.rowEvidenceId().equals(fact.rowEvidenceId())).toList();
+            if(candidates.size()!=1)throw new IllegalArgumentException("AGGREGATE_FACT_ROW_NOT_UNIQUE");
+            var r=candidates.get(0).row();
+            if(!Objects.equals(fact.itemId(),r.itemId())||!Objects.equals(fact.value(),r.avg())
+                ||!Objects.equals(fact.businessDate(),r.inputRefs().stream().map(i->i.businessDate()).max(String::compareTo).orElse(null))
+                ||!Objects.equals(fact.periodStart(),r.periodStart())||!Objects.equals(fact.periodEnd(),r.periodEnd())
+                ||!Objects.equals(fact.unit(),r.unit())||!Objects.equals(fact.currency(),r.currency())
+                ||!Objects.equals(fact.validationStatus(),r.validationStatus().wireValue())||!Objects.equals(fact.validationVersion(),r.validationVersion())
+                ||!Objects.equals(fact.calculationVersion(),r.calculationVersion())||!Objects.equals(fact.calendarVersion(),r.calendarVersion())
+                ||!Objects.equals(fact.configVersions(),r.configVersions().stream().map(String::valueOf).toList())
+                ||!Objects.equals(fact.actualSourceName(),r.actualSourceName())||!Objects.equals(fact.sourceFingerprint(),r.sourceFingerprint()))
+                throw new IllegalArgumentException("AGGREGATE_FACT_ROW_MISMATCH");
+        }
+    }
+
+    /** A row binding never turns demo/test inputs into FORMAL business facts. */
+    public boolean isFormalAggregateEvidence(EvidencePackV1.EvidenceRefEntry entry) {
+        try {
+            var daily=new java.util.HashMap<String,List<com.supplymind.foundation.model.DailyRecordV1>>();
+            for(var binding:entry.rowEvidence()) {
+                var aggregate=binding.row();
+                if(aggregate.providerType()==com.supplymind.foundation.model.ProviderType.SYNTHETIC_DEMO)return false;
+                for(var input:aggregate.inputRefs()) {
+                    String ref=input.dailyFileRef();
+                    if(!daily.containsKey(ref)) {
+                        if(!ManifestVerifier.matches(dataRoot,ref,dataRoot.resolveDataRef(ref),dataRoot.resolveDataRef(DataPaths.manifestRef(ref))))return false;
+                        daily.put(ref,CsvV1Codec.decodeDaily(Files.readAllBytes(dataRoot.resolveDataRef(ref))));
+                    }
+                    // Mode isolation applies to the ENTIRE referenced file, not just a convenient row.
+                    // Group identity/value/lineage binding is enforced separately against the aggregate row.
+                    if(daily.get(ref).isEmpty()||daily.get(ref).stream().anyMatch(r->r.providerType()==com.supplymind.foundation.model.ProviderType.SYNTHETIC_DEMO
+                            ||r.inputRefs().stream().anyMatch(source->!source.rawRef().startsWith("raw/formal/"))))return false;
+                }
+            }
+            return !entry.rowEvidence().isEmpty();
+        }catch(IOException|RuntimeException invalid){return false;}
+    }
+
     /**
      * M2/M4: verifies a ref AND recovers its AUTHORITATIVE lineage by decoding the real
      * evidence file (never the report's self-reported lineage). For multi-row CSV files EVERY

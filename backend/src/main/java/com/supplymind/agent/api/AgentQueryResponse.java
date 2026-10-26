@@ -40,7 +40,9 @@ public record AgentQueryResponse(
         // ---- D8-M3 additions ----
         List<EvidenceLinkView> evidenceLinks,
         CalculationBasisView calculationBasis,
-        RiskView risk
+        RiskView risk,
+        com.supplymind.agent.narrative.NarrativeResult narrative,
+        boolean simulation,String currentWarningStatus
 ) {
     public record ToolExecutionView(
             int invocationIndex,
@@ -63,7 +65,8 @@ public record AgentQueryResponse(
             String value,
             String businessDate,
             String period,
-            String validationStatus
+            String validationStatus,String unit,String currency,List<String> configVersions,String rowEvidenceId,
+            String periodStart,String periodEnd,String actualSourceName,String canonicalSpecCode,String qualityStatus
     ) {
     }
 
@@ -271,10 +274,11 @@ public record AgentQueryResponse(
                 executions,
                 evidenceRefs,
                 result.reportRef(),
-                report == null ? List.of() : report.factsSummary().stream()
+                report == null ? List.of() : pack.facts().stream()
                         .map(fact -> new FactView(
-                                fact.factId(), fact.statement(), fact.value(),
-                                fact.businessDate(), fact.period(), fact.validationStatus()))
+                                fact.factId(), fact.factType(), fact.value(),fact.businessDate(),fact.periodStart()==null?fact.businessDate():fact.periodStart(),fact.validationStatus(),
+                                fact.unit(),fact.currency(),fact.configVersions(),fact.rowEvidenceId(),fact.periodStart(),fact.periodEnd(),fact.actualSourceName(),
+                                pack.evidenceRefs().stream().flatMap(e->e.rowEvidence().stream()).filter(r->r.rowEvidenceId().equals(fact.rowEvidenceId())).map(r->r.row().canonicalSpecCode()).filter(java.util.Objects::nonNull).findFirst().orElse(null),fact.qualityStatus()))
                         .toList(),
                 report == null ? null : report.generatedBy(),
                 report == null ? null : report.provider(),
@@ -290,6 +294,7 @@ public record AgentQueryResponse(
                 dataThrough,
                 links,
                 basis,
-                risk);
+                risk, result.narrative(),pack.facts().stream().anyMatch(f->f.actualSourceName()!=null&&f.actualSourceName().contains("模拟")),
+                risk==null?"NO_VERIFIED_APPLICABLE_RECORD":"TRIGGERED");
     }
 }

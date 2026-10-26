@@ -26,6 +26,7 @@ public record ReportSnapshotV2(String schemaVersion, AgentReportV1 report, List<
     public static AgentReportV1 decodeReport(byte[] bytes) {
         try {
             var tree=JsonV1Codec.mapper().readTree(bytes);
+            if("AGENT-REPORT-V3".equals(tree.path("schemaVersion").asText()))return JsonV1Codec.decodeFile(bytes,ReportSnapshotV3.class).report();
             return "AGENT-REPORT-V2".equals(tree.path("schemaVersion").asText())
                     ? JsonV1Codec.decodeFile(bytes,ReportSnapshotV2.class).report() : JsonV1Codec.decodeFile(bytes,AgentReportV1.class);
         } catch(java.io.IOException ex) { throw new IllegalArgumentException("report unreadable"); }

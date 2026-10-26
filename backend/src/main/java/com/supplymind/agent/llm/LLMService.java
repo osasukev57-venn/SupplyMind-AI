@@ -23,8 +23,10 @@ public final class LLMService {
             String period,
             String validationStatus,
             String actualSourceName,
-            String evidenceRef
+            String evidenceRef,
+            java.util.Map<String,Object> groupIdentity
     ) {
+        public LlmFact(String factId,String statement,String itemId,String value,String unit,String currency,String businessDate,String period,String validationStatus,String actualSourceName,String evidenceRef){this(factId,statement,itemId,value,unit,currency,businessDate,period,validationStatus,actualSourceName,evidenceRef,java.util.Map.of());}
     }
 
     public record LLMRequest(

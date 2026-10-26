@@ -39,12 +39,10 @@ class AgentFactFirstPipelineTest {
             LLMService.LlmFact rowCount = fact(request, "published row count", null);
             LLMService.LlmFact completeness =
                     fact(request, "Java-computed completeness percentage", null);
-            String json = """
-                    {"answerTemplate":"最新情况：{{%s}}。月度表现：{{%s}}。数据质量：{{%s}}，{{%s}}。",
-                     "usedFactIds":["%s","%s","%s","%s"]}
-                    """.formatted(
-                    latest.factId(), average.factId(), rowCount.factId(), completeness.factId(),
-                    latest.factId(), average.factId(), rowCount.factId(), completeness.factId());
+            String json=com.supplymind.foundation.codec.JsonV1Codec.encodeCompact(java.util.Map.of("sections",List.of(
+                java.util.Map.of("kind","OVERVIEW","text","最新值 "+latest.value(),"factIds",List.of(latest.factId())),
+                java.util.Map.of("kind","METRICS","text","VERIFIED组均值 "+average.value(),"factIds",List.of(average.factId())),
+                java.util.Map.of("kind","QUALITY","text","观测数 "+rowCount.value()+"，完整率 "+completeness.value(),"factIds",List.of(rowCount.factId(),completeness.factId()))),"recommendations",List.of()));
             return LLMService.LLMResponse.success(json);
         }, new AgentResponseVerifier(List.of()));
 
@@ -64,7 +62,7 @@ class AgentFactFirstPipelineTest {
         assertTrue(captured.get().facts().stream()
                 .anyMatch(fact -> "Java-computed completeness percentage".equals(fact.statement())
                         && "100%".equals(fact.value())));
-        assertFalse(result.degraded(), "valid fact-selected language must pass");
+        assertFalse(result.degraded(), "valid fact-selected language must pass: "+result.narrative());
         assertEquals("LLM", result.report().generatedBy());
         LLMService.LlmFact renderedLatest = fact(captured.get(), "latest published value", null);
         LLMService.LlmFact renderedAverage = fact(
@@ -88,35 +86,14 @@ class AgentFactFirstPipelineTest {
                 base.qualityStatus(), base.validationStatus(), base.validationVersion(),
                 base.calculationVersion(), base.calendarVersion(), base.configVersions(),
                 base.actualSourceName(), base.sourceFingerprint(), base.evidenceRefs());
-        var method = AgentOrchestrator.class.getDeclaredMethod(
-                "controlledShellSemanticsSupported", String.class, List.class);
-        method.setAccessible(true);
-
-        assertEquals(true, method.invoke(null, "从已发布数据看，整体呈上升趋势。", List.of(upward)));
-        assertEquals(false, method.invoke(null, "从已发布数据看，整体呈下降趋势。", List.of(upward)));
-        assertEquals(false, method.invoke(null, "整体呈上升趋势。", List.of(base)));
+        var pack=new EvidencePackV1("AGENT-EVIDENCE-SCHEMA-V1","pack-trend","req-trend","FORMAL","trend",fixture.verifiedEvidencePack("t").createdAt(),fixture.verifiedEvidencePack("t").scope(),List.of(),List.of(upward),fixture.verifiedEvidencePack("t").evidenceRefs(),List.of(),List.of(),List.of());
+        var validator=new com.supplymind.agent.narrative.NarrativeValidator(new AgentResponseVerifier(List.of()));
+        assertEquals("FULL",validator.validate("{\"sections\":[{\"kind\":\"TREND\",\"text\":\"整体呈上升趋势。\",\"factIds\":[\"fact-trend\"]}],\"recommendations\":[]}",pack).adoption());
+        assertEquals("NONE",validator.validate("{\"sections\":[{\"kind\":\"TREND\",\"text\":\"整体呈下降趋势。\",\"factIds\":[\"fact-trend\"]}],\"recommendations\":[]}",pack).adoption());
     }
     @Test
-    void templateCannotSmuggleAnUnbackedBusinessNumber() {
-        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "template-number-attack");
-        AtomicInteger calls = new AtomicInteger();
-        AgentOrchestrator orchestrator = fixture.orchestrator(request -> {
-            calls.incrementAndGet();
-            LLMService.LlmFact latest = fact(request, "latest published value", null);
-            return LLMService.LLMResponse.success("""
-                    {"answerTemplate":"{{%s}}，并额外声称数值为 999999.999。",
-                     "usedFactIds":["%s"]}
-                    """.formatted(latest.factId(), latest.factId()));
-        }, new AgentResponseVerifier(List.of()));
-
-        AgentOrchestrator.AgentResult result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
-                "说明最新值", Day6R2Fixture.ITEM, "2026-08-10", "2026-08-10", null,
-                null, null, null, null, "FORMAL"));
-
-        assertEquals(1, calls.get(), "attack must reach the model");
-        assertTrue(result.degraded());
-        assertEquals("MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE", result.degradeReason());
-        assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
+    void templateCannotSmuggleAnUnbackedBusinessNumber() throws Exception {
+        com.supplymind.agent.support.NarrativeAttackCases.run(temp,"number","NONE","UNSUPPORTED_NUMBER");
     }
 
     @Test
@@ -148,49 +125,13 @@ class AgentFactFirstPipelineTest {
     }
 
     @Test
-    void templateShellCannotStateTrendOutsideJavaPlaceholder() {
-        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "template-trend-attack");
-        AtomicInteger calls = new AtomicInteger();
-        AgentOrchestrator orchestrator = fixture.orchestrator(request -> {
-            calls.incrementAndGet();
-            LLMService.LlmFact latest = fact(request, "latest published value", null);
-            return LLMService.LLMResponse.success("""
-                    {"answerTemplate":"{{%s}}，整体呈下降趋势。",
-                     "usedFactIds":["%s"]}
-                    """.formatted(latest.factId(), latest.factId()));
-        }, new AgentResponseVerifier(List.of()));
-
-        AgentOrchestrator.AgentResult result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
-                "说明最新值", Day6R2Fixture.ITEM, "2026-08-10", "2026-08-10", null,
-                null, null, null, null, "FORMAL"));
-
-        assertEquals(1, calls.get(), "attack must reach the model");
-        assertTrue(result.degraded());
-        assertEquals("MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE", result.degradeReason());
-        assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
+    void templateShellCannotStateTrendOutsideJavaPlaceholder() throws Exception {
+        com.supplymind.agent.support.NarrativeAttackCases.run(temp,"trend","NONE","UNSUPPORTED_TREND");
     }
 
     @Test
-    void templateFactSetMustExactlyMatchUsedFactIds() {
-        Day6R2Fixture fixture = Day6R2Fixture.create(temp, "template-ref-attack");
-        AtomicInteger calls = new AtomicInteger();
-        AgentOrchestrator orchestrator = fixture.orchestrator(request -> {
-            calls.incrementAndGet();
-            LLMService.LlmFact latest = fact(request, "latest published value", null);
-            return LLMService.LLMResponse.success("""
-                    {"answerTemplate":"{{%s}}。",
-                     "usedFactIds":["%s","fact-unknown"]}
-                    """.formatted(latest.factId(), latest.factId()));
-        }, new AgentResponseVerifier(List.of()));
-
-        AgentOrchestrator.AgentResult result = orchestrator.answer(new AgentOrchestrator.AgentQueryInput(
-                "说明最新值", Day6R2Fixture.ITEM, "2026-08-10", "2026-08-10", null,
-                null, null, null, null, "FORMAL"));
-
-        assertEquals(1, calls.get(), "attack must reach the model");
-        assertTrue(result.degraded());
-        assertEquals("MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE", result.degradeReason());
-        assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
+    void templateFactSetMustExactlyMatchUsedFactIds() throws Exception {
+        com.supplymind.agent.support.NarrativeAttackCases.run(temp,"unknown","NONE","UNKNOWN_FACT_ID");
     }
 
     @Test
@@ -230,7 +171,7 @@ class AgentFactFirstPipelineTest {
                         Day6R2Fixture.ITEM, Day6R2Fixture.ITEM,
                         null, null, null, null, null, null, null, "FORMAL"));
 
-        assertEquals(1, calls.get(), "current-month facts must reach the cloud explanation phase");
+        assertEquals(1, calls.get(), "latest-business-month facts must reach the cloud explanation phase");
         assertNotNull(captured.get());
         assertTrue(captured.get().facts().stream()
                 .anyMatch(fact -> "latest published value".equals(fact.statement())));
@@ -239,7 +180,7 @@ class AgentFactFirstPipelineTest {
                 "every cloud-visible fact must retain the required authoritative itemId");
         assertTrue(result.evidencePack().toolExecutions().stream()
                 .anyMatch(tool -> "history.query".equals(tool.toolName())
-                        && String.valueOf(tool.input()).contains("range=2026-08-01..2026-08-24")));
+                        && String.valueOf(tool.input()).contains("range=2026-08-01..2026-08-10")));
         assertFalse(result.degradeReason().startsWith("STANDARD_FACTS_NOT_READY:"));
         String fallbackText = result.report().claims().get(0).text();
         assertTrue(fallbackText.contains("最新值"));
@@ -277,18 +218,8 @@ class AgentFactFirstPipelineTest {
     }
 
     @Test
-    void repeatedTemplateTokenIsRejectedAfterCloudWasCalled() {
-        var fixture = Day6R2Fixture.create(temp, "repeated-token");
-        AtomicInteger calls = new AtomicInteger();
-        var orchestrator = fixture.orchestrator(request -> {
-            calls.incrementAndGet();
-            var value = fact(request, "latest published value", null);
-            return LLMService.LLMResponse.success("{\"answerTemplate\":\"{{" + value.factId()
-                    + "}}。{{" + value.factId() + "}}\",\"usedFactIds\":[\"" + value.factId() + "\"]}");
-        }, new AgentResponseVerifier(List.of()), Day6R2Fixture.CLOCK);
-        var result = orchestrator.answer(fixture.formalHistoryQuery());
-        assertEquals(1, calls.get());
-        assertEquals("MODEL_RESPONSE_REJECTED:INVALID_FACT_TEMPLATE", result.degradeReason());
+    void repeatedTemplateTokenIsRejectedAfterCloudWasCalled() throws Exception {
+        com.supplymind.agent.support.NarrativeAttackCases.run(temp,"duplicateIds","NONE","MALFORMED_SECTION");
     }
 
     private static LLMService.LlmFact fact(

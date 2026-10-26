@@ -18,6 +18,15 @@ export interface FactView {
   businessDate: string | null
   period: string | null
   validationStatus: string | null
+  unit?: string | null
+  currency?: string | null
+  configVersions?: string[]
+  rowEvidenceId?: string | null
+  periodStart?: string | null
+  periodEnd?: string | null
+  actualSourceName?: string | null
+  canonicalSpecCode?: string | null
+  qualityStatus?: string | null
 }
 
 export interface ScopeView {
@@ -92,6 +101,9 @@ export interface AgentQueryResponse {
   evidenceLinks: EvidenceLinkView[]
   calculationBasis: CalculationBasisView | null
   risk: RiskView | null
+  narrative?: NarrativeResult | null
+  simulation?: boolean
+  currentWarningStatus?: string
 }
 
 export interface AgentQueryRequest {
@@ -105,4 +117,33 @@ export interface AgentQueryRequest {
   month?: string
   businessDate?: string
   mode?: string
+  theme?: string
+}
+
+export interface NarrativeSection {
+  sectionId: string
+  kind: string
+  text: string
+  factIds: string[]
+  evidenceRefs: string[]
+}
+export interface NarrativeResult {
+  schemaVersion: string
+  adoption: 'FULL' | 'PARTIAL' | 'NONE'
+  cloudStatus: string
+  sections: NarrativeSection[]
+  recommendations: NarrativeSection[]
+  diagnostics: {sectionId: string; code: string}[]
+  attempts: number
+  checkScope: string
+}
+
+export interface SavedReportView {
+  requestId: string
+  reportRef: string
+  createdAt: string
+  generatedBy: string
+  javaSummary: string
+  narrative: NarrativeResult | null
+  scope: ScopeView
 }

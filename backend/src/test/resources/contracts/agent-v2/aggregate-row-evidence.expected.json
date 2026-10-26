@@ -1,0 +1,19 @@
+[
+  {
+    "status": "VERIFIED",
+    "rowId": "aggregate-row-21dcc98410d781cdfe05aa24b348382884650239d656a8dad51634f2e8785235",
+    "rowSha256": "c330773f38e21bdcf327730947f2c331b1f4253036279cab2219db18693c35a7",
+    "configVersions": [
+      5,
+      12
+    ]
+  },
+  {
+    "status": "VERIFIED_WITH_NOTICE",
+    "rowId": "aggregate-row-94ca7e99eb63be54911b0280c6c22c249457d3e103f725f8530d1ea70ff22554",
+    "rowSha256": "4fef227a3c58e7c8d781c9f8c36c7ff8e73617d505d7a7d92d5a19ca4dba8d50",
+    "configVersions": [
+      5
+    ]
+  }
+]

@@ -64,12 +64,12 @@ class Day6FinalStageRowToRefConfigTest {
                     String valueB = request.facts().size() > 1
                             ? request.facts().get(1).value() : "200.00000000";
                     return LLMService.LLMResponse.success(
-                            "{\"answer\":\"值为 " + valueB + "\",\"usedFactIds\":[\"fact-0\"]}");
+                            "{\"sections\":[{\"kind\":\"OVERVIEW\",\"text\":\"历史值 " + valueB + "\",\"factIds\":[\"fact-0\"]}],\"recommendations\":[]}");
                 }, new AgentResponseVerifier(List.of())).answer(fixture.rangeQuery());
 
         assertTrue(result.degraded(),
                 "value B backed only by raw-B must never pass while the claim references raw-A's fact");
-        assertTrue(result.degradeReason().contains("UNSUPPORTED_CLAIM_REFERENCE"),
+        assertTrue(result.degradeReason().contains("UNSUPPORTED_NUMBER"),
                 "reason=" + result.degradeReason());
         assertEquals("JAVA_TEMPLATE", result.report().generatedBy());
     }

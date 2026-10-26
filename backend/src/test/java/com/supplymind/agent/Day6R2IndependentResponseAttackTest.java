@@ -30,7 +30,7 @@ class Day6R2IndependentResponseAttackTest {
         // is now rejected earlier as MALFORMED_STRUCTURED_RESPONSE, both fail closed).
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"Current value is 999999.999\",\"usedFactIds\":[\"fact-0\"]}"),
+                        com.supplymind.agent.support.NarrativeAttackCases.response(request,"number")),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
 
         assertTrue(result.degraded());
@@ -49,7 +49,7 @@ class Day6R2IndependentResponseAttackTest {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "secret");
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"Authorization: Bearer " + secret + "\",\"usedFactIds\":[\"fact-0\"]}"),
+                        com.supplymind.agent.support.NarrativeAttackCases.response(request,"secret")),
                 new AgentResponseVerifier(List.of(secret)))
                 .answer(fixture.formalHistoryQuery());
 
@@ -66,7 +66,7 @@ class Day6R2IndependentResponseAttackTest {
         Day6R2Fixture fixture = Day6R2Fixture.create(temp, "unknown-reference");
         AgentOrchestrator.AgentResult result = fixture.orchestrator(
                 request -> LLMService.LLMResponse.success(
-                        "{\"answer\":\"unknown selection\",\"usedFactIds\":[\"fact-does-not-exist\"]}"),
+                        com.supplymind.agent.support.NarrativeAttackCases.response(request,"unknown")),
                 new AgentResponseVerifier(List.of())).answer(fixture.formalHistoryQuery());
 
         assertTrue(result.degraded(), "unknown fact/evidence references from a model response require fallback");

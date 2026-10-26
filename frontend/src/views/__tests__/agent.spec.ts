@@ -3,11 +3,12 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
 vi.mock('../../api/agent', () => ({
-  queryAgent: vi.fn()
+  queryAgent: vi.fn(), readSavedReport: vi.fn()
 }))
 
+vi.mock('../../api/config', () => ({ fetchConfigItems: vi.fn().mockResolvedValue({ items: [{ itemId: 'MAT.AZ91D.SIMULATION', displayName: '模拟 AZ91D', enabled: true }] }) }))
 import AgentView from '../AgentView.vue'
-import { queryAgent } from '../../api/agent'
+import { queryAgent, readSavedReport } from '../../api/agent'
 import type { AgentQueryResponse } from '../../types/agent'
 
 function mountWithRouter() {
@@ -257,6 +258,47 @@ describe('AgentView (D8-T03)', () => {
     for (const text of ['2026-10-13', '2026-10-22', 'custom-r4', '2e973b219109dd627e241d9973c9ffe1', '已确认', '确认不代表风险消失', '不适用（预警证据单独核验）']) expect(wrapper.text()).toContain(text)
     expect(wrapper.text()).not.toContain('未知校验状态')
     expect(wrapper.text()).not.toContain('{"points":[]}')
+    wrapper.unmount()
+  })
+
+  it('keeps verified facts and independent cloud sections visible in a partial result', async () => {
+    vi.mocked(queryAgent).mockResolvedValue({ ...response, generatedBy: 'LLM_PARTIAL', simulation: true,
+      narrative: { schemaVersion: 'ANALYSIS-NARRATIVE-V1', adoption: 'PARTIAL', cloudStatus: 'SUCCESS', attempts: 1,
+        sections: [{sectionId:'s1',kind:'TREND',text:'观测区间呈上升趋势。',factIds:['f1'],evidenceRefs:[]}], recommendations: [],
+        diagnostics: [{sectionId:'s2',code:'WRONG_AGGREGATE_GROUP'}], checkScope:'关键主张检查，不是任意语义证明' } })
+    const wrapper = mountWithRouter()
+    await fillRequiredFields(wrapper, '综合分析')
+    await wrapper.find('button.btn-primary').trigger('click')
+    await flushPromises()
+    for (const text of ['部分采用', '观测区间呈上升趋势', 'Java 已验证事实', '模拟演示数据', 'WRONG_AGGREGATE_GROUP']) expect(wrapper.text()).toContain(text)
+    expect(wrapper.text()).not.toContain('云端语言分析未被采用')
+    expect(wrapper.text()).not.toContain('全部采用')
+    wrapper.unmount()
+  })
+  it('sends explicit dates and theme unchanged, and offers configured item selection', async () => {
+    vi.mocked(queryAgent).mockResolvedValue(response)
+    const wrapper = mountWithRouter()
+    await flushPromises()
+    expect(wrapper.find('datalist').text()).toContain('模拟 AZ91D')
+    await fillRequiredFields(wrapper, '说明均值')
+    await wrapper.find('input[aria-label="开始日期"]').setValue('2026-10-13')
+    await wrapper.find('input[aria-label="结束日期"]').setValue('2026-10-22')
+    await wrapper.find('select[aria-label="分析主题"]').setValue('METRICS')
+    await wrapper.find('button.btn-primary').trigger('click')
+    await flushPromises()
+    expect(queryAgent).toHaveBeenCalledWith(expect.objectContaining({ startDate:'2026-10-13',endDate:'2026-10-22',theme:'METRICS' }),expect.anything())
+    wrapper.unmount()
+  })
+
+  it('opens a persisted generation-time report without calling a model', async () => {
+    vi.mocked(readSavedReport).mockResolvedValue({requestId:'req-old',reportRef:'report/2026-10/report-old.json',createdAt:'2026-10-26T10:00:00+08:00',generatedBy:'JAVA_TEMPLATE',javaSummary:'生成时均值24800.00',narrative:null,scope:{itemIds:['MAT.AZ91D.SIMULATION'],businessDate:null,periodStart:'2026-10-13',periodEnd:'2026-10-22',timezone:'Asia/Shanghai'}})
+    const wrapper = mountWithRouter()
+    await wrapper.find('input[aria-label="报告标识"]').setValue('report/2026-10/report-old.json')
+    await wrapper.findAll('button').find(b=>b.text().includes('核验并打开报告'))?.trigger('click')
+    await flushPromises()
+    expect(readSavedReport).toHaveBeenCalledWith('report/2026-10/report-old.json')
+    expect(queryAgent).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('生成时均值24800.00')
     wrapper.unmount()
   })
 
