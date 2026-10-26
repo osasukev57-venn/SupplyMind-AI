@@ -78,3 +78,40 @@ test('waitForBackend keeps polling while the backend returns non-UP bodies', asy
   });
   assert.strictEqual(result.state, State.READY);
 });
+
+test('default startup grace admits a healthy cold JVM at 45 seconds', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'setInterval', 'Date'], now: 0 });
+  t.after(() => t.mock.timers.reset());
+  const httpImpl = {
+    get(url, onResponse) {
+      const request = new EventEmitter();
+      request.setTimeout = () => {};
+      request.destroy = () => {};
+      if (Date.now() < 45_000) queueMicrotask(() => request.emit('error', new Error('starting')));
+      else {
+        const response = new EventEmitter();
+        response.statusCode = 200;
+        onResponse(response);
+        queueMicrotask(() => { response.emit('data', '{"status":"UP"}'); response.emit('end'); });
+      }
+      return request;
+    }
+  };
+  let settled = false;
+  const pending = waitForBackend('http://127.0.0.1:45678', { httpImpl });
+  pending.then(() => { settled = true; });
+  t.mock.timers.tick(30_000);
+  await Promise.resolve();
+  assert.strictEqual(settled, false, 'an ongoing valid startup must survive the old 30-second cutoff');
+  t.mock.timers.tick(15_000);
+  assert.strictEqual((await pending).state, State.READY);
+});
+
+test('default startup grace still fails explicitly at 120 seconds', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'setInterval', 'Date'], now: 0 });
+  t.after(() => t.mock.timers.reset());
+  const httpImpl = { get() { const request = new EventEmitter(); request.setTimeout = () => {}; request.destroy = () => {}; return request; } };
+  const pending = waitForBackend('http://127.0.0.1:45678', { httpImpl });
+  t.mock.timers.tick(120_000);
+  assert.strictEqual((await pending).state, State.TIMEOUT);
+});

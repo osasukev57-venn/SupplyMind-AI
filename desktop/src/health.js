@@ -7,7 +7,9 @@
  */
 
 const HEALTH_PATH = '/api/health';
-const DEFAULT_TIMEOUT_MS = 30_000;
+// Cold packaged JVM/schema initialization can legitimately exceed 30 seconds.
+// This bounded startup grace is separate from an Agent request's 90-second target.
+const DEFAULT_TIMEOUT_MS = 120_000;
 const DEFAULT_INTERVAL_MS = 500;
 
 const State = Object.freeze({

@@ -21,7 +21,6 @@ const { backendArgs } = require('./backend');
 const { acquireSingleInstance } = require('./instance');
 const { stopChild } = require('./lifecycle');
 
-const HEALTH_TIMEOUT_MS = 30_000;
 const KILL_GRACE_MS = 5_000;
 
 let childProcess = null;
@@ -111,7 +110,7 @@ if (!acquireSingleInstance(app, () => mainWindow, recordInstanceActivation)) {
         setTimeout(() => app.exit(1), 1000);
       });
 
-      const result = await waitForBackend(backendUrl, { timeoutMs: HEALTH_TIMEOUT_MS });
+      const result = await waitForBackend(backendUrl);
       if (result.state !== 'READY') {
         await stopBackend();
         dialog.showErrorBox(

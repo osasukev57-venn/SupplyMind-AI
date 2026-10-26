@@ -1,0 +1,24 @@
+{
+  "changedBuildInputs": [
+    "desktop/src/health.js",
+    "desktop/src/main.js",
+    "desktop/test/health.test.js"
+  ],
+  "backendInputsUnchanged": true,
+  "frontendInputsUnchanged": true,
+  "backendJarUnchanged": true,
+  "backendJarSha256": "382da229d5f10dd905e82ef3d5b738baaf804d92a4744801804e9c8d34fbb67e",
+  "backendFullRegression": {
+    "total": 739,
+    "passed": 730,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 9
+  },
+  "desktopCurrent": {
+    "total": 36,
+    "passed": 36,
+    "skipped": 0
+  },
+  "oldImplementationFailsNewRegression": true
+}
