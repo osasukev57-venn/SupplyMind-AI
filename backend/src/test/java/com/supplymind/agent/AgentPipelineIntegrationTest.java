@@ -85,7 +85,7 @@ class AgentPipelineIntegrationTest {
         Harness harness = harness("pipeline-llm");
         // Fact-first contract: the cloud returns language plus selected Java factIds only.
         AgentOrchestrator orchestrator = orchestrator(harness, new FixedAnswerChatModel(
-                "{\"sections\":[{\"kind\":\"OVERVIEW\",\"text\":\"已有可用的正式数据。\",\"factIds\":[\"fact-0\"]}],\"recommendations\":[]}"));
+                "{\"sections\":[{\"kind\":\"TREND\",\"text\":\"本次查询有已发布历史样本可供趋势分析参考。\",\"factIds\":[\"fact-0\"]}],\"recommendations\":[]}"));
         AgentOrchestrator.AgentQueryInput input = new AgentOrchestrator.AgentQueryInput(
                 "请分析 2026-08-01 至 2026-08-10 的美元/人民币趋势", FX_ITEM,
                 "2026-08-01", "2026-08-10", null, null, null, null, null, "FORMAL");
@@ -95,6 +95,8 @@ class AgentPipelineIntegrationTest {
         assertEquals(LLMService.LLMStatus.SUCCESS, result.llmResponse().status(),
                 "degradeReason=" + result.degradeReason());
         assertFalse(result.report().degraded());
+        assertEquals("TREND",result.narrative().sections().get(0).kind(),
+                "the stub must answer the requested trend theme, not an unrelated overview");
         assertEquals("LLM", result.report().generatedBy());
         assertEquals("AGENT-EVIDENCE-SCHEMA-V2", result.evidencePack().schemaVersion());
         assertNotNull(result.evidencePack().evidencePackId());

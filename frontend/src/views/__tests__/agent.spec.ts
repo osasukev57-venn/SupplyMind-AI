@@ -302,4 +302,22 @@ describe('AgentView (D8-T03)', () => {
     wrapper.unmount()
   })
 
+  it('distinguishes derived quality evidence from the underlying mixed sample states', async () => {
+    vi.mocked(queryAgent).mockResolvedValue({ ...response, facts: [
+      { factId:'sample-verified',statement:'history.query',value:'25500.00',businessDate:'2026-10-22',period:null,validationStatus:'VERIFIED' },
+      { factId:'sample-notice',statement:'history.query',value:'23250.00',businessDate:'2026-10-15',period:null,validationStatus:'VERIFIED_WITH_NOTICE' },
+      { factId:'derived-quality',statement:'quality.completeness',value:'100%',businessDate:null,period:'2026-10',validationStatus:'VERIFIED' }
+    ] })
+    const wrapper=mountWithRouter()
+    await fillRequiredFields(wrapper,'说明数据质量和样本校验状态')
+    await wrapper.find('button.btn-primary').trigger('click')
+    await flushPromises()
+    const row=wrapper.find('#derived-quality')
+    expect(row.text()).toContain('派生质量指标（证据已核验，不代表样本校验状态）')
+    expect(row.findComponent({ name:'StatusBadge' }).exists()).toBe(false)
+    expect(wrapper.find('#sample-verified').findComponent({ name:'StatusBadge' }).exists()).toBe(true)
+    expect(wrapper.find('#sample-notice').findComponent({ name:'StatusBadge' }).exists()).toBe(true)
+    wrapper.unmount()
+  })
+
 })

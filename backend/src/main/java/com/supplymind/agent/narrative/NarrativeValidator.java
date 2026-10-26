@@ -14,6 +14,11 @@ public final class NarrativeValidator {
     private final AgentResponseVerifier secrets;
     public NarrativeValidator(AgentResponseVerifier secrets){this.secrets=secrets;}
     public NarrativeResult validate(String raw,EvidencePackV1 pack) {
+        // Stored V3 reports predate request output scoping. Recheck all semantic/evidence
+        // rules without retroactively inventing a theme that was never persisted.
+        return validate(raw,pack,NarrativeScope.unrestricted());
+    }
+    public NarrativeResult validate(String raw,EvidencePackV1 pack,NarrativeScope scope) {
         try { secrets.requireNoSecret(raw); }catch(RuntimeException ex){return NarrativeResult.none("SECRET_INJECTION",1);}
         if(raw==null||raw.length()>16000)return NarrativeResult.none("MALFORMED_STRUCTURE",1);
         if(Pattern.compile("(?iu)忽略.{0,8}指令|system\\s*prompt|<script|(?:raw|processed|config|staging)/|[A-Z]:[\\\\/]|\\{\\{").matcher(raw).find())return NarrativeResult.none("UNSAFE_CONTENT",1);
@@ -34,14 +39,17 @@ public final class NarrativeValidator {
         int i=0;
         for(var section:draft.sections()) {
             String id="section-"+(++i);
-            String code=section==null?"MALFORMED_SECTION":check(section.kind()==null?null:section.kind().name(),section.text(),section.factIds(),facts,false);
+            String code=section==null?"MALFORMED_SECTION":check(section.kind()==null?null:section.kind().name(),section.text(),section.factIds(),facts,false,pack);
+            if(code==null&&!scope.kinds().contains(section.kind().name()))code="OUT_OF_REQUEST_SCOPE";
+            if(code==null&&section.factIds().stream().map(facts::get).anyMatch(f->!scope.allowsFactType(f.factType())))code="OUT_OF_REQUEST_SCOPE";
             if(code==null)accepted.add(adopt(id,section.kind().name(),section.text(),section.factIds(),facts));else errors.add(new NarrativeResult.Diagnostic(id,code));
         }
         var acceptedIds=new HashSet<String>();accepted.forEach(s->acceptedIds.addAll(s.factIds()));
         i=0;
         for(var r:draft.recommendations()) {
             String id="recommendation-"+(++i);
-            String code=r==null?"MALFORMED_SECTION":check("RECOMMENDATION",r.text(),r.factIds(),facts,true);
+            String code=r==null?"MALFORMED_SECTION":check("RECOMMENDATION",r.text(),r.factIds(),facts,true,pack);
+            if(code==null&&recs.size()>=scope.maxRecommendations())code="OUT_OF_REQUEST_SCOPE";
             if(code==null&&!acceptedIds.containsAll(r.factIds()))code="DEPENDENCY_NOT_ADOPTED";
             if(code==null)recs.add(adopt(id,"RECOMMENDATION",r.text(),r.factIds(),facts));else errors.add(new NarrativeResult.Diagnostic(id,code));
         }
@@ -51,13 +59,16 @@ public final class NarrativeValidator {
     private NarrativeResult.Section adopt(String id,String kind,String text,List<String> ids,Map<String,EvidencePackV1.Fact> facts) {
         return new NarrativeResult.Section(id,kind,text,ids,ids.stream().flatMap(f->facts.get(f).evidenceRefs().stream()).distinct().toList());
     }
-    private String check(String kind,String text,List<String> ids,Map<String,EvidencePackV1.Fact> all,boolean recommendation) {
+    private String check(String kind,String text,List<String> ids,Map<String,EvidencePackV1.Fact> all,boolean recommendation,EvidencePackV1 pack) {
         if(kind==null||text==null||text.isBlank()||text.length()>1000||ids==null||ids.isEmpty()||ids.size()>8||new HashSet<>(ids).size()!=ids.size())return "MALFORMED_SECTION";
         if(ids.stream().anyMatch(id->!all.containsKey(id)))return "UNKNOWN_FACT_ID";
         if(Pattern.compile("[零〇一二两三四五六七八九十百千万亿]+\\s*(?:元|美元|吨|%|％|个百分点)").matcher(text).find())return "UNSUPPORTED_NUMBER_FORMAT";
         if(Pattern.compile("一定会|必然会|保证.{0,8}(上涨|下跌|收益)|未来.{0,6}(上涨|下跌)|将会.{0,6}(上涨|下跌)").matcher(text).find())return "UNSUPPORTED_PREDICTION";
         var selected=ids.stream().map(all::get).toList();
         if(selected.stream().anyMatch(f->!allowed(kind,f.factType())))return "WRONG_FACT_ROLE";
+        var sampleValidation=SampleValidationSummary.forSection(selected,pack);
+        String validationClaim=sampleValidation.check(kind,text,selected);
+        if(validationClaim!=null)return validationClaim;
         if(!recommendation&&!"METRICS".equals(kind)&&any(text,"月均","均值","平均值","月度平均"))return "WRONG_FACT_ROLE";
         if("METRICS".equals(kind)&&Pattern.compile("最新(?:值|价格|价)|当前(?:值|价格)|基准(?:值|价格)|现价|阈值").matcher(text).find())return "WRONG_FACT_ROLE";
         for(String clause:text.split("[，。；;、]")) {
@@ -114,6 +125,7 @@ public final class NarrativeValidator {
         }
         String normalized=withoutDates.replaceAll("(?<=\\d),(?=\\d{3}(?:\\D|$))","");
         for(String clause:normalized.split("[，。；;、]")) {
+            if("QUALITY".equals(kind)&&sampleValidation.countClause(clause))continue;
             var nums=NUMBER.matcher(clause);var roles=new ArrayList<EvidencePackV1.Fact>(selected);
             if("TREND".equals(kind)||"OVERVIEW".equals(kind)) {
                 if(any(clause,"从","→")&&any(clause,"至","→")) {

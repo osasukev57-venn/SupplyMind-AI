@@ -80,7 +80,7 @@ class AgentDemoAcceptanceFixTest {
    var normal=orchestrator.answer(input(QUESTION));
    assertFalse(normal.degraded(),"normal Chinese must be adopted: "+normal.narrative());
    assertEquals("FULL",normal.narrative().adoption());
-   assertEquals(1,normal.narrative().recommendations().size());
+   assertEquals(0,normal.narrative().recommendations().size(),"original question does not request advice");
    assertTrue(ctx.getBean(ReportStore.class).read(normal.reportRef()).ok());
    model.set(r->LLMService.LLMResponse.success(narrative(r,"fluent")));
    assertEquals("FULL",orchestrator.answer(input(QUESTION)).narrative().adoption(),"normal role-bound Chinese does not require template cues");
@@ -140,7 +140,7 @@ class AgentDemoAcceptanceFixTest {
    if(variant.equals("warningDate"))warningText="2026-10-15 当前值25500元/吨。";
    if(variant.equals("warningRiskDecline"))warningText="该预警已确认，确认后风险下降。";
    sections.add(Map.of("kind","WARNING","text",warningText,"factIds",warning.stream().map(LLMService.LlmFact::factId).toList()));
-   return JsonV1Codec.encodeCompact(Map.of("sections",sections,"recommendations",List.of(Map.of("text","建议继续观察后续数据，并结合样本范围判断。","factIds",List.of(trend.factId())))));
+   return JsonV1Codec.encodeCompact(Map.of("sections",sections,"recommendations",req.question().contains("建议")?List.of(Map.of("text","建议继续观察后续数据，并结合样本范围判断。","factIds",List.of(trend.factId()))):List.of()));
  }
  @TestConfiguration static class Time {@Bean @Primary Clock clock(){return Clock.fixed(Instant.parse("2026-10-25T04:00:00Z"),ZoneOffset.ofHours(8));}}
 }

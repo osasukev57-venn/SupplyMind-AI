@@ -123,7 +123,7 @@ public final class AgentOrchestrator {
 
         var narrative=com.supplymind.agent.narrative.NarrativeResult.none("STANDARD_FACTS_NOT_READY",0);
         LLMService.LLMResponse cloudResponse=LLMService.LLMResponse.failure(LLMService.LLMStatus.REJECTED,"STANDARD_FACTS_NOT_READY");
-        var cloudInput=new LLMService.LLMRequest(requestId,input.question(),mode,toLlmFacts(facts,evidencePack),llmEvidenceRefs,false);
+        var cloudInput=new LLMService.LLMRequest(requestId,input.question(),mode,toLlmFacts(facts,evidencePack),llmEvidenceRefs,false,input.theme());
         boolean contextAllowed=com.supplymind.agent.narrative.AnalysisContextAssembler.withinLimits(cloudInput);
         if(readiness.ready()&&!contextAllowed) {
             cloudResponse=LLMService.LLMResponse.failure(LLMService.LLMStatus.REJECTED,"ANALYSIS_CONTEXT_LIMIT");
@@ -132,7 +132,7 @@ public final class AgentOrchestrator {
         if(readiness.ready()&&contextAllowed) {
             cloudResponse=budget.analyze(llm,cloudInput);
             narrative=cloudResponse.status()==LLMService.LLMStatus.SUCCESS
-                    ? new com.supplymind.agent.narrative.NarrativeValidator(responseVerifier).validate(cloudResponse.explanation(),evidencePack)
+                    ? new com.supplymind.agent.narrative.NarrativeValidator(responseVerifier).validate(cloudResponse.explanation(),evidencePack,cloudInput.narrativeScope())
                     : com.supplymind.agent.narrative.NarrativeResult.none(cloudResponse.failureKind()==null?cloudResponse.status().name():cloudResponse.failureKind(),1);
         }
         boolean degraded=!"FULL".equals(narrative.adoption());

@@ -249,7 +249,7 @@ const visibleClaims = computed(() => {
                 <td>{{ fact.statement }}</td>
                 <td class="num">{{ fact.value }}</td>
                 <td class="num">{{ fact.businessDate ?? '—' }}</td>
-                <td><span v-if="fact.validationStatus == null && fact.statement.startsWith('warning.')">不适用（预警证据单独核验）</span><StatusBadge v-else :status="fact.validationStatus ?? 'UNKNOWN'" /></td>
+                <td><span v-if="fact.statement.startsWith('quality.')">派生质量指标（证据已核验，不代表样本校验状态）</span><span v-else-if="fact.validationStatus == null && fact.statement.startsWith('warning.')">不适用（预警证据单独核验）</span><StatusBadge v-else :status="fact.validationStatus ?? 'UNKNOWN'" /></td>
               </tr>
             </tbody>
           </table>

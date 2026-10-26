@@ -13,8 +13,14 @@ public final class AnalysisContextAssembler {
     public static Map<String,Object> assemble(LLMService.LLMRequest request) {
         Map<String,Object> result=new LinkedHashMap<>();
         result.put("mode",request.mode());
+        var requested = request.narrativeScope();
+        result.put("requestedOutput",Map.of("allowedKinds",requested.kinds().stream().sorted().toList(),
+            "maxRecommendations",requested.maxRecommendations(),
+            "instruction","只回答本次问题所需主题，不因工具返回了数据而补写其他主题"));
+        result.put("sampleValidation",SampleValidationSummary.fromCloud(request.facts()));
         Map<String,List<Map<String,Object>>> roles=new LinkedHashMap<>();
         for(var f:request.facts()) {
+            if(!requested.allowsStatement(f.statement()))continue;
             String role=switch(f.statement()) {
                 case "published daily value" -> "historySample";
                 case "latest published value" -> "latest";
@@ -25,7 +31,11 @@ public final class AnalysisContextAssembler {
             Map<String,Object> value=new LinkedHashMap<>();
             value.put("factId",f.factId());value.put("role",f.statement());value.put("itemId",f.itemId());value.put("value",f.value());
             value.put("unit",f.unit());value.put("currency",f.currency());value.put("businessDate",f.businessDate());value.put("period",f.period());
-            value.put("group",f.groupIdentity());value.put("validationStatus",f.validationStatus());value.put("source",f.actualSourceName());
+            value.put("group",f.groupIdentity());value.put("source",f.actualSourceName());
+            if(role.equals("quality")) {
+                value.put("derivedMetricStatus","JAVA_COMPUTED_FROM_VERIFIED_EVIDENCE");
+                value.put("validationStatusScope","指标的证据已核验，不表示底层样本均为VERIFIED；样本状态见sampleValidation");
+            } else value.put("validationStatus",f.validationStatus());
             roles.computeIfAbsent(role,k->new ArrayList<>()).add(value);
         }
         result.put("roles",roles);

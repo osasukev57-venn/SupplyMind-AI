@@ -91,8 +91,31 @@ class AgentCrossConfigReproductionTest {
    var normal=orchestrator.answer(input(QUESTION));
    assertFalse(normal.degraded(),"normal Chinese must be adopted: "+normal.narrative());
    assertEquals("FULL",normal.narrative().adoption());
-   assertEquals(1,normal.narrative().recommendations().size());
+   assertEquals(0,normal.narrative().recommendations().size(),"original question does not request advice");
    assertTrue(ctx.getBean(ReportStore.class).read(normal.reportRef()).ok());
+   var withAdvice=orchestrator.answer(input(QUESTION+"并给出观察建议。"));
+   assertEquals("FULL",withAdvice.narrative().adoption());
+   assertEquals(1,withAdvice.narrative().recommendations().size(),"explicitly requested grounded advice remains supported");
+   model.set(r->{
+    var latestFact=r.facts().stream().filter(f->f.statement().equals("latest published value")).findFirst().orElseThrow();
+    var quality=r.facts().stream().filter(f->Set.of("published row count","expected observation count","missing observation count","complete row count","Java-computed completeness percentage").contains(f.statement())).map(LLMService.LlmFact::factId).toList();
+    return LLMService.LLMResponse.success(JsonV1Codec.encodeCompact(Map.of("sections",List.of(
+      Map.of("kind","OVERVIEW","text","最新值25500.00元/吨，对应2026-10-22；这是模拟数据。","factIds",List.of(latestFact.factId())),
+      Map.of("kind","QUALITY","text","MAT.AZ91D.SIMULATION在2026-10-13至2026-10-22共发布8条记录，与预期观测数一致，缺失数为0，完整行数为8，完整性百分比为100%，全部事实均经VERIFIED校验。","factIds",quality)),"recommendations",List.of())));
+   });
+   var latestInput=new AgentOrchestrator.AgentQueryInput("请根据 MAT.AZ91D.SIMULATION 在 2026-10-13 至 2026-10-22 的已发布数据说明最新值、日期和单位；明确这是模拟数据，不代表真实市场行情。",ITEM,null,null,null,null,null,null,null,"FORMAL","HISTORY");
+   var qualityAttack=orchestrator.answer(latestInput);
+   assertEquals("PARTIAL",qualityAttack.narrative().adoption());
+   assertEquals(1,qualityAttack.narrative().sections().size());
+   assertTrue(qualityAttack.narrative().diagnostics().stream().anyMatch(d->d.code().equals("SAMPLE_VALIDATION_OVERGENERALIZATION")));
+   assertTrue(ctx.getBean(ReportStore.class).read(qualityAttack.reportRef()).ok());
+   model.set(r->{
+    var quality=r.facts().stream().filter(f->f.statement().equals("published row count")).findFirst().orElseThrow();
+    return LLMService.LLMResponse.success(JsonV1Codec.encodeCompact(Map.of("sections",List.of(Map.of("kind","QUALITY","text","样本中4条VERIFIED，4条VERIFIED_WITH_NOTICE；指标由Java依据已核验证据计算。","factIds",List.of(quality.factId()))),"recommendations",List.of())));
+   });
+   var qualityGood=orchestrator.answer(new AgentOrchestrator.AgentQueryInput("说明MAT.AZ91D.SIMULATION在2026-10-13至2026-10-22的数据质量及样本校验状态。",ITEM,null,null,null,null,null,null,null,"FORMAL","HISTORY"));
+   assertEquals("FULL",qualityGood.narrative().adoption(),qualityGood.narrative().toString());
+   assertTrue(ctx.getBean(ReportStore.class).read(qualityGood.reportRef()).ok());
    model.set(r->LLMService.LLMResponse.success(narrative(r,"fluent")));
    assertEquals("FULL",orchestrator.answer(input(QUESTION)).narrative().adoption(),"normal role-bound Chinese does not require template cues");
    model.set(r->LLMService.LLMResponse.success(narrative(r,"decimal")));
@@ -151,7 +174,7 @@ class AgentCrossConfigReproductionTest {
    if(variant.equals("warningDate"))warningText="2026-10-15 当前值25500元/吨。";
    if(variant.equals("warningRiskDecline"))warningText="该预警已确认，确认后风险下降。";
    sections.add(Map.of("kind","WARNING","text",warningText,"factIds",warning.stream().map(LLMService.LlmFact::factId).toList()));
-   return JsonV1Codec.encodeCompact(Map.of("sections",sections,"recommendations",List.of(Map.of("text","建议继续观察后续数据，并结合样本范围判断。","factIds",List.of(trend.factId())))));
+   return JsonV1Codec.encodeCompact(Map.of("sections",sections,"recommendations",req.question().contains("建议")?List.of(Map.of("text","建议继续观察后续数据，并结合样本范围判断。","factIds",List.of(trend.factId()))):List.of()));
  }
  @TestConfiguration static class Time {@Bean @Primary Clock clock(){return Clock.fixed(Instant.parse("2026-10-25T04:00:00Z"),ZoneOffset.ofHours(8));}}
 }

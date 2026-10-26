@@ -11,6 +11,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SpringAiPromptContractTest {
 
     @Test
+    void latestThemeDoesNotInviteUnrequestedQualityTrendOrRecommendations() {
+        var latest=new LLMService.LlmFact("latest","latest published value","MAT.AZ91D.SIMULATION","25500.00","元/吨","CNY","2026-10-22",null,"VERIFIED","模拟数据",null);
+        var quality=new LLMService.LlmFact("metric-quality","published row count","MAT.AZ91D.SIMULATION","8","count","CNY",null,"2026-10-13~2026-10-22","VERIFIED","模拟数据",null);
+        var trend=new LLMService.LlmFact("trend","Java-computed trend direction","MAT.AZ91D.SIMULATION","UPWARD","direction","CNY",null,"2026-10-13~2026-10-22","VERIFIED","模拟数据",null);
+        String prompt=SpringAiLlmService.buildPrompt(new LLMService.LLMRequest("test","说明最新值、日期和单位，明确模拟数据。","FORMAL",List.of(latest,quality,trend),List.of(),false,"HISTORY"));
+        assertTrue(prompt.contains("\"allowedKinds\":[\"OVERVIEW\"]"),prompt);
+        assertTrue(prompt.contains("\"maxRecommendations\":0"),prompt);
+        assertFalse(prompt.contains("\"factId\":\"metric-quality\""),prompt);
+        assertFalse(prompt.contains("\"factId\":\"trend\""),prompt);
+        assertTrue(prompt.contains("不能推广到底层样本"),prompt);
+        assertTrue(prompt.contains("不代表全部样本无附注"),prompt);
+    }
+
+    @Test
     void phaseBPublishesRoleContextWithoutPathsAndRequiresSections() {
         String evidenceRef = "processed/daily/MAT.ADC12.SMM/2026-08.csv";
         LLMService.LlmFact fact = new LLMService.LlmFact(

@@ -35,11 +35,21 @@ public final class LLMService {
             String mode,
             List<LlmFact> facts,
             List<String> evidenceRefs,
-            boolean toolCallingEnabled
+            boolean toolCallingEnabled,
+            String theme
     ) {
         public LLMRequest {
             facts = facts == null ? List.of() : List.copyOf(facts);
             evidenceRefs = evidenceRefs == null ? List.of() : List.copyOf(evidenceRefs);
+        }
+
+        public LLMRequest(String queryId, String question, String mode, List<LlmFact> facts,
+                          List<String> evidenceRefs, boolean toolCallingEnabled) {
+            this(queryId, question, mode, facts, evidenceRefs, toolCallingEnabled, null);
+        }
+
+        public com.supplymind.agent.narrative.NarrativeScope narrativeScope() {
+            return com.supplymind.agent.narrative.NarrativeScope.requested(question, theme);
         }
 
         public LLMRequest(

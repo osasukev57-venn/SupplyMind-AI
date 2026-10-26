@@ -1,0 +1,1500 @@
+{
+  "archivedAt": "2026-10-26T17:47:22.209666+08:00",
+  "suites": 37,
+  "tests": 227,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 1,
+  "passed": 226,
+  "skipReasons": [
+    {
+      "suite": "com.supplymind.agent.infrastructure.springai.CloudLlmRealApiAcceptanceTest",
+      "test": "callsConfiguredCloudApiWithoutPersistingTheCredential",
+      "reason": "System property [supplymind.llm.real] does not exist"
+    }
+  ],
+  "suiteResults": [
+    {
+      "suite": "com.supplymind.agent.AgentApiMvcContractTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentApiTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentAttackTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentCrossConfigReproductionTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentDemoAcceptanceFixTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentF2MissingReferenceGuardTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentF3LifecycleVerificationTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentFactFirstPipelineTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentFinalStageMajorFixAttackTest",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentPipelineIntegrationTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentR2StageFixAttackTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentReportReadTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentSpringAiToolCallingTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AgentToolBoundaryTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.AggregateRowEvidenceGoldenTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6FinalStageAuthorityBindingAttackTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6FinalStageClaimFieldGuardAttackTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6FinalStageFullBindingAttackTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6FinalStageMultiRowLineageAttackTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6FinalStageRowToRefConfigTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6FinalStageStrictEnvelopeAttackTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6FinalStageStructuredClaimsAttackTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6R2IndependentCostAttackTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6R2IndependentGoldenEvidenceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6R2IndependentIsolationAttackTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6R2IndependentResponseAttackTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.Day6R2IndependentSpringAiAttackTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.infrastructure.springai.CloudLlmConfigurationTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.infrastructure.springai.CloudLlmRealApiAcceptanceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.infrastructure.springai.SpringAiPromptContractTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.llm.RequestBudgetTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.narrative.RealCloudQualityRegressionTest",
+      "tests": 24,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.QueryPlannerTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.report.AggregateRowBindingV3Test",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.agent.report.ReportSnapshotStoreTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    },
+    {
+      "suite": "com.supplymind.scheduling.BusinessLoopIntegrationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": null
+    }
+  ],
+  "rawFileDigests": [
+    {
+      "file": "com.supplymind.acceptance.AtSrc002AcceptanceTest.txt",
+      "sha256": "5a121ac737a25a1bef9b231461c2c512a623ba528ca91625fad379c9cc38c5fa"
+    },
+    {
+      "file": "com.supplymind.acceptance.MaterialDay3AcceptanceTest.txt",
+      "sha256": "2ea5e98591155eca84ed824d36a9a7923ce885980effcf2d8388e82eb982624a"
+    },
+    {
+      "file": "com.supplymind.acceptance.MaterialRoutePlanProductionTest.txt",
+      "sha256": "d9902c4a8f99d23bed82c17970e1f9ddb3c93bbb22968ce8ee2caf5846f1149c"
+    },
+    {
+      "file": "com.supplymind.agent.AgentApiMvcContractTest.txt",
+      "sha256": "9a54831ee9b10d3ec0dfa88ccce320ba2684779c44b2e097931aaf22e6a0f43d"
+    },
+    {
+      "file": "com.supplymind.agent.AgentApiTest.txt",
+      "sha256": "6a0fd0ab0cd0d535da28324a08511339de069f9e2a14db870af42606ca41e038"
+    },
+    {
+      "file": "com.supplymind.agent.AgentAttackTest.txt",
+      "sha256": "bd2d813caafd14490d9692c99b9af0ae1338dced60f935089ebd58c09aca3b75"
+    },
+    {
+      "file": "com.supplymind.agent.AgentCrossConfigReproductionTest.txt",
+      "sha256": "406b7342895ab6c5b56e87dccc833f2d525fb5bf9a3984baff57807f5c1e72ca"
+    },
+    {
+      "file": "com.supplymind.agent.AgentDemoAcceptanceFixTest.txt",
+      "sha256": "a8c5b8f634b5f86fad0f2fb293815e30160cc1e04cdca7154a5f116f635e7532"
+    },
+    {
+      "file": "com.supplymind.agent.AgentF2MissingReferenceGuardTest.txt",
+      "sha256": "b53c2be9fc6ab5086cf4a7a1e528a489c21b8bcf7d5f1a38c5d2abbd37e3096d"
+    },
+    {
+      "file": "com.supplymind.agent.AgentF3LifecycleVerificationTest.txt",
+      "sha256": "3d7b81694cef20647d9f4d3b747efa5c9c367e33271d481f5880c5114d4adcc8"
+    },
+    {
+      "file": "com.supplymind.agent.AgentFactFirstPipelineTest.txt",
+      "sha256": "0540477367d93d93d2de0e554c05ba782fd03997f582defd46cd01527de766d9"
+    },
+    {
+      "file": "com.supplymind.agent.AgentFinalStageMajorFixAttackTest.txt",
+      "sha256": "490671749868e17ac3a175034a24a42e60317eac9b9827cb85876ff435edd5bf"
+    },
+    {
+      "file": "com.supplymind.agent.AgentPipelineIntegrationTest.txt",
+      "sha256": "14b64405e3d3fd2b480b24b045ca664924c072a47639fb7069b444d637abfaac"
+    },
+    {
+      "file": "com.supplymind.agent.AgentR2StageFixAttackTest.txt",
+      "sha256": "3c3c226ec8abc8799868a9b6487720e582d0ab7f111eb127e5c19c60af6e15cc"
+    },
+    {
+      "file": "com.supplymind.agent.AgentReportReadTest.txt",
+      "sha256": "cc5823817a4002b1346a1ca61c2ac108e8add4e4a06a50ec9f14fbeb52278ecb"
+    },
+    {
+      "file": "com.supplymind.agent.AgentSpringAiToolCallingTest.txt",
+      "sha256": "beb58a1f7ccce5c9a1594db2317fed427967a65f7483c5857618667cef8472dc"
+    },
+    {
+      "file": "com.supplymind.agent.AgentToolBoundaryTest.txt",
+      "sha256": "748ac88b61b3320ffcc879e5ce914738a697913ac47797dc03de8335b48f1e45"
+    },
+    {
+      "file": "com.supplymind.agent.AggregateRowEvidenceGoldenTest.txt",
+      "sha256": "8ea4caf55a804cf5bc21846fc7896e8254388b69c45bf43438e38d07b7d7ffa1"
+    },
+    {
+      "file": "com.supplymind.agent.Day6FinalStageAuthorityBindingAttackTest.txt",
+      "sha256": "aa382645ac589af9753b74d14da388c98ac37bdf0d63608876ff1218a205ca33"
+    },
+    {
+      "file": "com.supplymind.agent.Day6FinalStageClaimFieldGuardAttackTest.txt",
+      "sha256": "16f00765e0e515fd0af92fc35d2fbe662e0eaf1e19876bed91fe9bb100c67103"
+    },
+    {
+      "file": "com.supplymind.agent.Day6FinalStageFullBindingAttackTest.txt",
+      "sha256": "7af00960fad9b35d17e53c93f359ef7b1a4daf286012b98ee703c1e541b02e93"
+    },
+    {
+      "file": "com.supplymind.agent.Day6FinalStageMultiRowLineageAttackTest.txt",
+      "sha256": "f58518ce56a2a4e783a6982758be132e4fa22ff048afc4059f6c6f57e0a2afca"
+    },
+    {
+      "file": "com.supplymind.agent.Day6FinalStageRowToRefConfigTest.txt",
+      "sha256": "f6ac35dafd6366c6bb41a62adf35cbbdfb175c04dc2806784811af765143f35f"
+    },
+    {
+      "file": "com.supplymind.agent.Day6FinalStageStrictEnvelopeAttackTest.txt",
+      "sha256": "3ab390bc4024512e1a6f327b47260fc12dfb17132768dd80f1b43d27a6cdf6de"
+    },
+    {
+      "file": "com.supplymind.agent.Day6FinalStageStructuredClaimsAttackTest.txt",
+      "sha256": "7e763e2ecf5e34bd408ae48e4d52a69373091401bbfd99f997a9e03dc6056a4d"
+    },
+    {
+      "file": "com.supplymind.agent.Day6R2IndependentCostAttackTest.txt",
+      "sha256": "67db6122477c9f0c54149d19e3b2f9111fc8fb87cddf15807d0f3d36f6484b6b"
+    },
+    {
+      "file": "com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest.txt",
+      "sha256": "b762592a392b8aabb4c35c64034c03964b3df7cfcdee4ad9777f46d0144ff31c"
+    },
+    {
+      "file": "com.supplymind.agent.Day6R2IndependentGoldenEvidenceTest.txt",
+      "sha256": "4f8e8d375041dd93216098acfc8c417da3e68a6eb5513e13e2a5242f2740924e"
+    },
+    {
+      "file": "com.supplymind.agent.Day6R2IndependentIsolationAttackTest.txt",
+      "sha256": "84ffac5504f016b118a9d9b704ba3ba90d209e2500934fdfe2c99ad587de1944"
+    },
+    {
+      "file": "com.supplymind.agent.Day6R2IndependentResponseAttackTest.txt",
+      "sha256": "f0abb7dd318cf4cbfe0819e3afdb745d57003eaac911d0e404ce899607475b71"
+    },
+    {
+      "file": "com.supplymind.agent.Day6R2IndependentSpringAiAttackTest.txt",
+      "sha256": "5fc2316aeaab540be959028b231bd84fb633a3405514d7d6696571e2e5e4811a"
+    },
+    {
+      "file": "com.supplymind.agent.infrastructure.springai.CloudLlmConfigurationTest.txt",
+      "sha256": "0660af01b0a0c3dab027b0fc3cb48a797acf445e6ebf3f98f4fb0f4780fa8752"
+    },
+    {
+      "file": "com.supplymind.agent.infrastructure.springai.CloudLlmRealApiAcceptanceTest.txt",
+      "sha256": "6d74f908f549dcf9c14f590b534c816f1682327feda657deed8130fb501d1ef0"
+    },
+    {
+      "file": "com.supplymind.agent.infrastructure.springai.SpringAiPromptContractTest.txt",
+      "sha256": "f64e23f01d2d2acc1d1d8391d7a6031e266734db0117bbcf55707f175e70e1ca"
+    },
+    {
+      "file": "com.supplymind.agent.llm.RequestBudgetTest.txt",
+      "sha256": "a5afaf61f2c8aa917440bc13a6fd85b1507517b380b80b03e958d0147ee90929"
+    },
+    {
+      "file": "com.supplymind.agent.narrative.RealCloudQualityRegressionTest.txt",
+      "sha256": "15fee92f757595d51c8ab07f599bd1ffd236a228e7882812549a09d6100ef37f"
+    },
+    {
+      "file": "com.supplymind.agent.QueryPlannerTest.txt",
+      "sha256": "6ddc21e744ce837b83669a98c0864214a1bfa6b692283c8a14678cefe59fd0e8"
+    },
+    {
+      "file": "com.supplymind.agent.report.AggregateRowBindingV3Test.txt",
+      "sha256": "17d2a41e1a15f0de987ca71669a05f3fa259c68ce2541623004d026c1a71dee3"
+    },
+    {
+      "file": "com.supplymind.agent.report.ReportSnapshotStoreTest.txt",
+      "sha256": "78afd18965e3b58612916cd02bfcf772cc3f4fb064aa9e4ef39d4da0c3679c12"
+    },
+    {
+      "file": "com.supplymind.backfill.BackfillHistoryRangeContractTest.txt",
+      "sha256": "531a1e54558f6dc4499f264bcb6578e671adb33dd9e3e23bf15f32c025755e99"
+    },
+    {
+      "file": "com.supplymind.backfill.BackfillOrchestratorTest.txt",
+      "sha256": "fb6e98a1a5cf64b51cced317efc3acb4ee2e6788ff081ea3134efa27ed80bee8"
+    },
+    {
+      "file": "com.supplymind.backfill.BackfillRangeCompletionRuleTest.txt",
+      "sha256": "20f7dcf549ba924e0c6a1011f81d962aa0a57db3b4990feb89c54ba18642f3fd"
+    },
+    {
+      "file": "com.supplymind.backfill.Day5SecondHistoryRangeAttackTest.txt",
+      "sha256": "7f6ff7f3e448e097aacd9015deb0c108ae4005b10c5d738c1330593f22cdf7c1"
+    },
+    {
+      "file": "com.supplymind.config.ConfigApiMvcContractTest.txt",
+      "sha256": "b504abf83996d63259070cbffbac82e80acf222b22d907697902a75fea9e69e8"
+    },
+    {
+      "file": "com.supplymind.config.ConfigManagementServiceTest.txt",
+      "sha256": "df1bb188a2d0c3d5ca9e50f7e25f5961ea5a934b6d65d4dc62d36328985f1ca6"
+    },
+    {
+      "file": "com.supplymind.config.CurrentIntakeAttackTest.txt",
+      "sha256": "5ab2facc325fc79985dc0d5703c89b45287a877a39ff5becd1206a45c1585572"
+    },
+    {
+      "file": "com.supplymind.config.DynamicConfigWorkflowServiceTest.txt",
+      "sha256": "a26748d7b2014ed885412f98b853bd694ab0fd1b190d962b1ae50519e3187e71"
+    },
+    {
+      "file": "com.supplymind.dashboard.DashboardApiMockMvcTest.txt",
+      "sha256": "dad07110c7c85a010cb0b6cf2c5df26e65775959eb5a8d413648ee671bdff4af"
+    },
+    {
+      "file": "com.supplymind.dashboard.DashboardControllerTest.txt",
+      "sha256": "8b57b4866bfbfbb23cfbe439cc2f10d525ffc99b6a22e5e1bed03251d3e55ada"
+    },
+    {
+      "file": "com.supplymind.dashboard.DashboardDtoContractTest.txt",
+      "sha256": "c695790d17c667de7b2fa72a396ef18b6211c05a91b15771e1ffde8135dfbcb7"
+    },
+    {
+      "file": "com.supplymind.dashboard.DashboardMvcContractTest.txt",
+      "sha256": "cba20908c50ed11c6b55e5087f72c9dc254d0f6afe176db2fa4bb1c3a4edfa93"
+    },
+    {
+      "file": "com.supplymind.dashboard.DashboardServiceTest.txt",
+      "sha256": "3c287a84998b17b61f2cbebe7dc6c88c68b5747ee28680fcc76e3e3597881606"
+    },
+    {
+      "file": "com.supplymind.day4.foundation.AtAggDay4ContractHarnessTest.txt",
+      "sha256": "db6378035fd5eafa304ffefd7b27e218d5344cd3ecfa7744cab8896ecd6af07b"
+    },
+    {
+      "file": "com.supplymind.day4.foundation.AtPrecDay4ContractHarnessTest.txt",
+      "sha256": "30e36c3b064505f9a7c462d12440f2bef6540c9cebfe19bc8316431e4528468e"
+    },
+    {
+      "file": "com.supplymind.day4.foundation.AtPubDay4ContractHarnessTest.txt",
+      "sha256": "ce54dd86e18785fb6b3ff8fb523d54f7682f83cd8da4dd62f4289ae14b580712"
+    },
+    {
+      "file": "com.supplymind.day4.foundation.AtSrcDay4ReconciliationHarnessTest.txt",
+      "sha256": "17f53bda5527f2ba4259691c0db571c4c8798a83ff1d5ef8bebba9abf3263ad9"
+    },
+    {
+      "file": "com.supplymind.day4.foundation.Day4DailyAggregateSchemaContractTest.txt",
+      "sha256": "1e13e45ae7840efe63c90dd59ccc1b8345985fc031984b3bd8b0c9c391f2a7e2"
+    },
+    {
+      "file": "com.supplymind.day4.foundation.Day4GoldenFixtureManifestTest.txt",
+      "sha256": "eb89c4e556e52b2be623536f0add1e60b196534fa2e9cd716c1be9ecd296faf0"
+    },
+    {
+      "file": "com.supplymind.day4.foundation.FutureMaterialDay4ContractTest.txt",
+      "sha256": "3657c1de16f342719fb583e7ad22d9fa0ed2dfe97db8432d8172c61307a26bbd"
+    },
+    {
+      "file": "com.supplymind.day4.foundation.MaterialAggregateProcessingContractHarnessTest.txt",
+      "sha256": "a8fddc8ada04eaac4ba3d8a02426bbc78160b7f9d1830006e39c50657cdbdb29"
+    },
+    {
+      "file": "com.supplymind.day4.foundation.MaterialBasicValidationV2ContractHarnessTest.txt",
+      "sha256": "7d66da8f6d39b52a460a66d1fb87fcc44394a1070da6971df4f55b428649e8ea"
+    },
+    {
+      "file": "com.supplymind.day4.foundation.MaterialDailyProcessingContractHarnessTest.txt",
+      "sha256": "eb90852b2906e9980e38c83007225fa0fb6351813908f1c13702b29f84a8fa19"
+    },
+    {
+      "file": "com.supplymind.day4.foundation.MaterialPublishNegativeMatrixHarnessTest.txt",
+      "sha256": "a837b38de6ff5ba35bac011f7103c8a5c22916d4c3a724c222824ab6d08ba1c8"
+    },
+    {
+      "file": "com.supplymind.day5.Day5ImplementationIntegrationTest.txt",
+      "sha256": "77b09817908e6c0766614a1db9dac6c4465613bb78accd512f0925a5a8093e07"
+    },
+    {
+      "file": "com.supplymind.day5.foundation.Day5AlertContractHarnessTest.txt",
+      "sha256": "0ac8f7ebc48424155d2dcb0382c6c46268449fc0e2f155a734cc2d5cf6e5dd8d"
+    },
+    {
+      "file": "com.supplymind.day5.foundation.Day5BackfillStateContractHarnessTest.txt",
+      "sha256": "8a4367ece9e0d04c16abaa577ac3ceac341ca189ebed1157a61c6f94fe170112"
+    },
+    {
+      "file": "com.supplymind.day5.foundation.Day5ConfigurationActivationContractHarnessTest.txt",
+      "sha256": "38d59df55f3991408ca72c201e30b2785f8d85f6a625fb53ca7dab085c923011"
+    },
+    {
+      "file": "com.supplymind.day5.foundation.Day5CrossYearHistoryContractHarnessTest.txt",
+      "sha256": "30a22e82b4dface33f641911f7a336175bfde96568bb144334e520e4cb2677ca"
+    },
+    {
+      "file": "com.supplymind.day5.foundation.Day5FutureAcceptanceIntegrationHarnessTest.txt",
+      "sha256": "4ff1c64d8316b2d790af9138a2ba55f54fccc863926c8a0f5de9cc36f0c34856"
+    },
+    {
+      "file": "com.supplymind.day5.foundation.Day5TimeContractHarnessTest.txt",
+      "sha256": "73e23fc82253e5e1c085d48adf2a133f617bfb8d9373975ee089f06ea7cf7d83"
+    },
+    {
+      "file": "com.supplymind.day5.r2.Day5FinalProviderCapabilityDeclarationTest.txt",
+      "sha256": "e0527d33a918976a43039bbd6ee4ae1c0843ad927bb89687fb9fc453c569abf7"
+    },
+    {
+      "file": "com.supplymind.day5.r2.Day5R2BackfillAttackTest.txt",
+      "sha256": "672063d2b5c65387276bd98e1331dafcb3b6a5d70befa5497566d0d6a7e1ceaf"
+    },
+    {
+      "file": "com.supplymind.day5.r2.Day5R2RotationHistoryCapabilityAttackTest.txt",
+      "sha256": "19684cd64f47bbb4bc55a3b4ae01b7024d069b619cc565ebbcc68957724f7724"
+    },
+    {
+      "file": "com.supplymind.day5.r2.Day5R2WarningAttackTest.txt",
+      "sha256": "e622065bea2777a6257e0aa3185fe6897d86b19dc5dff01faa1cd5025510daa1"
+    },
+    {
+      "file": "com.supplymind.day5.r2.Day5SecondDefaultCapabilityAttackTest.txt",
+      "sha256": "7a698c46671cd7f2a0734fbddd354ef19747f15638e089085df2bca381c6e9a7"
+    },
+    {
+      "file": "com.supplymind.day5.r2.ProviderDefaultCapabilityFailClosedTest.txt",
+      "sha256": "651bf0f54e084c7ac894033cef32feb37c6a6a2363a8f53146be5fe1482eee54"
+    },
+    {
+      "file": "com.supplymind.demo.DemoShowcaseServiceTest.txt",
+      "sha256": "d06b08e6c81c53a109bd102df849b410a6f009a124fd73b8999ddecef31b6348"
+    },
+    {
+      "file": "com.supplymind.desktop.ChildProcessWatchdogTest.txt",
+      "sha256": "ed4d2c02a073a31b3e39500509ae61cc2f9987c96d4258f7a117e682f73fb540"
+    },
+    {
+      "file": "com.supplymind.desktop.HealthControllerTest.txt",
+      "sha256": "2aaebfc44c97ed6f6dec4224ef805b2e5af8121c9aa227160daccd66f67b0811"
+    },
+    {
+      "file": "com.supplymind.desktop.PortableInitialConfigExporterTest.txt",
+      "sha256": "22ec35d7ea2b2b3e2db06c64dd093209a78ad76a3b5624aa10f31b7d19c6af56"
+    },
+    {
+      "file": "com.supplymind.foundation.acceptance.AtFile000ConfigAndRawWindowAcceptanceTest.txt",
+      "sha256": "5b325dc592a726c4a4563f491d9b0686798321f38ecdadc3669a8b134043eea3"
+    },
+    {
+      "file": "com.supplymind.foundation.acceptance.AtFile000DualArtifactImmutabilityAcceptanceTest.txt",
+      "sha256": "2ff5368b908f82d4704d43bf8d33c06b1614226c1f25916a5c4a196e7ea4f39e"
+    },
+    {
+      "file": "com.supplymind.foundation.acceptance.AtFile000RecoveryManifestRootAcceptanceTest.txt",
+      "sha256": "27905ae36ac05c386a5b716dfce656064a707aa3488fc0e3fb3f6d1293b17e61"
+    },
+    {
+      "file": "com.supplymind.foundation.acceptance.D1T03AtFile000SupplementalAcceptanceTest.txt",
+      "sha256": "a51ae398194fd36ea96d739b006c6771e219a4dc25f1d141261bea3aca812008"
+    },
+    {
+      "file": "com.supplymind.foundation.acceptance.DirtyMarkerAndProcessedCodecAcceptanceTest.txt",
+      "sha256": "281fa515aed095e19985871e6cbb06e3d37d4568846b7108aec7137fe5f1aa55"
+    },
+    {
+      "file": "com.supplymind.foundation.acceptance.DualCurrencyRawLifecycleAcceptanceTest.txt",
+      "sha256": "bf80209ea73e3c25519556dba5aeefee1bb744c94c1793db50e5cabfa2f10493"
+    },
+    {
+      "file": "com.supplymind.foundation.acceptance.FoundationStartupAcceptanceTest.txt",
+      "sha256": "53e8f63fa6ef615abb77f93ac4e4376e4a9128e127467eecd0530d60cf01d730"
+    },
+    {
+      "file": "com.supplymind.foundation.acceptance.GoldenFixtureContractAcceptanceTest.txt",
+      "sha256": "5e1538ef46f3d33c80f0b06289ad241416c46a970f389036d71260b1d46cb25c"
+    },
+    {
+      "file": "com.supplymind.foundation.acceptance.IndependentFormatContractAcceptanceTest.txt",
+      "sha256": "5e58a7cd60a7fecea1a94ed7db8bef5df163f5112ba8949146c7b479d50b5148"
+    },
+    {
+      "file": "com.supplymind.foundation.boot.SupplyMindDataPropertiesTest.txt",
+      "sha256": "2eba71aadf157cf93250f69df442c995e592b90505e6a35fbcc2f5d06e9e05fc"
+    },
+    {
+      "file": "com.supplymind.foundation.codec.CsvV1CodecTest.txt",
+      "sha256": "f3a38c343119ae556e4122486a2214fb14e6a8e6baa6fe7016210ab0c02110fa"
+    },
+    {
+      "file": "com.supplymind.foundation.codec.JsonV1CodecTest.txt",
+      "sha256": "c1519ad2266f9d0a2a20661e06acb5b6ce7663997eccd8b2e16b4cebd0446ca9"
+    },
+    {
+      "file": "com.supplymind.foundation.model.ConfigAndManifestV1Test.txt",
+      "sha256": "a05d26a0b4f01c18ef94a1bfb67fe9f0e0e1db4b7a91087f98ec1465405cd3c4"
+    },
+    {
+      "file": "com.supplymind.foundation.model.QuarantineAndPrecisionV1Test.txt",
+      "sha256": "642d26aecad43c088fd629293846339274f02cab409cda524b990512a8ff13e2"
+    },
+    {
+      "file": "com.supplymind.foundation.model.RawReceiptAndTimelineV1Test.txt",
+      "sha256": "62af2dc7e918e6c5d8a3281ba0b639e07b09991f5453717beffc18bca25fb43a"
+    },
+    {
+      "file": "com.supplymind.foundation.storage.AtomicFileRecoveryTest.txt",
+      "sha256": "c10e70aeeb59a6f044913bb7437667b56992fb0f3d2b7181fb1f32d94364ce5e"
+    },
+    {
+      "file": "com.supplymind.foundation.storage.AtomicFileStoreWriteInvariantTest.txt",
+      "sha256": "c3a8ac3b9e81f040144cc3243b3e6050d87fbfafd5deed0d6b576ee7d04b67ef"
+    },
+    {
+      "file": "com.supplymind.foundation.storage.DataRootAndPathsTest.txt",
+      "sha256": "7ec73651ab853deecac3962b53fa668fe85fe43b344131f1cbdf9fc2fd60d939"
+    },
+    {
+      "file": "com.supplymind.foundation.storage.DirtyMarkerCodecTest.txt",
+      "sha256": "4d1a5ed51e8b737470f1ea4565408b02292e6a7bea660d5e111db8350c5ed3c4"
+    },
+    {
+      "file": "com.supplymind.foundation.storage.DirtyMarkerRecoveryTest.txt",
+      "sha256": "090f974bb0577ab44324ce9e356ede1e4afff9ee850070ad1b6138710177322d"
+    },
+    {
+      "file": "com.supplymind.foundation.storage.ManifestDerivedFieldsVerifierTest.txt",
+      "sha256": "5507a9ca00a3eb8e99294747c50272353e36dbc7180fec90bacca64e9fc0c7e6"
+    },
+    {
+      "file": "com.supplymind.foundation.storage.RawAcquisitionLinkVerifierTest.txt",
+      "sha256": "f0841790a48c0a16e48165d6c89caf37d433fb30b09794cc9f61f41f91af2546"
+    },
+    {
+      "file": "com.supplymind.foundation.storage.RawAndConfigStoreTest.txt",
+      "sha256": "7b1bc2fac5943edbf3e0ca921a237f930571035a7b7b9c5e1613da1aa307c5e3"
+    },
+    {
+      "file": "com.supplymind.history.HistoryQueryServiceTest.txt",
+      "sha256": "ce0bb14adca727dbb05dc4c77e25cd8e0cf05f9809f409eea2991dabd203e6da"
+    },
+    {
+      "file": "com.supplymind.localimport.LocalImportBatchProcessingServiceTest.txt",
+      "sha256": "37b63b55e9f06e61c0555e64c8a9891cd231cb3c876d114fdfcf2c40f35a2470"
+    },
+    {
+      "file": "com.supplymind.localimport.LocalImportIsolationTest.txt",
+      "sha256": "e2844c82f5a0c71a1fbbb22aabcdda3e4f71408b40286c99526f1186e0a74968"
+    },
+    {
+      "file": "com.supplymind.localimport.SyntheticDemoIsolationTest.txt",
+      "sha256": "1aa19e0b8eaee2c6072e220ec64cf210f865595d475abbc5dbe0f33de1acb941"
+    },
+    {
+      "file": "com.supplymind.manual.ManualMaterialIntakeTest.txt",
+      "sha256": "8d10720abfda13ecec514c6a1813d159ccbdfc4bca845e4912dc8dfe97ecb3de"
+    },
+    {
+      "file": "com.supplymind.manual.ManualMaterialProcessingServiceTest.txt",
+      "sha256": "930491cc1411ebfc10559de8344f6a02a2828671aaa29442d49b3e1b41610dc1"
+    },
+    {
+      "file": "com.supplymind.processing.AggregateCalculatorTest.txt",
+      "sha256": "85b20ccb6c4a2e889bad02a0b175406d96d68dc14fb0459f2a5cc4f50dc32b00"
+    },
+    {
+      "file": "com.supplymind.processing.AggregateProcessingServiceTest.txt",
+      "sha256": "8677b3d6e29021aed3590d1561a869e91c559836bbbbeb8ee571e048fb16a6bc"
+    },
+    {
+      "file": "com.supplymind.processing.AggregateRealRawEvidenceTest.txt",
+      "sha256": "3b40e5efd6cd67f61d662526313e28106b808d3e4a482009a22ed39bc5f088d4"
+    },
+    {
+      "file": "com.supplymind.processing.DailyProcessingServiceTest.txt",
+      "sha256": "ed2d570c29e65aebb544b37fc6506bf929ad7c90edb0642acf2d926e44d669dc"
+    },
+    {
+      "file": "com.supplymind.processing.DailyRealRawEvidenceTest.txt",
+      "sha256": "2a26ed128e8583be4418f0e1321b0bf35f7b9d957b10f9ee1ffe03421f48a67e"
+    },
+    {
+      "file": "com.supplymind.processing.MaterialDailyAggregateTest.txt",
+      "sha256": "bf34ff13453ff89fe015f84de7c5edc010ad4e61c704daf6ca532cc4dc268bca"
+    },
+    {
+      "file": "com.supplymind.provider.DataProviderRegistryTest.txt",
+      "sha256": "ef9e5530ab41b1b8ea6827c61d863b4e135f138b1aa0c2afb0bc9c1e7aff4857"
+    },
+    {
+      "file": "com.supplymind.provider.pboc.PbocDynamicTargetAttackTest.txt",
+      "sha256": "0d0b359997f8f36d3b3a1e5d84ae1dbebb80c2d98c2f4f09bed57f37eb64ca73"
+    },
+    {
+      "file": "com.supplymind.provider.pboc.PbocOfficialWebDataProviderContractTest.txt",
+      "sha256": "7ef800bbd03cb8edac5086076449e2b498d68408bb345be6ea383eb0f410935f"
+    },
+    {
+      "file": "com.supplymind.provider.pboc.PbocOfficialWebRealNetworkAttemptTest.txt",
+      "sha256": "445f636db4d9ccb9667b744d56269d369c5a7e56ef344962d6e968c997d8420c"
+    },
+    {
+      "file": "com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest.txt",
+      "sha256": "d9c2e1691e744d2ecf9abfbf411bbbb9ac7225a95f4d539675adcd031a2b75b4"
+    },
+    {
+      "file": "com.supplymind.provider.pboc.PbocRawFirstContractTest.txt",
+      "sha256": "63fd6d36da2b19e7a4abb82e159fa643eea53e79ca1d26bf7338d256e23b2ee1"
+    },
+    {
+      "file": "com.supplymind.provider.shfe.AcquisitionFailureEvidenceTest.txt",
+      "sha256": "e586f841e505e4dc487051cc74dc1fc7e41c40875a2c3dbd21f3bb227eb2c76e"
+    },
+    {
+      "file": "com.supplymind.provider.shfe.ShfeAdFreePublicDataProviderTest.txt",
+      "sha256": "dbfa85bd59f7e2df46a40e37fb0eeb8abc9b551aa02f9af2b9377d39c3b99cec"
+    },
+    {
+      "file": "com.supplymind.publish.MaterialPublishGateTest.txt",
+      "sha256": "03d681fcc874166e3e2119a57ace5f0a1ab685beb22375d12c12e0f3f19d8af0"
+    },
+    {
+      "file": "com.supplymind.publish.PublishedQueryServiceTest.txt",
+      "sha256": "63a72b851663735c2466426b402d16c0537c74e210e61c5daa0fe62338fd0e55"
+    },
+    {
+      "file": "com.supplymind.publish.PublishGateTest.txt",
+      "sha256": "14b234a85cffa8806b71780d5cfc24ff6a8cfd0f26e552ce27b2258527cee1ff"
+    },
+    {
+      "file": "com.supplymind.publish.PublishRealRawEvidenceTest.txt",
+      "sha256": "bf3bddbd6188cf150c85f812d389234d67cc4fbd449704f58d607002515d2613"
+    },
+    {
+      "file": "com.supplymind.rotation.TimeRotationServiceTest.txt",
+      "sha256": "adb31f0c7c51122a193f028769406de3f19bd5e7e44bdaedbf465b7d1fa46e8c"
+    },
+    {
+      "file": "com.supplymind.routing.MaterialRoutingTest.txt",
+      "sha256": "48ce15275cea47bba9ff39124f6e228a388554754f18b2a7cb1527786442adee"
+    },
+    {
+      "file": "com.supplymind.scheduling.ActiveCurrentCollectionServiceTest.txt",
+      "sha256": "640b466fed55636053893c91a9dbefcb03f53a5dd160a780c4d837283ba9f89b"
+    },
+    {
+      "file": "com.supplymind.scheduling.BusinessLoopIntegrationTest.txt",
+      "sha256": "74bc3bf12fad31f1ee62eca8db318a51146f6f73c7041b49fcd8d613d39da4c7"
+    },
+    {
+      "file": "com.supplymind.scheduling.CurrentAcquisitionServiceTest.txt",
+      "sha256": "408d691289260eb8e68b16344a624b1512ddd3867b0610cf33db2cee7010521b"
+    },
+    {
+      "file": "com.supplymind.scheduling.ScheduledEntryPostFixAttackTest.txt",
+      "sha256": "f062aef268ac9434965c7a40b33433e5599a8d0c54055cd03bace45b8de64d33"
+    },
+    {
+      "file": "com.supplymind.scheduling.ScheduledGuardProductionPathTest.txt",
+      "sha256": "8e7340de8796ebab7deeb62be009f52ec5cec581c24596a143c3270c8c1f1e47"
+    },
+    {
+      "file": "com.supplymind.survey.FreePublicSourceSurveyTest.txt",
+      "sha256": "3517afbe78b9adb61fb85730fd13543bca1d9c5bee9ea620cd35389b05e98252"
+    },
+    {
+      "file": "com.supplymind.validation.MaterialValidationPipelineTest.txt",
+      "sha256": "c1b35757ba42b38805ede3d6ea65de8568c7e89a3f673c357e1a5aa3f7592a5d"
+    },
+    {
+      "file": "com.supplymind.validation.PbocValidationPipelineTest.txt",
+      "sha256": "e12f68ba8f112a49703d8ab29468c124e00a5f58c91ca2c69e4ea492bbacefba"
+    },
+    {
+      "file": "com.supplymind.validation.PbocValidationRealRawEvidenceTest.txt",
+      "sha256": "381a45856ff1ffe2281bc66f9f0b5ac7c286f4100b88a2e9a25fa426216023db"
+    },
+    {
+      "file": "com.supplymind.warning.FormalWarningEvaluationServiceTest.txt",
+      "sha256": "80ecd764b44edc2a670c7ffe02adff091e1b7f1f38c493ee8ca0ae3bec3ded8d"
+    },
+    {
+      "file": "com.supplymind.warning.WarningAckStoreTest.txt",
+      "sha256": "4f3b2505096aa8b616eb0ce5265b8fdbc62acdbd6207b0d6724c4aea40caa694"
+    },
+    {
+      "file": "com.supplymind.warning.WarningApiMvcContractTest.txt",
+      "sha256": "ffd2750e1ccf70417e75b0decc317450ec40a47d3a2104e79f46f04a98a3678c"
+    },
+    {
+      "file": "com.supplymind.warning.WarningRuleManagementServiceTest.txt",
+      "sha256": "5501bdd546e353a92035a0b2669668c880d1603cf49915e13f511679e150b916"
+    },
+    {
+      "file": "com.supplymind.warning.WarningServiceTest.txt",
+      "sha256": "26fe2097854f120f9cbd33c56fb2ec98bdc0dc6087c2f9e0a7db2a445d6fa91f"
+    },
+    {
+      "file": "TEST-com.supplymind.acceptance.AtSrc002AcceptanceTest.xml",
+      "sha256": "4d8a1d73a51ee741db68414b537570db450e6fbb08da09c794a11a278db3f6df"
+    },
+    {
+      "file": "TEST-com.supplymind.acceptance.MaterialDay3AcceptanceTest.xml",
+      "sha256": "0c8ffaf98d9b5afae954727f96c192d326b10e7f329509a2afdcfff8131882f5"
+    },
+    {
+      "file": "TEST-com.supplymind.acceptance.MaterialRoutePlanProductionTest.xml",
+      "sha256": "e163a0eaed107b0ea16ffefbd508e27c0f52f115a912a929f51daf97f0121f88"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentApiMvcContractTest.xml",
+      "sha256": "68d3db1e8072535194f47f6302eb1b741a3d2ff08594435537c751dc726484af"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentApiTest.xml",
+      "sha256": "af5b320f54eb9c4d9a7d6faeda06a8824804a6945974b0a8b81970d9e9f20af5"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentAttackTest.xml",
+      "sha256": "1c7859bcb877435b9985921d973ecdaa067bdc75e4229a877bfef6f56c96002f"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentCrossConfigReproductionTest.xml",
+      "sha256": "57e29ec6d7a7910e57004f812ce815c6f38e650ad2c5d6890c1f4eb09295cb81"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentDemoAcceptanceFixTest.xml",
+      "sha256": "9856fc97cff1f8a1ecadcfa9b4a15d152b7f5847c6a258e1a8aba54e5dae0710"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentF2MissingReferenceGuardTest.xml",
+      "sha256": "0388806369622a9c6a24f7681830a353f26ffb06cadcad4b1015af19742072f5"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentF3LifecycleVerificationTest.xml",
+      "sha256": "13179a7c89787a060255b7a1e6fce7b1e9046e9592e08ed4da08d83336f08c63"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentFactFirstPipelineTest.xml",
+      "sha256": "7e271c76ffb3459e92e1c5dc6be58d9b026500ea05337005e449160b4f3664eb"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentFinalStageMajorFixAttackTest.xml",
+      "sha256": "8eff219d440a1d4fe31e7e6c21db9261488f4ca07f360934b62562c023883695"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentPipelineIntegrationTest.xml",
+      "sha256": "75faaa93c5e5ba19df242c8ea867ac487006a309f2e5e2b836ef9c2b03c8ac49"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentR2StageFixAttackTest.xml",
+      "sha256": "95a4fe4f5e565579522586a905674b83ee108a52b793bce70bf79771cc8e0c3d"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentReportReadTest.xml",
+      "sha256": "eef136e5cd679cea3e997e81d774bd9870020414225afc0a12bb7e9ebbe33532"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentSpringAiToolCallingTest.xml",
+      "sha256": "34f0abf4682a3ebbc5115021f4bdb48d3f3b5e567a91193bc10d4a18bf628006"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AgentToolBoundaryTest.xml",
+      "sha256": "cdb7248a017871f720f6606cd983e239dac32bd6cf45049818d167eaf5794585"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.AggregateRowEvidenceGoldenTest.xml",
+      "sha256": "fc3c3230dfa7f81e400457516fe7bb4020bac4865661816f217cec752685bdfe"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageAuthorityBindingAttackTest.xml",
+      "sha256": "905c48e623ac42fd4a9ffbb506922e5f07ec68fa3ffc02e896dd67d7c318e221"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageClaimFieldGuardAttackTest.xml",
+      "sha256": "6bc13c7dabb576ef98bf560392506430b5af4e3c2ecc719c872b772fb8511229"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageFullBindingAttackTest.xml",
+      "sha256": "e3a4239154677ae80b639b0094bd6d3c6c6857e99a21718121428358e212034d"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageMultiRowLineageAttackTest.xml",
+      "sha256": "74b11e05ea3d33fd03c57efa807a78814efdc560b10de082dc887f7f66476989"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageRowToRefConfigTest.xml",
+      "sha256": "dbe6c57636cf3e5921c928b92ea946c0bbfba239c83edcab814c34b485dd3666"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageStrictEnvelopeAttackTest.xml",
+      "sha256": "3983e2731301cc245caf2e16fcef4490c2bd673c8c6b94bde6dab52b4f4f8e48"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6FinalStageStructuredClaimsAttackTest.xml",
+      "sha256": "e7a1cfc2caf6ce7f432545528f34cc989df9656d279420aafcc2c5ec44391aaf"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentCostAttackTest.xml",
+      "sha256": "9b245fbccedc4b76ddf5939238ba770d4f8bfefde7b089a011ffde4fb025a19a"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentEvidenceReportAttackTest.xml",
+      "sha256": "8a395f15c5ada0c010e6cf625479b532e05deb993bbe204b199bb5dd557b46cb"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentGoldenEvidenceTest.xml",
+      "sha256": "3e00567ba87e4b33ab09eefb9fca18d5ca2be3fad45e4ddb9b1933fb1b6eaa58"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentIsolationAttackTest.xml",
+      "sha256": "a6e7be824386dcf3a3fd4c465d832906ab124c6defe6460b21680f7dd8b6224e"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentResponseAttackTest.xml",
+      "sha256": "c69f396304f3eb641f0bd6b8c833c6d008c975dc0227a9b227865a291861e2b4"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.Day6R2IndependentSpringAiAttackTest.xml",
+      "sha256": "ebc729e262ce886f10726901ce05a049e241a9a0b5205b6e21c5fc65048d3ded"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.infrastructure.springai.CloudLlmConfigurationTest.xml",
+      "sha256": "383fa870d48fc411c4171dac9bd3f6f3e0d2fb816eeca37c76be72dcb29775db"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.infrastructure.springai.CloudLlmRealApiAcceptanceTest.xml",
+      "sha256": "003d25ebb486e9b107135358fd67f0b09959695865537a96d4fbe920e8a7b18b"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.infrastructure.springai.SpringAiPromptContractTest.xml",
+      "sha256": "644ca9c5ef21714b956ffec1ea89456733d6840d1c8e62d2e6a3eed6aabd506b"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.llm.RequestBudgetTest.xml",
+      "sha256": "e10accbb7f0780e461f6339a6a64deeea7c360bc3f49eb2c917063c0758cfd41"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.narrative.RealCloudQualityRegressionTest.xml",
+      "sha256": "6452caddd81a868352e073b6b0bc3a5fd5eefbfc2fe26a0e5ea049e1eebfcdce"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.QueryPlannerTest.xml",
+      "sha256": "b3801282a606a1088f478d39e9621a0de5c4e5d5d263fc22854ca38109758ccf"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.report.AggregateRowBindingV3Test.xml",
+      "sha256": "ec4e493477a4762f77098b7b471d05c35a0dd7d525f01bc0dd49de69a709e22d"
+    },
+    {
+      "file": "TEST-com.supplymind.agent.report.ReportSnapshotStoreTest.xml",
+      "sha256": "96c58d978c7e901a9021635a3816565f85d58dcbba00e1855044c4e5fa9c1bb5"
+    },
+    {
+      "file": "TEST-com.supplymind.backfill.BackfillHistoryRangeContractTest.xml",
+      "sha256": "ea9bb94b1c06e84af3442d0c97cbdcae95be47e56a24a1da78845f1656d14f8c"
+    },
+    {
+      "file": "TEST-com.supplymind.backfill.BackfillOrchestratorTest.xml",
+      "sha256": "637dbeef87635d4b4b63f54aa35464649776fdb33685485dc2171d28a1128133"
+    },
+    {
+      "file": "TEST-com.supplymind.backfill.BackfillRangeCompletionRuleTest.xml",
+      "sha256": "a2f34134c57ba3c66f1211ac56788f08d87704be56bbbe93d7c66a8e5dd26418"
+    },
+    {
+      "file": "TEST-com.supplymind.backfill.Day5SecondHistoryRangeAttackTest.xml",
+      "sha256": "b11358a2217a127e8f29a00eed233834b1e1a118b9d2f9a207f32fffa1042601"
+    },
+    {
+      "file": "TEST-com.supplymind.config.ConfigApiMvcContractTest.xml",
+      "sha256": "7369f13d87841a76fa9d446567f958fda8d0231860a01eeeb218fe042bfe3f96"
+    },
+    {
+      "file": "TEST-com.supplymind.config.ConfigManagementServiceTest.xml",
+      "sha256": "e45b991f4e1e308c2e4767b2cebe7d2cd7d87e1bc0f9de3c32a380f0cf055eb0"
+    },
+    {
+      "file": "TEST-com.supplymind.config.CurrentIntakeAttackTest.xml",
+      "sha256": "26e04e1a7061fa5238f8c1859b452b83412b8134cd9dbef9095cc04a40998677"
+    },
+    {
+      "file": "TEST-com.supplymind.config.DynamicConfigWorkflowServiceTest.xml",
+      "sha256": "5ae89b8f5b0a495490119e4520cae38b7411c22418d6b0ae3dc1663a242736df"
+    },
+    {
+      "file": "TEST-com.supplymind.dashboard.DashboardApiMockMvcTest.xml",
+      "sha256": "96988d1503d4860184b577111dcd2d3f5874069e9655ee117505896f23624da2"
+    },
+    {
+      "file": "TEST-com.supplymind.dashboard.DashboardControllerTest.xml",
+      "sha256": "078f73a6c731b8b39867d20e8076bb03017ee921adf9a9ea7fd4959e8790fd26"
+    },
+    {
+      "file": "TEST-com.supplymind.dashboard.DashboardDtoContractTest.xml",
+      "sha256": "8589f625ef4ae2f55328d0cabcf0f41ef10900d7cb31fc9884187902650e7dd1"
+    },
+    {
+      "file": "TEST-com.supplymind.dashboard.DashboardMvcContractTest.xml",
+      "sha256": "d31af2c2262878ad9517222e7e308178cbcfb19339b2d828eb88f6ff36350199"
+    },
+    {
+      "file": "TEST-com.supplymind.dashboard.DashboardServiceTest.xml",
+      "sha256": "6e815e807ca4433d2c06ef939dbca675a4f333962675016c4d07e59251ab77f9"
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.AtAggDay4ContractHarnessTest.xml",
+      "sha256": "d943edcc16e7bd758fe1e4e09ab8834799b133b81b6cc3673929353902bf11f1"
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.AtPrecDay4ContractHarnessTest.xml",
+      "sha256": "8a3c8c7acebcecbed4b218f7a771bba58792972790defe4ceb2d92878a99fd26"
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.AtPubDay4ContractHarnessTest.xml",
+      "sha256": "5293f4d1f2943a95b8a95960a391c71bb668a39579e067dcd3e9206c5b0900b4"
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.AtSrcDay4ReconciliationHarnessTest.xml",
+      "sha256": "a7d71f9522f9bbc6c51891100b144bbeafefc0d0884b296fc7a721a1371ddecf"
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.Day4DailyAggregateSchemaContractTest.xml",
+      "sha256": "adf6e8fb60f2458e6b05eda777839a4f7135dc16a31c5972ee492a66cce0ae7f"
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.Day4GoldenFixtureManifestTest.xml",
+      "sha256": "0f06ef9c8d5f435e3bc4a1f840091acf45d1c4a7f3ca590dd87da92205455c19"
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.FutureMaterialDay4ContractTest.xml",
+      "sha256": "d229b70a6b5e99f727fc6ef24c901c77a6d532d9c008a84af6747ff976cddf58"
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.MaterialAggregateProcessingContractHarnessTest.xml",
+      "sha256": "3fccf3d2fc283883e70a38f220444ca5ba4415aa11c0c8a388b3ac740198bbf9"
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.MaterialBasicValidationV2ContractHarnessTest.xml",
+      "sha256": "1227b272c82e9de99161d838d2d36c084a338b6cbb05213d16582ffa63fcf47e"
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.MaterialDailyProcessingContractHarnessTest.xml",
+      "sha256": "bf648fce29fb7afe7e73bddb0bf82fd46ef81e485154af8935e314eba569826d"
+    },
+    {
+      "file": "TEST-com.supplymind.day4.foundation.MaterialPublishNegativeMatrixHarnessTest.xml",
+      "sha256": "5c8eba88d937449f2790e904e11cd79059e634d01ecbe55ac2fff94654e879d9"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.Day5ImplementationIntegrationTest.xml",
+      "sha256": "503df8eac63b14b51a9aec3385dc7f10a5ea34a230ab9f130bac1bed691b4d1b"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5AlertContractHarnessTest.xml",
+      "sha256": "1000504713400f14ecec1f5ad945217f017266b1b84144cb699e3d15f5dffb2a"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5BackfillStateContractHarnessTest.xml",
+      "sha256": "9abf8e242b8c8a1a7fbc0deb2cbe042fb528ba312140701cbc4b1500920eb395"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5ConfigurationActivationContractHarnessTest.xml",
+      "sha256": "b528bf8bde1c2b20498ff1a7fb55a8c548c128f2953c66cce2fe1b7a5d413237"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5CrossYearHistoryContractHarnessTest.xml",
+      "sha256": "29f77148dd3e46143eb479e3e8d66c29335ad36a685127daa10189da5cbb7b9f"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5FutureAcceptanceIntegrationHarnessTest.xml",
+      "sha256": "b24628612b23bd08afae66131dba8ecf146d1f153fa1877d5db1ea1dc09c2945"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.foundation.Day5TimeContractHarnessTest.xml",
+      "sha256": "f81db65bbeac90202ffd1d43d4b36b91244077604ce72a3faf2c205afde6ac2b"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.Day5FinalProviderCapabilityDeclarationTest.xml",
+      "sha256": "0dbab388a400b2de0ede407eea73191c29207b194f43c05955ca40a78f4d10d7"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.Day5R2BackfillAttackTest.xml",
+      "sha256": "4ffdd8b8bcf564d5fc29143a53a47b70ce53f40ff1b1875124321a526b818ab2"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.Day5R2RotationHistoryCapabilityAttackTest.xml",
+      "sha256": "ee111b86b862c2bc398c4c93dd40a41de312f53acd1ca4e2b8978486db54d034"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.Day5R2WarningAttackTest.xml",
+      "sha256": "3a0b62210dc23a1b61d7724331631a5638e2f12a60b67ece43175176cb73a004"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.Day5SecondDefaultCapabilityAttackTest.xml",
+      "sha256": "94c1913c22a8bfdfccb91829469fe479e859b6f6fe45bfe740cfdd6f113cee9a"
+    },
+    {
+      "file": "TEST-com.supplymind.day5.r2.ProviderDefaultCapabilityFailClosedTest.xml",
+      "sha256": "67d78e20210a2441e61c3f5feb9f03b46d78f689712d0f0048c5c51605eafa32"
+    },
+    {
+      "file": "TEST-com.supplymind.demo.DemoShowcaseServiceTest.xml",
+      "sha256": "31803064c2b47ef1bf57661cfc421d3fe733a3e42fcabc4b829913de354a92e9"
+    },
+    {
+      "file": "TEST-com.supplymind.desktop.ChildProcessWatchdogTest.xml",
+      "sha256": "987627cdc6aec1e6aa52eecd6c9e3b29dd6485ea321693916d02fed28ccb54f1"
+    },
+    {
+      "file": "TEST-com.supplymind.desktop.HealthControllerTest.xml",
+      "sha256": "fa00baa2aef7e2026a53ab0a5c62ae8913ded5c64d38623747e47ac2d4feb97a"
+    },
+    {
+      "file": "TEST-com.supplymind.desktop.PortableInitialConfigExporterTest.xml",
+      "sha256": "f64fa19ce664345a442203ac5f2effefa94a6035d0d1386ee09a936a6e73dac9"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.AtFile000ConfigAndRawWindowAcceptanceTest.xml",
+      "sha256": "983dfda961a4186c8c09da202f27327847b6f35a2ad5e920c02970a4fd3b61da"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.AtFile000DualArtifactImmutabilityAcceptanceTest.xml",
+      "sha256": "78b092d1ed1a1c30fac5d283d010d2bb6d0fef1377f11215ca9e17a30eb137a9"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.AtFile000RecoveryManifestRootAcceptanceTest.xml",
+      "sha256": "601fa0505ed2728c04b9653b6eaa13a03d0d16fd5e5ad9dafa4fce4f1f14b1af"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.D1T03AtFile000SupplementalAcceptanceTest.xml",
+      "sha256": "2d0ef175d5ff669ad388241564965408b86c6b06def5143f7efcd12b759f045d"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.DirtyMarkerAndProcessedCodecAcceptanceTest.xml",
+      "sha256": "0925c7950cd5396bf7447503deb30d0f6ff6e29c0bf9633f1aa2f6ae679d6ab2"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.DualCurrencyRawLifecycleAcceptanceTest.xml",
+      "sha256": "b4f8f2cf8f8cdbe879431ef5849321d9ad3ff9d89d47274a5e31362391e6fc7f"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.FoundationStartupAcceptanceTest.xml",
+      "sha256": "262809d81dc77e0cd02949ff2c42c76af5a2e7685285732d74e9bb5104e7d595"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.GoldenFixtureContractAcceptanceTest.xml",
+      "sha256": "c0d2cc637b3edc37ebabd15993844affe2a2eb8dbdba4ce4d7e0ef81930614ef"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.acceptance.IndependentFormatContractAcceptanceTest.xml",
+      "sha256": "2f7e961e211a914e0f1e8f6e3d3408effad93ffd171b2f61bd956602403d565f"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.boot.SupplyMindDataPropertiesTest.xml",
+      "sha256": "930d32f854020e880676f2ca58373ff737951e898ffb2365ff79e1ad16645a45"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.codec.CsvV1CodecTest.xml",
+      "sha256": "e8c1eb7e02296b7ab3ddf0f520f56f9330484b2d55918be186ef7c3a83316283"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.codec.JsonV1CodecTest.xml",
+      "sha256": "f947fb779600ee918ba02318e2530dcca9d11eac6e435002cf578a63300e96f9"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.model.ConfigAndManifestV1Test.xml",
+      "sha256": "567444b67b01ec25271e075634ff3c7ae10ea6bc0702b84314f81ef9f3a920bd"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.model.QuarantineAndPrecisionV1Test.xml",
+      "sha256": "b19877ae7c081919fe8f38db10b3386a6ce7643f58f6c07f88ca956d0d82000f"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.model.RawReceiptAndTimelineV1Test.xml",
+      "sha256": "2b92226bc1275449ccbcd401a430b47b8c4874a109a2371ea3ac8c989d8bde8b"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.AtomicFileRecoveryTest.xml",
+      "sha256": "1361cc8584747671e4f955610f6911828e5826dd6f54548748958cc2c585f88c"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.AtomicFileStoreWriteInvariantTest.xml",
+      "sha256": "c03dc3a8b6eb6d14d14ba34c14b0ef9fba17587bc16dd16949b0e093c13a0f52"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.DataRootAndPathsTest.xml",
+      "sha256": "c2c81d4223d0f6fb23bb4df8eeb92b9945e61d0664edeb78ff5c4e7d3bf3ed73"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.DirtyMarkerCodecTest.xml",
+      "sha256": "2aab0dad6656d5825fefae2f839bb804d5e8425acc64b26edad20e0f9b944ee0"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.DirtyMarkerRecoveryTest.xml",
+      "sha256": "f4e1378e8ffc0312d9aac2e1df9ff17f8abae0db1568425c59a508e4b499dc02"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.ManifestDerivedFieldsVerifierTest.xml",
+      "sha256": "7a82344922f756bc70c9b432ce1f93e49b5f11d3119c0c4c40f65b05ef9380de"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.RawAcquisitionLinkVerifierTest.xml",
+      "sha256": "26b350188bb1a39ca67fa440c09321a3bdc4d3e16065d043927143fe59f3734b"
+    },
+    {
+      "file": "TEST-com.supplymind.foundation.storage.RawAndConfigStoreTest.xml",
+      "sha256": "ac3138d5c56e421e244abfb33aa8ab8549258e7c4ad34bf3d88d35b07cfa3c6d"
+    },
+    {
+      "file": "TEST-com.supplymind.history.HistoryQueryServiceTest.xml",
+      "sha256": "f9176145f6868abe1f3902e7a321a100d7dd5e530486548e3348fc7df2b4e38c"
+    },
+    {
+      "file": "TEST-com.supplymind.localimport.LocalImportBatchProcessingServiceTest.xml",
+      "sha256": "55002bef647fa5ec3f1f85d0b3b001447dc2b87a6504e85c826c0bbae99c3ba8"
+    },
+    {
+      "file": "TEST-com.supplymind.localimport.LocalImportIsolationTest.xml",
+      "sha256": "845f8c2f4546e9781ddcf7a4d673a9459bb11025068bffc3e597672ac58be33e"
+    },
+    {
+      "file": "TEST-com.supplymind.localimport.SyntheticDemoIsolationTest.xml",
+      "sha256": "d1887debeeaa0195c29f5f34f0f511bf5652bd99b5c570ec404ecb34d7456a23"
+    },
+    {
+      "file": "TEST-com.supplymind.manual.ManualMaterialIntakeTest.xml",
+      "sha256": "61844a7cf9b9b479f177f6d3f4fd4c29cb29eef47f48ff2d0028d6e326afad17"
+    },
+    {
+      "file": "TEST-com.supplymind.manual.ManualMaterialProcessingServiceTest.xml",
+      "sha256": "ade5782aa364017517852de01ebb3caf3c9a9be92869ea137ff76a8862e78390"
+    },
+    {
+      "file": "TEST-com.supplymind.processing.AggregateCalculatorTest.xml",
+      "sha256": "3f8739072c22be23605dacfceb2ae7e575b4667d86eee6e35ea76114debbd823"
+    },
+    {
+      "file": "TEST-com.supplymind.processing.AggregateProcessingServiceTest.xml",
+      "sha256": "55471f943db978ed59787dc50403cc22a2336b8b3c361e0eb3f6f0d902c60c0d"
+    },
+    {
+      "file": "TEST-com.supplymind.processing.AggregateRealRawEvidenceTest.xml",
+      "sha256": "9975ae2f155245c0538eb500f8d3bc191ab3664bf8907f6aa0a6ee653ffa336f"
+    },
+    {
+      "file": "TEST-com.supplymind.processing.DailyProcessingServiceTest.xml",
+      "sha256": "8e470ad2d1b5060c49ebb17eacb2bb61364bfda9755c24182653df4e58e0b983"
+    },
+    {
+      "file": "TEST-com.supplymind.processing.DailyRealRawEvidenceTest.xml",
+      "sha256": "bf87df47e243cf3cbc4ed66d9ac6056da0c0d63404f3104358573b079164d1d9"
+    },
+    {
+      "file": "TEST-com.supplymind.processing.MaterialDailyAggregateTest.xml",
+      "sha256": "40617821dfe5e49555a8c0aae25bfef5fd80249743890e5400b382c9cd2e9755"
+    },
+    {
+      "file": "TEST-com.supplymind.provider.DataProviderRegistryTest.xml",
+      "sha256": "b9af3d111492647df68291e2dff3f21e856a3753ae1edc8bd82e99edb6278b38"
+    },
+    {
+      "file": "TEST-com.supplymind.provider.pboc.PbocDynamicTargetAttackTest.xml",
+      "sha256": "b4ef7bc731fd24f82f23c13a9d8b93f709305f60cf62459890a50fc4e489f615"
+    },
+    {
+      "file": "TEST-com.supplymind.provider.pboc.PbocOfficialWebDataProviderContractTest.xml",
+      "sha256": "c576f27b2638dfed02f93130d49273f047f5498e9ec416e1cc1e5e061375e791"
+    },
+    {
+      "file": "TEST-com.supplymind.provider.pboc.PbocOfficialWebRealNetworkAttemptTest.xml",
+      "sha256": "3567f223a6c12bd2f63d1f4ae8296ec73cbb2afc7af2b5dfccbbba941d6fdd1d"
+    },
+    {
+      "file": "TEST-com.supplymind.provider.pboc.PbocRawClosedLoopSmokeGateTest.xml",
+      "sha256": "1a8e180995bf8b9340e6e5163e4c3abebb1013a2f6a5eb80b56ef654dff95861"
+    },
+    {
+      "file": "TEST-com.supplymind.provider.pboc.PbocRawFirstContractTest.xml",
+      "sha256": "585b6431bd9cc191c301fd6d0a351c682ccce53918a4ca0f0322acffd17207bb"
+    },
+    {
+      "file": "TEST-com.supplymind.provider.shfe.AcquisitionFailureEvidenceTest.xml",
+      "sha256": "65b7523ac85b9bfebf727b88e9004ea1be54daf29fa185a07b53d16b8981cbf7"
+    },
+    {
+      "file": "TEST-com.supplymind.provider.shfe.ShfeAdFreePublicDataProviderTest.xml",
+      "sha256": "0258d75042d1589487ac077736e29c1fc730b18276fb3ad3607975ba53d80f90"
+    },
+    {
+      "file": "TEST-com.supplymind.publish.MaterialPublishGateTest.xml",
+      "sha256": "d83eb13e63f2d7580c7439f157e750b886ee0386552d9ec7090cfda90b777c25"
+    },
+    {
+      "file": "TEST-com.supplymind.publish.PublishedQueryServiceTest.xml",
+      "sha256": "2efc66e8ed8040bc6e21b49b2f02c9e336b1dcf1723fada066829386e3ab0ee6"
+    },
+    {
+      "file": "TEST-com.supplymind.publish.PublishGateTest.xml",
+      "sha256": "af3898a460f77f12833f7bf54801b5d0d07c0dce2b1120cb8d697a434dc02714"
+    },
+    {
+      "file": "TEST-com.supplymind.publish.PublishRealRawEvidenceTest.xml",
+      "sha256": "890102b0fa1e26052cd17f65fc104fbb807df5a0a17ef6822de1d2f1418b86b3"
+    },
+    {
+      "file": "TEST-com.supplymind.rotation.TimeRotationServiceTest.xml",
+      "sha256": "2cc2f09d3666ceeeaed59657383d845ecf2f267c4e7e3342da2d04caeb9ed4c5"
+    },
+    {
+      "file": "TEST-com.supplymind.routing.MaterialRoutingTest.xml",
+      "sha256": "58c7eb26a7e5200b03da281b4dd945037fc04efc81bc86e37521492a1942bbaa"
+    },
+    {
+      "file": "TEST-com.supplymind.scheduling.ActiveCurrentCollectionServiceTest.xml",
+      "sha256": "41f881c23fbbffc1480c64f1a13950263edb892a98361a022fe355e8d4e218ec"
+    },
+    {
+      "file": "TEST-com.supplymind.scheduling.BusinessLoopIntegrationTest.xml",
+      "sha256": "167828d1582e5b87966b75a5744df0a468833fd679b413fbde84f6d87377ccec"
+    },
+    {
+      "file": "TEST-com.supplymind.scheduling.CurrentAcquisitionServiceTest.xml",
+      "sha256": "0d8b9a34e3e561b03a995dc974f4569340e6e53c1b41be275fc006a619625c27"
+    },
+    {
+      "file": "TEST-com.supplymind.scheduling.ScheduledEntryPostFixAttackTest.xml",
+      "sha256": "d7d01595f4dbde5a0aed3fd9eb829ae1db8fd1ecbfa042a07dd0e5dbad1cac8d"
+    },
+    {
+      "file": "TEST-com.supplymind.scheduling.ScheduledGuardProductionPathTest.xml",
+      "sha256": "2c58e826952ed9dfcec48e3037479f3182c07936bc170413c14f929e2fd8d460"
+    },
+    {
+      "file": "TEST-com.supplymind.survey.FreePublicSourceSurveyTest.xml",
+      "sha256": "2d83c7e98efea217dd56cb8aae5ef70dd0e2b262ba744d093eacad0bd87e8f93"
+    },
+    {
+      "file": "TEST-com.supplymind.validation.MaterialValidationPipelineTest.xml",
+      "sha256": "aed54b0b81b9ee34d63191312ab50083d350e8d2b634ef6dfcfbdd604f8e1c71"
+    },
+    {
+      "file": "TEST-com.supplymind.validation.PbocValidationPipelineTest.xml",
+      "sha256": "de15bbb1d624466da5daf18b0cf9977557bd26a84e88aab2fb89cb9ba6e25e9b"
+    },
+    {
+      "file": "TEST-com.supplymind.validation.PbocValidationRealRawEvidenceTest.xml",
+      "sha256": "8462e02ce331f4ddba263fab893357eb5b5b3c113d67c01bea59cc32a8d5ac13"
+    },
+    {
+      "file": "TEST-com.supplymind.warning.FormalWarningEvaluationServiceTest.xml",
+      "sha256": "9045a6c2b1f87a752e962a936d38b8535d6dbbe2af5b8732e89de79577bea35a"
+    },
+    {
+      "file": "TEST-com.supplymind.warning.WarningAckStoreTest.xml",
+      "sha256": "ca8ecbca7641185be7a54a15df1faaa10fd1586d2ada400c5b8b80597d8be86c"
+    },
+    {
+      "file": "TEST-com.supplymind.warning.WarningApiMvcContractTest.xml",
+      "sha256": "5246300836738244dbd61abfcde8467ede0a382bfedb5035d5a66863254a8424"
+    },
+    {
+      "file": "TEST-com.supplymind.warning.WarningRuleManagementServiceTest.xml",
+      "sha256": "6a71c8e488b08da37b0f895a67f78fd48c2202217aa172410c8d1b6dc760636e"
+    },
+    {
+      "file": "TEST-com.supplymind.warning.WarningServiceTest.xml",
+      "sha256": "83561d90cea8b36fd7374ced3b09c89d17832fa6a4139d5136cc9166038aaa9d"
+    }
+  ],
+  "selectedSuites": [
+    "AgentApiMvcContractTest",
+    "AgentApiTest",
+    "AgentAttackTest",
+    "AgentCrossConfigReproductionTest",
+    "AgentDemoAcceptanceFixTest",
+    "AgentF2MissingReferenceGuardTest",
+    "AgentF3LifecycleVerificationTest",
+    "AgentFactFirstPipelineTest",
+    "AgentFinalStageMajorFixAttackTest",
+    "AgentPipelineIntegrationTest",
+    "AgentR2StageFixAttackTest",
+    "AgentReportReadTest",
+    "AgentSpringAiToolCallingTest",
+    "AgentToolBoundaryTest",
+    "AggregateRowBindingV3Test",
+    "AggregateRowEvidenceGoldenTest",
+    "BusinessLoopIntegrationTest",
+    "CloudLlmConfigurationTest",
+    "CloudLlmRealApiAcceptanceTest",
+    "Day6FinalStageAuthorityBindingAttackTest",
+    "Day6FinalStageClaimFieldGuardAttackTest",
+    "Day6FinalStageFullBindingAttackTest",
+    "Day6FinalStageMultiRowLineageAttackTest",
+    "Day6FinalStageRowToRefConfigTest",
+    "Day6FinalStageStrictEnvelopeAttackTest",
+    "Day6FinalStageStructuredClaimsAttackTest",
+    "Day6R2IndependentCostAttackTest",
+    "Day6R2IndependentEvidenceReportAttackTest",
+    "Day6R2IndependentGoldenEvidenceTest",
+    "Day6R2IndependentIsolationAttackTest",
+    "Day6R2IndependentResponseAttackTest",
+    "Day6R2IndependentSpringAiAttackTest",
+    "QueryPlannerTest",
+    "RealCloudQualityRegressionTest",
+    "ReportSnapshotStoreTest",
+    "RequestBudgetTest",
+    "SpringAiPromptContractTest"
+  ],
+  "note": "Raw directory may contain earlier reports in a focused run; totals include selected suites only. Use named run log for command and source generation."
+}
