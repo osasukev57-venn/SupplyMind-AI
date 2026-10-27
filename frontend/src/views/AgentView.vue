@@ -88,6 +88,8 @@ function sourceLabel() {
 
 function reportStatus(): string {
   if (!result.value) return 'UNKNOWN'
+  if (result.value.narrative?.adoption === 'PARTIAL') return 'CLOUD_PARTIAL_REPORT'
+  if (result.value.narrative?.adoption === 'FULL') return 'CLOUD_REPORT'
   return result.value.degraded ? 'JAVA_FACT_REPORT' : 'VERIFIED'
 }
 

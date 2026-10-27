@@ -11,6 +11,8 @@ import java.util.regex.Pattern;
 public final class NarrativeValidator {
     private static final Pattern DATE=Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern NUMBER=Pattern.compile("-?\\d+(?:,\\d{3})*(?:\\.\\d+)?(?:%|％)?");
+    private static final Pattern TREND_VALUE_LABEL=Pattern.compile(
+        "最新(?:值|价格)?|当前(?:值|价格)?|结束值|期末值|终点值|起始值|起点值|期初值|首尾变化|累计变化|累计上涨|累计下跌|变化|增加|减少|基准值|阈值|最高值|最低值|最高价|最低价|波动率|中位数|标准差");
     private final AgentResponseVerifier secrets;
     private final SourceRejectionAudit sourceAudit;
     public NarrativeValidator(AgentResponseVerifier secrets){this(secrets,null);}
@@ -162,7 +164,12 @@ public final class NarrativeValidator {
         for(String clause:normalized.split("[，。；;、]")) {
             if("QUALITY".equals(kind)&&sampleValidation.countClause(clause))continue;
             var nums=NUMBER.matcher(clause);var roles=new ArrayList<EvidencePackV1.Fact>(selected);
-            if("TREND".equals(kind)||"OVERVIEW".equals(kind)) {
+            boolean trendKind="TREND".equals(kind)||"OVERVIEW".equals(kind);
+            var endpointPair=pairOf(clause);
+            boolean hasEndpointPair=trendKind&&any(clause,"从","→")&&endpointPair.find();
+            if(hasEndpointPair&&(!hasDecimal(selected,"history.query",endpointPair.group(1))||!hasDecimal(selected,"history.latest",endpointPair.group(2))))return "WRONG_TREND_PAIR";
+            boolean labelledTrend=trendKind&&(TREND_VALUE_LABEL.matcher(clause).find()||hasEndpointPair);
+            if(("TREND".equals(kind)||"OVERVIEW".equals(kind))&&!labelledTrend) {
                 if(any(clause,"从","→")&&any(clause,"至","→")) {
                     var pair=pairOf(clause);if(!pair.find())return "AMBIGUOUS_TREND_PAIR";
                     if(!hasDecimal(selected,"history.query",pair.group(1))||!hasDecimal(selected,"history.latest",pair.group(2)))return "WRONG_TREND_PAIR";
@@ -201,6 +208,17 @@ public final class NarrativeValidator {
             while(nums.find()) {
                 String token=nums.group();
                 var tokenRoles=boundRoles;
+                if(labelledTrend) {
+                    // A clause may contain both endpoints AND a change. Bind each number
+                    // to its nearest explicit role, never to any coincident selected value.
+                    var labels=TREND_VALUE_LABEL.matcher(clause.substring(0,nums.start()));
+                    String label=null;while(labels.find())label=labels.group();
+                    String type=trendValueType(label);
+                    if(hasEndpointPair&&nums.start()==endpointPair.start(1))type="history.query";
+                    if(hasEndpointPair&&nums.start()==endpointPair.start(2))type="history.latest";
+                    final String boundType=type;
+                    tokenRoles=selected.stream().filter(f->f.factType().equals(boundType)).toList();
+                }
                 if(labelledWarning) {
                     var labels=Pattern.compile("当前(?:值|价格)?|最新(?:值|价格)?|基准(?:值|价格)?|阈值").matcher(clause.substring(0,nums.start()));
                     String label=null;while(labels.find())label=labels.group();
@@ -228,6 +246,13 @@ public final class NarrativeValidator {
         for(var f:selected)unitText=unitText.replace(f.itemId(),"");
         for(String u:List.of("元/吨","美元/吨","CNY/1 USD","CNY/1 EUR","USD","EUR","GBP"))if(unitText.contains(u)&&!units.contains(u)&&selected.stream().noneMatch(f->u.equals(f.currency())))return "WRONG_UNIT";
         return null;
+    }
+    private static String trendValueType(String label) {
+        if(label==null)return null;
+        if(label.startsWith("最新")||label.startsWith("当前")||Set.of("结束值","期末值","终点值").contains(label))return "history.latest";
+        if(Set.of("起始值","起点值","期初值").contains(label))return "history.query";
+        if(Set.of("首尾变化","累计变化","累计上涨","累计下跌","变化","增加","减少").contains(label))return "history.trend.change";
+        return null; // Extrema, baseline and rates are not supported by endpoint/change facts.
     }
     private static boolean directionSupported(List<EvidencePackV1.Fact> facts,String kind,String expected) {
         if(has(facts,"history.trend.direction",expected))return true;

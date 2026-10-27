@@ -68,5 +68,18 @@ class SourceRejectionAuditTest {
         audit.captureSection("req-test","OVERVIEW","untrusted",List.of("fact-1"),"SOURCE_CONFLICT");
         assertTrue(files().isEmpty());
     }
+    @Test void explicitChildEnvironmentCanEnableLocalAuditWithoutChangingReportOrGlobalProperties() throws Exception {
+        var guard=new AgentResponseVerifier(List.of());
+        assertNull(SourceRejectionAudit.configured(guard,"",null));
+        var audit=SourceRejectionAudit.configured(guard,"",root.toString());
+        audit.captureSection("req-local","TREND","变化为700元/吨。",List.of("fact-5"),"UNSUPPORTED_NUMBER");
+        assertEquals(1,files().size());
+        assertEquals("",System.getProperty(SourceRejectionAudit.DIRECTORY_PROPERTY,""));
+    }
+    @Test void existingSystemPropertyTakesPrecedenceOverOptionalEnvironment() throws Exception {
+        var audit=SourceRejectionAudit.configured(new AgentResponseVerifier(List.of()),root.toString(),root.resolve("unused").toString());
+        audit.captureSection("req-local","QUALITY","2条样本。",List.of("fact-6"),"WRONG_SAMPLE_VALIDATION_COUNT");
+        assertEquals(1,files().size());assertFalse(Files.exists(root.resolve("unused")));
+    }
     private List<Path> files() throws Exception {try(var stream=Files.list(root)){return stream.toList();}}
 }

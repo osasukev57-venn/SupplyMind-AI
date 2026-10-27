@@ -69,10 +69,10 @@ const label = computed(() => badgeLabel(props.status))
 export function badgeTone(status: string | null): string {
   if (!status) return 'plain'
   const s = status.toUpperCase()
-  if (['VERIFIED', 'COMPLETE', 'SUCCEEDED', 'FORMAL', 'ACKNOWLEDGED', 'ENABLED', 'JAVA_FACT_REPORT', 'USER_CUSTOM'].includes(s)) {
+  if (['VERIFIED', 'COMPLETE', 'SUCCEEDED', 'FORMAL', 'ACKNOWLEDGED', 'ENABLED', 'JAVA_FACT_REPORT', 'USER_CUSTOM', 'CLOUD_REPORT'].includes(s)) {
     return 'ok'
   }
-  if (['VERIFIED_WITH_NOTICE', 'STALE', 'PARTIAL_SUCCESS', 'LOW', 'MEDIUM', 'WARN'].includes(s)) {
+  if (['VERIFIED_WITH_NOTICE', 'STALE', 'PARTIAL_SUCCESS', 'LOW', 'MEDIUM', 'WARN', 'CLOUD_PARTIAL_REPORT'].includes(s)) {
     return 'warn'
   }
   if (['PENDING', 'WAITING', 'AWAITING_MANUAL_INPUT', 'RUNNING', 'NO_DATA', 'NOT_TRIGGERED', 'INSUFFICIENT_DATA', 'SYSTEM_DEFAULT'].includes(s)) {
@@ -110,6 +110,8 @@ export function badgeLabel(status: string | null): string {
     ACKNOWLEDGED: '已确认',
     TRIGGERED: '已触发',
     JAVA_FACT_REPORT: 'Java 事实报告',
+    CLOUD_REPORT: '云端解读 + Java 事实',
+    CLOUD_PARTIAL_REPORT: '云端解读（部分采用）',
     SYSTEM_DEFAULT: '系统默认',
     USER_CUSTOM: '用户自定义',
     INSUFFICIENT_DATA: '数据不足',

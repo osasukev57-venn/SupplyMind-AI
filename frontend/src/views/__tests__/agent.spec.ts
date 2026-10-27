@@ -273,6 +273,9 @@ describe('AgentView (D8-T03)', () => {
     for (const text of ['部分采用', '观测区间呈上升趋势', 'Java 已验证事实', '模拟演示数据', 'WRONG_AGGREGATE_GROUP']) expect(wrapper.text()).toContain(text)
     expect(wrapper.text()).not.toContain('云端语言分析未被采用')
     expect(wrapper.text()).not.toContain('全部采用')
+    const resultHeading = wrapper.findAll('.section-head').find(h => h.text().includes('分析结果'))
+    expect(resultHeading?.text()).toContain('云端解读（部分采用）')
+    expect(resultHeading?.text()).not.toContain('Java 事实报告')
     wrapper.unmount()
   })
   it('shows bounded source reasons alongside the category without exposing rejected prose', async () => {

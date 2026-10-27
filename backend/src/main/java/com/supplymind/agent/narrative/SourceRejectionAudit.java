@@ -10,6 +10,7 @@ import java.util.*;
 /** Explicit, local acceptance diagnostics. Never part of an API/report or an adoption decision. */
 public final class SourceRejectionAudit {
     public static final String DIRECTORY_PROPERTY="supplymind.agent.acceptance-diagnostics-dir";
+    public static final String DIRECTORY_ENV="SUPPLYMIND_AGENT_ACCEPTANCE_DIAGNOSTICS_DIR";
     private final Path directory;
     private final AgentResponseVerifier secrets;
     private int entries;
@@ -20,7 +21,12 @@ public final class SourceRejectionAudit {
     }
 
     public static SourceRejectionAudit configured(AgentResponseVerifier secrets) {
-        String value=System.getProperty(DIRECTORY_PROPERTY,"");
+        return configured(secrets,System.getProperty(DIRECTORY_PROPERTY,""),System.getenv(DIRECTORY_ENV));
+    }
+
+    static SourceRejectionAudit configured(AgentResponseVerifier secrets,String property,String environment) {
+        String value=property==null||property.isBlank()?environment:property;
+        if(value==null)value="";
         return value.isBlank()?null:new SourceRejectionAudit(Path.of(value),secrets);
     }
 
