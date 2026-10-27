@@ -92,7 +92,9 @@ public final class NarrativeValidator {
         if("METRICS".equals(kind)&&Pattern.compile("最新(?:值|价格|价)|当前(?:值|价格)|基准(?:值|价格)|现价|阈值").matcher(text).find())return "WRONG_FACT_ROLE";
         for(String clause:text.split("[，。；;、]")) {
             if(any(clause,"最新","当前")&&!any(clause,"至","→","~","～")) {
-                var actual=selected.stream().filter(f->f.factType().equals("history.latest")||f.factType().equals("warning.explain")).map(EvidencePackV1.Fact::businessDate).toList();
+                var actual=new ArrayList<String>();
+                valueRoleFacts(selected,pack,"history.latest").forEach(f->actual.add(f.businessDate()));
+                selected.stream().filter(f->f.factType().equals("warning.explain")).forEach(f->actual.add(f.businessDate()));
                 var dated=DATE.matcher(clause);while(dated.find())if(!actual.contains(dated.group()))return "WRONG_DATE_ROLE";
             }
         }
@@ -167,16 +169,16 @@ public final class NarrativeValidator {
             boolean trendKind="TREND".equals(kind)||"OVERVIEW".equals(kind);
             var endpointPair=pairOf(clause);
             boolean hasEndpointPair=trendKind&&any(clause,"从","→")&&endpointPair.find();
-            if(hasEndpointPair&&(!hasDecimal(selected,"history.query",endpointPair.group(1))||!hasDecimal(selected,"history.latest",endpointPair.group(2))))return "WRONG_TREND_PAIR";
+            if(hasEndpointPair&&(!hasDecimal(selected,"history.query",endpointPair.group(1))||valueRoleFacts(selected,pack,"history.latest").stream().noneMatch(f->numericEquals(f.value(),endpointPair.group(2)))))return "WRONG_TREND_PAIR";
             boolean labelledTrend=trendKind&&(TREND_VALUE_LABEL.matcher(clause).find()||hasEndpointPair);
             if(("TREND".equals(kind)||"OVERVIEW".equals(kind))&&!labelledTrend) {
                 if(any(clause,"从","→")&&any(clause,"至","→")) {
                     var pair=pairOf(clause);if(!pair.find())return "AMBIGUOUS_TREND_PAIR";
-                    if(!hasDecimal(selected,"history.query",pair.group(1))||!hasDecimal(selected,"history.latest",pair.group(2)))return "WRONG_TREND_PAIR";
+                    if(!hasDecimal(selected,"history.query",pair.group(1))||valueRoleFacts(selected,pack,"history.latest").stream().noneMatch(f->numericEquals(f.value(),pair.group(2))))return "WRONG_TREND_PAIR";
                     roles.removeIf(f->!f.factType().equals("history.query")&&!f.factType().equals("history.latest"));
                 }
-                else if(any(clause,"最新","当前","上涨至","下跌至","升至","降至","涨至","跌至"))roles.removeIf(f->!f.factType().equals("history.latest"));
-                else if(any(clause,"结束值","期末值","终点值"))roles.removeIf(f->!f.factType().equals("history.latest"));
+                else if(any(clause,"最新","当前","上涨至","下跌至","升至","降至","涨至","跌至"))roles=new ArrayList<>(valueRoleFacts(selected,pack,"history.latest"));
+                else if(any(clause,"结束值","期末值","终点值"))roles=new ArrayList<>(valueRoleFacts(selected,pack,"history.latest"));
                 else if(any(clause,"起始值","起点值","期初值"))roles.removeIf(f->!f.factType().equals("history.query"));
                 else if(any(clause,"变化","增加","减少","累计上涨","累计下跌"))roles.removeIf(f->!f.factType().equals("history.trend.change"));
                 else if(any(clause,"历史值"))roles.removeIf(f->!f.factType().equals("history.query"));
@@ -216,8 +218,7 @@ public final class NarrativeValidator {
                     String type=trendValueType(label);
                     if(hasEndpointPair&&nums.start()==endpointPair.start(1))type="history.query";
                     if(hasEndpointPair&&nums.start()==endpointPair.start(2))type="history.latest";
-                    final String boundType=type;
-                    tokenRoles=selected.stream().filter(f->f.factType().equals(boundType)).toList();
+                    tokenRoles=valueRoleFacts(selected,pack,type);
                 }
                 if(labelledWarning) {
                     var labels=Pattern.compile("当前(?:值|价格)?|最新(?:值|价格)?|基准(?:值|价格)?|阈值").matcher(clause.substring(0,nums.start()));
@@ -253,6 +254,25 @@ public final class NarrativeValidator {
         if(Set.of("起始值","起点值","期初值").contains(label))return "history.query";
         if(Set.of("首尾变化","累计变化","累计上涨","累计下跌","变化","增加","减少").contains(label))return "history.trend.change";
         return null; // Extrema, baseline and rates are not supported by endpoint/change facts.
+    }
+    private static List<EvidencePackV1.Fact> valueRoleFacts(List<EvidencePackV1.Fact> selected,EvidencePackV1 pack,String type) {
+        return selected.stream().filter(f->f.factType().equals(type)||"history.latest".equals(type)&&isLatestObservation(f,pack)).toList();
+    }
+    private static boolean isLatestObservation(EvidencePackV1.Fact daily,EvidencePackV1 pack) {
+        if(!daily.factType().equals("history.query")||daily.businessDate()==null||daily.evidenceRefs().isEmpty()||daily.sourceFingerprint()==null||daily.sourceFingerprint().isBlank())return false;
+        var canonical=pack.facts().stream().filter(f->f.factType().equals("history.latest")&&f.itemId().equals(daily.itemId())).toList();
+        if(canonical.size()!=1)return false;
+        var latest=canonical.get(0);
+        // These are projections of one already verified observation, not interchangeable
+        // prices. Keep the model's exact cited IDs and original text; never add a citation.
+        return Objects.equals(daily.businessDate(),latest.businessDate())&&numericEquals(daily.value(),latest.value())
+            &&Objects.equals(daily.unit(),latest.unit())&&Objects.equals(daily.currency(),latest.currency())
+            &&Objects.equals(daily.qualityStatus(),latest.qualityStatus())&&Objects.equals(daily.validationStatus(),latest.validationStatus())
+            &&Objects.equals(daily.validationVersion(),latest.validationVersion())&&Objects.equals(daily.calculationVersion(),latest.calculationVersion())
+            &&Objects.equals(daily.calendarVersion(),latest.calendarVersion())&&Objects.equals(daily.configVersions(),latest.configVersions())
+            &&Objects.equals(daily.actualSourceName(),latest.actualSourceName())&&Objects.equals(daily.sourceFingerprint(),latest.sourceFingerprint())
+            &&Objects.equals(daily.evidenceRefs(),latest.evidenceRefs())&&Objects.equals(daily.rowEvidenceId(),latest.rowEvidenceId())
+            &&Objects.equals(daily.periodStart(),latest.periodStart())&&Objects.equals(daily.periodEnd(),latest.periodEnd());
     }
     private static boolean directionSupported(List<EvidencePackV1.Fact> facts,String kind,String expected) {
         if(has(facts,"history.trend.direction",expected))return true;

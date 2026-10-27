@@ -1,0 +1,1 @@
+{"kind":"TREND","requestId":"req-a673e827-163","reason":"UNSUPPORTED_NUMBER","schemaVersion":"LOCAL-REJECTED-SECTION-V1","truncated":false,"factIds":["fact-4","fact-5","fact-0","fact-1"],"text":"2026-10-23至2026-10-27期间，MAT.AZ91D.MANUAL_SIM价格呈上升趋势（UPWARD），起始值25300.00元/吨（2026-10-23），结束值26000.00元/吨（2026-10-27），绝对变化为+700.00元/吨。全部样本校验状态均为VERIFIED，数据来源为模拟人工录入（非真实市场数据）。"}

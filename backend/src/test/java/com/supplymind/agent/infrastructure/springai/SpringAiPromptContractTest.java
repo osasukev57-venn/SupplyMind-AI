@@ -13,7 +13,8 @@ class SpringAiPromptContractTest {
     @Test
     void productionContractNamesKindsAndRequiresDirectCitationsWithoutInventedCalculations() {
         String prompt=SpringAiLlmService.buildPrompt(new LLMService.LLMRequest("test","综合分析","FORMAL",List.of(),List.of(),false,"COMPREHENSIVE"));
-        assertTrue(prompt.contains("latest只能写OVERVIEW"));
+        assertTrue(prompt.contains("latest用于OVERVIEW，也可与historySample和trend共同支持TREND"));
+        assertFalse(prompt.contains("latest只能写OVERVIEW"));
         assertTrue(prompt.contains("aggregates只能写METRICS"));
         assertTrue(prompt.contains("不能仅引用direction/change"));
         assertTrue(prompt.contains("严禁自行计算涨幅百分比"));
