@@ -1,0 +1,1 @@
+{"schemaVersion":"LOCAL-SOURCE-REJECTION-V1","requestId":"req-678024ca-3d4","reason":"SOURCE_CONFLICT","negated":false,"marker":"来源","asserted":"标注为模拟演示(非真实市场数据)","expected":"模拟演示(非真实市场数据)","truncated":false,"facts":[{"factId":"fact-8","actualSourceName":"模拟演示（非真实市场数据）"}]}

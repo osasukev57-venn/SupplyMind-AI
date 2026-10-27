@@ -29,6 +29,10 @@ public record SampleValidationSummary(String itemId, Map<String, Long> counts) {
         if (kind.equals("METRICS")) return null; // independently bound aggregate groups
         boolean quality = kind.equals("QUALITY");
         for (String clause : text.split("[，。；;]")) {
+            if(Pattern.compile("(?:未全部为|不全部为|不全为|不全是)\\s*VERIFIED(?![A-Z_])",Pattern.CASE_INSENSITIVE).matcher(clause).find()) {
+                if(counts.isEmpty()||counts.keySet().stream().allMatch(s->s.equals("VERIFIED")))return "SAMPLE_VALIDATION_OVERGENERALIZATION";
+                continue;
+            }
             if (Pattern.compile("并非|不是|不代表|不等于|不表示|不意味着|不能(?:说|概括|视为|据此|统一|认定)").matcher(clause).find()) continue;
             var mentioned = new HashSet<String>(); var matcher = STATUS.matcher(clause);
             while (matcher.find()) mentioned.add(matcher.group().toUpperCase(Locale.ROOT));
@@ -50,14 +54,23 @@ public record SampleValidationSummary(String itemId, Map<String, Long> counts) {
 
     /** A numeric status count must bind to that exact status, not any metric's value. */
     public boolean countClause(String clause) {
+        var joint=Pattern.compile("(?<![A-Z_])(VERIFIED_WITH_NOTICE|VERIFIED)(?![A-Z_])\\s*(?:与|和|、)\\s*(VERIFIED_WITH_NOTICE|VERIFIED)(?![A-Z_])\\s*(?:各(?:占|为|有)|均(?:为|有|占))\\s*(\\d+)\\s*(?:条|个|笔)",Pattern.CASE_INSENSITIVE).matcher(clause);
+        if(joint.find()) {
+            String a=joint.group(1).toUpperCase(Locale.ROOT),b=joint.group(2).toUpperCase(Locale.ROOT);
+            if(a.equals(b)||!counts.containsKey(a)||!counts.containsKey(b))return false;
+            var value=new java.math.BigDecimal(joint.group(3));
+            if(value.compareTo(java.math.BigDecimal.valueOf(counts.get(a)))!=0||value.compareTo(java.math.BigDecimal.valueOf(counts.get(b)))!=0)return false;
+            String rest=joint.replaceFirst("");
+            return !STATUS.matcher(rest).find()&&!Pattern.compile("\\d|缺失|完整|最新|价格|均值|阈值").matcher(rest).find();
+        }
         var statuses = STATUS.matcher(clause);
         Set<String> labels = new HashSet<>(); while (statuses.find()) labels.add(statuses.group().toUpperCase(Locale.ROOT));
         if (labels.isEmpty()) return false;
         String rest = clause;
         for (String label : labels) {
             if (!counts.containsKey(label)) return false;
-            var before = Pattern.compile("(\\d+)\\s*条\\s*" + label + "(?![A-Z_])",Pattern.CASE_INSENSITIVE).matcher(rest);
-            var after = Pattern.compile("(?<![A-Z_])" + label + "(?![A-Z_])\\s*(?:组|样本|记录)?\\s*(?:为|有|共|：|:|=)?\\s*(\\d+)\\s*条",Pattern.CASE_INSENSITIVE).matcher(rest);
+            var before = Pattern.compile("(\\d+)\\s*(?:条|个|笔)\\s*" + label + "(?![A-Z_])",Pattern.CASE_INSENSITIVE).matcher(rest);
+            var after = Pattern.compile("(?<![A-Z_])" + label + "(?![A-Z_])\\s*(?:组|样本|记录)?\\s*(?:为|有|共|：|:|=)?\\s*(\\d+)\\s*(?:条|个|笔)",Pattern.CASE_INSENSITIVE).matcher(rest);
             if (before.find()) { if (new java.math.BigDecimal(before.group(1)).compareTo(java.math.BigDecimal.valueOf(counts.get(label))) != 0) return false; rest = before.replaceFirst(""); }
             else if (after.find()) { if (new java.math.BigDecimal(after.group(1)).compareTo(java.math.BigDecimal.valueOf(counts.get(label))) != 0) return false; rest = after.replaceFirst(""); }
             else return false;

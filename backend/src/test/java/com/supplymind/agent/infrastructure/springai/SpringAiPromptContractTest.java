@@ -11,6 +11,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SpringAiPromptContractTest {
 
     @Test
+    void productionContractNamesKindsAndRequiresDirectCitationsWithoutInventedCalculations() {
+        String prompt=SpringAiLlmService.buildPrompt(new LLMService.LLMRequest("test","综合分析","FORMAL",List.of(),List.of(),false,"COMPREHENSIVE"));
+        assertTrue(prompt.contains("latest只能写OVERVIEW"));
+        assertTrue(prompt.contains("aggregates只能写METRICS"));
+        assertTrue(prompt.contains("不能仅引用direction/change"));
+        assertTrue(prompt.contains("严禁自行计算涨幅百分比"));
+        assertTrue(prompt.contains("factId仅放在factIds数组"));
+    }
+
+    @Test
     void latestThemeDoesNotInviteUnrequestedQualityTrendOrRecommendations() {
         var latest=new LLMService.LlmFact("latest","latest published value","MAT.AZ91D.SIMULATION","25500.00","元/吨","CNY","2026-10-22",null,"VERIFIED","模拟数据",null);
         var quality=new LLMService.LlmFact("metric-quality","published row count","MAT.AZ91D.SIMULATION","8","count","CNY",null,"2026-10-13~2026-10-22","VERIFIED","模拟数据",null);

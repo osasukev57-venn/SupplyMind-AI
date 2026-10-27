@@ -1,0 +1,1957 @@
+{
+  "evidencePack": {
+    "schemaVersion": "AGENT-EVIDENCE-SCHEMA-V2",
+    "evidencePackId": "pack-req-15cad1c1-07d",
+    "requestId": "req-15cad1c1-07d",
+    "mode": "FORMAL",
+    "question": "请根据 MAT.AZ91D.SIMULATION 在 2026-10-13 至 2026-10-22 的已发布模拟数据，说明价格走势、最新值、单位和月度均值，并解释该监测项的预警及确认处理状态。请区分不同校验状态的统计结果，明确这些是模拟数据，不代表真实市场风险。",
+    "createdAt": "2026-10-27T09:15:58.167228+08:00",
+    "scope": {
+      "itemIds": [
+        "MAT.AZ91D.SIMULATION"
+      ],
+      "businessDate": null,
+      "periodStart": "2026-10-13",
+      "periodEnd": "2026-10-22",
+      "timezone": "Asia/Shanghai"
+    },
+    "toolExecutions": [
+      {
+        "invocationIndex": 0,
+        "toolName": "series.resolve",
+        "toolVersion": "1.0",
+        "readOnly": true,
+        "input": "target=MAT.AZ91D.SIMULATION",
+        "output": {
+          "itemId": "MAT.AZ91D.SIMULATION",
+          "unit": "元/吨",
+          "enabled": true,
+          "displayName": "模拟演示AZ91D（非真实市场数据）",
+          "configVersion": 12,
+          "providerType": "local_import",
+          "accessMethod": "local_import",
+          "rateKind": "material",
+          "currency": "CNY"
+        },
+        "status": "SUCCESS",
+        "evidenceRefs": [
+          "config/monitor-series.json"
+        ]
+      },
+      {
+        "invocationIndex": 1,
+        "toolName": "history.query",
+        "toolVersion": "1.0",
+        "readOnly": true,
+        "input": "itemId=MAT.AZ91D.SIMULATION range=2026-10-13..2026-10-22",
+        "output": {
+          "corruptRefs": [],
+          "missingRefs": [],
+          "rowCount": 8,
+          "rows": [
+            {
+              "businessDate": "2026-10-13",
+              "value": "23000.00",
+              "unit": "元/吨",
+              "currency": "CNY",
+              "validationStatus": "VERIFIED_WITH_NOTICE",
+              "validationVersion": "material-basic-validation-v2",
+              "calculationVersion": "arithmetic-mean-v1",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "configVersions": [
+                "5"
+              ],
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "complete": true,
+              "expectedCount": 1,
+              "missingCount": 0,
+              "evidenceRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json"
+              ],
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98"
+            },
+            {
+              "businessDate": "2026-10-14",
+              "value": "23150.00",
+              "unit": "元/吨",
+              "currency": "CNY",
+              "validationStatus": "VERIFIED_WITH_NOTICE",
+              "validationVersion": "material-basic-validation-v2",
+              "calculationVersion": "arithmetic-mean-v1",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "configVersions": [
+                "5"
+              ],
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "complete": true,
+              "expectedCount": 1,
+              "missingCount": 0,
+              "evidenceRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json"
+              ],
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98"
+            },
+            {
+              "businessDate": "2026-10-15",
+              "value": "23250.00",
+              "unit": "元/吨",
+              "currency": "CNY",
+              "validationStatus": "VERIFIED_WITH_NOTICE",
+              "validationVersion": "material-basic-validation-v2",
+              "calculationVersion": "arithmetic-mean-v1",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "configVersions": [
+                "5"
+              ],
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "complete": true,
+              "expectedCount": 1,
+              "missingCount": 0,
+              "evidenceRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json"
+              ],
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98"
+            },
+            {
+              "businessDate": "2026-10-16",
+              "value": "23400.00",
+              "unit": "元/吨",
+              "currency": "CNY",
+              "validationStatus": "VERIFIED_WITH_NOTICE",
+              "validationVersion": "material-basic-validation-v2",
+              "calculationVersion": "arithmetic-mean-v1",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "configVersions": [
+                "5"
+              ],
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "complete": true,
+              "expectedCount": 1,
+              "missingCount": 0,
+              "evidenceRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json"
+              ],
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98"
+            },
+            {
+              "businessDate": "2026-10-19",
+              "value": "23600.00",
+              "unit": "元/吨",
+              "currency": "CNY",
+              "validationStatus": "VERIFIED",
+              "validationVersion": "material-basic-validation-v2",
+              "calculationVersion": "arithmetic-mean-v1",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "configVersions": [
+                "5"
+              ],
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "complete": true,
+              "expectedCount": 1,
+              "missingCount": 0,
+              "evidenceRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json"
+              ],
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98"
+            },
+            {
+              "businessDate": "2026-10-20",
+              "value": "24900.00",
+              "unit": "元/吨",
+              "currency": "CNY",
+              "validationStatus": "VERIFIED",
+              "validationVersion": "material-basic-validation-v2",
+              "calculationVersion": "arithmetic-mean-v1",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "configVersions": [
+                "5"
+              ],
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "complete": true,
+              "expectedCount": 1,
+              "missingCount": 0,
+              "evidenceRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json"
+              ],
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98"
+            },
+            {
+              "businessDate": "2026-10-21",
+              "value": "25200.00",
+              "unit": "元/吨",
+              "currency": "CNY",
+              "validationStatus": "VERIFIED",
+              "validationVersion": "material-basic-validation-v2",
+              "calculationVersion": "arithmetic-mean-v1",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "configVersions": [
+                "5"
+              ],
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "complete": true,
+              "expectedCount": 1,
+              "missingCount": 0,
+              "evidenceRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json"
+              ],
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98"
+            },
+            {
+              "businessDate": "2026-10-22",
+              "value": "25500.00",
+              "unit": "元/吨",
+              "currency": "CNY",
+              "validationStatus": "VERIFIED",
+              "validationVersion": "material-basic-validation-v2",
+              "calculationVersion": "arithmetic-mean-v1",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "configVersions": [
+                "12"
+              ],
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "complete": true,
+              "expectedCount": 1,
+              "missingCount": 0,
+              "evidenceRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+              ],
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98"
+            }
+          ],
+          "conflictKeys": []
+        },
+        "status": "SUCCESS",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+        ]
+      },
+      {
+        "invocationIndex": 2,
+        "toolName": "quality.inspect",
+        "toolVersion": "1.0",
+        "readOnly": true,
+        "input": "itemId=MAT.AZ91D.SIMULATION range=2026-10-13..2026-10-22",
+        "output": {
+          "itemId": "MAT.AZ91D.SIMULATION",
+          "validationStatusCounts": {
+            "VERIFIED_WITH_NOTICE": 4,
+            "VERIFIED": 4
+          },
+          "expectedCountTotal": 8,
+          "conflictKeys": [],
+          "missingRefs": [],
+          "missingCountTotal": 0,
+          "rowCount": 8,
+          "completeRowCount": 8,
+          "corruptRefs": []
+        },
+        "status": "SUCCESS",
+        "evidenceRefs": []
+      },
+      {
+        "invocationIndex": 3,
+        "toolName": "provenance.trace",
+        "toolVersion": "1.0",
+        "readOnly": true,
+        "input": "itemId=MAT.AZ91D.SIMULATION range=2026-10-13..2026-10-22",
+        "output": {
+          "conflictKeys": [],
+          "rowCount": 8,
+          "rows": [
+            {
+              "businessDate": "2026-10-13",
+              "validationStatus": "VERIFIED_WITH_NOTICE",
+              "validationVersion": "material-basic-validation-v2",
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "providerType": "local_import",
+              "accessMethod": "local_import",
+              "rawRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json"
+              ]
+            },
+            {
+              "businessDate": "2026-10-14",
+              "validationStatus": "VERIFIED_WITH_NOTICE",
+              "validationVersion": "material-basic-validation-v2",
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "providerType": "local_import",
+              "accessMethod": "local_import",
+              "rawRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json"
+              ]
+            },
+            {
+              "businessDate": "2026-10-15",
+              "validationStatus": "VERIFIED_WITH_NOTICE",
+              "validationVersion": "material-basic-validation-v2",
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "providerType": "local_import",
+              "accessMethod": "local_import",
+              "rawRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json"
+              ]
+            },
+            {
+              "businessDate": "2026-10-16",
+              "validationStatus": "VERIFIED_WITH_NOTICE",
+              "validationVersion": "material-basic-validation-v2",
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "providerType": "local_import",
+              "accessMethod": "local_import",
+              "rawRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json"
+              ]
+            },
+            {
+              "businessDate": "2026-10-19",
+              "validationStatus": "VERIFIED",
+              "validationVersion": "material-basic-validation-v2",
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "providerType": "local_import",
+              "accessMethod": "local_import",
+              "rawRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json"
+              ]
+            },
+            {
+              "businessDate": "2026-10-20",
+              "validationStatus": "VERIFIED",
+              "validationVersion": "material-basic-validation-v2",
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "providerType": "local_import",
+              "accessMethod": "local_import",
+              "rawRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json"
+              ]
+            },
+            {
+              "businessDate": "2026-10-21",
+              "validationStatus": "VERIFIED",
+              "validationVersion": "material-basic-validation-v2",
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "providerType": "local_import",
+              "accessMethod": "local_import",
+              "rawRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json"
+              ]
+            },
+            {
+              "businessDate": "2026-10-22",
+              "validationStatus": "VERIFIED",
+              "validationVersion": "material-basic-validation-v2",
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "providerType": "local_import",
+              "accessMethod": "local_import",
+              "rawRefs": [
+                "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+              ]
+            }
+          ],
+          "unavailableRawRefs": []
+        },
+        "status": "SUCCESS",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+        ]
+      },
+      {
+        "invocationIndex": 4,
+        "toolName": "period.metrics",
+        "toolVersion": "1.0",
+        "readOnly": true,
+        "input": "itemId=MAT.AZ91D.SIMULATION grain=month years=2026..2026",
+        "output": {
+          "corruptRefs": [],
+          "missingRefs": [],
+          "rowCount": 2,
+          "rows": [
+            {
+              "businessDate": "2026-10-22",
+              "periodStart": "2026-10-01",
+              "periodEnd": "2026-10-31",
+              "grain": "month",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "evidenceRefs": [
+                "processed/aggregate/MAT.AZ91D.SIMULATION/month/2026.csv"
+              ],
+              "rowEvidenceId": "aggregate-row-21dcc98410d781cdfe05aa24b348382884650239d656a8dad51634f2e8785235",
+              "calculationVersion": "arithmetic-mean-v1",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "configVersions": [
+                "5",
+                "12"
+              ],
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+              "canonicalSpecCode": "AZ91D",
+              "avg": "24800.00",
+              "min": "23600.00",
+              "max": "25500.00",
+              "unit": "元/吨",
+              "currency": "CNY",
+              "validationStatus": "VERIFIED",
+              "validationVersion": "material-basic-validation-v2",
+              "complete": false,
+              "calculatedAt": "2026-10-25T17:00:36.114770200+08:00"
+            },
+            {
+              "businessDate": "2026-10-16",
+              "periodStart": "2026-10-01",
+              "periodEnd": "2026-10-31",
+              "grain": "month",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "evidenceRefs": [
+                "processed/aggregate/MAT.AZ91D.SIMULATION/month/2026.csv"
+              ],
+              "rowEvidenceId": "aggregate-row-94ca7e99eb63be54911b0280c6c22c249457d3e103f725f8530d1ea70ff22554",
+              "calculationVersion": "arithmetic-mean-v1",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "configVersions": [
+                "5"
+              ],
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+              "canonicalSpecCode": "AZ91D",
+              "avg": "23200.00",
+              "min": "23000.00",
+              "max": "23400.00",
+              "unit": "元/吨",
+              "currency": "CNY",
+              "validationStatus": "VERIFIED_WITH_NOTICE",
+              "validationVersion": "material-basic-validation-v2",
+              "complete": false,
+              "calculatedAt": "2026-10-25T15:48:31.908872800+08:00"
+            }
+          ],
+          "conflictKeys": []
+        },
+        "status": "SUCCESS",
+        "evidenceRefs": [
+          "processed/aggregate/MAT.AZ91D.SIMULATION/month/2026.csv"
+        ]
+      },
+      {
+        "invocationIndex": 5,
+        "toolName": "cost.impact",
+        "toolVersion": "1.0",
+        "readOnly": true,
+        "input": "itemId=MAT.AZ91D.SIMULATION grain=month periodStart=2026-10-01",
+        "output": {
+          "reason": "no previous-period baseline"
+        },
+        "status": "NO_DATA",
+        "evidenceRefs": []
+      },
+      {
+        "invocationIndex": 6,
+        "toolName": "warning.explain",
+        "toolVersion": "1.0",
+        "readOnly": true,
+        "input": "itemId=MAT.AZ91D.SIMULATION month=2026-10",
+        "output": {
+          "warningCount": 7,
+          "summaryWarnings": [
+            {
+              "warningId": "2e973b219109dd627e241d9973c9ffe1",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "ruleId": "custom-warning-MAT.AZ91D.SIMULATION",
+              "ruleVersion": "warning-relative-change-v1-custom-r4",
+              "evaluatedAt": "2026-10-25T17:00:36.114770200+08:00",
+              "ruleDescription": "人工验收模拟阈值，非真实市场风险",
+              "grain": "day",
+              "periodStart": "2026-10-15",
+              "periodEnd": "2026-10-22",
+              "currentValue": "25500.00",
+              "baselineValue": "23250.00",
+              "threshold": "0.05",
+              "riskLevel": "HIGH",
+              "dataStatus": "PUBLISHED_VERIFIED",
+              "demoRule": false,
+              "thresholdPercent": "5%",
+              "acknowledgedStatus": "ACKNOWLEDGED",
+              "acknowledgedAt": "2026-10-25T17:06:15.339511200+08:00",
+              "dispositionNote": "人工验收：模拟数据已核对；确认仅表示已知悉，不代表风险消失。",
+              "ackRef": "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json",
+              "evidenceRefs": [
+                "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+                "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json"
+              ]
+            }
+          ],
+          "note": "ruleVersion and demoRule identify DEC-064 formal versus legacy demo warnings",
+          "warnings": [
+            {
+              "warningId": "09b8cac7380ed76656539058f19ad7f3",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "ruleId": "custom-warning-MAT.AZ91D.SIMULATION",
+              "ruleVersion": "warning-relative-change-v1-custom-r1",
+              "evaluatedAt": "2026-10-25T15:48:33.796141700+08:00",
+              "ruleDescription": "模拟演示阈值，非真实市场风险",
+              "grain": "day",
+              "periodStart": "2026-10-13",
+              "periodEnd": "2026-10-20",
+              "currentValue": "24900.00",
+              "baselineValue": "23000.00",
+              "threshold": "0.05",
+              "riskLevel": "HIGH",
+              "dataStatus": "PUBLISHED_VERIFIED",
+              "demoRule": false,
+              "thresholdPercent": "5%",
+              "acknowledgedStatus": "ACKNOWLEDGED",
+              "acknowledgedAt": "2026-10-25T15:48:36.643545200+08:00",
+              "dispositionNote": "模拟演示：已核对模拟数据；确认不代表风险消失",
+              "ackRef": "warning/2026-10/09b8cac7380ed76656539058f19ad7f3.ack.json",
+              "evidenceRefs": [
+                "warning/2026-10/09b8cac7380ed76656539058f19ad7f3.json",
+                "warning/2026-10/09b8cac7380ed76656539058f19ad7f3.ack.json"
+              ]
+            },
+            {
+              "warningId": "8156c98908da06dc5a31ca497198b63f",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "ruleId": "default-warning-MAT.AZ91D.SIMULATION",
+              "ruleVersion": "warning-relative-change-v1",
+              "evaluatedAt": "2026-10-25T15:48:33.796141700+08:00",
+              "ruleDescription": "系统通用材料预警模板：7 个自然日双向变化达到 5%",
+              "grain": "day",
+              "periodStart": "2026-10-13",
+              "periodEnd": "2026-10-20",
+              "currentValue": "24900.00",
+              "baselineValue": "23000.00",
+              "threshold": "0.05",
+              "riskLevel": "HIGH",
+              "dataStatus": "PUBLISHED_VERIFIED",
+              "demoRule": false,
+              "thresholdPercent": "5%",
+              "acknowledgedStatus": "PENDING",
+              "evidenceRefs": [
+                "warning/2026-10/8156c98908da06dc5a31ca497198b63f.json"
+              ]
+            },
+            {
+              "warningId": "df8980bac735c3480a203ecf1683522c",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "ruleId": "custom-warning-MAT.AZ91D.SIMULATION",
+              "ruleVersion": "warning-relative-change-v1-custom-r1",
+              "evaluatedAt": "2026-10-25T15:48:42.607701800+08:00",
+              "ruleDescription": "模拟演示阈值，非真实市场风险",
+              "grain": "day",
+              "periodStart": "2026-10-14",
+              "periodEnd": "2026-10-21",
+              "currentValue": "25200.00",
+              "baselineValue": "23150.00",
+              "threshold": "0.05",
+              "riskLevel": "HIGH",
+              "dataStatus": "PUBLISHED_VERIFIED",
+              "demoRule": false,
+              "thresholdPercent": "5%",
+              "acknowledgedStatus": "PENDING",
+              "evidenceRefs": [
+                "warning/2026-10/df8980bac735c3480a203ecf1683522c.json"
+              ]
+            },
+            {
+              "warningId": "2d66e24f87cb1fba00c0188757697bd0",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "ruleId": "custom-warning-MAT.AZ91D.SIMULATION",
+              "ruleVersion": "warning-relative-change-v1-custom-r1",
+              "evaluatedAt": "2026-10-25T17:00:36.114770200+08:00",
+              "ruleDescription": "模拟演示阈值，非真实市场风险",
+              "grain": "day",
+              "periodStart": "2026-10-15",
+              "periodEnd": "2026-10-22",
+              "currentValue": "25500.00",
+              "baselineValue": "23250.00",
+              "threshold": "0.05",
+              "riskLevel": "HIGH",
+              "dataStatus": "PUBLISHED_VERIFIED",
+              "demoRule": false,
+              "thresholdPercent": "5%",
+              "acknowledgedStatus": "PENDING",
+              "evidenceRefs": [
+                "warning/2026-10/2d66e24f87cb1fba00c0188757697bd0.json"
+              ]
+            },
+            {
+              "warningId": "2e973b219109dd627e241d9973c9ffe1",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "ruleId": "custom-warning-MAT.AZ91D.SIMULATION",
+              "ruleVersion": "warning-relative-change-v1-custom-r4",
+              "evaluatedAt": "2026-10-25T17:00:36.114770200+08:00",
+              "ruleDescription": "人工验收模拟阈值，非真实市场风险",
+              "grain": "day",
+              "periodStart": "2026-10-15",
+              "periodEnd": "2026-10-22",
+              "currentValue": "25500.00",
+              "baselineValue": "23250.00",
+              "threshold": "0.05",
+              "riskLevel": "HIGH",
+              "dataStatus": "PUBLISHED_VERIFIED",
+              "demoRule": false,
+              "thresholdPercent": "5%",
+              "acknowledgedStatus": "ACKNOWLEDGED",
+              "acknowledgedAt": "2026-10-25T17:06:15.339511200+08:00",
+              "dispositionNote": "人工验收：模拟数据已核对；确认仅表示已知悉，不代表风险消失。",
+              "ackRef": "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json",
+              "evidenceRefs": [
+                "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+                "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json"
+              ]
+            },
+            {
+              "warningId": "4bde50dab0499953026dcff2e9b8a493",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "ruleId": "custom-warning-MAT.AZ91D.SIMULATION",
+              "ruleVersion": "warning-relative-change-v1-custom-r2",
+              "evaluatedAt": "2026-10-25T17:00:36.114770200+08:00",
+              "ruleDescription": "人工验收模拟阈值，非真实市场风险",
+              "grain": "day",
+              "periodStart": "2026-10-15",
+              "periodEnd": "2026-10-22",
+              "currentValue": "25500.00",
+              "baselineValue": "23250.00",
+              "threshold": "0.05",
+              "riskLevel": "HIGH",
+              "dataStatus": "PUBLISHED_VERIFIED",
+              "demoRule": false,
+              "thresholdPercent": "5%",
+              "acknowledgedStatus": "PENDING",
+              "evidenceRefs": [
+                "warning/2026-10/4bde50dab0499953026dcff2e9b8a493.json"
+              ]
+            },
+            {
+              "warningId": "95e67c5c35c34298c2b9c9ca7dde05cf",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "ruleId": "custom-warning-MAT.AZ91D.SIMULATION",
+              "ruleVersion": "warning-relative-change-v1-custom-r3",
+              "evaluatedAt": "2026-10-25T17:00:36.114770200+08:00",
+              "ruleDescription": "人工验收模拟阈值，非真实市场风险",
+              "grain": "day",
+              "periodStart": "2026-10-15",
+              "periodEnd": "2026-10-22",
+              "currentValue": "25500.00",
+              "baselineValue": "23250.00",
+              "threshold": "0.05",
+              "riskLevel": "HIGH",
+              "dataStatus": "PUBLISHED_VERIFIED",
+              "demoRule": false,
+              "thresholdPercent": "5%",
+              "acknowledgedStatus": "PENDING",
+              "evidenceRefs": [
+                "warning/2026-10/95e67c5c35c34298c2b9c9ca7dde05cf.json"
+              ]
+            }
+          ],
+          "activeRuleKnown": true,
+          "activeRuleVersion": "warning-relative-change-v1-custom-r4",
+          "activeRuleId": "custom-warning-MAT.AZ91D.SIMULATION"
+        },
+        "status": "SUCCESS",
+        "evidenceRefs": [
+          "warning/2026-10/09b8cac7380ed76656539058f19ad7f3.ack.json",
+          "warning/2026-10/09b8cac7380ed76656539058f19ad7f3.json",
+          "warning/2026-10/8156c98908da06dc5a31ca497198b63f.json",
+          "warning/2026-10/df8980bac735c3480a203ecf1683522c.json",
+          "warning/2026-10/2d66e24f87cb1fba00c0188757697bd0.json",
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json",
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+          "warning/2026-10/4bde50dab0499953026dcff2e9b8a493.json",
+          "warning/2026-10/95e67c5c35c34298c2b9c9ca7dde05cf.json"
+        ]
+      }
+    ],
+    "facts": [
+      {
+        "factId": "fact-0",
+        "factType": "history.query",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-13",
+        "periodStart": null,
+        "periodEnd": null,
+        "value": "23000.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "true",
+        "validationStatus": "VERIFIED_WITH_NOTICE",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json"
+        ]
+      },
+      {
+        "factId": "fact-1",
+        "factType": "history.query",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-14",
+        "periodStart": null,
+        "periodEnd": null,
+        "value": "23150.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "true",
+        "validationStatus": "VERIFIED_WITH_NOTICE",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json"
+        ]
+      },
+      {
+        "factId": "fact-2",
+        "factType": "history.query",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-15",
+        "periodStart": null,
+        "periodEnd": null,
+        "value": "23250.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "true",
+        "validationStatus": "VERIFIED_WITH_NOTICE",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json"
+        ]
+      },
+      {
+        "factId": "fact-3",
+        "factType": "history.query",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-16",
+        "periodStart": null,
+        "periodEnd": null,
+        "value": "23400.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "true",
+        "validationStatus": "VERIFIED_WITH_NOTICE",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json"
+        ]
+      },
+      {
+        "factId": "fact-4",
+        "factType": "history.query",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-19",
+        "periodStart": null,
+        "periodEnd": null,
+        "value": "23600.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "true",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json"
+        ]
+      },
+      {
+        "factId": "fact-5",
+        "factType": "history.query",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-20",
+        "periodStart": null,
+        "periodEnd": null,
+        "value": "24900.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "true",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json"
+        ]
+      },
+      {
+        "factId": "fact-6",
+        "factType": "history.query",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-21",
+        "periodStart": null,
+        "periodEnd": null,
+        "value": "25200.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "true",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json"
+        ]
+      },
+      {
+        "factId": "fact-7",
+        "factType": "history.query",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": null,
+        "periodEnd": null,
+        "value": "25500.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "true",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "12"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+        ]
+      },
+      {
+        "factId": "fact-8",
+        "factType": "period.metrics.avg",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": "2026-10-01",
+        "periodEnd": "2026-10-31",
+        "value": "24800.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "false",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5",
+          "12"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "processed/aggregate/MAT.AZ91D.SIMULATION/month/2026.csv"
+        ],
+        "rowEvidenceId": "aggregate-row-21dcc98410d781cdfe05aa24b348382884650239d656a8dad51634f2e8785235"
+      },
+      {
+        "factId": "fact-9",
+        "factType": "period.metrics.avg",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-16",
+        "periodStart": "2026-10-01",
+        "periodEnd": "2026-10-31",
+        "value": "23200.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "false",
+        "validationStatus": "VERIFIED_WITH_NOTICE",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "processed/aggregate/MAT.AZ91D.SIMULATION/month/2026.csv"
+        ],
+        "rowEvidenceId": "aggregate-row-94ca7e99eb63be54911b0280c6c22c249457d3e103f725f8530d1ea70ff22554"
+      },
+      {
+        "factId": "fact-10",
+        "factType": "warning.explain",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": "2026-10-15",
+        "periodEnd": "2026-10-22",
+        "value": "25500.00",
+        "unit": null,
+        "currency": null,
+        "qualityStatus": null,
+        "validationStatus": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": [],
+        "actualSourceName": null,
+        "sourceFingerprint": null,
+        "evidenceRefs": [
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json"
+        ]
+      },
+      {
+        "factId": "fact-11",
+        "factType": "warning.baselineValue",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": "2026-10-15",
+        "periodEnd": "2026-10-22",
+        "value": "23250.00",
+        "unit": null,
+        "currency": null,
+        "qualityStatus": null,
+        "validationStatus": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": [],
+        "actualSourceName": null,
+        "sourceFingerprint": null,
+        "evidenceRefs": [
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json"
+        ]
+      },
+      {
+        "factId": "fact-12",
+        "factType": "warning.thresholdPercent",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": "2026-10-15",
+        "periodEnd": "2026-10-22",
+        "value": "5%",
+        "unit": "%",
+        "currency": null,
+        "qualityStatus": null,
+        "validationStatus": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": [],
+        "actualSourceName": null,
+        "sourceFingerprint": null,
+        "evidenceRefs": [
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json"
+        ]
+      },
+      {
+        "factId": "fact-13",
+        "factType": "warning.riskLevel",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": "2026-10-15",
+        "periodEnd": "2026-10-22",
+        "value": "HIGH",
+        "unit": "risk",
+        "currency": null,
+        "qualityStatus": null,
+        "validationStatus": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": [],
+        "actualSourceName": null,
+        "sourceFingerprint": null,
+        "evidenceRefs": [
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json"
+        ]
+      },
+      {
+        "factId": "fact-14",
+        "factType": "warning.id",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": "2026-10-15",
+        "periodEnd": "2026-10-22",
+        "value": "2e973b219109dd627e241d9973c9ffe1",
+        "unit": "id",
+        "currency": null,
+        "qualityStatus": null,
+        "validationStatus": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": [],
+        "actualSourceName": null,
+        "sourceFingerprint": null,
+        "evidenceRefs": [
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json"
+        ]
+      },
+      {
+        "factId": "fact-15",
+        "factType": "warning.acknowledged",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": "2026-10-15",
+        "periodEnd": "2026-10-22",
+        "value": "ACKNOWLEDGED",
+        "unit": "status",
+        "currency": null,
+        "qualityStatus": null,
+        "validationStatus": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": [],
+        "actualSourceName": null,
+        "sourceFingerprint": null,
+        "evidenceRefs": [
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json"
+        ]
+      },
+      {
+        "factId": "fact-16",
+        "factType": "warning.acknowledgedAt",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": "2026-10-15",
+        "periodEnd": "2026-10-22",
+        "value": "2026-10-25T17:06:15.339511200+08:00",
+        "unit": "datetime",
+        "currency": null,
+        "qualityStatus": null,
+        "validationStatus": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": [],
+        "actualSourceName": null,
+        "sourceFingerprint": null,
+        "evidenceRefs": [
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json"
+        ]
+      },
+      {
+        "factId": "fact-17",
+        "factType": "warning.ruleVersion",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": "2026-10-15",
+        "periodEnd": "2026-10-22",
+        "value": "warning-relative-change-v1-custom-r4",
+        "unit": "version",
+        "currency": null,
+        "qualityStatus": null,
+        "validationStatus": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": [],
+        "actualSourceName": null,
+        "sourceFingerprint": null,
+        "evidenceRefs": [
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json"
+        ]
+      },
+      {
+        "factId": "fact-18",
+        "factType": "warning.disposition",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": "2026-10-15",
+        "periodEnd": "2026-10-22",
+        "value": "人工验收：模拟数据已核对；确认仅表示已知悉，不代表风险消失。",
+        "unit": "text",
+        "currency": null,
+        "qualityStatus": null,
+        "validationStatus": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": [],
+        "actualSourceName": null,
+        "sourceFingerprint": null,
+        "evidenceRefs": [
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+          "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json"
+        ]
+      },
+      {
+        "factId": "fact-19",
+        "factType": "history.latest",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": "2026-10-22",
+        "periodStart": null,
+        "periodEnd": null,
+        "value": "25500.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "true",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "12"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+        ]
+      },
+      {
+        "factId": "fact-20",
+        "factType": "history.trend.direction",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": null,
+        "periodStart": "2026-10-13",
+        "periodEnd": "2026-10-22",
+        "value": "UPWARD",
+        "unit": "direction",
+        "currency": "CNY",
+        "qualityStatus": "VERIFIED",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "12"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+        ]
+      },
+      {
+        "factId": "fact-21",
+        "factType": "history.trend.change",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": null,
+        "periodStart": "2026-10-13",
+        "periodEnd": "2026-10-22",
+        "value": "2500.00",
+        "unit": "元/吨",
+        "currency": "CNY",
+        "qualityStatus": "VERIFIED",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "12"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+        ]
+      },
+      {
+        "factId": "fact-22",
+        "factType": "quality.rowCount",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": null,
+        "periodStart": "2026-10-13",
+        "periodEnd": "2026-10-22",
+        "value": "8",
+        "unit": "count",
+        "currency": "CNY",
+        "qualityStatus": "VERIFIED",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "12"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+        ]
+      },
+      {
+        "factId": "fact-23",
+        "factType": "quality.expectedCount",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": null,
+        "periodStart": "2026-10-13",
+        "periodEnd": "2026-10-22",
+        "value": "8",
+        "unit": "count",
+        "currency": "CNY",
+        "qualityStatus": "VERIFIED",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "12"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+        ]
+      },
+      {
+        "factId": "fact-24",
+        "factType": "quality.missingCount",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": null,
+        "periodStart": "2026-10-13",
+        "periodEnd": "2026-10-22",
+        "value": "0",
+        "unit": "count",
+        "currency": "CNY",
+        "qualityStatus": "VERIFIED",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "12"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+        ]
+      },
+      {
+        "factId": "fact-25",
+        "factType": "quality.completeRowCount",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": null,
+        "periodStart": "2026-10-13",
+        "periodEnd": "2026-10-22",
+        "value": "8",
+        "unit": "count",
+        "currency": "CNY",
+        "qualityStatus": "VERIFIED",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "12"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+        ]
+      },
+      {
+        "factId": "fact-26",
+        "factType": "quality.completeness",
+        "itemId": "MAT.AZ91D.SIMULATION",
+        "businessDate": null,
+        "periodStart": "2026-10-13",
+        "periodEnd": "2026-10-22",
+        "value": "100%",
+        "unit": "%",
+        "currency": "CNY",
+        "qualityStatus": "VERIFIED",
+        "validationStatus": "VERIFIED",
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "12"
+        ],
+        "actualSourceName": "模拟演示（非真实市场数据）",
+        "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+        "evidenceRefs": [
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json",
+          "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json"
+        ]
+      }
+    ],
+    "evidenceRefs": [
+      {
+        "evidenceRefId": "ev-1077496841",
+        "refType": "AGGREGATE_ROWS_V1",
+        "ref": "processed/aggregate/MAT.AZ91D.SIMULATION/month/2026.csv",
+        "sha256": "1e0d24cd2cc396949fa35d186f0d261c3f39623362c094d932badea73cd0eb92",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": null,
+        "rawRef": null,
+        "publishRef": null,
+        "businessDate": null,
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": [],
+        "rowEvidence": [
+          {
+            "schemaVersion": "AGGREGATE-ROW-EVIDENCE-V1",
+            "rowEvidenceId": "aggregate-row-21dcc98410d781cdfe05aa24b348382884650239d656a8dad51634f2e8785235",
+            "originalRef": "processed/aggregate/MAT.AZ91D.SIMULATION/month/2026.csv",
+            "fileSha256": "1e0d24cd2cc396949fa35d186f0d261c3f39623362c094d932badea73cd0eb92",
+            "manifestSha256": "648da3b33f1c53b33a8d245d1bf6344542a0852315b4afccb517fbd4ee7360a4",
+            "rowSha256": "c330773f38e21bdcf327730947f2c331b1f4253036279cab2219db18693c35a7",
+            "row": {
+              "schemaVersion": "1.0",
+              "grain": "month",
+              "periodStart": "2026-10-01",
+              "periodEnd": "2026-10-31",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "providerType": "local_import",
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "accessMethod": "local_import",
+              "validationStatus": "VERIFIED",
+              "validationVersion": "material-basic-validation-v2",
+              "configVersions": [
+                5,
+                12
+              ],
+              "calculationVersion": "arithmetic-mean-v1",
+              "calculationScale": 2,
+              "displayScale": 2,
+              "roundingMode": "HALF_UP",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "sum": "99200.00",
+              "validCount": 4,
+              "avg": "24800.00",
+              "min": "23600.00",
+              "max": "25500.00",
+              "expectedCount": 22,
+              "missingCount": 18,
+              "complete": false,
+              "qualityStatus": "INCOMPLETE",
+              "currency": "CNY",
+              "unit": "元/吨",
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+              "inputRefs": [
+                {
+                  "dailyFileRef": "processed/daily/MAT.AZ91D.SIMULATION/2026-10.csv",
+                  "businessDate": "2026-10-19",
+                  "validationVersion": "material-basic-validation-v2",
+                  "fileSha256": "66c54de22a3a7d8abc48802d8e4143d4c9010399d9187b87803d9d6730e6ceef"
+                },
+                {
+                  "dailyFileRef": "processed/daily/MAT.AZ91D.SIMULATION/2026-10.csv",
+                  "businessDate": "2026-10-20",
+                  "validationVersion": "material-basic-validation-v2",
+                  "fileSha256": "66c54de22a3a7d8abc48802d8e4143d4c9010399d9187b87803d9d6730e6ceef"
+                },
+                {
+                  "dailyFileRef": "processed/daily/MAT.AZ91D.SIMULATION/2026-10.csv",
+                  "businessDate": "2026-10-21",
+                  "validationVersion": "material-basic-validation-v2",
+                  "fileSha256": "66c54de22a3a7d8abc48802d8e4143d4c9010399d9187b87803d9d6730e6ceef"
+                },
+                {
+                  "dailyFileRef": "processed/daily/MAT.AZ91D.SIMULATION/2026-10.csv",
+                  "businessDate": "2026-10-22",
+                  "validationVersion": "material-basic-validation-v2",
+                  "fileSha256": "66c54de22a3a7d8abc48802d8e4143d4c9010399d9187b87803d9d6730e6ceef"
+                }
+              ],
+              "calculatedAt": "2026-10-25T17:00:36.1147702+08:00",
+              "canonicalSpecCode": "AZ91D"
+            }
+          },
+          {
+            "schemaVersion": "AGGREGATE-ROW-EVIDENCE-V1",
+            "rowEvidenceId": "aggregate-row-94ca7e99eb63be54911b0280c6c22c249457d3e103f725f8530d1ea70ff22554",
+            "originalRef": "processed/aggregate/MAT.AZ91D.SIMULATION/month/2026.csv",
+            "fileSha256": "1e0d24cd2cc396949fa35d186f0d261c3f39623362c094d932badea73cd0eb92",
+            "manifestSha256": "648da3b33f1c53b33a8d245d1bf6344542a0852315b4afccb517fbd4ee7360a4",
+            "rowSha256": "4fef227a3c58e7c8d781c9f8c36c7ff8e73617d505d7a7d92d5a19ca4dba8d50",
+            "row": {
+              "schemaVersion": "1.0",
+              "grain": "month",
+              "periodStart": "2026-10-01",
+              "periodEnd": "2026-10-31",
+              "itemId": "MAT.AZ91D.SIMULATION",
+              "providerType": "local_import",
+              "actualSourceName": "模拟演示（非真实市场数据）",
+              "accessMethod": "local_import",
+              "validationStatus": "VERIFIED_WITH_NOTICE",
+              "validationVersion": "material-basic-validation-v2",
+              "configVersions": [
+                5
+              ],
+              "calculationVersion": "arithmetic-mean-v1",
+              "calculationScale": 2,
+              "displayScale": 2,
+              "roundingMode": "HALF_UP",
+              "calendarVersion": "weekday-asia-shanghai-v1",
+              "sum": "92800.00",
+              "validCount": 4,
+              "avg": "23200.00",
+              "min": "23000.00",
+              "max": "23400.00",
+              "expectedCount": 22,
+              "missingCount": 18,
+              "complete": false,
+              "qualityStatus": "INCOMPLETE",
+              "currency": "CNY",
+              "unit": "元/吨",
+              "sourceFingerprint": "4a44b7ba005857ee52e5c93430e5cc12a62dbee04933f76e50808062242c7e98",
+              "inputRefs": [
+                {
+                  "dailyFileRef": "processed/daily/MAT.AZ91D.SIMULATION/2026-10.csv",
+                  "businessDate": "2026-10-13",
+                  "validationVersion": "material-basic-validation-v2",
+                  "fileSha256": "66c54de22a3a7d8abc48802d8e4143d4c9010399d9187b87803d9d6730e6ceef"
+                },
+                {
+                  "dailyFileRef": "processed/daily/MAT.AZ91D.SIMULATION/2026-10.csv",
+                  "businessDate": "2026-10-14",
+                  "validationVersion": "material-basic-validation-v2",
+                  "fileSha256": "66c54de22a3a7d8abc48802d8e4143d4c9010399d9187b87803d9d6730e6ceef"
+                },
+                {
+                  "dailyFileRef": "processed/daily/MAT.AZ91D.SIMULATION/2026-10.csv",
+                  "businessDate": "2026-10-15",
+                  "validationVersion": "material-basic-validation-v2",
+                  "fileSha256": "66c54de22a3a7d8abc48802d8e4143d4c9010399d9187b87803d9d6730e6ceef"
+                },
+                {
+                  "dailyFileRef": "processed/daily/MAT.AZ91D.SIMULATION/2026-10.csv",
+                  "businessDate": "2026-10-16",
+                  "validationVersion": "material-basic-validation-v2",
+                  "fileSha256": "66c54de22a3a7d8abc48802d8e4143d4c9010399d9187b87803d9d6730e6ceef"
+                }
+              ],
+              "calculatedAt": "2026-10-25T15:48:31.9088728+08:00",
+              "canonicalSpecCode": "AZ91D"
+            }
+          }
+        ]
+      },
+      {
+        "evidenceRefId": "ev-1195851111",
+        "refType": "WARNING",
+        "ref": "warning/2026-10/09b8cac7380ed76656539058f19ad7f3.ack.json",
+        "sha256": "798a7968e08ea3c383925f1dd5ea308d48300ea0636f44c42e552315b60df92b",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": null,
+        "rawRef": null,
+        "publishRef": null,
+        "businessDate": null,
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": []
+      },
+      {
+        "evidenceRefId": "ev-1231996858",
+        "refType": "RAW",
+        "ref": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json",
+        "sha256": "c5cd5e35397dd8124fe7af2260f729e58428d7f20ff2a84e59a7e75d6e33c49f",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": "import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937",
+        "rawRef": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261016-1de636e456b64200666c5b187ff7dc13b41434110ba99ff314a8f78e6c3b3937.json",
+        "publishRef": null,
+        "businessDate": "2026-10-16",
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ]
+      },
+      {
+        "evidenceRefId": "ev-1232317012",
+        "refType": "WARNING",
+        "ref": "warning/2026-10/09b8cac7380ed76656539058f19ad7f3.json",
+        "sha256": "4cf94fa9b3a4fe979dd7cfe0a628751510117a3bb69cfb25790d45d778adc6eb",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": null,
+        "rawRef": null,
+        "publishRef": null,
+        "businessDate": null,
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": []
+      },
+      {
+        "evidenceRefId": "ev-1244242639",
+        "refType": "RAW",
+        "ref": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json",
+        "sha256": "1346cf00ce74b790ee24f4861d34b3ac9ce3b05f0d29f0ed925ece6f36352c46",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": "import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057",
+        "rawRef": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261013-bce3f53b7692f00539d71ed7cff8296a6730e99de23c0e3618f6cf047ab6d057.json",
+        "publishRef": null,
+        "businessDate": "2026-10-13",
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ]
+      },
+      {
+        "evidenceRefId": "ev-1248471791",
+        "refType": "RAW",
+        "ref": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json",
+        "sha256": "216f81717aff60db02763307f052cce493bac26d7e7aee5139896ecd37b858b5",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": "import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de",
+        "rawRef": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261020-7ae6be703f38bc5c12002d78a929f738e194e03d23acdffb6aa646ff896723de.json",
+        "publishRef": null,
+        "businessDate": "2026-10-20",
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ]
+      },
+      {
+        "evidenceRefId": "ev-1392185548",
+        "refType": "RAW",
+        "ref": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json",
+        "sha256": "2328f11ad27a97c5c53b2cf3dabec101ef2a7033761ffe671de6a31ef9b7b8e6",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": "import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4",
+        "rawRef": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261021-2fba58abbceb140cd846bd94a878eda8c3b0316718b8ebd764e5a2a8cda484a4.json",
+        "publishRef": null,
+        "businessDate": "2026-10-21",
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ]
+      },
+      {
+        "evidenceRefId": "ev-1634640632",
+        "refType": "WARNING",
+        "ref": "warning/2026-10/95e67c5c35c34298c2b9c9ca7dde05cf.json",
+        "sha256": "ea1ba753378bdc437a5714bd3da44af9b2a560bf3a7258e781b7399b9e9a42dd",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": null,
+        "rawRef": null,
+        "publishRef": null,
+        "businessDate": null,
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": []
+      },
+      {
+        "evidenceRefId": "ev-1654971327",
+        "refType": "CONFIG",
+        "ref": "config/monitor-series.json",
+        "sha256": "26eb475312286a4b9e708f7963eff541cbb7b904b3d69831a5a625f932f5ca96",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": null,
+        "rawRef": null,
+        "publishRef": null,
+        "businessDate": null,
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": [
+          "12"
+        ]
+      },
+      {
+        "evidenceRefId": "ev-17579135",
+        "refType": "WARNING",
+        "ref": "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.json",
+        "sha256": "212320aa4ca459cf43bb946a5a2ed85bc521ba3c15202537847eb1385bfdedfe",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": null,
+        "rawRef": null,
+        "publishRef": null,
+        "businessDate": null,
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": []
+      },
+      {
+        "evidenceRefId": "ev-1834949666",
+        "refType": "RAW",
+        "ref": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json",
+        "sha256": "872a9add12873b77e5dc19b90d83346691446850f9b05869a8345f9a79a7b8af",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": "import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a",
+        "rawRef": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261014-e21becb4dee7aa9f999cd7cb563a1a95f0d25c38d6cac56299be6d87e90d2e5a.json",
+        "publishRef": null,
+        "businessDate": "2026-10-14",
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ]
+      },
+      {
+        "evidenceRefId": "ev-1870825410",
+        "refType": "RAW",
+        "ref": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json",
+        "sha256": "9b538d11245ac5fea74499d21056a61edced45bb9b244e12bda73594b3cbc695",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": "import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220",
+        "rawRef": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261019-2b2d63ce10844d2c9f5349c7fbb5ea742c9443d24ce71ff0925d3a444506e220.json",
+        "publishRef": null,
+        "businessDate": "2026-10-19",
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ]
+      },
+      {
+        "evidenceRefId": "ev-285113670",
+        "refType": "WARNING",
+        "ref": "warning/2026-10/2e973b219109dd627e241d9973c9ffe1.ack.json",
+        "sha256": "f83c9d80958f2a09e2d0a0afe70ee30214245373dfbb94156b3393b2269b8754",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": null,
+        "rawRef": null,
+        "publishRef": null,
+        "businessDate": null,
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": []
+      },
+      {
+        "evidenceRefId": "ev-325911703",
+        "refType": "RAW",
+        "ref": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json",
+        "sha256": "c28eae8f5ad37d41a06b5e4a92de870521cd293b92b2b35de960ed385057ec5c",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": "import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a",
+        "rawRef": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261022-690eeccf8235a701dca60451a2dfd9e599c44746cbdef229dc1d5ee0a80eb31a.json",
+        "publishRef": null,
+        "businessDate": "2026-10-22",
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "12"
+        ]
+      },
+      {
+        "evidenceRefId": "ev-563625264",
+        "refType": "WARNING",
+        "ref": "warning/2026-10/4bde50dab0499953026dcff2e9b8a493.json",
+        "sha256": "5736bccd2b41b68ed5b19e4e5ea5a2da1ad6f02aa98dd2b5b739978d6208c15e",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": null,
+        "rawRef": null,
+        "publishRef": null,
+        "businessDate": null,
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": []
+      },
+      {
+        "evidenceRefId": "ev-594700532",
+        "refType": "WARNING",
+        "ref": "warning/2026-10/2d66e24f87cb1fba00c0188757697bd0.json",
+        "sha256": "51a2a5fbbb0ac1544429c996624a3b8eefb1c5b7643857f6ed444d65972ea5cc",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": null,
+        "rawRef": null,
+        "publishRef": null,
+        "businessDate": null,
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": []
+      },
+      {
+        "evidenceRefId": "ev-677722184",
+        "refType": "WARNING",
+        "ref": "warning/2026-10/df8980bac735c3480a203ecf1683522c.json",
+        "sha256": "846e77c399dae93e4724006fd863d314f3c291913acb25f88a70998344944938",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": null,
+        "rawRef": null,
+        "publishRef": null,
+        "businessDate": null,
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": []
+      },
+      {
+        "evidenceRefId": "ev-681687420",
+        "refType": "RAW",
+        "ref": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json",
+        "sha256": "2d4acb7587a16c07843c71ce78ae8dab4df0bc9a31a8a2209bf867c7a5ee88f2",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": "import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023",
+        "rawRef": "raw/formal/local_import/MAT.AZ91D.SIMULATION/2026/10/import-MAT.AZ91D.SIMULATION-20261015-c92e7621c97dce635471aff5f309704dc1e48cb8fdad6d26c134e4cea704e023.json",
+        "publishRef": null,
+        "businessDate": "2026-10-15",
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": "material-basic-validation-v2",
+        "calculationVersion": "arithmetic-mean-v1",
+        "calendarVersion": "weekday-asia-shanghai-v1",
+        "configVersions": [
+          "5"
+        ]
+      },
+      {
+        "evidenceRefId": "ev-977423894",
+        "refType": "WARNING",
+        "ref": "warning/2026-10/8156c98908da06dc5a31ca497198b63f.json",
+        "sha256": "b877e70eebf8d3fd7895cdd3c0e21ac4b90ae2761d964fd58e5d7bf35ef9d198",
+        "status": "VERIFIED",
+        "reasonCode": null,
+        "runId": null,
+        "rawRef": null,
+        "publishRef": null,
+        "businessDate": null,
+        "periodStart": null,
+        "periodEnd": null,
+        "validationVersion": null,
+        "calculationVersion": null,
+        "calendarVersion": null,
+        "configVersions": []
+      }
+    ],
+    "warnings": [],
+    "notices": [],
+    "limitations": [
+      "cost.impact: itemId=MAT.AZ91D.SIMULATION grain=month periodStart=2026-10-01"
+    ]
+  },
+  "rejections": [
+    {
+      "factIds": [
+        "fact-20",
+        "fact-21"
+      ],
+      "text": "2026年10月13日至10月22日期间，MAT.AZ91D.SIMULATION价格呈上升趋势，起始值为23000.00元/吨，结束值为25500.00元/吨，累计上涨2500.00元/吨，方向判定为UPWARD。所有趋势计算依据已核验证据得出。",
+      "kind": "TREND",
+      "requestId": "req-15cad1c1-07d",
+      "reason": "UNSUPPORTED_NUMBER",
+      "schemaVersion": "LOCAL-REJECTED-SECTION-V1",
+      "truncated": false
+    },
+    {
+      "factIds": [
+        "fact-19"
+      ],
+      "text": "截至2026年10月22日，MAT.AZ91D.SIMULATION最新发布值为25500.00元/吨，单位为元/吨，来源为模拟演示（非真实市场数据），校验状态为VERIFIED。",
+      "kind": "METRICS",
+      "requestId": "req-15cad1c1-07d",
+      "reason": "WRONG_FACT_ROLE",
+      "schemaVersion": "LOCAL-REJECTED-SECTION-V1",
+      "truncated": false
+    },
+    {
+      "factIds": [
+        "fact-8"
+      ],
+      "text": "2026年10月全月（2026-10-01~2026-10-31）均值为24800.00元/吨，单位为元/吨，来源为模拟演示（非真实市场数据），校验状态为VERIFIED。该均值基于当前已持久化样本计算，月度尚未结束，不构成完整月份行情。",
+      "kind": "METRICS",
+      "requestId": "req-15cad1c1-07d",
+      "reason": "UNSUPPORTED_PERIOD_COVERAGE",
+      "schemaVersion": "LOCAL-REJECTED-SECTION-V1",
+      "truncated": false
+    },
+    {
+      "factIds": [
+        "fact-9"
+      ],
+      "text": "2026年10月全月（2026-10-01~2026-10-31）另一版本均值为23200.00元/吨，单位为元/吨，来源为模拟演示（非真实市场数据），校验状态为VERIFIED_WITH_NOTICE。该值与fact-8分属不同配置组，不可合并或替代。",
+      "kind": "METRICS",
+      "requestId": "req-15cad1c1-07d",
+      "reason": "UNSUPPORTED_NUMBER",
+      "schemaVersion": "LOCAL-REJECTED-SECTION-V1",
+      "truncated": false
+    },
+    {
+      "factIds": [
+        "fact-10",
+        "fact-11",
+        "fact-12",
+        "fact-13",
+        "fact-15",
+        "fact-16",
+        "fact-18"
+      ],
+      "text": "截至2026年10月22日，MAT.AZ91D.SIMULATION在2026-10-15至2026-10-22窗口内触发高风险预警：当前值25500.00元/吨较基准值23250.00元/吨上涨约9.68%，超过5%阈值；预警状态为已确认（ACKNOWLEDGED），确认时间为2026-10-25T17:06:15.339511200+08:00；人工备注明确‘确认仅表示已知悉，不代表风险消失’。所有预警事实均为模拟数据生成，不反映真实市场风险。",
+      "kind": "WARNING",
+      "requestId": "req-15cad1c1-07d",
+      "reason": "WRONG_DATE",
+      "schemaVersion": "LOCAL-REJECTED-SECTION-V1",
+      "truncated": false
+    },
+    {
+      "factIds": [
+        "fact-22",
+        "fact-23",
+        "fact-24",
+        "fact-25",
+        "fact-26"
+      ],
+      "text": "2026年10月13日至10月22日共发布8条模拟数据，应观测数、实观测数、完整行数均为8，缺失数为0，完整性为100%。该完整性指标由Java基于已核验证据计算得出，仅说明当前统计口径下证据完备，不表示底层全部样本均为VERIFIED；样本校验状态实际为4条VERIFIED、4条VERIFIED_WITH_NOTICE。",
+      "kind": "QUALITY",
+      "requestId": "req-15cad1c1-07d",
+      "reason": "UNSUPPORTED_NUMBER",
+      "schemaVersion": "LOCAL-REJECTED-SECTION-V1",
+      "truncated": false
+    }
+  ]
+}

@@ -12,7 +12,9 @@ public final class NarrativeValidator {
     private static final Pattern DATE=Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern NUMBER=Pattern.compile("-?\\d+(?:,\\d{3})*(?:\\.\\d+)?(?:%|％)?");
     private final AgentResponseVerifier secrets;
-    public NarrativeValidator(AgentResponseVerifier secrets){this.secrets=secrets;}
+    private final SourceRejectionAudit sourceAudit;
+    public NarrativeValidator(AgentResponseVerifier secrets){this(secrets,null);}
+    public NarrativeValidator(AgentResponseVerifier secrets,SourceRejectionAudit sourceAudit){this.secrets=secrets;this.sourceAudit=sourceAudit;}
     public NarrativeResult validate(String raw,EvidencePackV1 pack) {
         // Stored V3 reports predate request output scoping. Recheck all semantic/evidence
         // rules without retroactively inventing a theme that was never persisted.
@@ -42,7 +44,11 @@ public final class NarrativeValidator {
             String code=section==null?"MALFORMED_SECTION":check(section.kind()==null?null:section.kind().name(),section.text(),section.factIds(),facts,false,pack);
             if(code==null&&!scope.kinds().contains(section.kind().name()))code="OUT_OF_REQUEST_SCOPE";
             if(code==null&&section.factIds().stream().map(facts::get).anyMatch(f->!scope.allowsFactType(f.factType())))code="OUT_OF_REQUEST_SCOPE";
-            if(code==null)accepted.add(adopt(id,section.kind().name(),section.text(),section.factIds(),facts));else diagnostic(errors,id,code);
+            if(code==null)accepted.add(adopt(id,section.kind().name(),section.text(),section.factIds(),facts));else {
+                if(sourceAudit!=null&&section!=null)sourceAudit.captureSection(pack.requestId(),
+                    section.kind()==null?null:section.kind().name(),section.text(),section.factIds(),code);
+                diagnostic(errors,id,code);
+            }
         }
         var acceptedIds=new HashSet<String>();accepted.forEach(s->acceptedIds.addAll(s.factIds()));
         i=0;
@@ -51,7 +57,10 @@ public final class NarrativeValidator {
             String code=r==null?"MALFORMED_SECTION":check("RECOMMENDATION",r.text(),r.factIds(),facts,true,pack);
             if(code==null&&recs.size()>=scope.maxRecommendations())code="OUT_OF_REQUEST_SCOPE";
             if(code==null&&!acceptedIds.containsAll(r.factIds()))code="DEPENDENCY_NOT_ADOPTED";
-            if(code==null)recs.add(adopt(id,"RECOMMENDATION",r.text(),r.factIds(),facts));else diagnostic(errors,id,code);
+            if(code==null)recs.add(adopt(id,"RECOMMENDATION",r.text(),r.factIds(),facts));else {
+                if(sourceAudit!=null&&r!=null)sourceAudit.captureSection(pack.requestId(),"RECOMMENDATION",r.text(),r.factIds(),code);
+                diagnostic(errors,id,code);
+            }
         }
         if(accepted.isEmpty())return new NarrativeResult("ANALYSIS-NARRATIVE-V1","NONE","CONTENT_REJECTED",List.of(),List.of(),errors,1,"关键主张受控检查，不等于任意语义证明");
         return new NarrativeResult("ANALYSIS-NARRATIVE-V1",errors.isEmpty()?"FULL":"PARTIAL","SUCCESS",accepted,recs,errors,1,"结构、引用、分组、日期、单位、来源、关键数值及受控语义；不证明任意自然语言绝对正确");
@@ -65,19 +74,22 @@ public final class NarrativeValidator {
         errors.add(new NarrativeResult.Diagnostic(id,code));
     }
     private String check(String kind,String text,List<String> ids,Map<String,EvidencePackV1.Fact> all,boolean recommendation,EvidencePackV1 pack) {
-        if(kind==null||text==null||text.isBlank()||text.length()>1000||ids==null||ids.isEmpty()||ids.size()>8||new HashSet<>(ids).size()!=ids.size())return "MALFORMED_SECTION";
+        int referenceLimit="WARNING".equals(kind)?12:8;
+        if(kind==null||text==null||text.isBlank()||text.length()>1000||ids==null||ids.isEmpty()||ids.size()>referenceLimit||new HashSet<>(ids).size()!=ids.size())return "MALFORMED_SECTION";
         if(ids.stream().anyMatch(id->!all.containsKey(id)))return "UNKNOWN_FACT_ID";
         if(Pattern.compile("[零〇一二两三四五六七八九十百千万亿]+\\s*(?:元|美元|吨|%|％|个百分点)").matcher(text).find())return "UNSUPPORTED_NUMBER_FORMAT";
         if(Pattern.compile("一定会|必然会|保证.{0,8}(上涨|下跌|收益)|未来.{0,6}(上涨|下跌)|将会.{0,6}(上涨|下跌)").matcher(text).find())return "UNSUPPORTED_PREDICTION";
         var selected=ids.stream().map(all::get).toList();
         if(selected.stream().anyMatch(f->!allowed(kind,f.factType())))return "WRONG_FACT_ROLE";
+        text=NaturalDateText.checked(text,selected);
+        if(text==null)return "WRONG_DATE";
         var sampleValidation=SampleValidationSummary.forSection(selected,pack);
         String validationClaim=sampleValidation.check(kind,text,selected);
         if(validationClaim!=null)return validationClaim;
         if(!recommendation&&!"METRICS".equals(kind)&&any(text,"月均","均值","平均值","月度平均"))return "WRONG_FACT_ROLE";
         if("METRICS".equals(kind)&&Pattern.compile("最新(?:值|价格|价)|当前(?:值|价格)|基准(?:值|价格)|现价|阈值").matcher(text).find())return "WRONG_FACT_ROLE";
         for(String clause:text.split("[，。；;、]")) {
-            if(any(clause,"最新","当前")&&!any(clause,"至","→")) {
+            if(any(clause,"最新","当前")&&!any(clause,"至","→","~","～")) {
                 var actual=selected.stream().filter(f->f.factType().equals("history.latest")||f.factType().equals("warning.explain")).map(EvidencePackV1.Fact::businessDate).toList();
                 var dated=DATE.matcher(clause);while(dated.find())if(!actual.contains(dated.group()))return "WRONG_DATE_ROLE";
             }
@@ -99,13 +111,28 @@ public final class NarrativeValidator {
         if(recommendation) {
             if(NUMBER.matcher(text).find()||!any(text,"建议","可","可以","观察","关注","核对"))return "UNSUPPORTED_RECOMMENDATION";
         }
-        String sourceClaim=SourceAssertionCheck.check(text,selected);
-        if(sourceClaim!=null)return sourceClaim;
+        var sourceClaim=SourceAssertionCheck.inspect(text,selected);
+        if(sourceClaim.code()!=null) {
+            if(sourceAudit!=null)sourceAudit.capture(pack.requestId(),sourceClaim,selected);
+            return sourceClaim.code();
+        }
         var dates=DATE.matcher(text);Set<String> allowedDates=new HashSet<>();
-        selected.forEach(f->{allowedDates.add(f.businessDate());allowedDates.add(f.periodStart());allowedDates.add(f.periodEnd());});
+        selected.forEach(f->{allowedDates.add(f.businessDate());allowedDates.add(f.periodStart());allowedDates.add(f.periodEnd());
+            if(f.factType().equals("warning.acknowledgedAt"))allowedDates.add(java.time.OffsetDateTime.parse(f.value()).toLocalDate().toString());});
         while(dates.find())if(!allowedDates.contains(dates.group()))return "WRONG_DATE";
-        String withoutDates=DATE.matcher(text).replaceAll("");
+        String withoutDates=text;
+        // Remove an exactly cited timestamp before its date, otherwise time fragments become false business numbers.
+        for(var f:selected)if(f.factType().equals("warning.acknowledgedAt"))withoutDates=withoutDates.replace(f.value(),"");
+        var dateMarkers=new LinkedHashMap<String,String>();
+        final String dateInput=withoutDates;
+        withoutDates=DATE.matcher(withoutDates).replaceAll(m->{
+            int candidate=0xE000+dateMarkers.size();
+            while(dateInput.indexOf((char)candidate)>=0||dateMarkers.containsKey(String.valueOf((char)candidate)))candidate++;
+            String marker=String.valueOf((char)candidate);dateMarkers.put(marker,m.group());return marker;
+        });
         for(var f:selected)if(f.unit()!=null&&f.unit().chars().anyMatch(Character::isDigit))withoutDates=withoutDates.replace(f.unit(),"");
+        // Strip whole cited identifiers before optional short aliases, avoiding leftover version digits.
+        for(var f:selected)if(f.factType().equals("warning.ruleVersion")||f.factType().equals("warning.id"))withoutDates=withoutDates.replace(f.value(),"");
         for(var f:selected) {
             withoutDates=withoutDates.replace(f.itemId(),"");
             for(String part:f.itemId().split("\\."))if(part.matches("[A-Za-z]+[0-9]+[A-Za-z0-9]*"))withoutDates=withoutDates.replace(part,"");
@@ -116,9 +143,16 @@ public final class NarrativeValidator {
         var aggregate=selected.stream().filter(f->f.factType().equals("period.metrics.avg")).toList();
         if("METRICS".equals(kind)) {
             if(aggregate.size()!=1)return "AMBIGUOUS_AGGREGATE_GROUP";
-            if("false".equals(aggregate.get(0).qualityStatus())&&any(text,"全月完整","完整月份","完整月度","全部交易日"))return "UNSUPPORTED_PERIOD_COVERAGE";
-            var f=aggregate.get(0);boolean notice=any(text,"VERIFIED_WITH_NOTICE","附注","有提示","有通知");
-            boolean explicitVerified=Pattern.compile("(?<![A-Z_])VERIFIED(?![A-Z_])").matcher(text).find();
+            String positiveCoverage=text.replaceAll("(?:并不|不)(?:代表|构成|表示|等于|属于|是)\\s*(?:一个)?(?:完整月份(?:行情)?|完整月度(?:行情)?|全月完整|全部交易日)","");
+            if("false".equals(aggregate.get(0).qualityStatus())&&any(positiveCoverage,"全月完整","完整月份","完整月度","全部交易日"))return "UNSUPPORTED_PERIOD_COVERAGE";
+            var f=aggregate.get(0);
+            var contrastStatuses=pack.facts().stream().filter(other->other.factType().equals("period.metrics.avg")
+                &&other.itemId().equals(f.itemId())&&Objects.equals(other.periodStart(),f.periodStart())&&Objects.equals(other.periodEnd(),f.periodEnd()))
+                .map(EvidencePackV1.Fact::validationStatus).collect(java.util.stream.Collectors.toSet());
+            String groupClaims=Pattern.compile("(?:与|和)\\s*(VERIFIED_WITH_NOTICE|VERIFIED)\\s*组\\s*(?:独立|分别|分开)(?:统计|计算)")
+                .matcher(text).replaceAll(m->contrastStatuses.contains(m.group(1))?"":m.group());
+            boolean notice=any(groupClaims,"VERIFIED_WITH_NOTICE","附注","有提示","有通知");
+            boolean explicitVerified=Pattern.compile("(?<![A-Z_])VERIFIED(?![A-Z_])").matcher(groupClaims).find();
             boolean verified=explicitVerified||!notice&&any(text,"已验证组","完全验证","通过组");
             if(notice&&explicitVerified)return "AMBIGUOUS_AGGREGATE_GROUP";
             if(notice&&!"VERIFIED_WITH_NOTICE".equals(f.validationStatus())||verified&&!notice&&!"VERIFIED".equals(f.validationStatus()))return "WRONG_AGGREGATE_GROUP";
@@ -135,8 +169,15 @@ public final class NarrativeValidator {
                     roles.removeIf(f->!f.factType().equals("history.query")&&!f.factType().equals("history.latest"));
                 }
                 else if(any(clause,"最新","当前","上涨至","下跌至","升至","降至","涨至","跌至"))roles.removeIf(f->!f.factType().equals("history.latest"));
-                else if(any(clause,"变化","增加","减少"))roles.removeIf(f->!f.factType().equals("history.trend.change"));
+                else if(any(clause,"结束值","期末值","终点值"))roles.removeIf(f->!f.factType().equals("history.latest"));
+                else if(any(clause,"起始值","起点值","期初值"))roles.removeIf(f->!f.factType().equals("history.query"));
+                else if(any(clause,"变化","增加","减少","累计上涨","累计下跌"))roles.removeIf(f->!f.factType().equals("history.trend.change"));
                 else if(any(clause,"历史值"))roles.removeIf(f->!f.factType().equals("history.query"));
+                else if(dateMarkers.keySet().stream().anyMatch(clause::contains)&&nums.find()) {
+                    var days=dateMarkers.entrySet().stream().filter(e->clause.contains(e.getKey())).map(Map.Entry::getValue).collect(java.util.stream.Collectors.toSet());
+                    if(days.size()!=1)return "AMBIGUOUS_VALUE_ROLE";
+                    roles.removeIf(f->!days.contains(f.businessDate())||!Set.of("history.query","history.latest").contains(f.factType()));
+                }
                 else if(nums.find()) {
                     var numeric=roles.stream().filter(f->{try{new BigDecimal(f.value());return true;}catch(NumberFormatException nonnumeric){return false;}}).toList();
                     if(numeric.size()!=1||any(clause,"基准值","阈值","最高值","最低值","最高价","最低价","波动率","中位数","标准差"))return "AMBIGUOUS_VALUE_ROLE";
@@ -144,7 +185,8 @@ public final class NarrativeValidator {
                 }
                 nums=NUMBER.matcher(clause);
             }
-            if("WARNING".equals(kind)) {
+            boolean labelledWarning="WARNING".equals(kind)&&Pattern.compile("当前(?:值|价格)?|最新(?:值|价格)?|基准(?:值|价格)?|阈值").matcher(clause).find();
+            if("WARNING".equals(kind)&&!labelledWarning) {
                 if(any(clause,"基准")&&!any(clause,"当前","最新","至","→"))roles.removeIf(f->!f.factType().equals("warning.baselineValue"));
                 else if(any(clause,"当前","最新")&&!any(clause,"基准"))roles.removeIf(f->!f.factType().equals("warning.explain"));
                 else if(any(clause,"阈值"))roles.removeIf(f->!f.factType().equals("warning.thresholdPercent"));
@@ -158,13 +200,28 @@ public final class NarrativeValidator {
             var boundRoles=List.copyOf(roles);
             while(nums.find()) {
                 String token=nums.group();
-                if(boundRoles.stream().noneMatch(f->numericEquals(f.value(),token)))return "UNSUPPORTED_NUMBER";
+                var tokenRoles=boundRoles;
+                if(labelledWarning) {
+                    var labels=Pattern.compile("当前(?:值|价格)?|最新(?:值|价格)?|基准(?:值|价格)?|阈值").matcher(clause.substring(0,nums.start()));
+                    String label=null;while(labels.find())label=labels.group();
+                    if((token.endsWith("%")||token.endsWith("％"))&&clause.substring(nums.end()).stripLeading().startsWith("阈值"))label="阈值";
+                    String type=label==null?null:label.startsWith("基准")?"warning.baselineValue":label.equals("阈值")?"warning.thresholdPercent":"warning.explain";
+                    tokenRoles=selected.stream().filter(f->f.factType().equals(type)).toList();
+                }
+                if(tokenRoles.stream().noneMatch(f->numericEquals(f.value(),token)))return "UNSUPPORTED_NUMBER";
                 if(token.endsWith("%")||token.endsWith("％")) {
-                    if(boundRoles.stream().noneMatch(f->f.value().endsWith("%")&&numericEquals(f.value(),token)))return "WRONG_UNIT";
+                    if(tokenRoles.stream().noneMatch(f->f.value().endsWith("%")&&numericEquals(f.value(),token)))return "WRONG_UNIT";
                 }
             }
         }
         Set<String> units=new HashSet<>();selected.forEach(f->{if(f.unit()!=null)units.add(f.unit());});
+        if("WARNING".equals(kind)) {
+            // Unit is shared item metadata, not a new price/rate. Never borrow a numeric value or guess between conflicting units.
+            var items=selected.stream().map(EvidencePackV1.Fact::itemId).collect(java.util.stream.Collectors.toSet());
+            var priceUnits=pack.facts().stream().filter(f->items.contains(f.itemId())&&Set.of("history.query","history.latest").contains(f.factType()))
+                .map(EvidencePackV1.Fact::unit).filter(u->u!=null&&!u.isBlank()).distinct().toList();
+            if(items.size()==1&&priceUnits.size()==1)units.add(priceUnits.get(0));
+        }
         for(String compound:List.of("万元/吨","元/千克","元/公斤","美元/吨","元/吨","CNY/1 USD","CNY/1 EUR"))if(text.contains(compound)&&!units.contains(compound))return "WRONG_UNIT";
         for(var currency:Map.of("欧元","EUR","英镑","GBP","美元","USD").entrySet())if(Pattern.compile("(?:\\d\\s*|单位(?:为|是|：|:)\\s*)"+currency.getKey()).matcher(text).find()&&selected.stream().noneMatch(f->currency.getValue().equals(f.currency())))return "WRONG_UNIT";
         String unitText=text;for(String known:units)unitText=unitText.replace(known,"");

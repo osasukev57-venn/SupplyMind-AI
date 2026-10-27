@@ -132,7 +132,9 @@ public final class AgentOrchestrator {
         if(readiness.ready()&&contextAllowed) {
             cloudResponse=budget.analyze(llm,cloudInput);
             narrative=cloudResponse.status()==LLMService.LLMStatus.SUCCESS
-                    ? new com.supplymind.agent.narrative.NarrativeValidator(responseVerifier).validate(cloudResponse.explanation(),evidencePack,cloudInput.narrativeScope())
+                    ? new com.supplymind.agent.narrative.NarrativeValidator(responseVerifier,
+                        com.supplymind.agent.narrative.SourceRejectionAudit.configured(responseVerifier))
+                        .validate(cloudResponse.explanation(),evidencePack,cloudInput.narrativeScope())
                     : com.supplymind.agent.narrative.NarrativeResult.none(cloudResponse.failureKind()==null?cloudResponse.status().name():cloudResponse.failureKind(),1);
         }
         boolean degraded=!"FULL".equals(narrative.adoption());
