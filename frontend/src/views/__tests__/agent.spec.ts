@@ -316,6 +316,53 @@ describe('AgentView (D8-T03)', () => {
     wrapper.unmount()
   })
 
+  it.each(['FULL', 'PARTIAL', 'NONE'] as const)('separates saved %s reports from the legacy Java fallback notice', async (adoption) => {
+    const sections = adoption === 'NONE' ? [] : [
+      { sectionId: 's-overview', kind: 'OVERVIEW', text: '模拟数据最新值为25500.00元/吨。', factIds: ['latest'], evidenceRefs: [] },
+      { sectionId: 's-trend', kind: 'TREND', text: '观测区间价格呈上升趋势。', factIds: ['trend'], evidenceRefs: [] },
+      { sectionId: 's-mean1', kind: 'METRICS', text: 'VERIFIED组均值为24800.00元/吨。', factIds: ['avg1'], evidenceRefs: [] },
+      { sectionId: 's-mean2', kind: 'METRICS', text: 'VERIFIED_WITH_NOTICE组均值为23200.00元/吨。', factIds: ['avg2'], evidenceRefs: [] },
+      { sectionId: 's-warning', kind: 'WARNING', text: '预警已确认，确认不代表风险消失。', factIds: ['warning'], evidenceRefs: [] },
+      { sectionId: 's-quality', kind: 'QUALITY', text: '样本校验状态为4条已校验和4条有提示。', factIds: ['quality'], evidenceRefs: [] }
+    ]
+    vi.mocked(readSavedReport).mockResolvedValue({
+      requestId: 'req-saved', reportRef: 'report/2026-10/report-saved.json', createdAt: '2026-10-27T10:01:12+08:00',
+      generatedBy: adoption === 'FULL' ? 'LLM' : adoption === 'PARTIAL' ? 'LLM_PARTIAL' : 'JAVA_TEMPLATE',
+      javaSummary: '根据正式数据，最新值为25500.00元/吨。 当前为 Java 事实摘要；云端语言服务未采用，所有数值均直接来自标准事实，未在回答阶段重算。 该监测项为模拟数据，不代表真实市场风险。',
+      narrative: { schemaVersion: 'ANALYSIS-NARRATIVE-V1', adoption, cloudStatus: adoption === 'NONE' ? 'not_configured' : 'SUCCESS',
+        sections, recommendations: adoption === 'NONE' ? [] : [{sectionId:'rec1',kind:'RECOMMENDATION',text:'建议继续观察后续发布数据。',factIds:['latest'],evidenceRefs:[]}],
+        diagnostics: adoption === 'PARTIAL' ? [{sectionId:'rejected',code:'WRONG_AGGREGATE_GROUP'}] : [], attempts: adoption === 'NONE' ? 0 : 1, checkScope:'关键主张检查' },
+      scope:{itemIds:['MAT.AZ91D.SIMULATION'],businessDate:null,periodStart:'2026-10-13',periodEnd:'2026-10-22',timezone:'Asia/Shanghai'}
+    })
+    const wrapper=mountWithRouter()
+    await wrapper.find('input[aria-label="报告标识"]').setValue('report/2026-10/report-saved.json')
+    await wrapper.findAll('button').find(b=>b.text().includes('核验并打开报告'))?.trigger('click')
+    await flushPromises()
+    const report=wrapper.find('[aria-label="已保存报告"]')
+    expect(report.exists()).toBe(true)
+    expect(report.text()).toContain('生成时事实')
+    expect(report.text()).toContain('MAT.AZ91D.SIMULATION')
+    expect(report.find('details').attributes('open')).toBeUndefined()
+    expect(report.text()).toContain('25500.00元/吨')
+    expect(report.text()).toContain('不代表真实市场风险')
+    expect(report.text()).not.toContain('云端语言服务未采用')
+    if (adoption === 'NONE') {
+      expect(report.text()).toContain('未采用')
+      expect(report.text()).toContain('尚未配置云模型')
+      expect(report.findAll('.narrative-section')).toHaveLength(0)
+      expect(report.text()).not.toContain('全部采用')
+    } else {
+      expect(report.findAll('.narrative-section')).toHaveLength(6)
+      for(const label of ['概览','趋势解读','均值解读','预警与确认','数据质量','观察建议（模型建议）']) expect(report.text()).toContain(label)
+      expect(report.text()).toContain('24800.00')
+      expect(report.text()).toContain('23200.00')
+      expect(report.text()).toContain(adoption === 'FULL' ? '全部采用' : '部分采用')
+      if(adoption === 'PARTIAL') expect(report.text()).not.toContain('全部采用')
+    }
+    expect(queryAgent).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
   it('distinguishes derived quality evidence from the underlying mixed sample states', async () => {
     vi.mocked(queryAgent).mockResolvedValue({ ...response, facts: [
       { factId:'sample-verified',statement:'history.query',value:'25500.00',businessDate:'2026-10-22',period:null,validationStatus:'VERIFIED' },

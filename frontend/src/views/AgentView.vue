@@ -6,6 +6,8 @@ import { fetchConfigItems } from '../api/config'
 import type { ItemView } from '../types/config'
 import type { AgentQueryResponse, EvidenceLinkView, SavedReportView } from '../types/agent'
 import StatusBadge from '../components/StatusBadge.vue'
+import AgentNarrative from '../components/AgentNarrative.vue'
+import { factSummaryForDisplay } from '../lib/reportPresentation'
 
 /**
  * Agent workbench: questions are answered through verified read-only analysis tools and
@@ -30,13 +32,6 @@ async function openSaved() {
   try { savedReport.value = await readSavedReport(savedRef.value.trim()); errorMessage.value = null }
   catch (error) { savedReport.value = null; errorMessage.value = error instanceof Error ? error.message : '报告不可验证' }
   finally { readingSaved.value = false }
-}
-function cloudAvailability(status: string) {
-  if (status === 'not_configured') return '尚未配置云模型'
-  if (status === 'ANALYSIS_CONTEXT_LIMIT') return '模型上下文范围过大，已保留本地事实；请缩小日期或统计组范围'
-  if (status.includes('BUDGET') || status.includes('TIMEOUT')) return '云端分析超时'
-  if (status.includes('CAPACITY')) return '分析服务忙，请稍后重试'
-  return '本次云端解读不可用或未通过检查'
 }
 const question = ref('')
 const itemId = ref('')
@@ -152,8 +147,26 @@ const visibleClaims = computed(() => {
 
     <section class="section">
       <div class="section-head"><h2>读取已保存报告</h2></div>
-      <div class="section-body"><label>报告标识<input v-model="savedRef" aria-label="报告标识" placeholder="粘贴上次保存的报告标识" /></label><button class="btn-secondary" :disabled="readingSaved" @click="openSaved">{{ readingSaved ? '核验中…' : '核验并打开报告' }}</button><p class="muted">读取时重新核验证据，显示生成时事实；不调用模型，不替换为最新数据。</p>
-      <div v-if="savedReport"><h3>生成时报告 · {{ savedReport.requestId }}</h3><p>{{ savedReport.createdAt }} · {{ savedReport.generatedBy === 'JAVA_TEMPLATE' ? 'Java 事实报告' : savedReport.generatedBy === 'LLM_PARTIAL' ? '云端部分采用' : '云端解读' }}<template v-if="savedReport.narrative"> · 云端采用状态 {{ savedReport.narrative.adoption === 'FULL' ? '全部采用' : savedReport.narrative.adoption === 'PARTIAL' ? '部分采用' : '未采用' }}</template></p><p>{{ savedReport.scope.periodStart }} 至 {{ savedReport.scope.periodEnd }}</p><p class="answer-text">{{ savedReport.javaSummary }}</p><article v-for="s in savedReport.narrative?.sections ?? []" :key="s.sectionId"><p>{{ s.text }}</p></article></div></div>
+      <div class="section-body">
+        <div class="saved-report-controls">
+          <label>报告标识<input v-model="savedRef" aria-label="报告标识" placeholder="粘贴上次保存的报告标识" /></label>
+          <button class="btn-secondary" :disabled="readingSaved" @click="openSaved">{{ readingSaved ? '核验中…' : '核验并打开报告' }}</button>
+        </div>
+        <p class="muted saved-read-note">读取时重新核验证据，显示生成时事实；不调用模型，不替换为最新数据。</p>
+        <article v-if="savedReport" class="saved-report" aria-label="已保存报告">
+          <header class="saved-report-head"><div><p class="report-eyebrow">已保存报告 · 证据重新核验后展示</p><h3>生成时事实与智能解读</h3></div><span class="saved-report-tag">历史报告</span></header>
+          <dl class="report-metadata">
+            <div><dt>监测项</dt><dd>{{ savedReport.scope.itemIds.join('、') || '—' }}</dd></div>
+            <div><dt>分析范围</dt><dd>{{ savedReport.scope.periodStart ?? savedReport.scope.businessDate ?? '—' }} 至 {{ savedReport.scope.periodEnd ?? savedReport.scope.businessDate ?? '—' }}</dd></div>
+            <div><dt>报告生成时间</dt><dd>{{ savedReport.createdAt }}</dd></div>
+            <div><dt>请求号</dt><dd>{{ savedReport.requestId }}</dd></div>
+          </dl>
+          <p class="generation-note">当前展示生成时事实，不是实时数据；本次打开未发起新的云端请求。</p>
+          <details class="java-summary"><summary>Java 事实摘要（展开查看）</summary><p class="answer-text">{{ factSummaryForDisplay(savedReport.javaSummary) }}</p></details>
+          <AgentNarrative v-if="savedReport.narrative" :narrative="savedReport.narrative" />
+          <p v-else class="muted">{{ savedReport.generatedBy === 'JAVA_TEMPLATE' ? '此历史报告由 Java 生成，未保存云端分段解读。' : '此旧版报告未记录分段采用状态，不推定云端全部采用。' }}</p>
+        </article>
+      </div>
     </section>
     <section v-if="result" class="section">
       <div class="section-head">
@@ -167,7 +180,7 @@ const visibleClaims = computed(() => {
           云端语言分析未被采用，当前展示经过证据约束的 Java 事实报告{{ result.degradeReason ? '（' + result.degradeReason + '）' : '' }}
         </div>
         <div v-else class="fact-banner">事实依据已由 Java 核验；智能解读经过结构、引用和关键主张检查，不等于任意语义均已证明。</div>
-        <details><summary>完整生成时 Java 事实报告</summary><p class="answer-text">{{ result.answer }}</p></details>
+        <details><summary>完整生成时 Java 事实报告</summary><p class="answer-text">{{ factSummaryForDisplay(result.answer) }}</p></details>
         <p class="muted">
           报告来源：{{ sourceLabel() }} · 生成时事实（不是实时数据）
           <template v-if="result.model">（{{ result.model }}）</template>
@@ -193,16 +206,7 @@ const visibleClaims = computed(() => {
       </div>
       <div class="section-body" v-if="result.narrative">
         <p class="muted">模型阶段：{{ result.narrative.cloudStatus === 'not_configured' || result.narrative.attempts === 0 ? '本次未发起云端请求' : result.llmStatus === 'SUCCESS' ? '已收到模型响应' : '模型阶段未成功完成' }}；{{ result.model ?? '未配置模型' }}。采用状态独立于事实校验。</p>
-        <h3>云端智能解读 · {{ result.narrative.adoption === 'FULL' ? '全部采用' : result.narrative.adoption === 'PARTIAL' ? '部分采用' : '未采用' }}</h3>
-        <p v-if="result.narrative.adoption === 'PARTIAL'" class="muted">部分段落未通过检查，以下独立合格段落已保留；Java 事实保持可用。</p>
-        <p v-if="result.narrative.adoption === 'NONE'" class="muted">云端解读不可用或未通过检查（{{ cloudAvailability(result.narrative.cloudStatus) }}）；本次使用本地 Java 事实报告。</p>
-        <article v-for="section in result.narrative.sections" :key="section.sectionId" class="narrative-section">
-          <h3>{{ ({ OVERVIEW: '概览', TREND: '趋势解读', METRICS: '均值解读', WARNING: '预警与确认', QUALITY: '数据质量' } as Record<string,string>)[section.kind] }}</h3>
-          <p class="answer-text">{{ section.text }}</p>
-          <p class="muted">依据：<a v-for="id in section.factIds" :key="id" :href="'#' + id">{{ id }} </a></p>
-        </article>
-        <div v-if="result.narrative.recommendations.length"><h3>观察建议（模型建议）</h3><p v-for="r in result.narrative.recommendations" :key="r.sectionId">{{ r.text }}</p></div>
-        <details><summary>云端检查状态</summary><p>{{ result.narrative.checkScope }}</p><ul><li v-for="d in result.narrative.diagnostics" :key="`${d.sectionId}:${d.code}`">{{ d.sectionId }}：{{ d.code }}</li></ul></details>
+        <AgentNarrative :narrative="result.narrative" link-facts />
       </div>
       <p v-if="!result.risk && result.currentWarningStatus" class="section-body muted">当前范围和有效规则暂无可验证的适用预警记录，不代表风险为零。</p>
       <div class="section-body flat" v-if="result.risk">
@@ -352,7 +356,27 @@ const visibleClaims = computed(() => {
 .fact-cards { display: flex; flex-wrap: wrap; gap: 14px; }
 .fact-cards h3 { width: 100%; }
 .fact-card { flex: 1 1 230px; border: 1px solid var(--sm-border); padding: 14px; border-radius: 8px; }
-.narrative-section { margin: 16px 0; }
+.saved-report-controls { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px; }
+.saved-report-controls label { display: grid; gap: 7px; flex: 1 1 340px; min-width: 0; color: var(--sm-text-2); font-size: 13px; }
+.saved-report-controls input { box-sizing: border-box; width: 100%; padding: 11px 12px; border: 1px solid var(--sm-border-strong); border-radius: 6px; font: inherit; color: var(--sm-text); background: var(--sm-surface, #fff); }
+.saved-report-controls input:focus-visible { outline: 2px solid var(--sm-focus, #1d6de3); outline-offset: 2px; }
+.saved-report-controls button { min-height: 41px; }
+.saved-read-note { margin: 12px 0 0; font-size: 13px; line-height: 1.7; }
+.saved-report { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--sm-border); }
+.saved-report-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.report-eyebrow { margin: 0 0 6px; font-size: 12px; color: var(--sm-text-2); }
+.saved-report-head h3 { margin: 0; font-size: 20px; font-weight: 700; color: var(--sm-text); }
+.saved-report-tag { padding: 5px 10px; border: 1px solid var(--sm-border); border-radius: 5px; color: var(--sm-text-2); font-size: 12px; white-space: nowrap; }
+.report-metadata { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 20px 0 0; gap: 16px 24px; }
+.report-metadata div { min-width: 0; }
+.report-metadata dt { margin: 0 0 5px; font-size: 12px; color: var(--sm-text-2); }
+.report-metadata dd { margin: 0; font-size: 13px; font-weight: 600; line-height: 1.7; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.generation-note { margin: 18px 0; padding: 10px 12px; background: var(--sm-surface-2); border-left: 3px solid var(--sm-accent); font-size: 13px; color: var(--sm-text-2); line-height: 1.7; }
+.java-summary { margin: 20px 0 26px; padding: 14px 16px; border: 1px solid var(--sm-border); border-radius: 6px; background: var(--sm-surface-2); }
+.java-summary > summary { cursor: pointer; color: var(--sm-text-2); font-size: 13px; font-weight: 600; }
+.java-summary > summary:focus-visible { outline: 2px solid var(--sm-focus, #1d6de3); outline-offset: 3px; }
+.java-summary .answer-text { margin: 12px 0 0; max-width: 85ch; overflow-wrap: anywhere; }
+@media (max-width: 700px) { .report-metadata { grid-template-columns: minmax(0, 1fr); } }
 .answer-text {
   font-size: 14px;
   line-height: 1.65;
