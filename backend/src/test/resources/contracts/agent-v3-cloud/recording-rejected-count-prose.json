@@ -1,0 +1,1 @@
+{"schemaVersion":"LOCAL-REJECTED-SECTION-V1","reason":"WRONG_SAMPLE_VALIDATION_COUNT","requestId":"req-62931eb5-580","kind":"QUALITY","text":"2026-10-23至2026-10-27监测期内，共发布2条已核验样本（VERIFIED），预期应有2条，缺失0条，完整条数2条，完整率为100%；所有质量指标均基于已核验证据由Java计算得出，但样本状态分布以sampleValidation为准，当前全部2条样本均为VERIFIED。","factIds":["fact-6","fact-7","fact-8","fact-9","fact-10"],"truncated":false}

@@ -70,9 +70,11 @@ public record SampleValidationSummary(String itemId, Map<String, Long> counts) {
         var statuses = STATUS.matcher(clause);
         Set<String> labels = new HashSet<>(); while (statuses.find()) labels.add(statuses.group().toUpperCase(Locale.ROOT));
         if (labels.isEmpty()) return false;
+        if (labels.size() == 1 && Pattern.compile("全部|所有|每条|全都|统一").matcher(clause).find()
+            && counts.entrySet().stream().anyMatch(e -> e.getValue() > 0 && !labels.contains(e.getKey()))) return false;
         String rest = clause;
         for (String label : labels) {
-            var before = Pattern.compile("(\\d+)\\s*(?:条|个|笔)\\s*(?:(?:观测)?(?:样本|记录|数据)(?:的)?\\s*)?(?:(?:业务)?(?:校验|验证)?状态\\s*)?(?:均|全部)?\\s*(?:为|是)?\\s*" + label + "(?![A-Z_])",Pattern.CASE_INSENSITIVE).matcher(rest);
+            var before = Pattern.compile("(\\d+)\\s*(?:条|个|笔)\\s*(?:(?:已核验|已校验|已验证)?(?:观测)?(?:样本|记录|数据)(?:的)?\\s*)?(?:(?:业务)?(?:校验|验证)?状态\\s*)?(?:均|全部)?\\s*(?:为|是)?\\s*[（(]?\\s*" + label + "(?![A-Z_])\\s*[）)]?",Pattern.CASE_INSENSITIVE).matcher(rest);
             var after = Pattern.compile("(?<![A-Z_])" + label + "(?![A-Z_])\\s*(?:状态)?\\s*(?:的)?\\s*(?:组|样本|记录)?\\s*(?:为|有|共|：|:|=)?\\s*(\\d+)\\s*(?:条|个|笔)",Pattern.CASE_INSENSITIVE).matcher(rest);
             if (before.find()) { if (!matchesCount(label,before.group(1))) return false; rest = before.replaceFirst(""); }
             else if (after.find()) { if (!matchesCount(label,after.group(1))) return false; rest = after.replaceFirst(""); }
@@ -87,6 +89,9 @@ public record SampleValidationSummary(String itemId, Map<String, Long> counts) {
     private static boolean safeCountRemainder(String rest) {
         // Only count-context nouns/connectors may remain. A second predicate, status,
         // number, negation or metric cannot borrow the exemption for a checked count.
-        return rest.replaceAll("底层|样本|记录|数据|观测|业务|校验|验证|状态|分布|数量|其中|包含|实际|仅|中|的|为|是|与|和|及|且|共|含|有|[\\s：:、，（）()]","").isEmpty();
+        // A neutral reference to the supplied population summary is not another claim.
+        // Match the complete reference, never arbitrary prose or numeric suffixes.
+        String context = rest.replaceAll("(?:需|可|应)?(?:参考|参见|依据|见)\\s*sampleValidation(?![A-Za-z0-9_])|以\\s*sampleValidation\\s*为准", "");
+        return context.replaceAll("底层|样本|记录|数据|观测|业务|校验|验证|状态|分布|数量|其中|包含|实际|发布|当前|全部|仅|但|中|的|为|是|与|和|及|且|共|含|有|[\\s：:、，（）()]","").isEmpty();
     }
 }

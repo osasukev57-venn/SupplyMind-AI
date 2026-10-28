@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 /** Checks bounded, explicit attribution spans against cited facts, not unrelated paragraph residue. */
 final class SourceAssertionCheck {
-    private static final Pattern MARKER=Pattern.compile("(?i)(?:来自|源于|源自|取自|来源\\s*(?:(?:标注|标明|注明|标记|记载|记录|显示)\\s*)?(?:不是|并非|不为|为|是|于|自)?)(?:\\s*[:：])?|\\bsource\\s*[:：]");
+    private static final Pattern MARKER=Pattern.compile("(?i)(?:来自|源于|源自|取自|来源\\s*(?:(?:标注|标明|注明|标记|记载|记录|显示)\\s*)?(?:均|都)?(?:不是|并非|不为|为|是|于|自)?)(?:\\s*[:：])?|\\bsource\\s*[:：]");
     private static final Pattern NEGATION=Pattern.compile("(?:并非|不是|并不是|并不|不|未|非)\\s*$");
     private static final Pattern END=Pattern.compile("[，,。；;！!？?\\n]|(?<![A-Za-z0-9])\\.(?![A-Za-z0-9])");
     private SourceAssertionCheck() {}

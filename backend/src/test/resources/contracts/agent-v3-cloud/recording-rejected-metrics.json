@@ -1,0 +1,1 @@
+{"reason":"WRONG_DATE_ROLE","requestId":"req-e485853a-f9c","kind":"METRICS","text":"2026年10月已发布样本的月均值为25650.00元/吨，单位为元/吨，统计周期为2026-10-01~2026-10-31。该均值基于模拟人工录入（非真实市场数据）来源的VERIFIED校验组计算得出，仅覆盖已发布的2个已验证样本，不代表完整月度行情；当前月度未结束（业务日期为2026-10-27），且统计分组标记complete为false，表明样本不全。","factIds":["fact-2"],"truncated":false,"schemaVersion":"LOCAL-REJECTED-SECTION-V1"}

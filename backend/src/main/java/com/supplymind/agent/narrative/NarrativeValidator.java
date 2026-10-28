@@ -147,7 +147,7 @@ public final class NarrativeValidator {
         var aggregate=selected.stream().filter(f->f.factType().equals("period.metrics.avg")).toList();
         if("METRICS".equals(kind)) {
             if(aggregate.size()!=1)return "AMBIGUOUS_AGGREGATE_GROUP";
-            String positiveCoverage=text.replaceAll("(?:并不|不)(?:代表|构成|表示|等于|属于|是)\\s*(?:一个)?(?:完整月份(?:行情)?|完整月度(?:行情)?|全月完整|全部交易日)","");
+            String positiveCoverage=text.replaceAll("(?:并不|不)(?:代表|构成|表示|等于|属于|是|覆盖)\\s*(?:一个)?(?:完整月份(?:行情)?|完整月度(?:行情)?|全月完整|全部交易日)","");
             if("false".equals(aggregate.get(0).qualityStatus())&&any(positiveCoverage,"全月完整","完整月份","完整月度","全部交易日"))return "UNSUPPORTED_PERIOD_COVERAGE";
             var f=aggregate.get(0);
             var contrastStatuses=pack.facts().stream().filter(other->other.factType().equals("period.metrics.avg")
@@ -168,11 +168,11 @@ public final class NarrativeValidator {
             var nums=NUMBER.matcher(clause);var roles=new ArrayList<EvidencePackV1.Fact>(selected);
             boolean trendKind="TREND".equals(kind)||"OVERVIEW".equals(kind);
             var endpointPair=pairOf(clause);
-            boolean hasEndpointPair=trendKind&&any(clause,"从","→")&&endpointPair.find();
+            boolean hasEndpointPair=trendKind&&any(clause,"从","由","→")&&endpointPair.find();
             if(hasEndpointPair&&(!hasDecimal(selected,"history.query",endpointPair.group(1))||valueRoleFacts(selected,pack,"history.latest").stream().noneMatch(f->numericEquals(f.value(),endpointPair.group(2)))))return "WRONG_TREND_PAIR";
             boolean labelledTrend=trendKind&&(TREND_VALUE_LABEL.matcher(clause).find()||hasEndpointPair);
             if(("TREND".equals(kind)||"OVERVIEW".equals(kind))&&!labelledTrend) {
-                if(any(clause,"从","→")&&any(clause,"至","→")) {
+                if(any(clause,"从","由","→")&&any(clause,"至","→")) {
                     var pair=pairOf(clause);if(!pair.find())return "AMBIGUOUS_TREND_PAIR";
                     if(!hasDecimal(selected,"history.query",pair.group(1))||valueRoleFacts(selected,pack,"history.latest").stream().noneMatch(f->numericEquals(f.value(),pair.group(2))))return "WRONG_TREND_PAIR";
                     roles.removeIf(f->!f.factType().equals("history.query")&&!f.factType().equals("history.latest"));

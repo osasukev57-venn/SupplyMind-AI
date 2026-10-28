@@ -19,6 +19,10 @@ class SpringAiPromptContractTest {
         assertTrue(prompt.contains("不能仅引用direction/change"));
         assertTrue(prompt.contains("严禁自行计算涨幅百分比"));
         assertTrue(prompt.contains("factId仅放在factIds数组"));
+        assertTrue(prompt.contains("每个METRICS段必须独立说明均值仅代表已发布样本"));
+        assertTrue(prompt.contains("不代表完整月度行情覆盖"));
+        assertTrue(prompt.contains("不引用sampleValidation等内部字段名"));
+        assertTrue(prompt.contains("不写样本数量、单日业务日期、最新日期、截止日或内部字段名"));
     }
 
     @Test
