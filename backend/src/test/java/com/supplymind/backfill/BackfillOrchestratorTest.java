@@ -49,6 +49,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * D5-T04/F4 backfill orchestration over the REAL production chain (AT-CFG-003/H08 backend).
@@ -119,10 +120,10 @@ class BackfillOrchestratorTest {
     }
 
     @Test
-    void manualTargetAwaitsInputAndOnlySucceedsAfterRealPublishedData() throws Exception {
+    void manualTargetAwaitsInputAndOnlyMarksTheRequestedDateCompleteAfterRealPublication() throws Exception {
         Harness harness = harness(false);
         BackfillJobStateV1 job = harness.orchestrator().createOrResume(
-                ADC12_SMM, LocalDate.parse("2026-08-01"), LocalDate.parse("2026-08-31"));
+                ADC12_SMM, LocalDate.parse("2026-08-10"), LocalDate.parse("2026-08-10"));
         BackfillJobStateV1 waiting = harness.orchestrator().run(job.jobId());
         assertEquals(BackfillJobStateV1.JobStatus.AWAITING_MANUAL_INPUT, waiting.status(),
                 "no input must honestly report AWAITING_MANUAL_INPUT, never fake RUNNING/SUCCEEDED");
@@ -140,6 +141,93 @@ class BackfillOrchestratorTest {
         assertTrue(Files.isRegularFile(harness.root().resolveDataRef(
                         com.supplymind.foundation.storage.DataPaths.dailyRef(ADC12_SMM, java.time.YearMonth.of(2026, 8)))),
                 "the frozen daily rebuild must have run for the completed period");
+    }
+
+    @Test
+    void runRecognizesAlreadyPublishedManualInputInsteadOfWaitingForever() {
+        Harness h = harness(false);
+        var job = h.orchestrator().createOrResume(ADC12_SMM,
+                LocalDate.parse("2026-08-10"), LocalDate.parse("2026-08-10"));
+        h.orchestrator().run(job.jobId());
+        publishManual(h, "2026-08-10");
+        var result = h.orchestrator().run(job.jobId());
+        assertEquals(BackfillJobStateV1.JobStatus.SUCCEEDED, result.status());
+        assertEquals("2026-08-10", result.currentCheckpoint());
+        assertTrue(result.failureReasons().isEmpty(), "resolved waiting reasons must be removed");
+    }
+
+    @Test
+    void onePublishedDayCannotCompleteAMonthOrSkipAnEarlierGap() {
+        Harness h = harness(false);
+        var job = h.orchestrator().createOrResume(ADC12_SMM,
+                LocalDate.parse("2026-08-10"), LocalDate.parse("2026-08-12"));
+        publishManual(h, "2026-08-12");
+        var partial = h.orchestrator().refresh(job.jobId());
+        assertEquals(BackfillJobStateV1.JobStatus.PARTIAL_SUCCESS, partial.status());
+        assertEquals(null, partial.currentCheckpoint(), "a later success cannot skip the first gap");
+        assertTrue(partial.completedPeriods().isEmpty());
+        assertTrue(partial.failureReasons().contains("2026-08-10:AWAITING_MANUAL_INPUT"));
+        assertTrue(partial.failureReasons().contains("2026-08-11:AWAITING_MANUAL_INPUT"));
+        publishManual(h, "2026-08-10");
+        var advanced = h.orchestrator().run(job.jobId());
+        assertEquals("2026-08-10", advanced.currentCheckpoint());
+        assertEquals(List.of("2026-08-11:AWAITING_MANUAL_INPUT"), advanced.failureReasons());
+        publishManual(h, "2026-08-11");
+        var done = h.orchestrator().run(job.jobId());
+        assertEquals(BackfillJobStateV1.JobStatus.SUCCEEDED, done.status());
+        assertEquals("2026-08-12", done.currentCheckpoint());
+        assertTrue(done.failureReasons().isEmpty());
+        assertEquals(done, h.orchestrator().run(job.jobId()), "terminal success is idempotent");
+    }
+
+    @Test
+    void pendingAndPublishedOutsideRequestedRangeNeverCompleteBackfill() {
+        Harness h = harness(false);
+        var job = h.orchestrator().createOrResume(ADC12_SMM,
+                LocalDate.parse("2026-08-10"), LocalDate.parse("2026-08-10"));
+        h.manual().submit(ManualMaterialSubmission.of(ADC12_SMM, "2026-08-10", "19850.50",
+                "元/吨", "CNY", "模拟补录（非真实市场数据）", "pending", null));
+        publishManual(h, "2026-08-11");
+        var waiting = h.orchestrator().refresh(job.jobId());
+        assertEquals(BackfillJobStateV1.JobStatus.AWAITING_MANUAL_INPUT, waiting.status());
+        assertTrue(waiting.completedPeriods().isEmpty());
+        assertEquals(null, waiting.currentCheckpoint());
+    }
+
+    @Test
+    void manualBackfillUsesConfiguredBusinessCalendarRatherThanRequiringWeekendInput() {
+        Harness h = harness(false);
+        var job = h.orchestrator().createOrResume(ADC12_SMM,
+                LocalDate.parse("2026-08-07"), LocalDate.parse("2026-08-10"));
+        publishManual(h, "2026-08-07");
+        publishManual(h, "2026-08-10");
+        var done = h.orchestrator().run(job.jobId());
+        assertEquals(BackfillJobStateV1.JobStatus.SUCCEEDED, done.status());
+        assertEquals("2026-08-10", done.currentCheckpoint());
+        assertTrue(done.failureReasons().isEmpty());
+    }
+
+    private static void publishManual(Harness h, String date) {
+        var intake = h.manual().submit(ManualMaterialSubmission.of(ADC12_SMM, date, "19850.50",
+                "元/吨", "CNY", "模拟补录（非真实市场数据）", "backfill-" + date, null));
+        h.validation().process(intake.runId());
+        h.publish().process(intake.runId());
+    }
+
+    @Test
+    void corruptPublishedRawCannotCountAsCompletedInput() throws Exception {
+        Harness h = harness(false);
+        var job = h.orchestrator().createOrResume(ADC12_SMM,
+                LocalDate.parse("2026-08-10"), LocalDate.parse("2026-08-10"));
+        var intake = h.manual().submit(ManualMaterialSubmission.of(ADC12_SMM, "2026-08-10", "19850.50",
+                "元/吨", "CNY", "模拟补录（非真实市场数据）", "corrupt", null));
+        h.validation().process(intake.runId());
+        h.publish().process(intake.runId());
+        Files.writeString(h.root().resolveDataRef(intake.rawRef()), "tampered raw");
+        assertThrows(com.supplymind.foundation.storage.StorageException.class,
+                () -> h.orchestrator().run(job.jobId()));
+        assertEquals(BackfillJobStateV1.JobStatus.WAITING,
+                new BackfillJobQueryService(h.root()).list().get(0).status());
     }
 
     @Test

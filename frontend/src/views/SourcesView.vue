@@ -78,7 +78,9 @@ async function processAcceptedManual(): Promise<void> {
   }
   manualStatus.value = response.status
   manualMessage.value = response.status === 'PUBLISHED'
-    ? '材料数据已通过校验并发布，可在总览和历史趋势中查看'
+    ? response.message.includes('回填任务进度更新失败')
+      ? '材料数据已发布，但回填任务进度更新失败，请回到回填任务点击运行或重试'
+      : '材料数据已通过校验并发布，可在总览和历史趋势中查看；如有关联回填任务，进度已同步核对'
     : response.message
 }
 

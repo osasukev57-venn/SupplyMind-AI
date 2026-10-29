@@ -55,6 +55,7 @@ public final class ManualMaterialProcessingService {
     private final LifecyclePublishService publish;
     private final DailyProcessingService daily;
     private final AggregateProcessingService aggregate;
+    private final java.util.function.BiConsumer<String, LocalDate> publishedInputListener;
 
     public ManualMaterialProcessingService(
             DataRoot dataRoot,
@@ -64,12 +65,21 @@ public final class ManualMaterialProcessingService {
             DailyProcessingService daily,
             AggregateProcessingService aggregate
     ) {
+        this(dataRoot, timelines, validation, publish, daily, aggregate, (itemId, date) -> { });
+    }
+
+    public ManualMaterialProcessingService(
+            DataRoot dataRoot, TimelineStore timelines, LifecycleValidationService validation,
+            LifecyclePublishService publish, DailyProcessingService daily, AggregateProcessingService aggregate,
+            java.util.function.BiConsumer<String, LocalDate> publishedInputListener
+    ) {
         this.dataRoot = Objects.requireNonNull(dataRoot, "dataRoot");
         this.timelines = Objects.requireNonNull(timelines, "timelines");
         this.validation = Objects.requireNonNull(validation, "validation");
         this.publish = Objects.requireNonNull(publish, "publish");
         this.daily = Objects.requireNonNull(daily, "daily");
         this.aggregate = Objects.requireNonNull(aggregate, "aggregate");
+        this.publishedInputListener = Objects.requireNonNull(publishedInputListener, "publishedInputListener");
     }
 
     public Result process(String runId) {
@@ -107,6 +117,16 @@ public final class ManualMaterialProcessingService {
         DailyResult dailyResult = daily.processMonth(raw.itemId(), YearMonth.from(businessDate));
         AggregateProcessingService.AggregateYearResult aggregateResult =
                 aggregate.processYear(raw.itemId(), businessDate.getYear());
+        String message = ingressName + " passed validation and is now available to dashboard queries";
+        try {
+            // Intake/PENDING never reaches this hook. Repeating processing also repairs a missed update.
+            publishedInputListener.accept(raw.itemId(), businessDate);
+        } catch (RuntimeException exception) {
+            // Publication is already committed: do not lie that the input was rejected or roll it back.
+            org.slf4j.LoggerFactory.getLogger(ManualMaterialProcessingService.class)
+                    .warn("Published input {} could not refresh backfill progress", raw.itemId(), exception);
+            message += "; 回填任务进度更新失败，数据已发布，请在回填任务中运行或重试";
+        }
         return new Result(
                 "PUBLISHED", runId, raw.itemId(), raw.sourceBusinessDate(),
                 finalTimeline.current().validationStatus().name(),
@@ -114,7 +134,7 @@ public final class ManualMaterialProcessingService {
                 finalTimeline.current().publishRef(),
                 dailyResult.dailyRef(),
                 aggregateResult.writtenRefs(),
-                ingressName + " passed validation and is now available to dashboard queries");
+                message);
     }
 
     private RawReceiptV1 readIngressRaw(

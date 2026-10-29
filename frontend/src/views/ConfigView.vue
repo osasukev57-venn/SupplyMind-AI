@@ -21,6 +21,7 @@ import type {
 } from '../types/config'
 import StatusBadge from '../components/StatusBadge.vue'
 import {
+  backfillReasonLabel,
   fallbackReasonLabel,
   jobStatusLabel,
   modeLabel,
@@ -41,6 +42,7 @@ const capabilities = ref<CapabilityView[]>([])
 const jobs = ref<BackfillJobView[]>([])
 const errorMessage = ref<string | null>(null)
 const notice = ref<string | null>(null)
+const activeJobId = ref<string | null>(null)
 
 // ADD form
 const newItemId = ref('')
@@ -110,7 +112,8 @@ async function loadCapabilities() {
 
 async function loadJobs() {
   const response = await fetchBackfillJobs()
-  jobs.value = response?.jobs ?? []
+  if (response) jobs.value = response.jobs
+  else errorMessage.value = '读取回填任务失败，请刷新重试'
 }
 
 function controlledAddRequest(): AddItemRequest | null {
@@ -276,27 +279,39 @@ async function submitCreateJob() {
 }
 
 async function runJob(jobId: string) {
+  if (activeJobId.value) return
+  activeJobId.value = jobId
   errorMessage.value = null
   notice.value = null
-  const job = await runBackfillJob(jobId)
-  if (!job) {
-    errorMessage.value = '运行任务失败：服务暂时不可用，请稍后重试'
-    return
+  try {
+    const job = await runBackfillJob(jobId)
+    if (!job) {
+      errorMessage.value = '运行任务失败：服务暂时不可用，请稍后重试'
+      return
+    }
+    notice.value = `任务 ${job.itemId}：${jobStatusLabel(job.status)}${job.failureReasons.length ? '；请查看该任务的待补齐日期或异常说明' : ''}`
+    await loadJobs()
+  } finally {
+    activeJobId.value = null
   }
-  notice.value = `任务 ${job.itemId}：${jobStatusLabel(job.status)}${job.failureReasons.length ? '（' + job.failureReasons.join('；') + '）' : ''}`
-  await loadJobs()
 }
 
 async function retryJob(jobId: string) {
+  if (activeJobId.value) return
+  activeJobId.value = jobId
   errorMessage.value = null
   notice.value = null
-  const job = await retryBackfillJob(jobId)
-  if (!job) {
-    errorMessage.value = '重试任务失败：服务暂时不可用，请稍后重试'
-    return
+  try {
+    const job = await retryBackfillJob(jobId)
+    if (!job) {
+      errorMessage.value = '重试任务失败：服务暂时不可用，请稍后重试'
+      return
+    }
+    notice.value = `任务 ${job.itemId} 重试后：${jobStatusLabel(job.status)}`
+    await loadJobs()
+  } finally {
+    activeJobId.value = null
   }
-  notice.value = `任务 ${job.itemId} 重试后：${jobStatusLabel(job.status)}`
-  await loadJobs()
 }
 
 onMounted(refresh)
@@ -482,7 +497,7 @@ onMounted(refresh)
     <section class="section">
       <div class="section-head">
         <h2>历史回填任务</h2>
-        <span class="muted">按监测项与日期范围运行</span>
+        <button class="btn-secondary" :disabled="activeJobId !== null" @click="loadJobs">刷新任务</button>
       </div>
       <div class="section-body">
         <div class="form-grid" style="margin-bottom: 12px">
@@ -497,6 +512,7 @@ onMounted(refresh)
           </label>
         </div>
         <button class="btn-secondary" @click="submitCreateJob">创建回填任务</button>
+        <p class="muted">人工录入或文件导入的数据须校验并发布后才计入回填；发布后自动更新关联任务。“运行 / 重试”会重新核对已发布数据。人工与导入回填按任务创建时的业务日历检查必需日期。</p>
         <div class="table-scroll" style="margin-top: 12px">
           <table v-if="jobs.length > 0" class="sm-table">
             <thead>
@@ -504,7 +520,7 @@ onMounted(refresh)
                 <th>监测项编号</th>
                 <th>范围</th>
                 <th>状态</th>
-                <th>已完成月份</th>
+                <th>已完成范围月份</th>
                 <th>检查点</th>
                 <th>说明</th>
                 <th>操作</th>
@@ -517,10 +533,18 @@ onMounted(refresh)
                 <td><StatusBadge :status="job.status" /></td>
                 <td>{{ job.completedPeriods.join(', ') || '—' }}</td>
                 <td class="num">{{ job.currentCheckpoint ?? '—' }}</td>
-                <td class="cell-truncate">{{ job.failureReasons.join('；') || '—' }}</td>
                 <td>
-                  <button class="btn-secondary" @click="runJob(job.jobId)">运行</button>
-                  <button class="btn-ghost" @click="retryJob(job.jobId)">重试</button>
+                  <details v-if="job.failureReasons.length" :open="job.failureReasons.length <= 6">
+                    <summary>待补齐 / 异常说明（{{ job.failureReasons.length }} 项）</summary>
+                    <ul>
+                      <li v-for="reason in job.failureReasons" :key="reason">{{ backfillReasonLabel(reason) }}</li>
+                    </ul>
+                  </details>
+                  <span v-else>{{ job.status === 'SUCCEEDED' ? '请求范围内必需日期已补齐' : '—' }}</span>
+                </td>
+                <td>
+                  <button class="btn-secondary" :disabled="activeJobId !== null" @click="runJob(job.jobId)">{{ activeJobId === job.jobId ? '核对中…' : '运行' }}</button>
+                  <button class="btn-ghost" :disabled="activeJobId !== null" @click="retryJob(job.jobId)">重试</button>
                 </td>
               </tr>
             </tbody>

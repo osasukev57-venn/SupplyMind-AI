@@ -60,10 +60,11 @@ public class ManualIntakeConfiguration {
             LifecycleValidationService validation,
             LifecyclePublishService publish,
             DailyProcessingService daily,
-            AggregateProcessingService aggregate
+            AggregateProcessingService aggregate,
+            com.supplymind.backfill.BackfillOrchestrator backfill
     ) {
         return new ManualMaterialProcessingService(
-                dataRoot, timelineStore, validation, publish, daily, aggregate);
+                dataRoot, timelineStore, validation, publish, daily, aggregate, backfill::refreshPublishedInput);
     }
 
     @Bean

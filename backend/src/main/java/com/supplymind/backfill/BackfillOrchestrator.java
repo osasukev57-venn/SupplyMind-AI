@@ -60,6 +60,7 @@ public final class BackfillOrchestrator {
     private final LifecyclePublishService publish;
     private final DailyProcessingService daily;
     private final AggregateProcessingService aggregate;
+    private final PublishedBackfillReconciler publishedBackfill;
 
     public BackfillOrchestrator(
             DataRoot dataRoot,
@@ -85,6 +86,7 @@ public final class BackfillOrchestrator {
         this.publish = Objects.requireNonNull(publish, "publish");
         this.daily = Objects.requireNonNull(daily, "daily");
         this.aggregate = Objects.requireNonNull(aggregate, "aggregate");
+        this.publishedBackfill = new PublishedBackfillReconciler(dataRoot, jobStore, timelineStore, daily, aggregate);
     }
 
     /** Stable job identity; a duplicate start returns the existing job (idempotent). */
@@ -111,26 +113,23 @@ public final class BackfillOrchestrator {
 
     /**
      * Automatic path: WAITING -&gt; RUNNING -&gt; real acquisition -&gt; raw -&gt; validation -&gt;
-     * publish -&gt; daily -&gt; aggregate. Manual targets never enter RUNNING and return
-     * AWAITING_MANUAL_INPUT. Restart resumes from the persisted checkpoint.
+     * publish -&gt; daily -&gt; aggregate. Manual/import targets reconcile already published
+     * input instead of collecting or bypassing the operator's publication gate.
      */
-    public BackfillJobStateV1 run(String jobId) {
+    public synchronized BackfillJobStateV1 run(String jobId) {
         BackfillJobStateV1 job = jobStore.read(jobId);
-        if (job.status() == BackfillJobStateV1.JobStatus.SUCCEEDED
-                || job.status() == BackfillJobStateV1.JobStatus.FAILED) {
+        if (job.status() == BackfillJobStateV1.JobStatus.SUCCEEDED) {
             return job;
         }
         MonitorSeriesConfigV1 config = configStore.readActiveConfig();
         MonitorSeriesItemV1 item = config.requireItem(job.itemId());
-        if (isManual(item)) {
-            BackfillJobStateV1 waiting = job.withStatus(
-                    BackfillJobStateV1.JobStatus.AWAITING_MANUAL_INPUT,
-                    job.completedPeriods(), job.currentCheckpoint(),
-                    job.failureReasons().isEmpty() ? List.of(job.fromDate() + ":AWAITING_MANUAL_INPUT")
-                            : job.failureReasons(),
-                    OffsetDateTime.now());
-            jobStore.write(waiting);
-            return waiting;
+        if (isManual(item) || item.providerType() == ProviderType.LOCAL_IMPORT) {
+            return publishedBackfill.reconcile(job, true,
+                    item.providerType() == ProviderType.LOCAL_IMPORT ? "AWAITING_LOCAL_IMPORT" : "AWAITING_MANUAL_INPUT",
+                    List.of());
+        }
+        if (job.status() == BackfillJobStateV1.JobStatus.FAILED) {
+            return job; // Automatic terminal failures require explicit retry/reopen.
         }
         DataProvider provider = registry.all().stream()
                 .filter(candidate -> candidate.profile().providerType() == item.providerType()
@@ -150,15 +149,8 @@ public final class BackfillOrchestrator {
             // pseudo-history collect and must never claim SUCCEEDED. Frozen honest state:
             // AWAITING_MANUAL_INPUT when nothing completed, PARTIAL_SUCCESS when some periods
             // were already completed through real input. No new state is invented.
-            List<String> reasons = new ArrayList<>(job.failureReasons());
-            reasons.add("NO_HISTORY_CAPABILITY");
-            BackfillJobStateV1.JobStatus honest = job.completedPeriods().isEmpty()
-                    ? BackfillJobStateV1.JobStatus.AWAITING_MANUAL_INPUT
-                    : BackfillJobStateV1.JobStatus.PARTIAL_SUCCESS;
-            BackfillJobStateV1 honestJob = job.withStatus(
-                    honest, job.completedPeriods(), job.currentCheckpoint(), reasons, OffsetDateTime.now());
-            jobStore.write(honestJob);
-            return honestJob;
+            return publishedBackfill.reconcile(job, true, "NO_AUTO_HISTORY_CAPABILITY",
+                    List.of("NO_HISTORY_CAPABILITY"));
         }
         BackfillJobStateV1 running = job.withStatus(
                 BackfillJobStateV1.JobStatus.RUNNING,
@@ -235,11 +227,10 @@ public final class BackfillOrchestrator {
     }
 
     /**
-     * Manual/resume refresh: detect real published input (external intake) per month, rebuild
-     * daily/aggregate through the frozen chain, and advance the state. Restart resumes from the
-     * persisted checkpoint.
+     * Reconcile published external input against the exact requested dates. A monthly file or
+     * a single published row in the same month is never evidence that the range is complete.
      */
-    public BackfillJobStateV1 refresh(String jobId) {
+    public synchronized BackfillJobStateV1 refresh(String jobId) {
         BackfillJobStateV1 job = jobStore.read(jobId);
         if (job.status() == BackfillJobStateV1.JobStatus.SUCCEEDED
                 || job.status() == BackfillJobStateV1.JobStatus.FAILED) {
@@ -247,37 +238,27 @@ public final class BackfillOrchestrator {
         }
         MonitorSeriesConfigV1 config = configStore.readActiveConfig();
         MonitorSeriesItemV1 item = config.requireItem(job.itemId());
-        boolean manual = isManual(item);
-        List<String> completed = new ArrayList<>(job.completedPeriods());
-        List<String> failures = new ArrayList<>(job.failureReasons());
-        completed = refreshCompletedMonths(job.itemId(), completed, LocalDate.parse(job.fromDate()),
-                LocalDate.parse(job.toDate()));
-        LocalDate from = LocalDate.parse(job.fromDate());
-        LocalDate to = LocalDate.parse(job.toDate());
-        YearMonth cursor = YearMonth.from(from);
-        YearMonth last = YearMonth.from(to);
-        while (!cursor.isAfter(last)) {
-            if (!completed.contains(cursor.toString())
-                    && !Files.isRegularFile(dataRoot.resolveDataRef(DataPaths.dailyRef(job.itemId(), cursor)))
-                    && !hasPublishedRunInMonth(job.itemId(), cursor)) {
-                failures.add(cursor + (manual ? ":AWAITING_MANUAL_INPUT" : ":NO_AUTO_HISTORY_CAPABILITY"));
+        boolean externalInput = isManual(item) || item.providerType() == ProviderType.LOCAL_IMPORT;
+        String missingReason = isManual(item) ? "AWAITING_MANUAL_INPUT"
+                : item.providerType() == ProviderType.LOCAL_IMPORT ? "AWAITING_LOCAL_IMPORT"
+                : "NO_AUTO_HISTORY_CAPABILITY";
+        return publishedBackfill.reconcile(job, externalInput, missingReason, List.of());
+    }
+
+    /** Called only AFTER successful explicit ingress publication and derived-data rebuild. */
+    public synchronized void refreshPublishedInput(String itemId, LocalDate date) {
+        for (var job : new BackfillJobQueryService(dataRoot).list()) {
+            if (job.itemId().equals(itemId) && !date.isBefore(LocalDate.parse(job.fromDate()))
+                    && !date.isAfter(LocalDate.parse(job.toDate()))
+                    && job.status() != BackfillJobStateV1.JobStatus.SUCCEEDED) {
+                // A previous FAILED job can also be repaired by newly published external input.
+                MonitorSeriesItemV1 item = configStore.readActiveConfig().requireItem(itemId);
+                if (isManual(item) || item.providerType() == ProviderType.LOCAL_IMPORT) {
+                    publishedBackfill.reconcile(job, true, isManual(item)
+                            ? "AWAITING_MANUAL_INPUT" : "AWAITING_LOCAL_IMPORT", List.of());
+                }
             }
-            cursor = cursor.plusMonths(1);
         }
-        int total = monthsBetween(job.fromDate(), job.toDate());
-        BackfillJobStateV1.JobStatus status;
-        if (completed.size() >= total) {
-            status = BackfillJobStateV1.JobStatus.SUCCEEDED;
-        } else if (completed.isEmpty()) {
-            status = manual
-                    ? BackfillJobStateV1.JobStatus.AWAITING_MANUAL_INPUT
-                    : BackfillJobStateV1.JobStatus.FAILED;
-        } else {
-            status = BackfillJobStateV1.JobStatus.PARTIAL_SUCCESS;
-        }
-        BackfillJobStateV1 updated = job.withStatus(status, completed, null, failures, OffsetDateTime.now());
-        jobStore.write(updated);
-        return updated;
     }
 
     private List<String> refreshCompletedMonths(String itemId, List<String> completed, LocalDate from, LocalDate to) {
@@ -418,11 +399,6 @@ public final class BackfillOrchestrator {
     private static boolean isManual(MonitorSeriesItemV1 item) {
         return item.providerType() == ProviderType.MANUAL
                 || item.routeDecision() == RouteDecision.FALLBACK_MANUAL;
-    }
-
-    private static int monthsBetween(String from, String to) {
-        return (int) (java.time.temporal.ChronoUnit.MONTHS.between(
-                YearMonth.parse(from.substring(0, 7)), YearMonth.parse(to.substring(0, 7))) + 1);
     }
 
     private boolean hasPublishedRunInMonth(String itemId, YearMonth month) {

@@ -23,6 +23,7 @@ import {
   fetchConfigHistory,
   fetchConfigItems,
   replaceItem,
+  retryBackfillJob,
   runBackfillJob,
   setEnabled
 } from '../../api/config'
@@ -283,6 +284,46 @@ describe('ConfigView (D8-T01)', () => {
     await wrapper.findAll('button').find((button) => button.text() === '创建回填任务')?.trigger('click')
     await flushPromises()
     expect(createBackfillJob).toHaveBeenCalledWith('FX.GBP.CNY.PBOC_MID', '2026-08-01', '2026-08-31')
+    wrapper.unmount()
+  })
+
+  it('shows missing published dates as readable separate items and refreshes after publication', async () => {
+    const partial = { ...job, status: 'PARTIAL_SUCCESS', failureReasons: [
+      '2026-10-26:AWAITING_MANUAL_INPUT', '2026-10-27:AWAITING_MANUAL_INPUT'
+    ] }
+    vi.mocked(fetchBackfillJobs).mockResolvedValue({ jobs: [partial] })
+    const wrapper = mount(ConfigView)
+    await flushPromises()
+    expect(wrapper.text()).toContain('2026-10-26：尚无已校验发布的人工数据')
+    expect(wrapper.text()).toContain('2026-10-27：尚无已校验发布的人工数据')
+    expect(wrapper.findAll('details li')).toHaveLength(2)
+    expect(wrapper.text()).not.toContain('AWAITING_MANUAL_INPUT')
+    vi.mocked(fetchBackfillJobs).mockResolvedValue({ jobs: [{ ...job, status: 'SUCCEEDED' }] })
+    await wrapper.findAll('button').find(b => b.text() === '刷新任务')!.trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain('请求范围内必需日期已补齐')
+    expect(wrapper.findAll('details li')).toHaveLength(0)
+    wrapper.unmount()
+  })
+
+  it('prevents duplicate run/retry while checking and renders the retried backend result', async () => {
+    let resolve!: (value: BackfillJobView) => void
+    vi.mocked(runBackfillJob).mockImplementation(() => new Promise(r => { resolve = r }))
+    const wrapper = mount(ConfigView)
+    await flushPromises()
+    await wrapper.findAll('button').find(b => b.text() === '运行')!.trigger('click')
+    expect(wrapper.text()).toContain('核对中…')
+    const retry = wrapper.findAll('button').find(b => b.text() === '重试')!
+    expect(retry.attributes('disabled')).toBeDefined()
+    resolve(job)
+    await flushPromises()
+    const complete = { ...job, status: 'SUCCEEDED' }
+    vi.mocked(retryBackfillJob).mockResolvedValue(complete)
+    vi.mocked(fetchBackfillJobs).mockResolvedValue({ jobs: [complete] })
+    await retry.trigger('click')
+    await flushPromises()
+    expect(retryBackfillJob).toHaveBeenCalledWith(job.jobId)
+    expect(wrapper.text()).toContain('重试后：已完成')
     wrapper.unmount()
   })
 

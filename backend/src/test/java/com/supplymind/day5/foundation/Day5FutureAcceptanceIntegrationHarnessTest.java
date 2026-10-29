@@ -107,9 +107,15 @@ class Day5FutureAcceptanceIntegrationHarnessTest {
                 "华东某厂报价单（测试）", "报价单号A-20260810", null));
         harness.validation().process(intake.runId());
         harness.publish().process(intake.runId());
-        assertEquals(BackfillJobStateV1.JobStatus.SUCCEEDED,
-                harness.backfill().refresh(job.jobId()).status(),
-                "H08 backend: current data flows through validation/publish/daily to complete the backfill");
+        var partial = harness.backfill().refresh(job.jobId());
+        assertEquals(BackfillJobStateV1.JobStatus.PARTIAL_SUCCESS, partial.status(),
+                "H08: current input completes its date, not every required date of the month");
+        assertTrue(partial.completedPeriods().isEmpty());
+        assertTrue(partial.failureReasons().contains("2026-08-03:AWAITING_MANUAL_INPUT"));
+        assertFalse(partial.failureReasons().contains("2026-08-10:AWAITING_MANUAL_INPUT"));
+        var oneDay = harness.backfill().createOrResume(NEW_ITEM,
+                LocalDate.parse("2026-08-10"), LocalDate.parse("2026-08-10"));
+        assertEquals(BackfillJobStateV1.JobStatus.SUCCEEDED, harness.backfill().run(oneDay.jobId()).status());
     }
 
     @Test

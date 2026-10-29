@@ -46,8 +46,18 @@ public final class PublishedQueryService {
     }
 
     public List<PublishedRecord> findPublished(String itemId, LocalDate businessDate) {
-        Objects.requireNonNull(itemId, "itemId");
         Objects.requireNonNull(businessDate, "businessDate");
+        return findPublishedRange(itemId, businessDate, businessDate);
+    }
+
+    /** Inclusive, evidence-verified range query; pending/demo/corrupt input cannot count as progress. */
+    public List<PublishedRecord> findPublishedRange(String itemId, LocalDate from, LocalDate to) {
+        Objects.requireNonNull(itemId, "itemId");
+        Objects.requireNonNull(from, "from");
+        Objects.requireNonNull(to, "to");
+        if (from.isAfter(to)) {
+            throw new IllegalArgumentException("from must not be after to");
+        }
         LocalDate referenceDate = today();
         List<PublishedRecord> records = new ArrayList<>();
         for (String runId : stagingRunIds()) {
@@ -57,7 +67,8 @@ public final class PublishedQueryService {
             }
             var candidate = timeline.current().candidate();
             if (candidate == null || !candidate.itemId().equals(itemId)
-                    || !candidate.businessDate().equals(businessDate.toString())) {
+                    || candidate.businessDate().compareTo(from.toString()) < 0
+                    || candidate.businessDate().compareTo(to.toString()) > 0) {
                 continue;
             }
             PublishedRecord record = recordOf(timeline, referenceDate);

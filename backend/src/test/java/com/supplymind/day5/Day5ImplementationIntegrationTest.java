@@ -108,8 +108,15 @@ class Day5ImplementationIntegrationTest {
                 "华东某厂报价单（测试）", "报价单号A-20260810", null));
         harness.validation().process(intake.runId());
         harness.publish().process(intake.runId());
-        BackfillJobStateV1 succeeded = harness.backfill().refresh(job.jobId());
-        assertEquals(BackfillJobStateV1.JobStatus.SUCCEEDED, succeeded.status());
+        BackfillJobStateV1 partial = harness.backfill().refresh(job.jobId());
+        assertEquals(BackfillJobStateV1.JobStatus.PARTIAL_SUCCESS, partial.status(),
+                "one published date must not complete the requested whole month");
+        assertTrue(partial.completedPeriods().isEmpty());
+        assertTrue(partial.failureReasons().contains("2026-08-03:AWAITING_MANUAL_INPUT"));
+        assertFalse(partial.failureReasons().contains("2026-08-10:AWAITING_MANUAL_INPUT"));
+        var oneDay = harness.backfill().createOrResume(NEW_ITEM,
+                LocalDate.parse("2026-08-10"), LocalDate.parse("2026-08-10"));
+        assertEquals(BackfillJobStateV1.JobStatus.SUCCEEDED, harness.backfill().run(oneDay.jobId()).status());
         assertTrue(Files.isRegularFile(harness.root().resolveDataRef(
                         com.supplymind.foundation.storage.DataPaths.dailyRef(NEW_ITEM, YearMonth.of(2026, 8)))),
                 "H08: current data must rebuild the daily file");

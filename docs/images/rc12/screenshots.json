@@ -1,0 +1,61 @@
+{
+  "release": "0.9.1-rc.12",
+  "sourceVideoSha256": "c8676acbcec9ff0258851e872cb6b885d70b3c9c5012b6d6fa7385abd314090b",
+  "note": "Unmodified frames extracted from the user-recorded RC12 demonstration. Material demonstration records are simulated.",
+  "screenshots": [
+    {
+      "file": "overview.jpg",
+      "videoSecond": 330,
+      "caption": "总览与监测项卡片",
+      "sha256": "e3604e8c3670285fc41fe6258edd05ff358eeefd557d030e3bbd89b39e5c524a"
+    },
+    {
+      "file": "history.jpg",
+      "videoSecond": 230,
+      "caption": "导入数据的每日趋势",
+      "sha256": "de37fa63eea08db9b1665ab8f120768335b3af90bc7fe747f45a0e4704f0dbc7"
+    },
+    {
+      "file": "quality.jpg",
+      "videoSecond": 236,
+      "caption": "校验记录与关联预警",
+      "sha256": "3f8209421f0474114e2d95c8a42d8b0f184ce233fcf80d4e4f9d323a709bb931"
+    },
+    {
+      "file": "sources-import.jpg",
+      "videoSecond": 164,
+      "caption": "三条文件导入记录校验发布成功",
+      "sha256": "ab5e5d319bb8fd97daea33271e65f15c570c58269c13e9b6af59e858e1e623b8"
+    },
+    {
+      "file": "backfill-complete.jpg",
+      "videoSecond": 118,
+      "caption": "人工补录发布后回填任务已完成",
+      "sha256": "f50866eaf79bc08643ff216ec3aaec918911659b0415c23a03ca0c3d85db87d9"
+    },
+    {
+      "file": "warning-ack.jpg",
+      "videoSecond": 218,
+      "caption": "预警确认记录与审计绑定",
+      "sha256": "db4031829f44f77be8b6bc6f9e44ddfb7d1a3e97a680f82e44f1a0cf8dd3e8c5"
+    },
+    {
+      "file": "agent-facts.jpg",
+      "videoSecond": 280,
+      "caption": "Java已验证事实与模型阶段状态",
+      "sha256": "ca8e31706f30ab3f30ceced79672b5f881fccbf30f6989cd45e856783629be15"
+    },
+    {
+      "file": "agent-narrative.jpg",
+      "videoSecond": 286,
+      "caption": "云端解读全部采用及事实引用",
+      "sha256": "aa1d0385ffe9d658b9b9f77aefb922d6aa5db1c86996bdb70d1a21a8c5ccca1f"
+    },
+    {
+      "file": "saved-report.jpg",
+      "videoSecond": 314,
+      "caption": "重新打开生成时报告",
+      "sha256": "74963c0189134f1787b41604d09485f5b554bdcf69fc43e8985e88366d171b65"
+    }
+  ]
+}

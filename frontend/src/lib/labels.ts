@@ -130,6 +130,21 @@ export function jobStatusLabel(value: string | null | undefined): string {
   return JOB_STATUS_LABELS[value] ?? value
 }
 
+/** Presentation only: the backend, not this label mapper, determines missing business dates. */
+export function backfillReasonLabel(reason: string): string {
+  const labels: Record<string, string> = {
+    AWAITING_MANUAL_INPUT: '尚无已校验发布的人工数据，请补录并点击“校验并发布到面板”',
+    AWAITING_LOCAL_IMPORT: '尚无已校验发布的导入数据，请导入并批量校验发布',
+    NO_AUTO_HISTORY_CAPABILITY: '尚无已发布数据，当前来源不支持自动历史采集',
+    NO_HISTORY_CAPABILITY: '当前来源不支持自动历史采集',
+    NO_AUTO_PROVIDER_CAPABILITY: '当前没有可用的自动采集来源',
+    NO_DATA_FOR_DAY: '该日期尚无可用数据'
+  }
+  const match = reason.match(/^(\d{4}-\d{2}(?:-\d{2})?):(.+)$/)
+  if (match) return `${match[1]}：${labels[match[2]] ?? match[2]}`
+  return labels[reason] ?? reason
+}
+
 export function modeLabel(value: string | null | undefined): string {
   if (value == null) return '—'
   return MODE_LABELS[value] ?? value

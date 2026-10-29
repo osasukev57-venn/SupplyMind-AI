@@ -1,97 +1,161 @@
 # SupplyMind AI
 
-供应链成本监测与动态调价预警智能体 — 面向 Windows 桌面的便携式成本监测平台。
+面向 Windows 桌面的供应链成本监测与预警平台。把汇率、材料公开基准、人工录入与文件导入放进可追溯的数据链，再用云端模型解读经过 Java 校验的事实。
 
-## 项目简介
+**本地文件保存数据，Java 负责计算与预警，云端 AI 解读可选。**
 
-SupplyMind AI 自动聚合官方权威数据源，执行数据核验与本地文件留存，并将核心内容进行面板展示：
+[下载 RC12](https://github.com/osasukev57-venn/SupplyMind-AI/releases/tag/v0.9.1-rc.12) · [完整演示视频](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN-male.mp4) · [模型 API 与其他电脑运行](demo-data/其他电脑运行与模型API配置.md) · [版本说明](docs/RELEASE-RC12.md)
 
-- 汇率监测：中国人民银行每日公布的官方汇率（默认 EUR/CNY、USD/CNY，支持动态新增如 GBP/CNY）
-- 原材料监测：ADC12 默认自动获取上海期货交易所铸造铝合金期货主力合约结算价，作为明确标注的同类公开基准；AZ91D 与无合适免费源的目标保留受控人工录入
-- 计算链路：每日加工均值 → 月度均值 → 季度均值 → 半年度均值 → 年度均值
-- 本地持久化：全部业务真值以 UTF-8 JSON/CSV 文件保存在程序根目录 `data` 下，**不使用任何数据库**
-- 数据核验：所有未经校验的数据不得进入展示层
-- 正式预警：每个启用监测项自动绑定默认变化率规则（材料7日/5%，其他1日/1%），可逐项自定义并保留版本历史；Java 决定是否触发
-- Agent 工作台：Java先生成并校验标准事实，云模型返回分段自然语言与factIds引用；应用检查关键数值、日期、来源、趋势和风险，独立采用合格段落并显示FULL/PARTIAL/NONE。采用状态不等于任意语义被证明；云端不可用或全部未采用时保留Java事实报告。
+[![RC12 实际运行总览](docs/images/rc12/overview.jpg)](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN-male.mp4)
 
-## 快速开始（Windows x64）
+> 截图来自 RC12 实际操作录像，不是效果图。完整视频约 5 分 49 秒，附普通话 AI 男声与中文字幕。录像中的 AZ91D 数据为模拟数据，不代表真实市场行情；录制专用监测项不会自动出现在干净安装中。
 
-> [前往 GitHub Releases 下载最新 Windows 运行包与完整交付包](https://github.com/osasukev57-venn/SupplyMind-AI/releases/latest)
+## 全模块功能
 
-1. 从 GitHub Releases 下载并解压 `SupplyMindAI-<版本>-win32-x64.zip` 到任意可写目录（支持普通路径、带空格路径、中文路径）。
-2. 双击 `SupplyMindAI\SupplyMindAI.exe`。
-3. 应用自动使用内置 JRE 启动本地服务并打开面板（127.0.0.1 动态端口）。联网时会在后台读取中国人民银行最新公开公告，并从上海期货交易所公开日行情取得 ADC12 的同类铸造铝合金期货基准；总览显示真实来源和状态，获取失败不会阻塞本地历史查询。
-4. 在「预警」页直接查看全部监测项的系统默认规则和当前计算状态；无需先配置即可使用。需要时选择某项修改周期、百分比阈值和方向，保存后会立即重新评估。
+| 模块 | 可以完成什么 |
+| --- | --- |
+| 总览 | 查看最新发布值、业务日期、单位、来源与校验状态，区分公开数据、替代基准和模拟数据。 |
+| 历史趋势 | 按日期范围查看日度记录及月、季、半年、年聚合；展示来源与校验状态，不为缺失日期虚构数值。 |
+| 数据质量 | 查看原始记录、校验结果和证据关联，追踪受理、校验、发布过程；不能仅凭“已受理”认定数据有效。 |
+| 来源与录入 | 查看采集路线和降级原因；人工录入、CSV／XLSX 导入、逐行错误反馈、显式发布与独立演示流程。 |
+| 动态配置 | 新增、启停监测项并保留版本；创建日期范围回填任务，跟踪缺口、部分完成和完成状态。 |
+| 预警 | 默认及自定义周期、变化率阈值、方向、启停和规则版本；查询、确认处理、备注与审计绑定。 |
+| Agent 工作台 | 7 个只读工具组织 Java 标准事实，可选云端分段解读；检查事实引用与关键主张，保存和重新打开报告。 |
 
-**无需安装** Java、Node.js、Maven、Docker、MySQL、Redis 或任何数据库。
+## 从数据进入到报告留存
 
-## 发布制品
+新增监测项 → 采集／录入／导入 → 待处理 → 校验发布 → 更新历史与统计 → 核对回填 → 预警评估与确认 → Agent 分析 → 保存并重新读取报告。
 
-正式二进制制品发布在 [GitHub Releases](https://github.com/osasukev57-venn/SupplyMind-AI/releases)，不提交到 Git 历史。仓库中的 `release/` 仅为本地构建输出目录，并由 `.gitignore` 排除。
+### 录入不是发布
 
-| 制品 | 说明 |
-|---|---|
-| `SupplyMindAI-<版本>-win32-x64.zip` | 最终用户便携 ZIP（含内置 Temurin JRE 17、Electron 33 壳、Spring Boot 3.5.15 后端、Vue 3 前端） |
-| `SupplyMindAI-<版本>-win32-x64.zip.sha256` | Windows 运行包的 SHA-256 校验值 |
-| `SupplyMindAI-<版本>-win32-x64.zip.manifest.json` | 构建输入、提交号与制品哈希清单 |
-| `SupplyMindAI-<版本>-complete-delivery.zip` | 面向接收方的单文件完整交付包：Windows 运行包、源码包、人工文档、演示数据与验收索引 |
-| `SupplyMindAI-<版本>-complete-delivery.zip.sha256` | 完整交付包的 SHA-256 校验值 |
-| `Source code (zip/tar.gz)` | GitHub 根据对应版本标签自动生成的开源源码包 |
+人工录入填写编号、来源、业务日期、数值和单位；文件导入支持批量受理与逐行反馈。受理成功是 `PENDING`，还需点击“校验并发布到面板”或“批量校验并发布到面板”。
 
-完整部署步骤见 `docs/07-WINDOWS-DEPLOYMENT-MANUAL.md`。
+正式查询和统计只使用已发布且符合校验要求的记录。拒绝、冲突和独立 DEMO 数据不能混入。**单位必须与监测项配置一致：材料示例是“元/吨”，不是 CNY。**
 
-接收方自己的模型Key如何配置、仅本次启动的隐藏输入方式、从源码运行及跨电脑数据迁移，见[其他电脑运行与模型API配置](demo-data/其他电脑运行与模型API配置.md)。不要把个人Key放入源码、配置文件或运行包。便携包已包含运行时，源码开发与重新打包则需要开发环境。
+![文件导入：三条记录校验发布并重建统计](docs/images/rc12/sources-import.jpg)
 
-## 工程结构
+### 回填与人工补录闭环
 
+RC12 在人工／导入记录发布后自动核对关联回填任务。部分日期补齐显示“部分完成”；请求范围内必需业务日补齐后显示“已完成”。“运行／重试”也会重新核对已有发布数据，无需重复录入。
+
+任务依据创建时的配置和业务日历；同月但范围外的数据、其他监测项或仅受理的数据不算补齐。详见[回填操作说明](docs/BACKFILL-RC12-OPERATION.md)。
+
+![人工发布后回填任务完成](docs/images/rc12/backfill-complete.jpg)
+
+<details>
+<summary>历史趋势与数据质量截图</summary>
+
+![导入数据日度历史](docs/images/rc12/history.jpg)
+
+![数据质量与预警关联](docs/images/rc12/quality.jpg)
+
+</details>
+
+### 预警有规则版本，确认有审计记录
+
+默认材料类 7 个自然日／5%，其他类 1 个自然日／1%；可逐项修改周期、阈值、方向和启停，保存后重新评估。缺少比较边界数据时明确提示“数据不足”。
+
+预警由 Java 计算，不由模型决定。确认保留时间、备注与原预警文件的审计绑定。**确认表示已知悉，不表示风险消失。**
+
+![预警确认及审计绑定](docs/images/rc12/warning-ack.jpg)
+
+### Java 提供事实，云端负责解读
+
+Agent 先查询并校验标准事实，再交给可选云模型组织语言。结果分开显示 Java 已验证事实、云端段落、事实引用、分析步骤和计算口径。
+
+![Java 事实：均值、最新值与趋势](docs/images/rc12/agent-facts.jpg)
+
+云端段落经过结构、引用、日期、单位、来源、关键数值与受控语义检查后独立采用，显示 `FULL / PARTIAL / NONE`。这不等于任意自然语言语义均被证明。模型不可用或输出不合格时保留 Java 事实报告，不伪造 AI 成功。
+
+![录像中的真实云端请求：全部采用并可查看引用](docs/images/rc12/agent-narrative.jpg)
+
+> 此截图证明录像中该次请求被采用，不保证任意模型、网络或后续请求都成功。云端调用需接收方自己的 API Key，可能产生费用。
+
+<details>
+<summary>已保存报告：重新读取不再次调用模型</summary>
+
+报告保存生成时事实与证据，读取时重新校验证据，不悄悄替换成最新数据，也不发起新云端请求。
+
+![重新读取生成时报告](docs/images/rc12/saved-report.jpg)
+
+</details>
+
+## 数据来源与统计口径
+
+| 数据 | 实际来源与边界 |
+| --- | --- |
+| EUR/CNY、USD/CNY 等汇率 | 中国人民银行公开公告；新增币种需要对应来源支持。 |
+| ADC12 同类公开基准 | 上海期货交易所铸造铝合金期货主力合约结算价；是期货替代基准，不是 ADC12 现货报价。 |
+| Asian Metal／SMM 来源意图 | 商业现货源未授权时明确显示降级；指向同一公开源的两项不代表两个独立现货报价。 |
+| AZ91D 人工／导入项 | 保留实际填写来源与配置单位；演示数据必须明确标注模拟、非真实市场数据。 |
+
+各粒度聚合均从符合条件的日度样本直接计算，**不是月均值再逐层平均成季度／年度**。来源、规格、单位、校验状态及配置等上下文影响分组。周期未结束或样本不完整时，均值仅代表已发布样本，不代表整期行情完整覆盖。
+
+业务真值以 UTF-8 JSON／CSV 保存在运行目录 `data/`，包括原始记录、生命周期、发布、聚合、配置、预警和报告，不依赖数据库。文件证据有 SHA-256 与一致性保护，但文件校验不等于来源内容绝对真实。
+
+## 快速使用：Windows x64
+
+1. 在 [RC12 Release](https://github.com/osasukev57-venn/SupplyMind-AI/releases/tag/v0.9.1-rc.12) 下载 `SupplyMindAI-0.9.1-rc.12-win32-x64.zip`。
+2. 完整解压至可写目录，双击 `SupplyMindAI/SupplyMindAI.exe`，不要只复制一个 EXE。
+3. 应用用随包 JRE 启动后端，监听 `127.0.0.1` 动态端口；联网可读取公开源，采集失败不阻塞已有本地数据查询。
+4. 在动态配置新增并启用监测项，再录入／导入并显式发布。
+5. 需要云端分析时，按[模型 API 配置说明](demo-data/其他电脑运行与模型API配置.md)配置自己的 Key 并启动；本地数据链与 Java 事实功能不要求启用模型。
+
+终端用户无需安装 Java、Node.js、Maven、Docker、MySQL 或 Redis。换电脑请迁移完整运行目录；迁移自己的数据前先关闭应用并备份 `data/`。
+
+**不要将 API Key 写入源码、README、截图、提交记录或分享包。** 云端分析会把所需事实发送给配置的模型服务，敏感业务数据应先评估是否适合外发。
+
+## 从源码运行
+
+需要 JDK 17、Node.js 和 npm，后端提供 Maven Wrapper。云模型不是启动的前置条件。
+
+后端终端：
+
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run '-Dspring-boot.run.arguments=--server.address=127.0.0.1 --server.port=8080'
 ```
-backend/    Spring Boot 3.5.15 + Java 17 后端（Provider→校验→发布→加工→聚合→文件持久化）
-frontend/   Vue 3 + Vite 前端（总览/历史/质量/来源录入/动态配置/预警/Agent）
-desktop/    Electron 便携壳（单实例、动态端口、随包 JRE、父进程看门狗）
-release/    本地构建输出目录（不纳入 Git；正式制品上传至 GitHub Releases）
-docs/       需求基线、追踪矩阵、验收计划、任务、台账、决策日志与全部验收证据
+
+前端另开终端：
+
+```powershell
+cd frontend
+npm ci
+npm run dev
 ```
 
-## 文档导航
+前端默认 Vite 开发地址代理至本地后端。前端验证为 `npm test`、`npm run build`，后端在 `backend/` 执行 `.\mvnw.cmd test`。桌面壳开发与重新打包见[部署手册](docs/07-WINDOWS-DEPLOYMENT-MANUAL.md)，与用户解压运行是不同流程。
 
-| 文档 | 内容 |
-|---|---|
-| `docs/00-OFFICIAL-REQUIREMENTS.md` | 官方需求书正文（原始需求） |
-| `docs/00A-PROJECT-IMPLEMENTATION-SUPPLEMENT.md` | 项目方实施补充说明（数据获取方式与优先级） |
-| `docs/01-PROJECT-MASTER-PLAN.md` | 项目总计划 |
-| `docs/02-REQUIREMENT-TRACEABILITY.md` | 需求追踪矩阵（H01-H09、F01-F14、冻结决策、外部待确认） |
-| `docs/03-ACCEPTANCE-TEST-PLAN.md` | 验收测试计划（全部 AT 用例） |
-| `docs/04-DEVELOPMENT-TASKS.md` | 开发任务定义（Day 1-10、P1/P2） |
-| `docs/05-PROGRESS-LEDGER.md` | 跨窗口进度台账 |
-| `docs/06-DECISION-LOG.md` | 架构与项目冻结决策日志 |
-| `docs/07-WINDOWS-DEPLOYMENT-MANUAL.md` | Windows 部署手册 |
-| `docs/08-OPERATIONS-MANUAL.md` | 操作手册 |
-| `docs/09-DEMO-MANUAL.md` | 演示手册 |
-| `docs/10-DATA-DICTIONARY.md` | 数据字典（文件布局与字段） |
-| `docs/11-API-REFERENCE.md` | API 说明 |
-| `docs/12-THIRD-PARTY-LICENSES.md` | 第三方许可 |
-| `docs/13-KNOWN-LIMITATIONS.md` | 已知限制与外部待确认项 |
-| `docs/14-REQUIREMENT-ACCEPTANCE-EVIDENCE-INDEX.md` | 需求 → 验收 → 证据索引 |
-| `docs/evidence/` | 各 Day 验收证据（脚本、机器证据、截图、SHA-256） |
+## 实际技术栈
 
-## 关键架构边界（冻结）
+| 层次 | 技术 |
+| --- | --- |
+| 桌面 | Electron 33、Temurin JRE 17、Java 子进程管理、动态端口与父进程看门狗 |
+| 后端 | Java 17、Spring Boot 3.5.15、Spring AI 1.1.8、JDK HttpClient、定时任务 |
+| 前端 | Vue 3、TypeScript、Vite、Vue Router、Axios、SVG 趋势图 |
+| 文件与计算 | Jackson、Commons CSV、Apache POI、BigDecimal、JSON／CSV、SHA-256 |
+| 云端 | 可选 OpenAI 兼容接口；录像使用通义千问 qwen-plus，不附带模型或个人 Key |
+| 验证 | JUnit／Spring Boot 测试、Vitest／Vue Test Utils、便携包接口与重启回归 |
 
-- 唯一持久化：`data/` 下 JSON/CSV；无数据库栈、无隐藏服务（DEC-004/005）
-- 数据链：获取 → 不可变 RawReceipt → 生命周期候选 → 校验 → 发布 → 每日加工 → 多级聚合 → JSON/CSV → 面板/预警/Agent（DEC-010）
-- 只有 `PUBLISHED + VERIFIED / VERIFIED_WITH_NOTICE` 进入展示层（DEC-011）
-- 精度：全部业务值经 `new BigDecimal(String)` 进入计算，输出 `toPlainString()`，无 float/double、无科学计数法（DEC-008/009）
-- 材料接入三层降级：合法指定源自动 → 同类免费公开信源 → Manual；ADC12 的默认免费基准为 SHFE 铸造铝合金期货主力合约结算价，AZ91D 保持 Manual；不得绕过登录/验证码/会员/反爬，且不得把公开基准冒充 SMM/Asian 现货（DEC-015/037/038/063）
-- 云 LLM 仅生成非约束性建议文本；数值、均值、成本、风险等级全部由 Java 确定性计算；故障时同一 EvidencePack 生成 Java 模板报告（DEC-028/030/031）
-- Agent 工具为 7 个只读工具，无写工具、无任意文件/网络/Shell（DEC-029）
+```text
+backend/    获取、校验、发布、聚合、回填、预警与 Agent
+frontend/   七个业务模块与事实／证据展示
+desktop/    Windows 便携桌面壳
+demo-data/  导入样例、启动脚本与接收方说明
+docs/       操作手册、数据字典、架构决策与验收记录
+release/    本地制品输出，不提交二进制到 Git 历史
+```
 
-## 数据来源与演示边界
+## 视频、制品与文档
 
-- PBOC：USD/CNY、EUR/CNY 人民币汇率中间价，保存完整官方 HTTP response entity bytes 与 SHA-256。
-- SHFE FreePublic：`ad_f` 铸造铝合金期货日行情；按成交量选择主力合约，同量时按较早交割月确定，使用结算价、单位 `元/吨`。这是 ADC12 的同类公开期货基准，不是 ADC12 现货成交价，也不是 SMM/Asian Metal 报价。
-- Manual/LocalImport：用于 AZ91D 或暂时没有合适公开源的标的，先 PENDING，再经过统一校验与发布门禁。
-- 批量演示：`demo-data/` 提供 LocalImport 六行示例 CSV 与操作说明；上传受理后需显式点击「批量校验并发布到面板」，再到总览/历史趋势查看结果。
-- 一键 DEMO：走真实 Synthetic Provider、不可变 DEMO raw、标准化、校验、日/月/季/半年/年演示投影、预警求值和审计报告；所有产物只在 `data/demo` 与 `data/raw/demo`，永不进入正式 PUBLISHED/daily/aggregate。
+- [完整 MP4：普通话 AI 男声＋中文字幕](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN-male.mp4)，浏览器可能直接播放或下载。
+- [独立 SRT 字幕](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN.srt)及[视频章节导航](docs/DEMO-RC12.md)。
+- [RC12 Release](https://github.com/osasukev57-venn/SupplyMind-AI/releases/tag/v0.9.1-rc.12)：干净 Windows 运行包、哈希清单、源码快照、视频与字幕。RC12 是候选版，旧稳定版仍保留。
+- [接收方运行与模型配置](demo-data/其他电脑运行与模型API配置.md)、[回填操作](docs/BACKFILL-RC12-OPERATION.md)、[操作手册](docs/08-OPERATIONS-MANUAL.md)、[数据字典](docs/10-DATA-DICTIONARY.md)。
+- 工程依据：[需求追踪](docs/02-REQUIREMENT-TRACEABILITY.md)、[验收计划](docs/03-ACCEPTANCE-TEST-PLAN.md)、[架构决策](docs/06-DECISION-LOG.md)。历史文档描述对应阶段，当前以源码及 RC12 说明为准。
 
-## 开源许可
+## 边界与许可
 
-本项目以 Apache License 2.0 开源，见根目录 `LICENSE`。外部公开数据仍受其发布机构条款约束；本项目不授予第三方数据的再许可。
+这是本地监测、核验与分析辅助项目，不是自动交易／自动调价系统，未宣称接入企业 ERP／MES、实现多租户权限或取得经验证的企业收益。默认工作日日历不是完整节假日与调休日历；当前存储协议对过长监测项编号仍有限制。
+
+源码采用 [Apache-2.0](LICENSE)。外部数据、模型服务与运行时遵循各自许可及条款；模拟数据和 AI 解读不构成业务决策依据。
