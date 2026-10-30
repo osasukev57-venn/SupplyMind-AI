@@ -4,9 +4,9 @@
 
 **本地文件保存数据，Java 负责计算与预警，云端 AI 解读可选。**
 
-[下载 RC12](https://github.com/osasukev57-venn/SupplyMind-AI/releases/tag/v0.9.1-rc.12) · [完整演示视频](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN-male.mp4) · [模型 API 与其他电脑运行](demo-data/其他电脑运行与模型API配置.md) · [版本说明](docs/RELEASE-RC12.md)
+[下载 RC12](https://github.com/osasukev57-venn/SupplyMind-AI/releases/tag/v0.9.1-rc.12) · [▶ 在线播放演示视频](https://osasukev57-venn.github.io/SupplyMind-AI/demo/) · [模型 API 与其他电脑运行](demo-data/其他电脑运行与模型API配置.md) · [版本说明](docs/RELEASE-RC12.md)
 
-[![RC12 实际运行总览](docs/images/rc12/overview.jpg)](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN-male.mp4)
+[![RC12 实际运行总览：点击在线播放](docs/images/rc12/overview.jpg)](https://osasukev57-venn.github.io/SupplyMind-AI/demo/)
 
 > 截图来自 RC12 实际操作录像，不是效果图。完整视频约 5 分 49 秒，附普通话 AI 男声与中文字幕。录像中的 AZ91D 数据为模拟数据，不代表真实市场行情；录制专用监测项不会自动出现在干净安装中。
 
@@ -148,7 +148,7 @@ release/    本地制品输出，不提交二进制到 Git 历史
 
 ## 视频、制品与文档
 
-- [完整 MP4：普通话 AI 男声＋中文字幕](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN-male.mp4)，浏览器可能直接播放或下载。
+- [▶ 浏览器在线播放：普通话 AI 男声＋中文字幕](https://osasukev57-venn.github.io/SupplyMind-AI/demo/)，无需先下载，支持全屏和功能章节跳转；另保留[视频下载](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN-male.mp4)作为备用。
 - [独立 SRT 字幕](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN.srt)及[视频章节导航](docs/DEMO-RC12.md)。
 - [RC12 Release](https://github.com/osasukev57-venn/SupplyMind-AI/releases/tag/v0.9.1-rc.12)：干净 Windows 运行包、哈希清单、源码快照、视频与字幕。RC12 是候选版，旧稳定版仍保留。
 - [接收方运行与模型配置](demo-data/其他电脑运行与模型API配置.md)、[回填操作](docs/BACKFILL-RC12-OPERATION.md)、[操作手册](docs/08-OPERATIONS-MANUAL.md)、[数据字典](docs/10-DATA-DICTIONARY.md)。

@@ -1,8 +1,8 @@
 # RC12 全模块演示视频
 
-[完整 MP4](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN-male.mp4) · [中文字幕](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN.srt)
+[▶ 浏览器在线播放](https://osasukev57-venn.github.io/SupplyMind-AI/demo/) · [备用 MP4 下载](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN-male.mp4) · [中文字幕](https://github.com/osasukev57-venn/SupplyMind-AI/releases/download/v0.9.1-rc.12/SupplyMindAI-RC12-demo-zh-CN.srt)
 
-时长约 5 分 49 秒，普通话 AI 男声讲解，画面来自实际 RC12 操作。AZ91D 录像数据为模拟数据，不代表真实市场行情。视频独立托管于 GitHub Release，不进入 Git 历史。
+时长约 5 分 49 秒，普通话 AI 男声讲解，画面来自实际 RC12 操作。AZ91D 录像数据为模拟数据，不代表真实市场行情。点击“浏览器在线播放”可直接在页面播放器观看、全屏及选择章节，无需先保存文件。播放页及播放用视频由独立 GitHub Pages 分支提供，视频不放进 main 源码分支；GitHub Release 保留独立下载备份。
 
 | 时间 | 内容 |
 | --- | --- |
